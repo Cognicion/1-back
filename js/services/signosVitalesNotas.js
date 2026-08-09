@@ -237,6 +237,28 @@ function fechaActualVital(paciente = {}, clave = "") {
   ), null);
 }
 
+export function construirRegistroHistorialSignoVital({
+  valor,
+  nota = "",
+  fechaRegistro = "",
+  esPrevio = false,
+  uidRegistro = "",
+  metadata = {}
+} = {}) {
+  const fechaNormalizada = fechaRegistroComoNumero({ fecha: fechaRegistro })
+    ? new Date(fechaRegistro).toISOString()
+    : new Date().toISOString();
+  return {
+    ...metadata,
+    valor,
+    nota: String(nota || ""),
+    fecha: fechaNormalizada,
+    fechaToma: fechaNormalizada,
+    esPrevio: Boolean(esPrevio),
+    uidRegistro: String(uidRegistro || "")
+  };
+}
+
 export function construirActualizacionSignosVitalesDesdeNota({ paciente = {}, nota = {}, sourceNoteId = "", createdBy = "", audit = null } = {}) {
   const noteId = String(sourceNoteId || "").trim();
   const valores = extraerSignosVitalesEstructuradosDeNota(nota);
@@ -247,25 +269,33 @@ export function construirActualizacionSignosVitalesDesdeNota({ paciente = {}, no
     historyBefore: historialVitalObservationCount(historial),
     inserted: false,
     becameCurrent: false,
+    currentUpdatedFields: [],
     historyAfter: 0
   };
-  const registroBase = {
+  const registroMetadata = {
     sourceType: "clinical_note",
     sourceNoteId: noteId,
     takenAt,
-    fecha: takenAt,
-    fechaToma: takenAt,
     createdAt: new Date().toISOString(),
     createdBy: String(createdBy || ""),
-    uidRegistro: String(createdBy || ""),
     values: valores,
-    esPrevio: false
   };
   for (const [clave, valor] of Object.entries(valores)) {
     const registros = historial[clave] || [];
     const indice = registros.findIndex((registro) => String(registro?.sourceNoteId || "") === noteId);
     const previo = indice >= 0 ? registros[indice] : null;
-    const registro = { ...registroBase, createdAt: previo?.createdAt || registroBase.createdAt, updatedAt: new Date().toISOString(), valor, nota: previo?.nota || "" };
+    const registro = construirRegistroHistorialSignoVital({
+      valor,
+      nota: previo?.nota || "",
+      fechaRegistro: takenAt,
+      esPrevio: false,
+      uidRegistro: createdBy,
+      metadata: {
+        ...registroMetadata,
+        createdAt: previo?.createdAt || registroMetadata.createdAt,
+        updatedAt: new Date().toISOString()
+      }
+    });
     if (indice >= 0) registros[indice] = { ...previo, ...registro };
     else {
       registros.push(registro);
@@ -294,6 +324,7 @@ export function construirActualizacionSignosVitalesDesdeNota({ paciente = {}, no
     }
     if (esVital && debeSerActual) {
       auditState.becameCurrent = true;
+      auditState.currentUpdatedFields.push(clave);
       signosVitalesMeta[clave] = {
         ...(signosVitalesMeta[clave] || {}),
         fecha: takenAt,

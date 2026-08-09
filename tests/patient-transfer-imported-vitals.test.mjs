@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { extractVitalSignsCandidates, vitalSignsToNotePayload } from "../js/modules/patient-transfer/parsing/vitalSignsParser.js";
-import { construirActualizacionSignosVitalesDesdeNota } from "../js/services/signosVitalesNotas.js";
+import {
+  construirActualizacionSignosVitalesDesdeNota,
+  construirRegistroHistorialSignoVital
+} from "../js/services/signosVitalesNotas.js";
 
 const root = process.cwd();
 const read = (path) => readFileSync(join(root, path), "utf8");
@@ -55,6 +58,19 @@ assert.equal(
 assert.equal(first.historialSignosVitales.presionArterial[0].fechaToma, first.historialSignosVitales.presionArterial[0].takenAt);
 assert.equal(first.historialSignosVitales.presionArterial[0].esPrevio, false);
 assert.equal(first.historialSignosVitales.presionArterial[0].nota, "");
+const manualRecord = construirRegistroHistorialSignoVital({
+  valor: "120/80",
+  nota: "",
+  fechaRegistro: new Date("2026-08-04T21:45").toISOString(),
+  esPrevio: false,
+  uidRegistro: "test-user"
+});
+const importedRecord = first.historialSignosVitales.presionArterial[0];
+assert.deepEqual(
+  Object.fromEntries(["valor", "nota", "fecha", "fechaToma", "esPrevio", "uidRegistro"].map((field) => [field, importedRecord[field]])),
+  manualRecord,
+  "el registro manual y el importado comparten el mismo contrato canonico"
+);
 
 const second = buildUpdate(first);
 fields.forEach((field) => assert.equal(second.historialSignosVitales[field].length, 1, `no duplica ${field} al reintentar la misma nota`));
@@ -100,6 +116,15 @@ assert.equal(newImport.presionArterial, "120/80", "una nota nueva actualiza el v
 assert.equal(newImport.signosVitales.presionArterial, "120/80", "una nota nueva actualiza el valor actual anidado");
 assert.equal(newAudit.becameCurrent, true, "una nota nueva se vuelve actual");
 
+const invalidDateUpdate = construirActualizacionSignosVitalesDesdeNota({
+  paciente: {},
+  nota: { fechaNota: "fecha-invalida", observacionFray: payload, signosVitales: payload },
+  sourceNoteId: "target-note:invalid-date",
+  createdBy: "test-user"
+});
+fields.forEach((field) => assert.equal(invalidDateUpdate.historialSignosVitales[field].length, 1, `una fecha invalida no descarta ${field}`));
+assert.ok(Number.isFinite(new Date(invalidDateUpdate.historialSignosVitales.presionArterial[0].fecha).getTime()), "el fallback tecnico produce fecha valida");
+
 const repository = read("js/modules/patient-transfer/patientTransferRepository.js");
 const patientView = read("js/paciente.js");
 const transferView = read("js/modules/patient-transfer/ui/patientTransferView.js");
@@ -108,7 +133,8 @@ fields.forEach((field) => {
   assert.match(repository, new RegExp(`"${field}"`), `el repositorio conserva ${field}`);
 });
 assert.match(repository, /const patientRef = doc\(db, "usuarios", patientId\)/, "la referencia de SV usa el patientId destino resuelto");
-assert.match(repository, /await setDoc\(patientRef, next, \{ merge: true \}\)/, "la escritura de SV usa la referencia del paciente destino");
+assert.match(repository, /await setDoc\(patientRef, update, \{ merge: true \}\)/, "la escritura de SV usa la referencia del paciente destino");
+assert.match(patientView, /construirRegistroHistorialSignoVital/, "el registro manual reutiliza el constructor canonico compartido");
 assert.match(transferView, /includeControl \? includeControl\.checked : candidate\.include !== false/, "la sincronizacion conserva la seleccion si el control ya no esta en el DOM");
 
 console.log("patient-transfer-imported-vitals.test.mjs OK");

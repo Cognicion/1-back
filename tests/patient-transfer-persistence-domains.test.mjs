@@ -30,8 +30,8 @@ assert.match(repository, /note = \{ notaId: noteRef\.id, id: noteRef\.id \}/);
 assert.match(repository, /createImportedDiagnoses\(patientId/);
 assert.match(repository, /createImportedTreatments\(patientId/);
 assert.match(repository, /createImportedIndications\(patientId/);
-assert.match(repository, /selectedVitalCandidates/);
-assert.match(repository, /:vital:\$\{vitalCandidate\.id \|\| vitalIndex\}/);
+assert.match(repository, /persistImportedVitalSignsForDocument/);
+assert.match(repository, /:vital:\$\{candidate\.id \|\| vitalIndex\}/);
 assert.match(repository, /patient-transfer:persist-demographics-success/);
 assert.match(repository, /patient-transfer:persist-vitals-success/);
 assert.match(repository, /patient-transfer:persist-diagnoses-success/);
@@ -45,7 +45,11 @@ assert.equal(
 
 const existingNoteBranch = repository.slice(
   repository.indexOf("if (existingNote.exists())"),
-  repository.indexOf("const selectedVitalCandidates")
+  repository.indexOf('stage = "creating_diagnoses"')
+);
+assert.ok(
+  repository.indexOf("persistImportedVitalSignsForDocument({") < repository.indexOf('stage = "creating_note"'),
+  "los signos vitales no dependen de que la nota se cree o ya exista"
 );
 assert.doesNotMatch(existingNoteBranch, /continue;/, "una nota existente no omite signos, diagnÃ³sticos ni tratamientos pendientes");
 

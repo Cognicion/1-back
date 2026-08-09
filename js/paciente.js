@@ -47,6 +47,7 @@ import {
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 import { guardarTransferenciaClinicaLocal } from "./services/clinicalLocalStore.js";
 import { resolverExpedienteInstitucional, formatearFechaDocumento, formatearHoraLocalDocumento } from "./services/solicitudImagenologiaPlantilla.js";
+import { construirRegistroHistorialSignoVital } from "./services/signosVitalesNotas.js?v=20260810-vitals-history-write-proof-v1";
 
 import {
   collection,
@@ -4563,14 +4564,13 @@ window.registrarSignoVitalPaciente = async function(clave, opciones = {}, ancla 
     ...(datos?.historialSignosVitales || {}),
     [clave]: [
       ...obtenerHistorialSignoVital(datos, clave),
-      {
+      construirRegistroHistorialSignoVital({
         valor: captura.valor,
         nota: captura.nota,
-        fecha: fechaRegistro,
-        fechaToma: fechaRegistro,
+        fechaRegistro,
         esPrevio: opciones.previo === true,
         uidRegistro: auth.currentUser?.uid || ""
-      }
+      })
     ]
   };
   const actualizacion = {
