@@ -212,7 +212,8 @@ export function extraerSignosVitalesEstructuradosDeNota(nota = {}) {
 }
 
 function fechaRegistroComoNumero(registro = {}) {
-  const valor = registro.fecha || registro.fechaToma || registro.takenAt || registro.creadoEn || "";
+  const seguro = registro && typeof registro === "object" ? registro : {};
+  const valor = seguro.fecha || seguro.fechaToma || seguro.takenAt || seguro.creadoEn || "";
   const timestamp = new Date(valor).getTime();
   return Number.isFinite(timestamp) ? timestamp : 0;
 }

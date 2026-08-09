@@ -14,7 +14,12 @@ import {
   construirRegistroDiagnosticoImportado,
   fusionarDiagnosticosImportados
 } from "../js/services/diagnosticosPaciente.js";
-import { reviewedDiagnosisSelection } from "../js/modules/patient-transfer/ui/patientTransferView.js";
+import { construirActualizacionSignosVitalesDesdeNota } from "../js/services/signosVitalesNotas.js";
+import { runVitalSignsAndDiagnosesIndependently } from "../js/modules/patient-transfer/domainPersistenceIsolation.js";
+import {
+  diagnosisTransferSummary,
+  reviewedDiagnosisSelection
+} from "../js/modules/patient-transfer/ui/patientTransferView.js";
 
 const root = process.cwd();
 const repository = readFileSync(join(root, "js/modules/patient-transfer/patientTransferRepository.js"), "utf8");
@@ -94,7 +99,7 @@ test("associate_existing escribe únicamente en el target resuelto", () => {
   const helperEnd = repository.indexOf("function traceTransfer", helperStart);
   const helper = repository.slice(helperStart, helperEnd);
   assert.match(helper, /const patientRef = doc\(db, "usuarios", patientId\)/);
-  assert.match(repository, /patientId,\s*operationId,\s*user\s*\}\);/);
+  assert.match(repository, /patientId,\s*operationId,\s*effectiveAction,\s*user\s*\}\);/);
   assert.doesNotMatch(helper, /operation\.data\?\.patientId|sourcePatientId|temporaryPatientId/);
 });
 
@@ -177,6 +182,9 @@ test("persistencia exige before -> write -> after y read-after-write observable"
   assert.ok(before >= 0 && write > before && after > write);
   assert.match(helper, /patient-transfer:diagnoses-history-before-real/);
   assert.match(helper, /patient-transfer:diagnoses-source-real/);
+  assert.match(helper, /patient-transfer:diagnoses-target/);
+  assert.match(helper, /patient-transfer:diagnoses-write-start/);
+  assert.match(helper, /patient-transfer:diagnoses-write-result/);
   assert.match(helper, /patient-transfer:diagnoses-history-after-real/);
   assert.match(helper, /patient-transfer:diagnoses-write-not-observed/);
 });
@@ -196,4 +204,85 @@ test("la integración publicada de signos vitales permanece aislada", () => {
   assert.match(vitalsHelper, /construirActualizacionSignosVitalesDesdeNota/);
   assert.match(vitalsHelper, /patient-transfer:vitals-history-after-real/);
   assert.doesNotMatch(vitalsHelper, /diagnoses-|Diagnostico|Diagnóstico/);
+});
+
+test("un fallo de signos vitales no impide intentar y completar diagnósticos", async () => {
+  const calls = [];
+  const domainErrors = [];
+  const outcome = await runVitalSignsAndDiagnosesIndependently({
+    persistVitalSigns: async () => {
+      calls.push("vital-signs");
+      const error = new Error("fixture vital failure");
+      error.code = "fixture-vitals-error";
+      throw error;
+    },
+    persistDiagnoses: async () => {
+      calls.push("diagnoses");
+      return { created: [{ id: "fixture-diagnosis" }], existing: [] };
+    },
+    onDomainError: ({ domain, error }) => domainErrors.push({ domain, code: error.code })
+  });
+
+  assert.deepEqual(calls, ["vital-signs", "diagnoses"]);
+  assert.equal(outcome.results.vitalSigns, null);
+  assert.equal(outcome.results.diagnoses.created.length, 1);
+  assert.deepEqual(domainErrors, [{ domain: "vital-signs", code: "fixture-vitals-error" }]);
+});
+
+test("un fallo diagnóstico conserva el resultado previo de signos vitales", async () => {
+  const outcome = await runVitalSignsAndDiagnosesIndependently({
+    persistVitalSigns: async () => ({ created: 1, recordIds: ["fixture-vital"] }),
+    persistDiagnoses: async () => {
+      throw new Error("fixture diagnosis failure");
+    }
+  });
+
+  assert.equal(outcome.results.vitalSigns.created, 1);
+  assert.equal(outcome.results.diagnoses, null);
+  assert.equal(outcome.errors[0].domain, "diagnoses");
+});
+
+test("fecha nula en la comparación de signos vitales no aborta el dominio siguiente", () => {
+  const update = construirActualizacionSignosVitalesDesdeNota({
+    paciente: {
+      historialSignosVitales: {
+        presionArterial: [{ fecha: "2026-08-08T10:00:00.000Z", valor: "110/70" }]
+      }
+    },
+    nota: {
+      observacionFray: {
+        presionArterial: "120/80",
+        fechaNota: "09/08/2026",
+        horaNota: "10:00"
+      }
+    },
+    sourceNoteId: "fixture-note",
+    createdBy: "fixture-user"
+  });
+
+  assert.equal(update.presionArterial, "120/80");
+  assert.equal(update.historialSignosVitales.presionArterial.length, 2);
+});
+
+test("el resumen diagnóstico distingue intento, inclusión, idempotencia y error", () => {
+  assert.equal(diagnosisTransferSummary({}), "no ejecutado");
+  assert.equal(diagnosisTransferSummary({
+    diagnosesAttempted: true,
+    diagnosesDetected: 3,
+    diagnosesIncluded: 3,
+    diagnosesCreated: 2,
+    diagnosesIdempotent: 1,
+    diagnosesOmitted: 0,
+    diagnosesError: "fixture-error"
+  }), "3 detectados / 3 incluidos / 2 registrados / 1 idempotentes / 0 omitidos / error: fixture-error");
+});
+
+test("el repositorio reporta el error de dominio sin retorno silencioso antes de DX", () => {
+  const loop = repository.indexOf("runVitalSignsAndDiagnosesIndependently({");
+  const vitalAttempt = repository.indexOf("persistVitalSigns: async () =>", loop);
+  const diagnosisAttempt = repository.indexOf("persistDiagnoses: async () =>", loop);
+  const errorTrace = repository.indexOf('console.error("patient-transfer:domain-error"', loop);
+  const finalThrow = repository.indexOf("throw firstDomainError", loop);
+  assert.ok(loop >= 0 && vitalAttempt > loop && diagnosisAttempt > vitalAttempt);
+  assert.ok(errorTrace > diagnosisAttempt && finalThrow > errorTrace);
 });

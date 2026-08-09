@@ -6,8 +6,9 @@ import { DOCX_IMPORT_CONFIG } from "../importacionDocx/docxImportConfig.js";
 import { createTransferredPatient, mergeTransferredPatientFields } from "./integration/patientCreationAdapter.js?v=20260808-persistence-domains-v1";
 import { buildImportedNotePayload, createTransferredNote } from "./integration/noteCreationAdapter.js";
 import { createImportedDiagnoses, createImportedIndications, createImportedTreatments } from "./integration/clinicalDataImportAdapter.js?v=v160-imported-diagnoses-v1";
+import { runVitalSignsAndDiagnosesIndependently } from "./domainPersistenceIsolation.js?v=v161-imported-diagnoses-isolation-v1";
 import { vitalSignsToNotePayload } from "./parsing/vitalSignsParser.js?v=20260808-imported-vitals-v1";
-import { construirActualizacionSignosVitalesDesdeNota } from "../../services/signosVitalesNotas.js?v=20260810-vitals-history-write-proof-v1";
+import { construirActualizacionSignosVitalesDesdeNota } from "../../services/signosVitalesNotas.js?v=v161-imported-diagnoses-isolation-v1";
 import { claveDiagnosticoPaciente } from "../../services/diagnosticosPaciente.js?v=v160-imported-diagnoses-v1";
 import { listarPacientes } from "../../services/usuarios.js";
 import { withPatientTransferTimeout } from "./patientTransferTimeout.js";
@@ -324,11 +325,16 @@ async function persistImportedDiagnosesForDocument({
   documentIndex,
   patientId,
   operationId,
+  effectiveAction,
   user
 }) {
   const candidates = document.diagnosisCandidates || [];
   const selectedCandidates = candidates.filter((candidate) => candidate.include === true || candidate.selectedForImport === true);
   const patientRef = doc(db, "usuarios", patientId);
+  console.info("patient-transfer:diagnoses-target", {
+    mode: effectiveAction === "associate" ? "associate_existing" : "create_new",
+    hasTarget: Boolean(patientId)
+  });
   const beforeSnap = await getDocFromServer(patientRef);
   const patientBefore = beforeSnap.exists() ? beforeSnap.data() : {};
   const historyBefore = diagnosisHistoryFromPatient(patientBefore);
@@ -342,6 +348,11 @@ async function persistImportedDiagnosesForDocument({
     codedCount: selectedCandidates.filter((candidate) => Boolean(candidate.code || candidate.codes?.length)).length,
     uncodedCount: selectedCandidates.filter((candidate) => !candidate.code && !candidate.codes?.length).length
   });
+  console.info("patient-transfer:diagnoses-write-start", {
+    candidateCount: candidates.length,
+    includedCount: selectedCandidates.length,
+    writeNeeded: selectedCandidates.length > 0
+  });
 
   if (!selectedCandidates.length) {
     console.info("patient-transfer:diagnoses-history-after-real", {
@@ -349,23 +360,47 @@ async function persistImportedDiagnosesForDocument({
       inserted: 0,
       idempotent: 0
     });
-    return { created: [], existing: [], omitted: candidates.length, expectedKeys: [] };
+    console.info("patient-transfer:diagnoses-write-result", {
+      writeResolved: false,
+      expectedFound: true,
+      inserted: 0,
+      idempotent: 0,
+      skipped: true
+    });
+    return {
+      created: [],
+      existing: [],
+      omitted: candidates.length,
+      expectedKeys: [],
+      detected: candidates.length,
+      included: 0
+    };
   }
 
   const sourceIdentity = [
     document.hash || document.textHash || document.id || `document-${documentIndex}`,
     document.sourceNoteSegmentId || document.id || `segment-${documentIndex}`
   ].filter(Boolean).join(":");
-  const result = await timed(`create-diagnoses-${documentIndex + 1}`, () => createImportedDiagnoses(patientId, candidates, {
-    transferOperationId: operationId,
-    sourceFileHash: document.hash || document.textHash || "",
-    sourceNoteId: sourceIdentity,
-    fileName: document.file?.name || "",
-    date: document.metadata?.documentDate || document.date || "",
-    time: document.metadata?.documentHour || document.time || "",
-    patient: patientBefore,
-    user
-  }), TIMEOUTS.createClinicalData);
+  let result;
+  try {
+    result = await timed(`create-diagnoses-${documentIndex + 1}`, () => createImportedDiagnoses(patientId, candidates, {
+      transferOperationId: operationId,
+      sourceFileHash: document.hash || document.textHash || "",
+      sourceNoteId: sourceIdentity,
+      fileName: document.file?.name || "",
+      date: document.metadata?.documentDate || document.date || "",
+      time: document.metadata?.documentHour || document.time || "",
+      patient: patientBefore,
+      user
+    }), TIMEOUTS.createClinicalData);
+  } catch (error) {
+    console.error("patient-transfer:diagnoses-write-result", {
+      writeResolved: false,
+      expectedFound: false,
+      errorCode: error?.code || error?.name || "unknown"
+    });
+    throw error;
+  }
 
   const afterSnap = await getDocFromServer(patientRef);
   const patientAfter = afterSnap.exists() ? afterSnap.data() : {};
@@ -380,6 +415,12 @@ async function persistImportedDiagnosesForDocument({
   });
 
   if (missingKeys.length) {
+    console.error("patient-transfer:diagnoses-write-result", {
+      writeResolved: true,
+      expectedFound: false,
+      inserted: result.created.length,
+      idempotent: result.existing.length
+    });
     console.error("patient-transfer:diagnoses-write-not-observed", {
       writeResolved: true,
       expectedCount: result.expectedKeys.length,
@@ -390,7 +431,17 @@ async function persistImportedDiagnosesForDocument({
     throw error;
   }
 
-  return result;
+  console.info("patient-transfer:diagnoses-write-result", {
+    writeResolved: true,
+    expectedFound: true,
+    inserted: result.created.length,
+    idempotent: result.existing.length
+  });
+  return {
+    ...result,
+    detected: candidates.length,
+    included: selectedCandidates.length
+  };
 }
 
 function traceTransfer(stage, data = {}) {
@@ -705,6 +756,11 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
     const documentResults = [];
     let diagnosesCreated = 0;
     let diagnosesOmitted = 0;
+    let diagnosesDetected = 0;
+    let diagnosesIncluded = 0;
+    let diagnosesIdempotent = 0;
+    let diagnosesAttempted = false;
+    const diagnosisErrors = [];
     let treatmentsCreated = 0;
     let treatmentsOmitted = 0;
     let indicationsCreated = 0;
@@ -845,41 +901,72 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
       console.info("patient-transfer:persist-notes-start", { documents: documentsToSave.length });
       for (let documentIndex = 0; documentIndex < documentsToSave.length; documentIndex += 1) {
         const document = documentsToSave[documentIndex];
-        stage = "creating_vital_signs";
-        onProgress?.({ stage, message: "Registrando signos vitales...", progress: 42 });
-        const vitalResult = await persistImportedVitalSignsForDocument({
-          document,
-          documentIndex,
-          group,
-          patientId,
-          effectiveAction,
-          user
+        const domainOutcome = await runVitalSignsAndDiagnosesIndependently({
+          persistVitalSigns: async () => {
+            stage = "creating_vital_signs";
+            onProgress?.({ stage, message: "Registrando signos vitales...", progress: 42 });
+            const vitalResult = await persistImportedVitalSignsForDocument({
+              document,
+              documentIndex,
+              group,
+              patientId,
+              effectiveAction,
+              user
+            });
+            vitalSignsCreated += vitalResult.created;
+            vitalSignRecordIds.push(...vitalResult.recordIds);
+            anthropometryCreated += vitalResult.anthropometryCreated;
+            anthropometryRecordIds.push(...vitalResult.anthropometryRecordIds);
+            console.info("patient-transfer:persist-vitals-success", {
+              created: vitalResult.created,
+              anthropometry: vitalResult.anthropometryCreated
+            });
+            return vitalResult;
+          },
+          persistDiagnoses: async () => {
+            stage = "creating_diagnoses";
+            diagnosesAttempted = true;
+            const documentDiagnoses = document.diagnosisCandidates || [];
+            diagnosesDetected += documentDiagnoses.length;
+            diagnosesIncluded += documentDiagnoses.filter((candidate) => (
+              candidate.include === true || candidate.selectedForImport === true
+            )).length;
+            onProgress?.({ stage, message: "Registrando diagnosticos confirmados...", progress: 46 });
+            const diagnosisResult = await persistImportedDiagnosesForDocument({
+              document,
+              documentIndex,
+              patientId,
+              operationId,
+              effectiveAction,
+              user
+            });
+            diagnosesCreated += diagnosisResult.created.length;
+            diagnosesIdempotent += diagnosisResult.existing.length;
+            diagnosesOmitted += diagnosisResult.omitted;
+            diagnosisIds.push(...diagnosisResult.created.map((item) => item.id).filter(Boolean));
+            console.info("patient-transfer:persist-diagnoses-success", {
+              created: diagnosisResult.created.length,
+              existing: diagnosisResult.existing.length
+            });
+            return diagnosisResult;
+          },
+          onDomainError: ({ domain, error }) => {
+            const domainStage = domain === "diagnoses" ? "creating_diagnoses" : "creating_vital_signs";
+            if (!error.stage) error.stage = domainStage;
+            const errorCode = error?.code || error?.name || "unknown";
+            if (domain === "diagnoses") diagnosisErrors.push({ code: errorCode });
+            console.error("patient-transfer:domain-error", {
+              domain,
+              stage: domainStage,
+              errorCode
+            });
+          }
         });
-        vitalSignsCreated += vitalResult.created;
-        vitalSignRecordIds.push(...vitalResult.recordIds);
-        anthropometryCreated += vitalResult.anthropometryCreated;
-        anthropometryRecordIds.push(...vitalResult.anthropometryRecordIds);
-        console.info("patient-transfer:persist-vitals-success", {
-          created: vitalResult.created,
-          anthropometry: vitalResult.anthropometryCreated
-        });
-
-        stage = "creating_diagnoses";
-        onProgress?.({ stage, message: "Registrando diagnosticos confirmados...", progress: 46 });
-        const diagnosisResult = await persistImportedDiagnosesForDocument({
-          document,
-          documentIndex,
-          patientId,
-          operationId,
-          user
-        });
-        diagnosesCreated += diagnosisResult.created.length;
-        diagnosesOmitted += diagnosisResult.omitted;
-        diagnosisIds.push(...diagnosisResult.created.map((item) => item.id).filter(Boolean));
-        console.info("patient-transfer:persist-diagnoses-success", {
-          created: diagnosisResult.created.length,
-          existing: diagnosisResult.existing.length
-        });
+        if (domainOutcome.errors.length) {
+          const firstDomainError = domainOutcome.errors[0].error;
+          stage = firstDomainError.stage || stage;
+          throw firstDomainError;
+        }
 
         stage = "creating_note";
         const noteImportKey = `${operationId}_${documentResults.length}_${patientId}`;
@@ -1077,6 +1164,12 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         vitalSignCount: vitalSignsCreated,
         anthropometryCount: anthropometryCreated,
         diagnosisCount: diagnosesCreated,
+        diagnosisDetectedCount: diagnosesDetected,
+        diagnosisIncludedCount: diagnosesIncluded,
+        diagnosisIdempotentCount: diagnosesIdempotent,
+        diagnosisOmittedCount: diagnosesOmitted,
+        diagnosisErrorCount: diagnosisErrors.length,
+        diagnosisAttempted: diagnosesAttempted,
         treatmentCount: treatmentsCreated,
         indicationCount: indicationsCreated,
         sourceSaved,
@@ -1116,6 +1209,11 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         anthropometryRecordIds,
         diagnosesCreated,
         diagnosesOmitted,
+        diagnosesDetected,
+        diagnosesIncluded,
+        diagnosesIdempotent,
+        diagnosesAttempted,
+        diagnosesError: diagnosisErrors[0]?.code || "",
         diagnosisIds,
         treatmentsCreated,
         treatmentsOmitted,
@@ -1157,6 +1255,12 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         vitalSignCount: vitalSignsCreated,
         anthropometryCount: anthropometryCreated,
         diagnosisCount: diagnosesCreated,
+        diagnosisDetectedCount: diagnosesDetected,
+        diagnosisIncludedCount: diagnosesIncluded,
+        diagnosisIdempotentCount: diagnosesIdempotent,
+        diagnosisOmittedCount: diagnosesOmitted,
+        diagnosisErrorCount: diagnosisErrors.length,
+        diagnosisAttempted: diagnosesAttempted,
         treatmentCount: treatmentsCreated,
         indicationCount: indicationsCreated,
         sourceSaved,
@@ -1200,6 +1304,11 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         anthropometryRecordIds,
         diagnosesCreated,
         diagnosesOmitted,
+        diagnosesDetected,
+        diagnosesIncluded,
+        diagnosesIdempotent,
+        diagnosesAttempted,
+        diagnosesError: diagnosisErrors[0]?.code || "",
         diagnosisIds,
         treatmentsCreated,
         treatmentsOmitted,

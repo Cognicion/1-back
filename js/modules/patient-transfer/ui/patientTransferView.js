@@ -16,6 +16,19 @@ export function reviewedDiagnosisSelection(candidate = {}, includeControl = null
     : candidate.include === true || candidate.selectedForImport === true;
 }
 
+export function diagnosisTransferSummary(result = {}) {
+  if (result.diagnosesAttempted !== true) return "no ejecutado";
+  const parts = [
+    `${Number(result.diagnosesDetected || 0)} detectados`,
+    `${Number(result.diagnosesIncluded || 0)} incluidos`,
+    `${Number(result.diagnosesCreated || 0)} registrados`,
+    `${Number(result.diagnosesIdempotent || 0)} idempotentes`,
+    `${Number(result.diagnosesOmitted || 0)} omitidos`
+  ];
+  if (result.diagnosesError) parts.push(`error: ${String(result.diagnosesError)}`);
+  return parts.join(" / ");
+}
+
 function fileSize(bytes = 0) {
   if (bytes > 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
   return `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -1057,7 +1070,7 @@ export function renderTransferResults(results = []) {
           <strong>${result.status === "completed" ? "Traspaso completado" : result.status === "partially_completed" ? "Traspaso parcialmente completado" : "Traspaso no completado"}</strong>
           <span>Notas: ${result.notesCreated || 0} creadas / ${result.notesExisting || 0} ya existentes</span>
           <span>Signos vitales: ${result.vitalSignsCreated || 0} registrados / Somatometria: ${result.anthropometryCreated || 0}</span>
-          <span>Diagnosticos: ${result.diagnosesCreated || 0} registrados / ${result.diagnosesOmitted || 0} omitidos</span>
+          <span>Diagnosticos: ${escapeHtml(diagnosisTransferSummary(result))}</span>
           <span>Tratamientos: ${result.treatmentsCreated || 0} registrados / ${result.treatmentsOmitted || 0} omitidos</span>
           <span>Documento original: ${result.sourceSaved === false ? "No guardado" : "Guardado"} / Auditoria: ${result.auditRegistered === false ? "No registrada" : "Registrada"}</span>
           <span>Paciente: ${escapeHtml(result.patientName || (result.patientId ? "Paciente creado/asociado" : "No creado"))} · Notas importadas: ${result.notesCreated || 0}</span>
