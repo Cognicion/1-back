@@ -27,6 +27,14 @@ const CLAVE_HISTORIAL_SIGNO = Object.freeze({
   saturacionOxigeno: "saturacionO2"
 });
 
+const CAMPOS_VITALES_EXPEDIENTE = new Set([
+  "presionArterial",
+  "frecuenciaCardiaca",
+  "frecuenciaRespiratoria",
+  "temperatura",
+  "saturacionO2"
+]);
+
 function valorEstructurado(valor) {
   if (valor === null || valor === undefined) return "";
   const texto = String(valor).trim();
@@ -185,8 +193,13 @@ function resolverFechaClinicaNota(nota = {}) {
   const observacion = nota.observacionFray || {};
   const fecha = valorEstructurado(observacion.fechaNota || nota.fechaNota || nota.fecha);
   const hora = valorEstructurado(observacion.horaNota || nota.horaNota || "00:00");
-  if (!fecha) return new Date().toISOString();
-  const fechaLocal = new Date(`${fecha}T${hora || "00:00"}`);
+  const partes = partesFechaLocal(fecha, hora);
+  if (!partes.fechaToma) return new Date().toISOString();
+  const horaNormalizada = String(partes.horaToma || "00:00").match(/^(\d{1,2}):(\d{2})$/);
+  const horaClinica = horaNormalizada
+    ? `${horaNormalizada[1].padStart(2, "0")}:${horaNormalizada[2]}`
+    : "00:00";
+  const fechaLocal = new Date(`${partes.fechaToma}T${horaClinica}`);
   return Number.isNaN(fechaLocal.getTime()) ? new Date().toISOString() : fechaLocal.toISOString();
 }
 
@@ -226,15 +239,25 @@ export function construirActualizacionSignosVitalesDesdeNota({ paciente = {}, no
   }
   const actualizacion = { historialSignosVitales: historial };
   const signosVitales = { ...(paciente.signosVitales || {}) };
+  const signosVitalesMeta = { ...(paciente.signosVitalesMeta || {}) };
   const somatometria = { ...(paciente.somatometria || {}) };
   const datosInstitucionales = { ...(paciente.datosInstitucionales || {}) };
   for (const [clave, valor] of Object.entries(valores)) {
     signosVitales[clave] = valor;
     datosInstitucionales[clave] = valor;
+    if (CAMPOS_VITALES_EXPEDIENTE.has(clave)) {
+      signosVitalesMeta[clave] = {
+        ...(signosVitalesMeta[clave] || {}),
+        fecha: takenAt,
+        hora: partesFechaLocal(takenAt).horaToma,
+        uidRegistro: String(createdBy || "")
+      };
+    }
     if (["peso", "talla", "imc"].includes(clave)) somatometria[clave] = valor;
     actualizacion[clave] = valor;
   }
   actualizacion.signosVitales = signosVitales;
+  actualizacion.signosVitalesMeta = signosVitalesMeta;
   actualizacion.somatometria = somatometria;
   actualizacion.datosInstitucionales = datosInstitucionales;
   return actualizacion;

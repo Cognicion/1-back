@@ -884,11 +884,12 @@ export function readTransferReview(groups = []) {
       });
       const vitalSignsCandidates = (doc.vitalSignsCandidates || []).map((candidate) => {
         const key = `${doc.id}:${candidate.id}`;
+        const includeControl = modal.querySelector(`[data-transfer-vitals-include="${key}"]`);
         const pa = modal.querySelector(`[data-transfer-vitals-pa="${key}"]`)?.value?.trim() || "";
         const pressureMatch = pa.match(/(\d{2,3})\s*\/\s*(\d{2,3})/);
         return {
           ...candidate,
-          include: modal.querySelector(`[data-transfer-vitals-include="${key}"]`)?.checked || false,
+          include: includeControl ? includeControl.checked : candidate.include !== false,
           vitalSigns: {
             ...(candidate.vitalSigns || {}),
             bloodPressure: pressureMatch ? { systolic: Number(pressureMatch[1]), diastolic: Number(pressureMatch[2]), unit: "mmHg", rawValue: pa } : candidate.vitalSigns?.bloodPressure,

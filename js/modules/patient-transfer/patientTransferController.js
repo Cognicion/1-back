@@ -17,7 +17,7 @@ import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
 import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter.js";
 import { adaptTreatmentPlan } from "../clinical-document-engine/adapters/treatmentPlanAdapter.js";
 import { resolveMedicationCandidatesAgainstCatalog } from "../clinical-document-engine/resolvers/medicationCatalogResolver.js";
-import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260809-duplicate-decision-v1";
+import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260808-imported-vitals-v1";
 import {
   DUPLICATE_DETECTION_STATUS,
   DUPLICATE_RESOLUTION,
@@ -41,11 +41,23 @@ import {
   isTransferSaving,
   syncBulkSelectionControls,
   syncPatientNameInputs
-} from "./ui/patientTransferView.js?v=20260809-duplicate-decision-v1";
+} from "./ui/patientTransferView.js?v=20260808-imported-vitals-v1";
 
 let initialized = false;
 let selectedFiles = [];
 let analyzedGroups = [];
+
+function vitalSignsPresence(candidates = []) {
+  const vitalTypes = new Set(candidates.flatMap((candidate) => Object.keys(candidate?.vitalSigns || {})));
+  return {
+    candidateCount: candidates.length,
+    hasPA: vitalTypes.has("bloodPressure"),
+    hasFC: vitalTypes.has("heartRate"),
+    hasFR: vitalTypes.has("respiratoryRate"),
+    hasTemperature: vitalTypes.has("temperature"),
+    hasSpO2: vitalTypes.has("oxygenSaturation")
+  };
+}
 
 function resolveReviewedMedicationCandidates(groups = []) {
   return groups.map((group) => ({
@@ -414,6 +426,7 @@ async function analyzeOneFile(item, user) {
   console.info("[patient-transfer] diagnosis-parser:candidates", { fileId: item.id, count: clinicalCandidates.diagnoses.length, rules: [...new Set(clinicalCandidates.diagnoses.map((item) => item.detectionRule))] });
   console.info("[patient-transfer] treatment-parser:candidates", { fileId: item.id, count: 0, delegatedToTreatmentPlan: true });
   const vitalSignsCandidates = extractVitalSignsCandidates(blocks);
+  console.info("patient-transfer:vitals-parser-result", vitalSignsPresence(vitalSignsCandidates));
   const multipleNotesDetection = detectMultipleClinicalNotes({
     blocks,
     fullText,
