@@ -48,6 +48,7 @@ import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authCon
 import { guardarTransferenciaClinicaLocal } from "./services/clinicalLocalStore.js";
 import { resolverExpedienteInstitucional, formatearFechaDocumento, formatearHoraLocalDocumento } from "./services/solicitudImagenologiaPlantilla.js";
 import { construirRegistroHistorialSignoVital } from "./services/signosVitalesNotas.js?v=20260810-vitals-history-write-proof-v1";
+import { construirActualizacionHistorialDiagnosticos } from "./services/diagnosticosPaciente.js?v=v160-imported-diagnoses-v1";
 
 import {
   collection,
@@ -4970,15 +4971,10 @@ async function guardarHistorialDiagnosticos(historial, opciones = {}) {
 
   const diagnosticoPrincipal = limpio.find(diagnosticoEstaActivo) || "";
 
+  const actualizacionDiagnosticos = construirActualizacionHistorialDiagnosticos(baseActual, limpio);
   await actualizarUsuario(uidPaciente, {
-    diagnostico: diagnosticoPrincipal || deleteField(),
-    historialDiagnosticos: limpio,
-    datosClinicosResumen: {
-      ...(baseActual?.datosClinicosResumen || {}),
-      diagnostico: diagnosticoPrincipal || null,
-      historialDiagnosticos: limpio,
-      fechaActualizacionDiagnosticos: new Date().toISOString()
-    }
+    ...actualizacionDiagnosticos,
+    diagnostico: diagnosticoPrincipal || deleteField()
   });
 
   datosPacienteActual = {

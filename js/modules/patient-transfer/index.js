@@ -1,4 +1,4 @@
-import { initializePatientTransfer } from "./patientTransferController.js?v=20260810-vitals-history-write-proof-v1";
+import { initializePatientTransfer } from "./patientTransferController.js?v=v160-imported-diagnoses-v1";
 // Marcador histórico de cache: patientTransferController.js?v=20260804-segmentation-debug-v1
 
 export function openPatientTransfer() {

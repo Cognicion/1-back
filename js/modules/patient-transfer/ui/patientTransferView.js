@@ -10,6 +10,12 @@ import {
 
 let root = null;
 
+export function reviewedDiagnosisSelection(candidate = {}, includeControl = null) {
+  return includeControl
+    ? includeControl.checked === true
+    : candidate.include === true || candidate.selectedForImport === true;
+}
+
 function fileSize(bytes = 0) {
   if (bytes > 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
   return `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -842,21 +848,27 @@ export function readTransferReview(groups = []) {
     const documents = group.documents.map((doc) => {
       const typeKey = modal.querySelector(`[data-transfer-note-type="${doc.id}"]`)?.value || "tipo_no_reconocido";
       const rule = NOTE_TYPE_RULES.find((item) => item.key === typeKey) || { key: "tipo_no_reconocido", label: "Tipo no reconocido" };
-      const diagnosisCandidates = (doc.diagnosisCandidates || []).map((candidate) => ({
-        ...candidate,
-        include: modal.querySelector(`[data-transfer-dx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
-        selectedForImport: modal.querySelector(`[data-transfer-dx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
-        diagnosisName: modal.querySelector(`[data-transfer-dx-name="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.diagnosisName || candidate.normalizedLabel || "",
-        normalizedLabel: modal.querySelector(`[data-transfer-dx-name="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.normalizedLabel || "",
-        code: modal.querySelector(`[data-transfer-dx-code="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.code || "",
-        codingSystem: modal.querySelector(`[data-transfer-dx-system="${doc.id}:${candidate.id}"]`)?.value || "",
-        system: modal.querySelector(`[data-transfer-dx-system="${doc.id}:${candidate.id}"]`)?.value || candidate.system || candidate.codingSystem || "",
-        statusSuggestion: modal.querySelector(`[data-transfer-dx-status="${doc.id}:${candidate.id}"]`)?.value || candidate.statusSuggestion,
-        status: modal.querySelector(`[data-transfer-dx-status="${doc.id}:${candidate.id}"]`)?.value || candidate.status || candidate.statusSuggestion,
-        principal: modal.querySelector(`[data-transfer-dx-principal="${doc.id}:${candidate.id}"]`)?.checked || false,
-        isPrimary: modal.querySelector(`[data-transfer-dx-principal="${doc.id}:${candidate.id}"]`)?.checked || false,
-        confirmedByDoctor: modal.querySelector(`[data-transfer-dx-include="${doc.id}:${candidate.id}"]`)?.checked || false
-      }));
+      const diagnosisCandidates = (doc.diagnosisCandidates || []).map((candidate) => {
+        const key = `${doc.id}:${candidate.id}`;
+        const includeControl = modal.querySelector(`[data-transfer-dx-include="${key}"]`);
+        const selected = reviewedDiagnosisSelection(candidate, includeControl);
+        const principalControl = modal.querySelector(`[data-transfer-dx-principal="${key}"]`);
+        return {
+          ...candidate,
+          include: selected,
+          selectedForImport: selected,
+          diagnosisName: modal.querySelector(`[data-transfer-dx-name="${key}"]`)?.value?.trim() || candidate.diagnosisName || candidate.normalizedLabel || "",
+          normalizedLabel: modal.querySelector(`[data-transfer-dx-name="${key}"]`)?.value?.trim() || candidate.normalizedLabel || "",
+          code: modal.querySelector(`[data-transfer-dx-code="${key}"]`)?.value?.trim() || candidate.code || "",
+          codingSystem: modal.querySelector(`[data-transfer-dx-system="${key}"]`)?.value || candidate.codingSystem || candidate.system || "",
+          system: modal.querySelector(`[data-transfer-dx-system="${key}"]`)?.value || candidate.system || candidate.codingSystem || "",
+          statusSuggestion: modal.querySelector(`[data-transfer-dx-status="${key}"]`)?.value || candidate.statusSuggestion,
+          status: modal.querySelector(`[data-transfer-dx-status="${key}"]`)?.value || candidate.status || candidate.statusSuggestion,
+          principal: principalControl ? principalControl.checked : Boolean(candidate.principal || candidate.isPrimary),
+          isPrimary: principalControl ? principalControl.checked : Boolean(candidate.isPrimary || candidate.principal),
+          confirmedByDoctor: selected
+        };
+      });
       const treatmentCandidates = (doc.treatmentCandidates || []).map((candidate) => {
         const key = `${doc.id}:${candidate.id}`;
         const medicationName = modal.querySelector(`[data-transfer-tx-name="${key}"]`)?.value?.trim() || "";
@@ -912,7 +924,9 @@ export function readTransferReview(groups = []) {
         ]));
         const segmentDiagnoses = (segment.diagnosisCandidates || []).map((candidate) => {
           const key = `${prefix}:${candidate.id}`;
-          const checked = modal.querySelector(`[data-transfer-dx-include="${key}"]`)?.checked || false;
+          const includeControl = modal.querySelector(`[data-transfer-dx-include="${key}"]`);
+          const checked = reviewedDiagnosisSelection(candidate, includeControl);
+          const principalControl = modal.querySelector(`[data-transfer-dx-principal="${key}"]`);
           return {
             ...candidate,
             include: checked,
@@ -920,12 +934,12 @@ export function readTransferReview(groups = []) {
             normalizedLabel: modal.querySelector(`[data-transfer-dx-name="${key}"]`)?.value?.trim() || candidate.normalizedLabel || "",
             diagnosisName: modal.querySelector(`[data-transfer-dx-name="${key}"]`)?.value?.trim() || candidate.diagnosisName || candidate.normalizedLabel || "",
             code: modal.querySelector(`[data-transfer-dx-code="${key}"]`)?.value?.trim() || candidate.code || "",
-            codingSystem: modal.querySelector(`[data-transfer-dx-system="${key}"]`)?.value || "",
+            codingSystem: modal.querySelector(`[data-transfer-dx-system="${key}"]`)?.value || candidate.codingSystem || candidate.system || "",
             system: modal.querySelector(`[data-transfer-dx-system="${key}"]`)?.value || candidate.system || candidate.codingSystem || "",
             statusSuggestion: modal.querySelector(`[data-transfer-dx-status="${key}"]`)?.value || candidate.statusSuggestion,
             status: modal.querySelector(`[data-transfer-dx-status="${key}"]`)?.value || candidate.status || candidate.statusSuggestion,
-            principal: modal.querySelector(`[data-transfer-dx-principal="${key}"]`)?.checked || false,
-            isPrimary: modal.querySelector(`[data-transfer-dx-principal="${key}"]`)?.checked || false,
+            principal: principalControl ? principalControl.checked : Boolean(candidate.principal || candidate.isPrimary),
+            isPrimary: principalControl ? principalControl.checked : Boolean(candidate.isPrimary || candidate.principal),
             confirmedByDoctor: checked
           };
         });

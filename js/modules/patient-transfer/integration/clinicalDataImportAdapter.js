@@ -2,18 +2,14 @@ import { db } from "../../../firebase.js";
 import { actualizarUsuario, obtenerUsuario } from "../../../services/usuarios.js";
 import { crearTratamiento, listarTratamientos } from "../../../services/tratamientos.js";
 import { normalizarTextoBusquedaPaciente } from "../../../utils/nombresPacientes.js";
+import {
+  construirActualizacionHistorialDiagnosticos,
+  fusionarDiagnosticosImportados
+} from "../../../services/diagnosticosPaciente.js?v=v160-imported-diagnoses-v1";
 import { collection, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 function normalizeKey(value = "") {
   return normalizarTextoBusquedaPaciente(value).replace(/[^a-z0-9]+/g, "");
-}
-
-function diagnosisKey(candidate = {}) {
-  return [
-    normalizeKey(candidate.codingSystem),
-    normalizeKey(candidate.code),
-    normalizeKey(candidate.normalizedLabel || candidate.rawText)
-  ].filter(Boolean).join(":");
 }
 
 function treatmentKey(candidate = {}, context = {}) {
@@ -27,37 +23,6 @@ function treatmentKey(candidate = {}, context = {}) {
     normalizeKey(candidate.frequencyRaw || candidate.frecuencia),
     normalizeKey(candidate.scheduleText || candidate.horario || JSON.stringify(candidate.schedule || candidate.horarios || []))
   ].filter(Boolean).join(":");
-}
-
-function diagnosisPayload(candidate = {}, context = {}) {
-  const id = `imported-${context.transferOperationId}-${context.index}`;
-  const estadoClinico = candidate.statusSuggestion || "Confirmado";
-  const codes = [...new Set((Array.isArray(candidate.codes) ? candidate.codes : [candidate.code])
-    .map((code) => String(code || "").trim())
-    .filter(Boolean))];
-  return {
-    id,
-    codigo: candidate.code || codes[0] || "",
-    codes,
-    catalogo: candidate.codingSystem || "",
-    nombre: candidate.normalizedLabel || candidate.rawText || "Diagnóstico importado",
-    texto: candidate.rawText || "",
-    estadoClinico,
-    estado: estadoClinico === "Descartado" ? "descartado" : "activo",
-    principal: Boolean(candidate.principal),
-    fecha: context.date || new Date().toISOString().slice(0, 10),
-    notas: `Importado desde DOCX: ${context.fileName || ""}`.trim(),
-    fuenteImportacionDocx: true,
-    imported: true,
-    transferOperationId: context.transferOperationId,
-    sourceFileHash: context.sourceFileHash,
-    sourceNoteId: context.noteId,
-    sourceDocumentName: context.fileName || "",
-    importCandidateKey: diagnosisKey(candidate),
-    sourceSection: candidate.sourceSection || "",
-    sourceLocation: candidate.sourceLocation || null,
-    confirmedByDoctor: true
-  };
 }
 
 function treatmentPayload(candidate = {}, context = {}) {
@@ -114,53 +79,29 @@ function treatmentPayload(candidate = {}, context = {}) {
 }
 
 export async function createImportedDiagnoses(patientId, candidates = [], context = {}) {
-  const selected = candidates.filter((candidate) => candidate.selectedForImport === true || candidate.include === true);
-  console.info("[patient-transfer] diagnoses:selected", { detected: candidates.length, selected: selected.length });
-  console.info("[patient-transfer] diagnoses:persist-start", { patientId, selected: selected.length });
-  if (!selected.length) {
-    console.info("[patient-transfer] diagnoses:persist-success", { patientId, created: 0, existing: 0 });
-    return { created: [], existing: [], omitted: candidates.length };
-  }
-
-  const patient = await obtenerUsuario(patientId).catch(() => null);
-  const current = Array.isArray(patient?.historialDiagnosticos) ? patient.historialDiagnosticos : [];
-  const seen = new Set(current.map((item) => item.importCandidateKey || diagnosisKey({
-    codingSystem: item.catalogo,
-    code: item.codigo,
-    normalizedLabel: item.nombre || item.texto
-  })).filter(Boolean));
-  const created = [];
-  const existing = [];
-  const next = [...current];
-
-  selected.forEach((candidate, index) => {
-    const key = diagnosisKey(candidate);
-    if (seen.has(key)) {
-      existing.push({ candidateId: candidate.id, key });
-      return;
-    }
-    const payload = diagnosisPayload(candidate, { ...context, index });
-    seen.add(key);
-    created.push(payload);
-    next.push(payload);
+  const patient = context.patient || await obtenerUsuario(patientId, { forzar: true }).catch(() => null) || {};
+  const current = Array.isArray(patient.historialDiagnosticos) ? patient.historialDiagnosticos : [];
+  const merge = fusionarDiagnosticosImportados(current, candidates, {
+    ...context,
+    sourceNoteId: context.sourceNoteId || context.noteId || ""
   });
+  console.info("[patient-transfer] diagnoses:selected", {
+    detected: candidates.length,
+    selected: merge.selected.length,
+    coded: merge.selected.filter((candidate) => Boolean(candidate.code || candidate.codes?.length)).length
+  });
+  console.info("[patient-transfer] diagnoses:persist-start", { selected: merge.selected.length });
 
-  if (created.length) {
-    const active = next.find((item) => item.estado !== "descartado" && item.estadoClinico !== "Descartado") || null;
-    await actualizarUsuario(patientId, {
-      diagnostico: active || null,
-      historialDiagnosticos: next,
-      datosClinicosResumen: {
-        ...(patient?.datosClinicosResumen || {}),
-        diagnostico: active || null,
-        historialDiagnosticos: next,
-        fechaActualizacionDiagnosticos: new Date().toISOString()
-      }
-    });
+  if (merge.created.length) {
+    await actualizarUsuario(patientId, construirActualizacionHistorialDiagnosticos(patient, merge.historial));
   }
 
-  console.info("[patient-transfer] diagnoses:persist-success", { patientId, created: created.length, existing: existing.length });
-  return { created, existing, omitted: candidates.length - selected.length };
+  console.info("[patient-transfer] diagnoses:persist-success", {
+    created: merge.created.length,
+    existing: merge.existing.length,
+    omitted: merge.omitted
+  });
+  return merge;
 }
 
 export async function createImportedTreatments(patientId, candidates = [], context = {}) {

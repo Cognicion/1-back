@@ -9,6 +9,7 @@ const repository = read("js/modules/patient-transfer/patientTransferRepository.j
 const controller = read("js/modules/patient-transfer/patientTransferController.js");
 const clinicalAdapter = read("js/modules/patient-transfer/integration/clinicalDataImportAdapter.js");
 const patientAdapter = read("js/modules/patient-transfer/integration/patientCreationAdapter.js");
+const diagnosisService = read("js/services/diagnosticosPaciente.js");
 
 assert.match(patientAdapter, /function normalizeImportedDate/);
 assert.match(patientAdapter, /return `\$\{year\}-\$\{month\}-\$\{day\}`/);
@@ -16,7 +17,8 @@ assert.match(patientAdapter, /mergeTransferredPatientFields/);
 assert.match(patientAdapter, /\.{3}\(current\?\.datosInstitucionales \|\| \{\}\)/);
 assert.match(patientAdapter, /nonEmptyEntries/, "no sustituye datos existentes con valores vacÃ­os");
 
-assert.match(clinicalAdapter, /codes,/);
+assert.match(diagnosisService, /codes,/);
+assert.match(diagnosisService, /construirActualizacionHistorialDiagnosticos/);
 assert.match(clinicalAdapter, /createImportedIndications/);
 assert.match(clinicalAdapter, /collection\(db, "usuarios", patientId, "indicaciones"\)/);
 assert.match(clinicalAdapter, /sourceNoteId: context\.noteId/);
@@ -45,11 +47,15 @@ assert.equal(
 
 const existingNoteBranch = repository.slice(
   repository.indexOf("if (existingNote.exists())"),
-  repository.indexOf('stage = "creating_diagnoses"')
+  repository.indexOf('stage = "creating_treatments"')
 );
 assert.ok(
   repository.indexOf("persistImportedVitalSignsForDocument({") < repository.indexOf('stage = "creating_note"'),
   "los signos vitales no dependen de que la nota se cree o ya exista"
+);
+assert.ok(
+  repository.indexOf("persistImportedDiagnosesForDocument({", repository.indexOf("for (let documentIndex")) < repository.indexOf('stage = "creating_note"'),
+  "los diagnósticos no dependen de que la nota se cree o ya exista"
 );
 assert.doesNotMatch(existingNoteBranch, /continue;/, "una nota existente no omite signos, diagnÃ³sticos ni tratamientos pendientes");
 
