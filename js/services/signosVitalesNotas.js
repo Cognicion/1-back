@@ -211,12 +211,44 @@ export function extraerSignosVitalesEstructuradosDeNota(nota = {}) {
   return valores;
 }
 
-export function construirActualizacionSignosVitalesDesdeNota({ paciente = {}, nota = {}, sourceNoteId = "", createdBy = "" } = {}) {
+function fechaRegistroComoNumero(registro = {}) {
+  const valor = registro.fecha || registro.fechaToma || registro.takenAt || registro.creadoEn || "";
+  const timestamp = new Date(valor).getTime();
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function historialVitalObservationCount(historial = {}) {
+  return Math.max(
+    0,
+    ...[...CAMPOS_VITALES_EXPEDIENTE].map((clave) => (
+      Array.isArray(historial?.[clave]) ? historial[clave].length : 0
+    ))
+  );
+}
+
+function fechaActualVital(paciente = {}, clave = "") {
+  const fechaMeta = paciente.signosVitalesMeta?.[clave]?.fecha;
+  if (fechaMeta && fechaRegistroComoNumero({ fecha: fechaMeta })) return { fecha: fechaMeta };
+  const registros = Array.isArray(paciente.historialSignosVitales?.[clave])
+    ? paciente.historialSignosVitales[clave]
+    : [];
+  return registros.reduce((ultima, registro) => (
+    fechaRegistroComoNumero(registro) > fechaRegistroComoNumero(ultima) ? registro : ultima
+  ), null);
+}
+
+export function construirActualizacionSignosVitalesDesdeNota({ paciente = {}, nota = {}, sourceNoteId = "", createdBy = "", audit = null } = {}) {
   const noteId = String(sourceNoteId || "").trim();
   const valores = extraerSignosVitalesEstructuradosDeNota(nota);
   if (!noteId || !Object.keys(valores).length) return null;
   const takenAt = resolverFechaClinicaNota(nota);
   const historial = Object.fromEntries(Object.entries(paciente.historialSignosVitales || {}).map(([clave, registros]) => [clave, Array.isArray(registros) ? [...registros] : []]));
+  const auditState = {
+    historyBefore: historialVitalObservationCount(historial),
+    inserted: false,
+    becameCurrent: false,
+    historyAfter: 0
+  };
   const registroBase = {
     sourceType: "clinical_note",
     sourceNoteId: noteId,
@@ -226,15 +258,19 @@ export function construirActualizacionSignosVitalesDesdeNota({ paciente = {}, no
     createdAt: new Date().toISOString(),
     createdBy: String(createdBy || ""),
     uidRegistro: String(createdBy || ""),
-    values: valores
+    values: valores,
+    esPrevio: false
   };
   for (const [clave, valor] of Object.entries(valores)) {
     const registros = historial[clave] || [];
     const indice = registros.findIndex((registro) => String(registro?.sourceNoteId || "") === noteId);
     const previo = indice >= 0 ? registros[indice] : null;
-    const registro = { ...registroBase, createdAt: previo?.createdAt || registroBase.createdAt, updatedAt: new Date().toISOString(), valor, nota: `Nota clínica ${noteId}` };
+    const registro = { ...registroBase, createdAt: previo?.createdAt || registroBase.createdAt, updatedAt: new Date().toISOString(), valor, nota: previo?.nota || "" };
     if (indice >= 0) registros[indice] = { ...previo, ...registro };
-    else registros.push(registro);
+    else {
+      registros.push(registro);
+      auditState.inserted = true;
+    }
     historial[clave] = registros;
   }
   const actualizacion = { historialSignosVitales: historial };
@@ -243,9 +279,21 @@ export function construirActualizacionSignosVitalesDesdeNota({ paciente = {}, no
   const somatometria = { ...(paciente.somatometria || {}) };
   const datosInstitucionales = { ...(paciente.datosInstitucionales || {}) };
   for (const [clave, valor] of Object.entries(valores)) {
-    signosVitales[clave] = valor;
-    datosInstitucionales[clave] = valor;
-    if (CAMPOS_VITALES_EXPEDIENTE.has(clave)) {
+    const esVital = CAMPOS_VITALES_EXPEDIENTE.has(clave);
+    const registroActual = fechaActualVital(paciente, clave);
+    const fechaActualNumero = fechaRegistroComoNumero(registroActual || {});
+    const fechaImportadaNumero = fechaRegistroComoNumero({ fecha: takenAt });
+    const debeSerActual = !esVital || !fechaActualNumero || fechaImportadaNumero >= fechaActualNumero;
+    if (debeSerActual) {
+      signosVitales[clave] = valor;
+      datosInstitucionales[clave] = valor;
+      actualizacion[clave] = valor;
+    } else if (esVital) {
+      const valorActual = paciente[clave] ?? paciente.signosVitales?.[clave] ?? paciente.datosInstitucionales?.[clave];
+      if (valorActual !== undefined && valorActual !== null && valorActual !== "") actualizacion[clave] = valorActual;
+    }
+    if (esVital && debeSerActual) {
+      auditState.becameCurrent = true;
       signosVitalesMeta[clave] = {
         ...(signosVitalesMeta[clave] || {}),
         fecha: takenAt,
@@ -254,11 +302,12 @@ export function construirActualizacionSignosVitalesDesdeNota({ paciente = {}, no
       };
     }
     if (["peso", "talla", "imc"].includes(clave)) somatometria[clave] = valor;
-    actualizacion[clave] = valor;
   }
   actualizacion.signosVitales = signosVitales;
   actualizacion.signosVitalesMeta = signosVitalesMeta;
   actualizacion.somatometria = somatometria;
   actualizacion.datosInstitucionales = datosInstitucionales;
+  auditState.historyAfter = historialVitalObservationCount(historial);
+  if (audit && typeof audit === "object") Object.assign(audit, auditState);
   return actualizacion;
 }

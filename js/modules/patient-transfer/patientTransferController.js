@@ -17,7 +17,7 @@ import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
 import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter.js";
 import { adaptTreatmentPlan } from "../clinical-document-engine/adapters/treatmentPlanAdapter.js";
 import { resolveMedicationCandidatesAgainstCatalog } from "../clinical-document-engine/resolvers/medicationCatalogResolver.js";
-import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260809-vitals-destination-audit-v1";
+import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260810-vitals-history-canonical-v1";
 import {
   DUPLICATE_DETECTION_STATUS,
   DUPLICATE_RESOLUTION,

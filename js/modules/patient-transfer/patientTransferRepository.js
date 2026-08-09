@@ -7,7 +7,7 @@ import { createTransferredPatient, mergeTransferredPatientFields } from "./integ
 import { buildImportedNotePayload, createTransferredNote } from "./integration/noteCreationAdapter.js";
 import { createImportedDiagnoses, createImportedIndications, createImportedTreatments } from "./integration/clinicalDataImportAdapter.js?v=20260808-persistence-domains-v1";
 import { vitalSignsToNotePayload } from "./parsing/vitalSignsParser.js?v=20260808-imported-vitals-v1";
-import { construirActualizacionSignosVitalesDesdeNota } from "../../services/signosVitalesNotas.js?v=20260808-imported-vitals-v1";
+import { construirActualizacionSignosVitalesDesdeNota } from "../../services/signosVitalesNotas.js?v=20260810-vitals-history-canonical-v1";
 import { listarPacientes } from "../../services/usuarios.js";
 import { withPatientTransferTimeout } from "./patientTransferTimeout.js";
 import { findPossiblePatientMatches, normalizeRecordNumber } from "./parsing/patientDuplicateMatcher.js";
@@ -632,7 +632,16 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           for (let vitalIndex = 0; vitalIndex < selectedVitalCandidates.length; vitalIndex += 1) {
             const vitalCandidate = selectedVitalCandidates[vitalIndex];
             const candidatePayload = vitalSignsToNotePayload(vitalCandidate, vitalSignsFields);
-            const sourceNoteId = `${note.notaId || note.id || noteImportKey}:vital:${vitalCandidate.id || vitalIndex}`;
+            const sourceIdentity = document.hash || document.textHash || document.id || note.notaId || note.id || noteImportKey;
+            const sourceNoteId = `${sourceIdentity}:vital:${vitalCandidate.id || vitalIndex}`;
+            console.info("patient-transfer:vitals-history-source", {
+              ...vitalSignsPresence(candidatePayload),
+              sourceAvailable: Boolean(sourceNoteId)
+            });
+            console.info("patient-transfer:vitals-history-target", {
+              mode: effectiveAction === "associate" ? "associate_existing" : "create_new",
+              hasTarget: Boolean(patientId)
+            });
             console.info("patient-transfer:vitals-write-start", {
               candidateIndex: vitalIndex,
               hasClinicalDate: Boolean(vitalSignsFields.fecha),
@@ -641,15 +650,23 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
             });
             const update = await timed(`create-vitals-${documentResults.length + 1}-${vitalIndex + 1}`, async () => {
               const patientSnap = await getDoc(doc(db, "usuarios", patientId));
+              const patientBefore = patientSnap.exists() ? patientSnap.data() : {};
+              const historyBefore = patientVitalHistoryCount(patientBefore);
+              console.info("patient-transfer:vitals-history-before", {
+                ...vitalSignsPresence(candidatePayload),
+                historyBefore
+              });
+              const vitalAudit = {};
               const next = construirActualizacionSignosVitalesDesdeNota({
-                paciente: patientSnap.exists() ? patientSnap.data() : {},
+                paciente: patientBefore,
                 nota: {
                   ...notePayload,
                   observacionFray: { ...(notePayload.observacionFray || {}), ...candidatePayload },
                   signosVitales: candidatePayload
                 },
                 sourceNoteId,
-                createdBy: user.uid
+                createdBy: user.uid,
+                audit: vitalAudit
               });
               if (!next) return null;
               const patientRef = doc(db, "usuarios", patientId);
@@ -664,6 +681,19 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
                 writesHistory
               });
               await setDoc(patientRef, next, { merge: true });
+              console.info("patient-transfer:vitals-history-insert", {
+                inserted: Boolean(vitalAudit.inserted),
+                historyAfter: Number(vitalAudit.historyAfter || historyBefore)
+              });
+              console.info("patient-transfer:vitals-history-current-update", {
+                becameCurrent: Boolean(vitalAudit.becameCurrent)
+              });
+              console.info("patient-transfer:vitals-history-after", {
+                ...vitalSignsPresence(candidatePayload),
+                historyAfter: Number(vitalAudit.historyAfter || historyBefore),
+                inserted: Boolean(vitalAudit.inserted),
+                becameCurrent: Boolean(vitalAudit.becameCurrent)
+              });
               console.info("patient-transfer:vitals-write-result", {
                 rootUpdateSucceeded: writesRootCurrent,
                 historyUpdateSucceeded: writesHistory
