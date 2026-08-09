@@ -17,7 +17,7 @@ import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
 import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter.js";
 import { adaptTreatmentPlan } from "../clinical-document-engine/adapters/treatmentPlanAdapter.js";
 import { resolveMedicationCandidatesAgainstCatalog } from "../clinical-document-engine/resolvers/medicationCatalogResolver.js";
-import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260808-association-target-v1";
+import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260809-duplicate-decision-v1";
 import {
   DUPLICATE_DETECTION_STATUS,
   DUPLICATE_RESOLUTION,
@@ -41,7 +41,7 @@ import {
   isTransferSaving,
   syncBulkSelectionControls,
   syncPatientNameInputs
-} from "./ui/patientTransferView.js";
+} from "./ui/patientTransferView.js?v=20260809-duplicate-decision-v1";
 
 let initialized = false;
 let selectedFiles = [];
@@ -540,9 +540,9 @@ async function analyzeSelectedFiles() {
       possibleMatches: candidates,
       highestMatch: strongest,
       recommendedResolution: strongest?.level === "muy_alta"
-        ? "link-existing"
+        ? DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING
         : strongest?.level === "alta" ? "review" : null,
-      selectedResolution: null,
+      selectedResolution: strongest ? DUPLICATE_RESOLUTION.UNRESOLVED : DUPLICATE_RESOLUTION.CREATE_NEW,
       selectedExistingPatientId: null,
       duplicateResolution: strongest ? {
         action: null,
@@ -614,6 +614,12 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
   const syncSummary = syncReviewedGroupsFromView();
   console.info("patient-transfer:sync-reviewed-complete", syncSummary);
   const reviewedGroups = analyzedGroups;
+  console.info("patient-transfer:decision-final", {
+    createNewCount: reviewedGroups.filter((group) => group.selectedResolution === DUPLICATE_RESOLUTION.CREATE_NEW).length,
+    associateExistingCount: reviewedGroups.filter((group) => group.selectedResolution === DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING).length,
+    omitCount: reviewedGroups.filter((group) => group.selectedResolution === DUPLICATE_RESOLUTION.OMIT).length,
+    unresolvedCount: reviewedGroups.filter((group) => group.selectedResolution === DUPLICATE_RESOLUTION.UNRESOLVED).length
+  });
   const reviewedSegments = reviewedGroups.flatMap((group) => (group.documents || [])
     .flatMap((document) => document.noteSegments?.length ? document.noteSegments : [document]));
   console.info("patient-transfer:review-state", {
@@ -731,14 +737,22 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
     if (group.omitted) return false;
     const strongest = (group.possibleMatches || group.candidates || [])[0];
     return strongest && ["muy_alta", "alta"].includes(strongest.level)
-      && !["link-existing", "create-new", "omit"].includes(group.selectedResolution);
+      && ![
+        DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING,
+        DUPLICATE_RESOLUTION.CREATE_NEW,
+        DUPLICATE_RESOLUTION.OMIT
+      ].includes(group.selectedResolution);
   });
   if (duplicatePending) {
     showPatientTransferError("Resuelve la posible coincidencia del paciente: asociar, crear de todas formas u omitir.");
     console.info("patient-transfer:save-reviewed-return", { reason: "duplicate-resolution-required" });
     return;
   }
-  const createDespiteMatch = reviewedGroups.find((group) => group.selectedResolution === "create-new" && !group.omitted);
+  const createDespiteMatch = reviewedGroups.find((group) => (
+    group.selectedResolution === DUPLICATE_RESOLUTION.CREATE_NEW
+    && !group.omitted
+    && (group.possibleMatches || group.candidates || []).some((match) => ["muy_alta", "alta"].includes(match.level))
+  ));
   if (createDespiteMatch) {
     console.info("patient-transfer:confirmation-request", { confirmation: 1 });
     const duplicateConfirmed = window.confirm("Se detectó un posible duplicado. ¿Desea crear otro expediente de todas formas?");
@@ -1169,6 +1183,27 @@ export function initializePatientTransfer() {
     const targetSelect = event.target.closest("[data-transfer-document-target]");
     if (targetSelect) {
       moveDocumentToGroup(targetSelect.dataset.transferDocumentTarget, targetSelect.value);
+      return;
+    }
+    const duplicateDecision = event.target.closest("[data-transfer-duplicate-resolution]");
+    if (duplicateDecision) {
+      syncReviewedGroupsFromView();
+      const group = analyzedGroups.find((item) => item.id === duplicateDecision.dataset.transferDuplicateResolution);
+      console.info("patient-transfer:decision-changed", {
+        decision: group?.selectedResolution || DUPLICATE_RESOLUTION.UNRESOLVED,
+        hasTarget: Boolean(group?.selectedPatientId)
+      });
+      renderDetectedGroups(analyzedGroups);
+      return;
+    }
+    const existingPatientSelect = event.target.closest("[data-transfer-existing]");
+    if (existingPatientSelect) {
+      syncReviewedGroupsFromView();
+      const group = analyzedGroups.find((item) => item.id === existingPatientSelect.dataset.transferExisting);
+      console.info("patient-transfer:association-target-selected", {
+        decision: group?.selectedResolution || DUPLICATE_RESOLUTION.UNRESOLVED,
+        hasTarget: Boolean(group?.selectedPatientId)
+      });
       return;
     }
     syncReviewedGroupsFromView();

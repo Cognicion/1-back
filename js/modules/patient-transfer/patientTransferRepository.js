@@ -15,7 +15,7 @@ import {
   DUPLICATE_RESOLUTION,
   isDocumentEligibleForPersistence,
   resolveAssociationTargetPatientId
-} from "./persistence/documentPersistenceEligibility.js?v=20260808-association-target-v1";
+} from "./persistence/documentPersistenceEligibility.js?v=20260809-duplicate-decision-v1";
 import {
   addDoc,
   collection,
@@ -438,15 +438,15 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
             action: group.selectedResolution || group.duplicateResolution?.action || null,
             matchedPatientId: group.selectedExistingPatientId || group.duplicateResolution?.matchedPatientId || ""
           };
-          if (resolution.action === "link-existing") {
+          if (resolution.action === DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING) {
             patientId = resolution.matchedPatientId || group.selectedPatientId || "";
             traceTransfer("duplicate-resolution", { authUid: user.uid, transferOperationId: operationId, resolution: "link-existing", patientId: Boolean(patientId) });
-          } else if (resolution.action === "omit") {
+          } else if (resolution.action === DUPLICATE_RESOLUTION.OMIT) {
             results.push({ groupId: group.id, status: "omitted", patientId: "", notesCreated: 0, duplicateResolution: "omit" });
             continue;
           } else {
             const strongest = (group.possibleMatches || group.candidates || [])[0];
-            if (strongest && ["muy_alta", "alta"].includes(strongest.level) && resolution.action !== "create-new") {
+            if (strongest && ["muy_alta", "alta"].includes(strongest.level) && resolution.action !== DUPLICATE_RESOLUTION.CREATE_NEW) {
               const error = new Error("Resuelve la posible coincidencia antes de crear el paciente.");
               error.stage = "duplicate_resolution";
               throw error;

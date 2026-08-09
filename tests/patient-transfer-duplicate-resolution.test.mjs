@@ -83,6 +83,7 @@ assert.match(repository, /if \(effectiveAction === "create"\)/);
 assert.match(repository, /if \(effectiveAction === "associate"\)/);
 assert.match(controller, /duplicate-resolution:decision/);
 assert.match(repository, /persistence:eligibility/);
-assert.match(view, /group\.action === "create" \? "checked" : ""/);
+assert.match(view, /value="create_new" data-transfer-duplicate-resolution/);
+assert.doesNotMatch(view, /data-transfer-action=/);
 
 console.log("patient-transfer-duplicate-resolution.test.mjs OK");

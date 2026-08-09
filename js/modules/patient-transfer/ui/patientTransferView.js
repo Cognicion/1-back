@@ -3,9 +3,10 @@ import { construirNombreCompletoPaciente } from "../../../utils/nombresPacientes
 import { parseMedicationSchedules } from "../parsing/clinicalCandidateParser.js?v=20260804-duplicate-diagnosis-v1";
 import { buildPatientMatchExplanation, normalizeRecordNumber } from "../parsing/patientDuplicateMatcher.js";
 import {
+  DUPLICATE_RESOLUTION,
   mapLegacyDuplicateResolution,
   normalizeDuplicateDetectionStatus
-} from "../persistence/documentPersistenceEligibility.js";
+} from "../persistence/documentPersistenceEligibility.js?v=20260809-duplicate-decision-v1";
 
 let root = null;
 
@@ -165,9 +166,13 @@ export function renderTransferFiles(files = []) {
 function renderCandidateSelect(group) {
   const candidates = group.candidates || [];
   if (!candidates.length) return `<p class="patient-transfer-muted">Sin coincidencias existentes detectadas.</p>`;
+  const isAssociating = mapLegacyDuplicateResolution({
+    selectedResolution: group.selectedResolution,
+    omitted: group.omitted
+  }) === DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING;
   return `
-    <label>Paciente existente
-      <select data-transfer-existing="${group.id}">
+    <label ${isAssociating ? "" : "hidden"}>Paciente existente
+      <select data-transfer-existing="${group.id}" ${isAssociating ? "" : "disabled"}>
         <option value="">Seleccionar paciente</option>
         ${candidates.map((candidate) => option(candidate.id, `${candidate.name} ${candidate.expediente ? `· ${candidate.expediente}` : ""}`, candidate.id === group.selectedPatientId)).join("")}
       </select>
@@ -196,10 +201,13 @@ function medicationCatalogOptions(candidate = {}) {
 
 function renderDuplicateWarning(group) {
   const matches = group.possibleMatches || group.candidates || [];
-  const strongest = matches.find((match) => match.showAlert !== false && ["media", "alta", "muy_alta"].includes(match.level));
+  const strongest = matches.find((match) => match.showAlert !== false && ["media", "alta", "muy_alta"].includes(match.level)) || matches[0];
   if (!strongest) return "";
   const explanation = buildPatientMatchExplanation(strongest);
-  const resolution = group.selectedResolution || null;
+  const resolution = mapLegacyDuplicateResolution({
+    selectedResolution: group.selectedResolution,
+    omitted: group.omitted
+  });
   const matched = explanation.matchedFields.map((field) => `<li>✓ ${escapeHtml(field.label)}${field.candidateValue ? `: ${escapeHtml(field.candidateValue)}` : ""}</li>`).join("");
   const conflicts = explanation.conflictingFields.map((field) => `<li>• ${escapeHtml(field.label)}: dato del documento ${escapeHtml(field.candidateValue)} / registrado ${escapeHtml(field.existingValue)}</li>`).join("");
   const documentFields = group.confirmedFields || group.fields || {};
@@ -239,9 +247,10 @@ function renderDuplicateWarning(group) {
     <details><summary>Comparar datos</summary><table class="patient-transfer-data-table"><thead><tr><th>Campo</th><th>Dato del documento</th><th>Dato registrado</th></tr></thead><tbody>${comparisonTable}</tbody></table></details>
     <fieldset class="patient-transfer-duplicate-resolution">
       <legend>Decisión para este paciente</legend>
-      <label><input type="radio" name="duplicate-resolution-${group.id}" value="link-existing" data-transfer-duplicate-resolution="${group.id}" data-patient-id="${escapeHtml(strongest.patientId || strongest.id || "")}" ${resolution === "link-existing" ? "checked" : ""}> Asociar las notas al paciente existente</label>
-      <label><input type="radio" name="duplicate-resolution-${group.id}" value="create-new" data-transfer-duplicate-resolution="${group.id}" ${resolution === "create-new" ? "checked" : ""}> Crear un paciente nuevo de todas formas</label>
-      <label><input type="radio" name="duplicate-resolution-${group.id}" value="omit" data-transfer-duplicate-resolution="${group.id}" ${resolution === "omit" ? "checked" : ""}> Omitir este paciente</label>
+      <label><input type="radio" name="duplicate-resolution-${group.id}" value="associate_existing" data-transfer-duplicate-resolution="${group.id}" ${resolution === DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING ? "checked" : ""}> Asociar las notas al paciente existente</label>
+      ${renderCandidateSelect(group)}
+      <label><input type="radio" name="duplicate-resolution-${group.id}" value="create_new" data-transfer-duplicate-resolution="${group.id}" ${resolution === DUPLICATE_RESOLUTION.CREATE_NEW ? "checked" : ""}> Crear un paciente nuevo de todas formas</label>
+      <label><input type="radio" name="duplicate-resolution-${group.id}" value="omit" data-transfer-duplicate-resolution="${group.id}" ${resolution === DUPLICATE_RESOLUTION.OMIT ? "checked" : ""}> Omitir este paciente</label>
     </fieldset>
     ${strongest.patientId || strongest.id ? `<a href="paciente.html?id=${encodeURIComponent(strongest.patientId || strongest.id)}" target="_blank" rel="noopener">Ver expediente existente</a>` : ""}
   </section>`;
@@ -750,16 +759,13 @@ export function renderDetectedGroups(groups = []) {
             <h3>${escapeHtml(group.fields?.nombre?.value || (group.fields?.expediente?.value ? "Paciente identificado por expediente" : "Paciente sin nombre detectado"))}</h3>
             <span>${group.fields?.expediente?.value ? `Expediente: ${escapeHtml(group.fields.expediente.value)}` : "Sin expediente detectado"}</span>
           </div>
-          <label><input type="checkbox" data-transfer-omit-group="${group.id}" ${group.omitted ? "checked" : ""}> Omitir paciente</label>
+          ${(group.possibleMatches || group.candidates || []).length
+            ? ""
+            : `<label><input type="checkbox" data-transfer-omit-group="${group.id}" ${group.omitted ? "checked" : ""}> Omitir paciente</label>`}
         </header>
         ${group.ambiguous ? `<div class="patient-transfer-warning">Datos incompletos o contradictorios. Revise antes de guardar.</div>` : ""}
         ${renderDuplicateWarning(group)}
         ${group.action === "unresolved" ? `<div class="patient-transfer-warning">El documento ya fue detectado durante una importación previa. Seleccione cómo desea continuar.</div>` : ""}
-        <div class="patient-transfer-mode">
-          <label><input type="radio" name="transfer-action-${group.id}" value="create" data-transfer-action="${group.id}" ${group.action === "create" ? "checked" : ""}> Crear paciente</label>
-          <label><input type="radio" name="transfer-action-${group.id}" value="associate" data-transfer-action="${group.id}" ${group.action === "associate" ? "checked" : ""}> Asociar a paciente existente</label>
-        </div>
-        ${renderCandidateSelect(group)}
         <div class="patient-transfer-field-grid">${renderFields(group)}</div>
         <div class="patient-transfer-documents">${group.documents.map((doc) => renderDocument(doc, groups, group.id)).join("")}</div>
       </article>`).join("")}` : "";
@@ -806,17 +812,22 @@ export function readTransferReview(groups = []) {
       : null;
   };
   return groups.map((group) => {
-    const actionControl = modal.querySelector(`[data-transfer-action="${group.id}"]:checked`)?.value || "";
     const duplicateControl = modal.querySelector(`[data-transfer-duplicate-resolution="${group.id}"]:checked`);
-    const selectedResolution = duplicateControl?.value || group.selectedResolution || null;
-    const duplicateAction = selectedResolution || "";
     const groupOmitted = modal.querySelector(`[data-transfer-omit-group="${group.id}"]`)?.checked || false;
-    const selectedPatientId = duplicateAction === "link-existing"
-      ? duplicateControl?.dataset.patientId || group.duplicateResolution?.matchedPatientId || ""
-      : modal.querySelector(`[data-transfer-existing="${group.id}"]`)?.value || "";
-    const action = groupOmitted
-      ? "omit"
-      : duplicateAction === "link-existing" ? "associate" : duplicateAction === "omit" ? "omit" : actionControl || "unresolved";
+    const selectedResolution = mapLegacyDuplicateResolution({
+      selectedResolution: duplicateControl?.value || group.selectedResolution,
+      omitted: groupOmitted
+    });
+    const selectedPatientId = selectedResolution === DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING
+      ? modal.querySelector(`[data-transfer-existing="${group.id}"]`)?.value || ""
+      : "";
+    const action = selectedResolution === DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING
+      ? "associate"
+      : selectedResolution === DUPLICATE_RESOLUTION.CREATE_NEW
+        ? "create"
+        : selectedResolution === DUPLICATE_RESOLUTION.OMIT
+          ? "omit"
+          : "unresolved";
     const confirmedFields = {};
     FIELD_RULES.forEach((rule) => {
       const rawValue = modal.querySelector(`[data-transfer-field="${group.id}:${rule.key}"]`)?.value?.trim() || "";
@@ -999,20 +1010,22 @@ export function readTransferReview(groups = []) {
         action,
         omitted: Boolean(groupOmitted || document.omitted)
       }),
-      matchedPatientId: selectedPatientId || document.matchedPatientId || ""
+      matchedPatientId: selectedResolution === DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING
+        ? selectedPatientId
+        : document.matchedPatientId || ""
     }));
     return {
       ...group,
       action,
       selectedPatientId,
       selectedResolution,
-      selectedExistingPatientId: duplicateAction === "link-existing" ? selectedPatientId : null,
-      duplicateResolution: duplicateControl ? {
+      selectedExistingPatientId: selectedResolution === DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING ? selectedPatientId : null,
+      duplicateResolution: {
         ...(group.duplicateResolution || {}),
-        action: duplicateAction,
-        matchedPatientId: duplicateControl.dataset.patientId || group.duplicateResolution?.matchedPatientId || "",
+        action: selectedResolution,
+        matchedPatientId: selectedPatientId,
         resolvedAt: new Date().toISOString()
-      } : group.duplicateResolution || null,
+      },
       confirmedFields,
       omitted: groupOmitted,
       documents: resolvedDocuments
