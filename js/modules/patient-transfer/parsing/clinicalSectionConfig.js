@@ -49,6 +49,18 @@ export const CLINICAL_SECTION_ALIASES = Object.freeze({
     "valoración",
     "formulación",
     "comentario",
+    "análisis / comentario",
+    "analisis / comentario",
+    "analisis",
+    "comentario clínico",
+    "comentario clinico",
+    "fundamento",
+    "fundamento clínico",
+    "fundamento clinico",
+    "impresión clínica",
+    "impresion clinica",
+    "juicio clínico",
+    "juicio clinico",
     "análisis"
   ],
   diagnosticos: [
@@ -92,6 +104,9 @@ export const CLINICAL_SECTION_KEYS = Object.freeze(Object.keys(CLINICAL_SECTION_
 
 // Límites reutilizados por los extractores que deben terminar antes de otra sección clínica.
 export const MENTAL_EXAM_BOUNDARY_ALIASES = Object.freeze([
+  ...CLINICAL_SECTION_ALIASES.analisis,
+  ...CLINICAL_SECTION_ALIASES.diagnosticos,
+  ...CLINICAL_SECTION_ALIASES.plan,
   "resultados relevantes de los estudios de diagnostico",
   "resultados relevantes de los estudios",
   "resultados de los estudios",

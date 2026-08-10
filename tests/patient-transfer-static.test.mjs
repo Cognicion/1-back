@@ -56,7 +56,7 @@ assert.match(controller, /const reviewedGroups = analyzedGroups;/, "el guardado 
 assert.match(controller, /expandSegmentedGroupsForSave/, "la persistencia crea una nota por segmento confirmado");
 assert.match(controller, /setFileMultipleNotesMode/, "la revisión actualiza el modo por archivo en el estado central");
 assert.match(controller, /multipleNotesMode/, "el controlador envía el modo explícito al segmentador");
-assert.match(transferIndex, /patientTransferController\.js\?v=v168-institution-hpfba-v1/, "el índice fuerza la carga del controlador publicado");
+assert.match(transferIndex, /patientTransferController\.js\?v=v169-analysis-section-v1/, "el índice fuerza la carga del controlador publicado");
 assert.match(controller, /clinicalNoteSegmenter\.js\?v=20260810-imported-notes-v1/, "el controlador fuerza la carga del segmentador publicado");
 assert.match(segmenter, /patient-transfer-segmentation-debug-v1/, "el segmentador expone un marcador verificable de compilación");
 assert.match(segmenter, /\[patient-transfer\] segmentation:boundaries/, "el segmentador registra los límites usados");

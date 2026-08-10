@@ -36,6 +36,34 @@ assert.match(inline.secciones.analisis, /Cuadro compatible/);
 assert.match(inline.secciones.plan, /Continuar vigilancia/);
 assert.match(inline.secciones.medicamentos, /Sertralina 50 mg/);
 
+const analysisCase = parseClinicalSections([
+  { type: "paragraph", text: "EXAMEN MENTAL", source: { blockIndex: 30 } },
+  { type: "paragraph", text: "Alerta, orientada y colaboradora.", source: { blockIndex: 31 } },
+  { type: "paragraph", text: "ANÁLISIS / COMENTARIO", source: { blockIndex: 32 } },
+  { type: "paragraph", text: "Evolución compatible con mejoría clínica parcial.", source: { blockIndex: 33 } },
+  { type: "paragraph", text: "DIAGNÓSTICOS", source: { blockIndex: 34 } },
+  { type: "paragraph", text: "Esquizofrenia F20", source: { blockIndex: 35 } }
+]);
+assert.equal(analysisCase.secciones.examenMental, "Alerta, orientada y colaboradora.");
+assert.equal(analysisCase.secciones.analisis, "Evolución compatible con mejoría clínica parcial.");
+assert.equal(analysisCase.secciones.diagnosticos, "Esquizofrenia F20");
+
+for (const heading of ["ANÁLISIS:", "COMENTARIO:", "FUNDAMENTO:", "IMPRESIÓN CLÍNICA:", "JUICIO CLÍNICO:", "ANÁLISIS.-"]) {
+  const variant = parseClinicalSections([
+    { type: "paragraph", text: heading, source: { blockIndex: 40 } },
+    { type: "paragraph", text: "Contenido analítico de la nota.", source: { blockIndex: 41 } },
+    { type: "paragraph", text: "PLAN", source: { blockIndex: 42 } },
+    { type: "paragraph", text: "Continuar vigilancia.", source: { blockIndex: 43 } }
+  ]);
+  assert.equal(variant.secciones.analisis, "Contenido analítico de la nota.", heading);
+  assert.equal(variant.secciones.plan, "Continuar vigilancia.", heading);
+}
+
+const narrativeAnalysis = parseClinicalSections([
+  { type: "paragraph", text: "Paciente refiere análisis de laboratorio pendiente.", source: { blockIndex: 50 } }
+]);
+assert.equal(narrativeAnalysis.secciones.analisis, "");
+
 const mentalInlineBoundary = parseClinicalSections([
   { type: "paragraph", text: "EXAMEN MENTAL: Moderada advertencia del padecimiento. Proyección a futuro no estructurada. RESULTADOS RELEVANTES DE LOS ESTUDIOS DE DIAGNÓSTICO EKG... DIAGNÓSTICOS DE ACUERDO A CIE-10... PLAN TERAPÉUTICO", source: { blockIndex: 10 } }
 ], { noteSegment: { id: "mental-inline" } });
