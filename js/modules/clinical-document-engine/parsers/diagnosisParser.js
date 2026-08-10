@@ -7,11 +7,40 @@ import { normalizeClinicalComparisonText } from "../normalizers/textNormalizer.j
 import { normalizeDiagnosticCode, normalizeDiagnosis as normalizeDiagnosisValue } from "../normalizers/diagnosisNormalizer.js";
 import { validateDiagnosis } from "../validators/diagnosisValidator.js";
 import { clinicalImportLogger } from "../utils/logger.js";
+import { DIAGNOSTICOS_BIBLIOTECA } from "../../../data/diagnosticosBiblioteca.js";
 
 const PARSER = "midc.diagnosisParser";
 const VERSION = "1.0";
 const STATUS_ONLY = /^(?:se agrega|se descarta|antecedente|remision|en remision|probable|a descartar|confirmado)$/i;
 const END_ALIASES = [...BOUNDARY_ALIASES.plan, ...BOUNDARY_ALIASES.medication, ...BOUNDARY_ALIASES.analysis, ...BOUNDARY_ALIASES.prognosis, ...BOUNDARY_ALIASES.destination, ...BOUNDARY_ALIASES.note];
+const NARRATIVE_DIAGNOSIS_START = /(?:cuenta\s+con\s+diagn[oó]stico\s+de|antecedente\s+de|con\s+diagn[oó]stico\s+previo\s+de|diagn[oó]stico\s+previo\s+de|diagnosticad[oa]\s+con|se\s+diagnostic[oó]|diagn[oó]stico\s+de)\s+/i;
+const NARRATIVE_DIAGNOSIS_END = /\s+(?:otorgado\s+en|diagnosticad[oa]\s+en|desde|en\s+seguimiento|tratado\s+con|con\s+tratamiento|con\s+esquema|[úu]ltimo\s+esquema|actualmente\s+recibe|manejado\s+con|hospitalizado\s+en|por\s+parte\s+de|bajo\s+tratamiento)\b/i;
+
+const normalizeCatalogName = (value = "") => normalizeClinicalComparisonText(value).replace(/\s+/g, " ").trim();
+const DIAGNOSIS_CATALOG_INDEX = new Map(
+  DIAGNOSTICOS_BIBLIOTECA
+    .filter((entry) => entry?.nombre)
+    .map((entry) => [normalizeCatalogName(entry.nombre), entry.nombre])
+);
+
+function resolveCatalogDiagnosisName(value = "") {
+  return DIAGNOSIS_CATALOG_INDEX.get(normalizeCatalogName(value)) || String(value || "").trim();
+}
+
+function normalizeNarrativeDiagnosisName(value = "") {
+  const text = resolveCatalogDiagnosisName(value);
+  return text ? `${text.charAt(0).toUpperCase()}${text.slice(1)}` : text;
+}
+
+function extractNarrativeDiagnosisEntity(text = "") {
+  const source = String(text || "").replace(/\s+/g, " ").trim();
+  const start = source.match(NARRATIVE_DIAGNOSIS_START);
+  if (!start) return "";
+  const tail = source.slice(start.index + start[0].length);
+  const end = tail.search(NARRATIVE_DIAGNOSIS_END);
+  const entity = (end >= 0 ? tail.slice(0, end) : tail).replace(/[,:;.!?]+\s*$/, "").trim();
+  return entity.length >= 2 && entity.length <= 120 ? entity : "";
+}
 
 function diagnosisStatus(text = "") {
   const value = normalizeClinicalComparisonText(text);
@@ -20,7 +49,7 @@ function diagnosisStatus(text = "") {
   if (/\ba descartar\b/.test(value)) return "A descartar";
   if (/\bprobable\b/.test(value)) return "Probable";
   if (/\b(?:en remision|remision)\b/.test(value)) return "Remisión";
-  if (/\bantecedente\b|\bdiagnosticad[oa].*\ben\s+\d{4}\b/.test(value)) return "Antecedente";
+  if (/\bantecedente\b|\bdiagn[oó]stico\s+previo\b|\bdiagnosticad[oa].*\ben\s+\d{4}\b|\botorgado\s+en\b.*\b\d{4}\b/.test(value)) return "Antecedente";
   return "Confirmado";
 }
 
@@ -97,13 +126,14 @@ function startsWithDiagnosticName(text = "") {
 
 function isNarrativeIdentityOpening(text = "") {
   const value = String(text || "").replace(/\s+/g, " ").trim();
+  if (/\b(?:diagnostico|antecedente|diagnosticad[oa])\b/i.test(normalizeClinicalComparisonText(value))) return false;
   return /^(?:se trata de|paciente\b|hombre\b|mujer\b|masculino\b|femenin[ao]\b)/i.test(value)
     || /^[A-ZÁÉÍÓÚÑ][^.!?]{0,80},\s/.test(value);
 }
 
 function isExplicitNarrativeDiagnosis(text = "") {
-  const value = String(text || "");
-  return /\bdiagn[oó]stico\b/i.test(value) && !isNarrativeIdentityOpening(value);
+  const value = normalizeClinicalComparisonText(text);
+  return /\b(?:diagnostico|antecedente\s+de|diagnosticad[oa]\s+en|diagnosticad[oa]\s+con)\b/i.test(value) && !isNarrativeIdentityOpening(text);
 }
 
 function logNarrativeBoundary({ documentId, noteId, text, reason }) {
@@ -177,12 +207,13 @@ function statusValue(text = "") {
 }
 
 function createDiagnosisCandidate({ name, code = "", codes = [], status, rawText, section, documentId, noteId, sourceLocation = {}, requiresReview = false, detectionRule }) {
+  const canonicalName = name;
   const normalizedCodes = [...new Set([code, ...codes].map((value) => normalizeDiagnosticCode(value)).filter(Boolean))];
   const primaryCode = normalizedCodes[0] || "";
   const system = detectSystem(primaryCode, rawText);
   const confidence = evaluateConfidence({ table: sourceLocation.tableIndex != null, explicitHeading: section === "diagnosticos" && Boolean(primaryCode), freeText: !primaryCode });
   const candidate = new ClinicalCandidate({
-    id: `${documentId || "doc"}-dx-${noteId || "note"}-${sourceLocation.rowIndex ?? sourceLocation.lineIndex ?? 0}-${primaryCode || normalizeClinicalComparisonText(name).slice(0, 24)}`,
+    id: `${documentId || "doc"}-dx-${noteId || "note"}-${sourceLocation.rowIndex ?? sourceLocation.lineIndex ?? 0}-${primaryCode || normalizeClinicalComparisonText(canonicalName).slice(0, 24)}`,
     type: "diagnosis",
     value: null,
     confidence,
@@ -204,8 +235,8 @@ function createDiagnosisCandidate({ name, code = "", codes = [], status, rawText
   });
   Object.assign(candidate, {
     candidateType: "diagnosis",
-    diagnosisName: name,
-    normalizedDiagnosis: normalizeClinicalComparisonText(name),
+    diagnosisName: canonicalName,
+    normalizedDiagnosis: normalizeClinicalComparisonText(canonicalName),
     code: primaryCode || null,
     codes: normalizedCodes,
     system,
@@ -311,7 +342,10 @@ export function parseDiagnosisCandidates({ text = "", section = "diagnosticos", 
       return;
     }
     const codeOnly = codes.length === 1 && /^[A-Z]\d{2,3}(?:\.\d{1,2})?$/i.test(rowText.trim());
-    const name = codeOnly ? "" : normalizeDiagnosis(rowText, codes);
+    const narrativeEntity = codeOnly ? "" : extractNarrativeDiagnosisEntity(rowText);
+    const name = codeOnly ? "" : (narrativeEntity
+      ? normalizeNarrativeDiagnosisName(normalizeDiagnosis(narrativeEntity, codes))
+      : normalizeDiagnosis(rowText, codes));
     if (!name && !codes.length) { discardedCount += 1; return; }
     if (EXCLUDED_DIAGNOSIS_TEXT.test(name) || /^plan\s+terap/i.test(name) || /^(?:diagn[oó]sticos?|cie[- ]?10|cie[- ]?11|sistema)$/i.test(name)) {
       discardedCount += 1;

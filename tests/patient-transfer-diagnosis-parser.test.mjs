@@ -63,4 +63,39 @@ assert.equal(bounded.length, 1);
 assert.equal(bounded[0].code, null);
 assert.equal(bounded[0].requiresReview, true);
 
+const narrative = parseDiagnosisBlock({
+  text: "Cuenta con diagn\u00f3stico de Esquizofrenia otorgado en IMSS Morelos en enero de 2026, con \u00faltimo esquema farmacol\u00f3gico con base en Fluoxetina 60 mg/d\u00eda.",
+  section: "analisis",
+  explicit: true,
+  documentId: "enedina-narrative"
+});
+assert.equal(narrative.length, 1);
+assert.equal(narrative[0].diagnosisName, "Esquizofrenia");
+assert.equal(narrative[0].status, "Antecedente");
+assert.match(narrative[0].rawText, /Fluoxetina/);
+assert.doesNotMatch(narrative[0].diagnosisName, /Fluoxetina/);
+
+const narrativeVariants = parseDiagnosisBlock({
+  text: "Antecedente de trastorno bipolar diagnosticado en 2022, actualmente tratado con litio\nCon diagn\u00f3stico previo de TDAH desde la infancia\nTEPT complejo a descartar",
+  section: "diagnosticos",
+  explicit: true,
+  documentId: "narrative-variants"
+});
+assert.equal(narrativeVariants.length, 3);
+assert.equal(narrativeVariants[0].diagnosisName, "Trastorno bipolar");
+assert.equal(narrativeVariants[0].status, "Antecedente");
+assert.equal(narrativeVariants[1].diagnosisName, "TDAH");
+assert.equal(narrativeVariants[1].status, "Antecedente");
+assert.equal(narrativeVariants[2].diagnosisName, "TEPT complejo");
+assert.equal(narrativeVariants[2].status, "A descartar");
+
+const codedNarrative = parseDiagnosisBlock({
+  text: "Trastorno depresivo recurrente, episodio actual grave F33.2",
+  section: "diagnosticos",
+  explicit: true,
+  documentId: "coded-narrative"
+});
+assert.equal(codedNarrative[0].diagnosisName, "Trastorno depresivo recurrente, episodio actual grave");
+assert.equal(codedNarrative[0].code, "F33.2");
+
 console.log("patient-transfer-diagnosis-parser: ok");

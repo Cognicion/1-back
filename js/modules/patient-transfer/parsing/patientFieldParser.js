@@ -5,7 +5,7 @@ import {
   inferStructuredPatientNameFormat,
   PATIENT_NAME_SOURCE_FORMATS,
   suggestPatientNameParts
-} from "./patientNameParser.js";
+} from "./patientNameParser.js?v=v167-enedina-name-diagnosis-boundaries-v1";
 
 const DEBUG_FLAG = "cognicion.debug.patientTransfer";
 

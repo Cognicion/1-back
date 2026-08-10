@@ -29,6 +29,21 @@ assert.equal(candidates.find((item) => item.fieldKey === "genero")?.normalizedVa
 assert.equal(candidates.find((item) => item.fieldKey === "servicio")?.normalizedValue, "Observación");
 assert.equal(candidates.find((item) => item.fieldKey === "alergias")?.normalizedValue, "NEGADAS");
 
+const enedinaHeader = "Nombre completo del paciente: ENEDINA PE\u00d1A HERN\u00c1NDEZ Fecha de nacimiento: 16/07/2006 Edad: 20 a\u00f1os";
+const enedinaParsed = parsePatientFields([
+  {
+    type: "paragraph",
+    text: enedinaHeader,
+    rawRuns: [enedinaHeader],
+    source: { blockIndex: 10, origin: "body" }
+  }
+], "enedina-prueba");
+const enedinaValues = fieldValues(enedinaParsed.fields);
+assert.equal(enedinaValues.nombre, "ENEDINA PE\u00d1A HERN\u00c1NDEZ");
+assert.equal(enedinaValues.nombres, "ENEDINA");
+assert.equal(enedinaValues.apellidoPaterno, "PE\u00d1A");
+assert.equal(enedinaValues.apellidoMaterno, "HERN\u00c1NDEZ");
+
 const parsed = parsePatientFields([
   {
     type: "paragraph",

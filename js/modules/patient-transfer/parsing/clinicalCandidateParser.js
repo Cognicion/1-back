@@ -1,5 +1,5 @@
 import { MEDICAMENTOS, MEDICAMENTOS_MAESTROS, medicamentoPorTexto } from "../../../data/medicamentos.js";
-import { adaptDiagnosisBlock, adaptDiagnosisCandidates } from "../../clinical-document-engine/adapters/diagnosisAdapter.js";
+import { adaptDiagnosisBlock, adaptDiagnosisCandidates } from "../../clinical-document-engine/adapters/diagnosisAdapter.js?v=v167-enedina-name-diagnosis-boundaries-v1";
 import { adaptMedicationBlock, adaptMedicationCandidates } from "../../clinical-document-engine/adapters/medicationAdapter.js";
 
 function normalizeText(value = "") {
