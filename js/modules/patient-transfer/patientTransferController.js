@@ -955,6 +955,7 @@ async function handleConfirmTransferClick(event) {
 
 function resetAndOpen() {
   resetPatientTransferState();
+  setTransferSavingState(false);
   selectedFiles = [];
   analyzedGroups = [];
   openPatientTransferView();
