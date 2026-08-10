@@ -2,7 +2,11 @@ export function normalizeDocxBlocks(blocks = []) {
   let blockIndex = 0;
   let tableIndex = 0;
   return blocks.map((block) => {
-    const source = { blockIndex, origin: block.origen || block.source || "body" };
+    const source = {
+      blockIndex,
+      origin: block.origen || block.source || "body",
+      ...(Number.isInteger(block.pageIndex) ? { pageIndex: block.pageIndex } : {})
+    };
     blockIndex += 1;
     if (block.tipo === "table" || block.type === "table") {
       const currentTableIndex = tableIndex;

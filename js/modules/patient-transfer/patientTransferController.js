@@ -6,7 +6,7 @@ import { extractDocx } from "./docx/docxExtractor.js";
 import { normalizeDocxBlocks, normalizedBlocksToText } from "./docx/docxBlockNormalizer.js";
 import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js?v=v168-institution-hpfba-v1";
 import { resolvePatientIdentity } from "./parsing/patientIdentityResolver.js";
-import { parseClinicalSections } from "./parsing/clinicalSectionParser.js?v=v170-general-clinical-sections-v1";
+import { parseClinicalSections } from "./parsing/clinicalSectionParser.js?v=v171-compound-clinical-headings-v1";
 import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js?v=v167-enedina-name-diagnosis-boundaries-v1";
 import { detectMultipleClinicalNotes, expandSegmentedDocumentsForPersistence, mergeClinicalSegments, segmentClinicalNotes, splitClinicalSegment } from "./parsing/clinicalNoteSegmenter.js?v=20260810-imported-notes-v1";
 import { extractVitalSignsCandidates } from "./parsing/vitalSignsParser.js";

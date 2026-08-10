@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import {
+  classifyHeadingToCanonicalSection,
+  detectClinicalHeading,
   isLikelySectionHeading,
   normalizeClinicalHeading,
   parseClinicalSections
@@ -11,6 +13,11 @@ assert.equal(normalizeClinicalHeading("3) VALORACIÓN"), "valoracion");
 assert.equal(normalizeClinicalHeading("ANALISIS-COMENTARIO"), "analisis comentario");
 assert.equal(isLikelySectionHeading("ANÁLISIS:"), true);
 assert.equal(isLikelySectionHeading("se solicitaron análisis de laboratorio"), false);
+assert.equal(isLikelySectionHeading("el plan terapéutico se explicó al familiar"), false);
+assert.equal(classifyHeadingToCanonicalSection("ANÁLISIS Y JUSTIFICACIÓN DIAGNÓSTICA Y TERAPÉUTICA"), "analisis");
+assert.equal(classifyHeadingToCanonicalSection("DIAGNÓSTICOS DE ACUERDO CON CIE-10"), "diagnosticos");
+assert.equal(classifyHeadingToCanonicalSection("PLAN TERAPÉUTICO MEDIDAS GENERALES Y TRATAMIENTO FARMACOLÓGICO"), "plan");
+assert.equal(detectClinicalHeading("ANÁLISIS Y JUSTIFICACIÓN DIAGNÓSTICA Y TERAPÉUTICA")?.detectionMethod, "semantic-heading");
 
 const result = parseClinicalSections([
   { type: "paragraph", text: "MOTIVO DE ATENCIÓN / ACTUALIZACIÓN DEL CUADRO CLÍNICO", source: { blockIndex: 0 } },
@@ -111,6 +118,24 @@ const variableOrder = parseClinicalSections([
 assert.equal(variableOrder.secciones.plan, "Continuar vigilancia.");
 assert.equal(variableOrder.secciones.analisis, "Evolución favorable.");
 assert.equal(variableOrder.secciones.examenMental, "Alerta y cooperadora.");
+
+const freeOrder = parseClinicalSections([
+  { type: "paragraph", text: "DIAGNÓSTICOS", source: { blockIndex: 80 } },
+  { type: "paragraph", text: "Fxx.x Diagnóstico de prueba.", source: { blockIndex: 81 } },
+  { type: "paragraph", text: "PLAN TERAPÉUTICO", source: { blockIndex: 82 } },
+  { type: "paragraph", text: "Continuar intervención.", source: { blockIndex: 83 } },
+  { type: "paragraph", text: "ANÁLISIS Y JUSTIFICACIÓN DIAGNÓSTICA Y TERAPÉUTICA", source: { blockIndex: 84 } },
+  { type: "paragraph", text: "Contenido analítico separado.", source: { blockIndex: 85 } },
+  { type: "paragraph", text: "PRONÓSTICO", source: { blockIndex: 86 } },
+  { type: "paragraph", text: "Reservado.", source: { blockIndex: 87 } },
+  { type: "paragraph", text: "DESTINO", source: { blockIndex: 88 } },
+  { type: "paragraph", text: "Seguimiento.", source: { blockIndex: 89 } }
+]);
+assert.equal(freeOrder.secciones.diagnosticos, "Fxx.x Diagnóstico de prueba.");
+assert.equal(freeOrder.secciones.plan, "Continuar intervención.");
+assert.equal(freeOrder.secciones.analisis, "Contenido analítico separado.");
+assert.doesNotMatch(freeOrder.secciones.analisis, /Reservado|Seguimiento/);
+assert.equal(freeOrder.inferencias.length, 0, "heading compuesto explícito no usa inferencia");
 
 const mentalInlineBoundary = parseClinicalSections([
   { type: "paragraph", text: "EXAMEN MENTAL: Moderada advertencia del padecimiento. Proyección a futuro no estructurada. RESULTADOS RELEVANTES DE LOS ESTUDIOS DE DIAGNÓSTICO EKG... DIAGNÓSTICOS DE ACUERDO A CIE-10... PLAN TERAPÉUTICO", source: { blockIndex: 10 } }

@@ -99,6 +99,98 @@ export const NOTE_START_ALIASES = Object.freeze([
 
 export const CLINICAL_SECTION_KEYS = Object.freeze(Object.keys(CLINICAL_SECTION_ALIASES));
 
+// Títulos que cierran la sección activa sin crear un campo editable en revisión.
+export const CLINICAL_BOUNDARY_ONLY_ALIASES = Object.freeze({
+  firmas: [
+    "nombre, firma y cédula profesional",
+    "nombre, firma y cédula",
+    "firma y cédula profesional",
+    "firmas",
+    "firma"
+  ]
+});
+
+/**
+ * Familias semánticas reutilizables para headings compuestos no enumerados como
+ * alias completos. La política de desambiguación usa primero las secuencias
+ * inequívocas y después el primer token nuclear que aparece en el título.
+ */
+export const CLINICAL_HEADING_SEMANTIC_FAMILIES = Object.freeze([
+  Object.freeze({
+    key: "resultadosEstudios",
+    tokenSequences: Object.freeze([
+      Object.freeze(["analisis", "de", "laboratorio"]),
+      Object.freeze(["resultados", "de", "laboratorio"])
+    ]),
+    strongTokens: Object.freeze(["resultados", "estudios", "laboratorio", "gabinete"])
+  }),
+  Object.freeze({
+    key: "diagnosticos",
+    tokenSequences: Object.freeze([
+      Object.freeze(["impresion", "diagnostica"]),
+      Object.freeze(["diagnostico", "diferencial"])
+    ]),
+    strongTokens: Object.freeze(["diagnostico", "diagnosticos", "dx", "cie", "dsm"])
+  }),
+  Object.freeze({
+    key: "analisis",
+    tokenSequences: Object.freeze([
+      Object.freeze(["integracion", "diagnostica"]),
+      Object.freeze(["juicio", "clinico"]),
+      Object.freeze(["razonamiento", "clinico"])
+    ]),
+    strongTokens: Object.freeze([
+      "analisis",
+      "comentario",
+      "fundamento",
+      "fundamentacion",
+      "justificacion",
+      "impresion",
+      "juicio",
+      "valoracion",
+      "consideraciones",
+      "integracion",
+      "discusion",
+      "razonamiento",
+      "formulacion"
+    ])
+  }),
+  Object.freeze({
+    key: "plan",
+    tokenSequences: Object.freeze([]),
+    strongTokens: Object.freeze(["plan", "conducta", "manejo", "indicaciones"])
+  }),
+  Object.freeze({
+    key: "tratamiento",
+    tokenSequences: Object.freeze([]),
+    strongTokens: Object.freeze(["tratamiento", "terapeutica"])
+  }),
+  Object.freeze({
+    key: "medicamentos",
+    tokenSequences: Object.freeze([]),
+    strongTokens: Object.freeze(["medicamentos", "medicacion", "farmacologico"])
+  }),
+  Object.freeze({
+    key: "pronostico",
+    tokenSequences: Object.freeze([]),
+    strongTokens: Object.freeze(["pronostico"])
+  }),
+  Object.freeze({
+    key: "destino",
+    tokenSequences: Object.freeze([]),
+    strongTokens: Object.freeze(["destino"])
+  }),
+  Object.freeze({
+    key: "firmas",
+    boundaryOnly: true,
+    tokenSequences: Object.freeze([
+      Object.freeze(["nombre", "firma", "y", "cedula"]),
+      Object.freeze(["firma", "y", "cedula"])
+    ]),
+    strongTokens: Object.freeze(["firmas", "firma"])
+  })
+]);
+
 // Nombres conceptuales -> claves públicas históricas consumidas por el modelo de revisión.
 export const CORE_CLINICAL_SECTION_KEYS = Object.freeze({
   subjective: "subjetivo",

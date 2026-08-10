@@ -184,6 +184,7 @@ console.info("[patient-transfer] clinical-note-segmenter:loaded", {
     const parsedSections = parseClinicalSections(segmentBlocks, {
       noteSegment: {
         id,
+        segmentIndex: index,
         date: metadata.date,
         time: metadata.time,
         startBlockIndex,

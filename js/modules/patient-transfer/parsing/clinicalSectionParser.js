@@ -1,5 +1,11 @@
 import { flattenNormalizedBlocks } from "../docx/docxBlockNormalizer.js";
-import { CLINICAL_SECTION_ALIASES, CLINICAL_SECTION_KEYS, CORE_CLINICAL_SECTION_KEYS } from "./clinicalSectionConfig.js";
+import {
+  CLINICAL_BOUNDARY_ONLY_ALIASES,
+  CLINICAL_HEADING_SEMANTIC_FAMILIES,
+  CLINICAL_SECTION_ALIASES,
+  CLINICAL_SECTION_KEYS,
+  CORE_CLINICAL_SECTION_KEYS
+} from "./clinicalSectionConfig.js";
 import { findFirstBoundary, findSectionStart, normalizeClinicalHeadingWithMap } from "./clinicalBoundaryEngine.js";
 import { parseSubjectiveSection } from "./subjectiveSectionParser.js";
 
@@ -10,21 +16,114 @@ export function normalizeClinicalHeading(value = "") {
 }
 
 const ORDERED_ALIASES = Object.freeze(
-  Object.entries(CLINICAL_SECTION_ALIASES)
-    .flatMap(([key, aliases]) => aliases.map((alias) => ({
+  [
+    ...Object.entries(CLINICAL_SECTION_ALIASES).flatMap(([key, aliases]) => aliases.map((alias) => ({
       key,
       alias,
-      normalized: normalizeClinicalHeading(alias)
+      normalized: normalizeClinicalHeading(alias),
+      boundaryOnly: false
+    }))),
+    ...Object.entries(CLINICAL_BOUNDARY_ONLY_ALIASES).flatMap(([key, aliases]) => aliases.map((alias) => ({
+      key,
+      alias,
+      normalized: normalizeClinicalHeading(alias),
+      boundaryOnly: true
     })))
+  ]
     .sort((a, b) => b.normalized.length - a.normalized.length)
 );
 
 const ALL_SECTION_ALIASES = Object.freeze(ORDERED_ALIASES.map(({ alias }) => alias));
 
+function semanticSequenceStart(tokens = [], sequence = []) {
+  if (!sequence.length || sequence.length > tokens.length) return -1;
+  for (let index = 0; index <= tokens.length - sequence.length; index += 1) {
+    if (sequence.every((token, offset) => tokens[index + offset] === token)) return index;
+  }
+  return -1;
+}
+
+function semanticFamilyMatch(tokens = []) {
+  const sequenceMatches = [];
+  CLINICAL_HEADING_SEMANTIC_FAMILIES.forEach((family, familyIndex) => {
+    family.tokenSequences.forEach((sequence) => {
+      const start = semanticSequenceStart(tokens, sequence);
+      if (start >= 0) sequenceMatches.push({ family, familyIndex, start, length: sequence.length });
+    });
+  });
+  if (sequenceMatches.length) {
+    return sequenceMatches.sort((left, right) => left.start - right.start || right.length - left.length || left.familyIndex - right.familyIndex)[0];
+  }
+
+  const tokenMatches = [];
+  CLINICAL_HEADING_SEMANTIC_FAMILIES.forEach((family, familyIndex) => {
+    family.strongTokens.forEach((token) => {
+      const start = tokens.indexOf(token);
+      if (start >= 0) tokenMatches.push({ family, familyIndex, start, length: 1 });
+    });
+  });
+  return tokenMatches.sort((left, right) => left.start - right.start || left.familyIndex - right.familyIndex)[0] || null;
+}
+
 export function classifyClinicalHeading(value = "") {
   const normalized = normalizeClinicalHeading(value);
   if (!normalized || normalized.length > 180) return null;
-  return ORDERED_ALIASES.find((entry) => entry.normalized === normalized) || null;
+  const exact = ORDERED_ALIASES.find((entry) => entry.normalized === normalized);
+  if (exact) return { ...exact, method: "alias-heading" };
+
+  const tokens = normalized.split(" ").filter(Boolean);
+  const semantic = semanticFamilyMatch(tokens);
+  if (!semantic || semantic.start > 1) return null;
+  return {
+    key: semantic.family.key,
+    alias: "",
+    normalized,
+    boundaryOnly: Boolean(semantic.family.boundaryOnly),
+    method: "semantic-heading",
+    semanticToken: tokens[semantic.start]
+  };
+}
+
+export function classifyHeadingToCanonicalSection(value = "") {
+  const match = classifyClinicalHeading(value);
+  return match?.boundaryOnly ? null : match?.key || null;
+}
+
+function uppercaseHeading(value = "") {
+  const letters = String(value || "").replace(/[^\p{L}]/gu, "");
+  return letters.length >= 3 && letters === letters.toUpperCase();
+}
+
+function structuralSemanticHeading(raw = "") {
+  const source = String(raw || "");
+  const trimmedStart = source.search(/\S/u);
+  if (trimmedStart < 0) return null;
+  const trimmed = source.slice(trimmedStart).trim();
+  const colonIndex = trimmed.search(/[:：]/u);
+  const headingText = (colonIndex >= 0 ? trimmed.slice(0, colonIndex) : trimmed).trim();
+  const normalized = normalizeClinicalHeading(headingText);
+  const tokens = normalized.split(" ").filter(Boolean);
+  if (!normalized || normalized.length > 180 || tokens.length > 14) return null;
+  const hasDelimiter = colonIndex >= 0;
+  if (!hasDelimiter && !uppercaseHeading(headingText)) return null;
+  const match = classifyClinicalHeading(headingText);
+  if (!match || match.method !== "semantic-heading") return null;
+
+  const headingStart = trimmedStart;
+  const headingEnd = headingStart + (colonIndex >= 0 ? trimmed.slice(0, colonIndex).trimEnd().length : trimmed.length);
+  const delimiter = colonIndex >= 0 ? trimmed.slice(colonIndex).match(/^[:：]\s*/u)?.[0] || ":" : "";
+  const contentStart = headingStart + (colonIndex >= 0 ? colonIndex + delimiter.length : trimmed.length);
+  return {
+    ...match,
+    headingText: source.slice(headingStart, headingEnd).trim(),
+    headingStart,
+    headingEnd,
+    contentStart,
+    inlineContent: source.slice(contentStart).trim(),
+    delimiter: delimiter ? ":" : "",
+    alias: headingText,
+    detectionMethod: match.method
+  };
 }
 
 /** Reconoce un título clínico al inicio del bloque y conserva contenido inline. */
@@ -32,19 +131,24 @@ export function detectClinicalHeading(text = "") {
   const raw = String(text || "");
   if (!raw.trim()) return null;
   const start = findSectionStart(raw, ALL_SECTION_ALIASES);
-  if (!start) return null;
-  const match = classifyClinicalHeading(start.alias);
-  if (!match) return null;
-  return {
-    key: match.key,
-    alias: match.alias,
-    headingText: start.headingText,
-    inlineContent: start.inlineContent,
-    headingStart: start.headingStart,
-    headingEnd: start.headingEnd,
-    contentStart: start.contentStart,
-    delimiter: start.delimiter
-  };
+  if (start) {
+    const match = classifyClinicalHeading(start.alias);
+    if (match) {
+      return {
+        key: match.key,
+        alias: match.alias,
+        boundaryOnly: Boolean(match.boundaryOnly),
+        headingText: start.headingText,
+        inlineContent: start.inlineContent,
+        headingStart: start.headingStart,
+        headingEnd: start.headingEnd,
+        contentStart: start.contentStart,
+        delimiter: start.delimiter,
+        detectionMethod: match.method
+      };
+    }
+  }
+  return structuralSemanticHeading(raw);
 }
 
 /** Detector estructural público: exige vocabulario canónico y forma de título. */
@@ -71,12 +175,14 @@ function headingMarkers(text = "") {
   if (leading) {
     markers.push({
       key: leading.key,
+      boundaryOnly: Boolean(leading.boundaryOnly),
       alias: leading.alias,
       start: 0,
       headingEnd: leading.headingEnd,
       contentStart: leading.contentStart,
       headingText: leading.headingText,
-      delimiter: leading.delimiter
+      delimiter: leading.delimiter,
+      detectionMethod: leading.detectionMethod
     });
     searchOffset = Math.max(leading.contentStart, leading.headingEnd);
   }
@@ -97,12 +203,14 @@ function headingMarkers(text = "") {
     if (!overlapsPrevious) {
       markers.push({
         key: match.key,
+        boundaryOnly: Boolean(match.boundaryOnly),
         alias: match.alias,
         start: absoluteStart,
         headingEnd: absoluteEnd,
         contentStart,
         headingText: raw.slice(absoluteStart, absoluteEnd).trim(),
-        delimiter: boundary.delimiter || ""
+        delimiter: boundary.delimiter || "",
+        detectionMethod: match.method
       });
     }
     searchOffset = Math.max(contentStart, absoluteEnd, searchOffset + 1);
@@ -267,11 +375,12 @@ export function parseClinicalSections(blocks = [], { noteSegment = {} } = {}) {
     markers.forEach((marker, markerIndex) => {
       const previous = encabezados.at(-1);
       if (previous) previous.end = line.source?.blockIndex ?? line.position;
-      currentKey = marker.key;
+      currentKey = marker.boundaryOnly ? "" : marker.key;
       const nextMarkerStart = markers[markerIndex + 1]?.start ?? line.text.length;
       const inlineContent = line.text.slice(marker.contentStart, nextMarkerStart).trim();
       encabezados.push({
         key: marker.key,
+        boundaryOnly: Boolean(marker.boundaryOnly),
         alias: marker.alias,
         heading: marker.headingText,
         position: line.position,
@@ -280,7 +389,7 @@ export function parseClinicalSections(blocks = [], { noteSegment = {} } = {}) {
         end: null,
         source: line.source || {},
         inlineContent,
-        detectionMethod: "explicit-heading"
+        detectionMethod: marker.detectionMethod || "alias-heading"
       });
       appendSection(secciones, sectionParts, currentKey, inlineContent, line);
     });
@@ -301,6 +410,14 @@ export function parseClinicalSections(blocks = [], { noteSegment = {} } = {}) {
   secciones.subjetivo = secciones.subjetivo || subjectiveExtraction.text || "";
 
   encabezados.forEach((heading, index) => {
+    console.info("[patient-transfer] section-heading-detected", {
+      normalizedHeading: normalizeClinicalHeading(heading.heading),
+      canonicalSection: heading.boundaryOnly ? null : heading.key,
+      boundaryOnly: Boolean(heading.boundaryOnly),
+      blockIndex: heading.start,
+      segmentIndex: noteSegment.segmentIndex ?? null,
+      method: heading.detectionMethod
+    });
     console.info("[patient-transfer] clinical-heading", {
       heading: heading.heading,
       mappedSection: heading.key,
@@ -311,7 +428,7 @@ export function parseClinicalSections(blocks = [], { noteSegment = {} } = {}) {
   });
 
   const encontradas = [...new Set([
-    ...encabezados.map((item) => item.key),
+    ...encabezados.filter((item) => !item.boundaryOnly).map((item) => item.key),
     ...(contextualInference ? [contextualInference.key] : [])
   ])];
   return {
