@@ -1,5 +1,10 @@
 import { auth, db } from "./firebase.js";
-import { MEDICAMENTOS_PRESENTACIONES, MEDICAMENTOS_MAESTROS, medicamentoPorTexto } from "./data/medicamentos.js";
+import {
+  MEDICAMENTOS_PRESENTACIONES,
+  MEDICAMENTOS_MAESTROS,
+  buscarMedicamentos,
+  medicamentoPorTexto
+} from "./data/medicamentos.js";
 import { CIE10 } from "./data/cie10.js";
 import { CIE11 } from "./data/cie11.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
@@ -2097,7 +2102,7 @@ function configurarCatalogoMedicamentosTratamiento() {
 
     const existe = catalogoMedicamentosTratamiento().some((medicamento) =>
       medicamento.texto.toLowerCase() === texto.toLowerCase()
-    );
+    ) || Boolean(resolverMedicamentoEditor(texto));
     estado.textContent = existe
       ? "Medicamento encontrado en catlogo."
       : "No est en el catlogo. Puedes aadirlo manualmente.";
@@ -2265,18 +2270,56 @@ function estadoClinicoDiagnosticoValido(estado) {
   return ESTADOS_DIAGNOSTICO.includes(estado) ? estado : "";
 }
 
-function medicamentoSeleccionadoTratamiento() {
-  return medicamentoPorTexto(valorCampo("tratamientoMedicamento"))
-    || MEDICAMENTOS_MAESTROS.find((medicamento) => medicamento.nombre.toLowerCase() === valorCampo("tratamientoMedicamento").toLowerCase())
+function resolverMedicamentoEditor(texto = valorCampo("tratamientoMedicamento")) {
+  const consulta = String(texto || "").trim();
+  if (consulta.length < 3) return null;
+  return medicamentoPorTexto(consulta)
+    || buscarMedicamentos(consulta, { limit: 1 })[0]
+    || MEDICAMENTOS_MAESTROS.find((medicamento) =>
+      medicamento.nombre.toLowerCase() === consulta.toLowerCase()
+    )
     || null;
+}
+
+function medicamentoSeleccionadoTratamiento() {
+  return resolverMedicamentoEditor();
+}
+
+function resetearDependientesMedicamento() {
+  [
+    "tratamientoPresentacion",
+    "tratamientoDosis",
+    "tratamientoDosisOtra",
+    "tratamientoVia",
+    "tratamientoFrecuencia",
+    "tratamientoFrecuenciaRapida",
+    "tratamientoFrecuenciaOtra",
+    "tratamientoVecesDia",
+    "tratamientoHorarios",
+    "cantidadTotalDia",
+    "tratamientoDosisTotalDia"
+  ].forEach((id) => ponerValor(id, ""));
+  const modoHorario = document.getElementById("tratamientoModoHorario");
+  if (modoHorario) modoHorario.value = "horas";
+  const frecuenciaOtra = document.getElementById("tratamientoFrecuenciaOtra");
+  if (frecuenciaOtra) frecuenciaOtra.hidden = true;
+  document.querySelectorAll("[data-momento-dia]").forEach((elemento) => { elemento.checked = false; });
+  document.getElementById("contenedorTomasTratamiento")?.replaceChildren();
 }
 
 function actualizarCapturaFarmacologica() {
   const medicamento = medicamentoSeleccionadoTratamiento();
+  const campoMedicamento = document.getElementById("tratamientoMedicamento");
   const presentacion = document.getElementById("tratamientoPresentacion");
   const dosisRapidas = document.getElementById("tratamientoDosisRapidas");
   const principios = document.getElementById("tratamientoPrincipiosActivos");
   if (!presentacion || !dosisRapidas) return;
+
+  const medicationId = medicamento?.id || "";
+  if ((campoMedicamento?.dataset.catalogMedicationId || "") !== medicationId) {
+    resetearDependientesMedicamento();
+    if (campoMedicamento) campoMedicamento.dataset.catalogMedicationId = medicationId;
+  }
 
   const presentaciones = medicamento?.presentaciones || [];
   presentacion.innerHTML = `<option value="">Seleccionar presentación</option>${presentaciones.map((item, index) =>
@@ -2288,7 +2331,10 @@ function actualizarCapturaFarmacologica() {
     const heredada = presentaciones.find((item) => textoMedicamento.includes(item.texto.toLowerCase()));
     if (heredada) presentacion.value = heredada.texto;
   }
-  const dosis = medicamento?.dosisHabituales || [];
+  const presentacionSeleccionada = presentaciones.find((item) => item.texto === presentacion.value);
+  const dosis = presentacionSeleccionada?.texto
+    ? [presentacionSeleccionada.texto.match(/\d+(?:[.,]\d+)?\s*(?:mg|mcg|µg|g|kg|ml|l|ui|u)(?:\s*\/\s*\d+(?:[.,]\d+)?\s*(?:mg|mcg|µg|g|kg|ml|l|ui|u))?/i)?.[0] || presentacionSeleccionada.texto]
+    : [];
   dosisRapidas.innerHTML = dosis.map((dosisItem) =>
     `<button type="button" class="tratamiento-dosis-chip" data-dosis-rapida="${escaparHTML(dosisItem)}">${escaparHTML(dosisItem)}</button>`).join("")
     + `<button type="button" class="tratamiento-dosis-chip tratamiento-dosis-otra" data-dosis-otra>Otra...</button>`;
@@ -7133,7 +7179,10 @@ function limpiarFormularioTratamiento() {
     "tratamientoMedicamento",
     "tratamientoPresentacion",
     "tratamientoDosis",
+    "tratamientoDosisOtra",
     "tratamientoFrecuencia",
+    "tratamientoFrecuenciaRapida",
+    "tratamientoFrecuenciaOtra",
     "tratamientoModoFrecuencia",
     "tratamientoVecesDia",
     "tratamientoVia",
@@ -7154,8 +7203,13 @@ function limpiarFormularioTratamiento() {
   if (campoCantidad) campoCantidad.dataset.auto = "";
   ponerValor("tratamientoEstado", "activo");
   ponerValor("tratamientoModoFrecuencia", "horas_especificas");
-  ponerValor("tratamientoVecesDia", "3");
-  ponerValor("tratamientoFrecuencia", "3 veces al día");
+  ponerValor("tratamientoVecesDia", "");
+  ponerValor("tratamientoFrecuencia", "");
+  ponerValor("tratamientoModoHorario", "horas");
+  const campoMedicamento = document.getElementById("tratamientoMedicamento");
+  if (campoMedicamento) delete campoMedicamento.dataset.catalogMedicationId;
+  const frecuenciaOtra = document.getElementById("tratamientoFrecuenciaOtra");
+  if (frecuenciaOtra) frecuenciaOtra.hidden = true;
   actualizarCampoCambioTratamiento();
   ponerValor("tratamientoDuracion", "30 días");
   document.querySelectorAll("[data-momento-dia]").forEach((elemento) => { elemento.checked = false; });
@@ -7415,6 +7469,9 @@ function editarTratamientoPaciente(id) {
 
   ponerValor("tratamientoId", t.id);
   ponerValor("tratamientoMedicamento", t.medicamento);
+  const medicamentoEditado = resolverMedicamentoEditor(t.medicamento);
+  const campoMedicamento = document.getElementById("tratamientoMedicamento");
+  if (campoMedicamento) campoMedicamento.dataset.catalogMedicationId = t.catalogMedicationId || medicamentoEditado?.id || "";
   ponerValor("tratamientoPresentacion", t.presentacion || "");
   ponerValor("tratamientoDosis", t.dosis);
   ponerValor("tratamientoFrecuencia", normalizarTextoFrecuenciaTratamiento(t.frecuencia));
@@ -7590,7 +7647,10 @@ function numeroTomasTratamiento() {
   const modo = valorCampo("tratamientoModoFrecuencia");
   if (modo === "cada_8_horas" || modo === "manana_tarde_noche") return 3;
   if (modo === "cada_12_horas") return 2;
-  return Math.max(1, Number(valorCampo("tratamientoVecesDia")) || obtenerVecesPorDia(valorCampo("tratamientoFrecuencia")) || 1);
+  const frecuencia = valorCampo("tratamientoFrecuencia");
+  const vecesDia = Number(valorCampo("tratamientoVecesDia")) || obtenerVecesPorDia(frecuencia);
+  if (!frecuencia && !vecesDia) return 0;
+  return Math.max(1, vecesDia || 1);
 }
 
 function horariosPorModoTratamiento(modo, total) {
@@ -7620,6 +7680,12 @@ function sincronizarCamposTratamientoDesdeTomas() {
   const tomas = leerTomasTratamiento();
   const modo = valorCampo("tratamientoModoFrecuencia") || "horas_especificas";
   const total = Math.max(tomas.length, numeroTomasTratamiento());
+  if (!total) {
+    ponerValor("tratamientoFrecuencia", "");
+    ponerValor("tratamientoDosis", "");
+    ponerValor("tratamientoHorarios", "");
+    return;
+  }
   const frecuencia = etiquetaFrecuenciaTratamiento(modo, total);
   const dosis = tomas
     .map((toma) => [
