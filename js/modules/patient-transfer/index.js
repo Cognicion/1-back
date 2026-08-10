@@ -1,5 +1,5 @@
-import { initializePatientTransfer } from "./patientTransferController.js?v=v169-analysis-section-v1";
-// Marcador de cache: patientTransferController.js?v=v169-analysis-section-v1
+import { initializePatientTransfer } from "./patientTransferController.js?v=v170-general-clinical-sections-v1";
+// Marcador de cache: patientTransferController.js?v=v170-general-clinical-sections-v1
 
 export function openPatientTransfer() {
   const transfer = initializePatientTransfer();

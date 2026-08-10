@@ -1,5 +1,16 @@
 import assert from "node:assert/strict";
-import { parseClinicalSections } from "../js/modules/patient-transfer/parsing/clinicalSectionParser.js";
+import {
+  isLikelySectionHeading,
+  normalizeClinicalHeading,
+  parseClinicalSections
+} from "../js/modules/patient-transfer/parsing/clinicalSectionParser.js";
+
+assert.equal(normalizeClinicalHeading("  7. ANÁLISIS:  "), "analisis");
+assert.equal(normalizeClinicalHeading("VIII.- COMENTARIO"), "comentario");
+assert.equal(normalizeClinicalHeading("3) VALORACIÓN"), "valoracion");
+assert.equal(normalizeClinicalHeading("ANALISIS-COMENTARIO"), "analisis comentario");
+assert.equal(isLikelySectionHeading("ANÁLISIS:"), true);
+assert.equal(isLikelySectionHeading("se solicitaron análisis de laboratorio"), false);
 
 const result = parseClinicalSections([
   { type: "paragraph", text: "MOTIVO DE ATENCIÓN / ACTUALIZACIÓN DEL CUADRO CLÍNICO", source: { blockIndex: 0 } },
@@ -48,7 +59,20 @@ assert.equal(analysisCase.secciones.examenMental, "Alerta, orientada y colaborad
 assert.equal(analysisCase.secciones.analisis, "Evolución compatible con mejoría clínica parcial.");
 assert.equal(analysisCase.secciones.diagnosticos, "Esquizofrenia F20");
 
-for (const heading of ["ANÁLISIS:", "COMENTARIO:", "FUNDAMENTO:", "IMPRESIÓN CLÍNICA:", "JUICIO CLÍNICO:", "ANÁLISIS.-"]) {
+for (const heading of [
+  "ANÁLISIS / COMENTARIO",
+  "COMENTARIO",
+  "VALORACIÓN CLÍNICA",
+  "JUICIO CLÍNICO",
+  "IMPRESIÓN CLÍNICA",
+  "RAZONAMIENTO CLÍNICO",
+  "7. ANÁLISIS",
+  "VIII.- COMENTARIO",
+  "3) VALORACIÓN",
+  "ANALISIS-COMENTARIO",
+  "FUNDAMENTO:",
+  "ANÁLISIS.-"
+]) {
   const variant = parseClinicalSections([
     { type: "paragraph", text: heading, source: { blockIndex: 40 } },
     { type: "paragraph", text: "Contenido analítico de la nota.", source: { blockIndex: 41 } },
@@ -63,6 +87,30 @@ const narrativeAnalysis = parseClinicalSections([
   { type: "paragraph", text: "Paciente refiere análisis de laboratorio pendiente.", source: { blockIndex: 50 } }
 ]);
 assert.equal(narrativeAnalysis.secciones.analisis, "");
+
+const inferredAnalysis = parseClinicalSections([
+  { type: "paragraph", text: "EXAMEN MENTAL", source: { blockIndex: 60 } },
+  { type: "paragraph", text: "Alerta y orientada.", source: { blockIndex: 61 } },
+  { type: "paragraph", text: "Por lo anterior, se concluye cuadro compatible con mejoría.", source: { blockIndex: 62 } },
+  { type: "paragraph", text: "DIAGNÓSTICOS", source: { blockIndex: 63 } },
+  { type: "paragraph", text: "Fxx.x Diagnóstico de prueba.", source: { blockIndex: 64 } }
+]);
+assert.equal(inferredAnalysis.secciones.examenMental, "Alerta y orientada.");
+assert.equal(inferredAnalysis.secciones.analisis, "Por lo anterior, se concluye cuadro compatible con mejoría.");
+assert.equal(inferredAnalysis.secciones.diagnosticos, "Fxx.x Diagnóstico de prueba.");
+assert.equal(inferredAnalysis.inferencias[0]?.detectionMethod, "contextual-inference");
+
+const variableOrder = parseClinicalSections([
+  { type: "paragraph", text: "PLAN", source: { blockIndex: 70 } },
+  { type: "paragraph", text: "Continuar vigilancia.", source: { blockIndex: 71 } },
+  { type: "paragraph", text: "JUICIO CLÍNICO", source: { blockIndex: 72 } },
+  { type: "paragraph", text: "Evolución favorable.", source: { blockIndex: 73 } },
+  { type: "paragraph", text: "EXAMEN MENTAL", source: { blockIndex: 74 } },
+  { type: "paragraph", text: "Alerta y cooperadora.", source: { blockIndex: 75 } }
+]);
+assert.equal(variableOrder.secciones.plan, "Continuar vigilancia.");
+assert.equal(variableOrder.secciones.analisis, "Evolución favorable.");
+assert.equal(variableOrder.secciones.examenMental, "Alerta y cooperadora.");
 
 const mentalInlineBoundary = parseClinicalSections([
   { type: "paragraph", text: "EXAMEN MENTAL: Moderada advertencia del padecimiento. Proyección a futuro no estructurada. RESULTADOS RELEVANTES DE LOS ESTUDIOS DE DIAGNÓSTICO EKG... DIAGNÓSTICOS DE ACUERDO A CIE-10... PLAN TERAPÉUTICO", source: { blockIndex: 10 } }

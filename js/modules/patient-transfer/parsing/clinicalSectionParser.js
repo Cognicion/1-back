@@ -1,156 +1,238 @@
 import { flattenNormalizedBlocks } from "../docx/docxBlockNormalizer.js";
-import { CLINICAL_SECTION_ALIASES, CLINICAL_SECTION_KEYS, MENTAL_EXAM_BOUNDARY_ALIASES } from "./clinicalSectionConfig.js";
-import { findFirstBoundaryInsideText, parseSubjectiveSection } from "./subjectiveSectionParser.js";
+import { CLINICAL_SECTION_ALIASES, CLINICAL_SECTION_KEYS, CORE_CLINICAL_SECTION_KEYS } from "./clinicalSectionConfig.js";
+import { findFirstBoundary, findSectionStart, normalizeClinicalHeadingWithMap } from "./clinicalBoundaryEngine.js";
+import { parseSubjectiveSection } from "./subjectiveSectionParser.js";
 
 export const SECTION_RULES = CLINICAL_SECTION_ALIASES;
 
 export function normalizeClinicalHeading(value = "") {
-  return String(value || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[.:;\-–—]+$/g, "")
-    .replace(/\s*\/\s*/g, " / ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
+  return normalizeClinicalHeadingWithMap(value).text;
 }
 
 const ORDERED_ALIASES = Object.freeze(
   Object.entries(CLINICAL_SECTION_ALIASES)
-    .flatMap(([key, aliases]) => aliases.map((alias) => ({ key, alias, normalized: normalizeClinicalHeading(alias) })))
+    .flatMap(([key, aliases]) => aliases.map((alias) => ({
+      key,
+      alias,
+      normalized: normalizeClinicalHeading(alias)
+    })))
     .sort((a, b) => b.normalized.length - a.normalized.length)
 );
 
-function isUppercaseHeading(value = "") {
-  const letters = String(value).replace(/[^\p{L}]/gu, "");
-  return letters.length >= 3 && letters === letters.toUpperCase();
-}
+const ALL_SECTION_ALIASES = Object.freeze(ORDERED_ALIASES.map(({ alias }) => alias));
 
-function matchHeadingPart(rawHeading = "") {
-  const normalized = normalizeClinicalHeading(rawHeading);
+export function classifyClinicalHeading(value = "") {
+  const normalized = normalizeClinicalHeading(value);
   if (!normalized || normalized.length > 180) return null;
-  return ORDERED_ALIASES.find(({ normalized: alias }) => normalized === alias) || null;
+  return ORDERED_ALIASES.find((entry) => entry.normalized === normalized) || null;
 }
 
-/** Reconoce títulos aislados y títulos con contenido después de dos puntos. */
+/** Reconoce un título clínico al inicio del bloque y conserva contenido inline. */
 export function detectClinicalHeading(text = "") {
-  const raw = String(text || "").trim();
-  if (!raw) return null;
-  const colonIndex = raw.search(/[:：]/);
-  if (colonIndex >= 0) {
-    const headingText = raw.slice(0, colonIndex).trim();
-    const match = matchHeadingPart(headingText);
-    if (match) {
-      return {
-        key: match.key,
-        alias: match.alias,
-        headingText,
-        inlineContent: raw.slice(colonIndex + 1).trim(),
-        delimiter: ":"
-      };
-    }
-  }
-
-  const exact = matchHeadingPart(raw);
-  if (exact && (raw.length <= 100 || isUppercaseHeading(raw))) {
-    return { key: exact.key, alias: exact.alias, headingText: raw, inlineContent: "", delimiter: "" };
-  }
-  return null;
+  const raw = String(text || "");
+  if (!raw.trim()) return null;
+  const start = findSectionStart(raw, ALL_SECTION_ALIASES);
+  if (!start) return null;
+  const match = classifyClinicalHeading(start.alias);
+  if (!match) return null;
+  return {
+    key: match.key,
+    alias: match.alias,
+    headingText: start.headingText,
+    inlineContent: start.inlineContent,
+    headingStart: start.headingStart,
+    headingEnd: start.headingEnd,
+    contentStart: start.contentStart,
+    delimiter: start.delimiter
+  };
 }
 
+/** Detector estructural público: exige vocabulario canónico y forma de título. */
+export function isLikelySectionHeading(line = "") {
+  const raw = String(line || "").trim();
+  if (!raw || raw.length > 1500) return false;
+  return Boolean(detectClinicalHeading(raw));
+}
+
+function boundaryContentStart(raw = "", boundary = {}) {
+  const delimiterLength = String(boundary.delimiter || "").length;
+  if (delimiterLength) return boundary.end + delimiterLength;
+  const whitespace = raw.slice(boundary.end).match(/^\s*/u)?.[0] || "";
+  return boundary.end + whitespace.length;
+}
+
+/** Detecta todos los límites reconocidos de una línea, no solo los de examen mental. */
 function headingMarkers(text = "") {
   const raw = String(text || "");
-  const normalized = raw.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   const markers = [];
+  const leading = detectClinicalHeading(raw);
+  let searchOffset = 0;
 
-  ORDERED_ALIASES.forEach((entry) => {
-    let offset = 0;
-    while ((offset = normalized.indexOf(entry.normalized, offset)) >= 0) {
-      const before = offset === 0 ? "" : normalized[offset - 1];
-      const afterIndex = offset + entry.normalized.length;
-      const after = normalized.slice(afterIndex).match(/^\s*/)?.[0] || "";
-      const delimiterIndex = afterIndex + after.length;
-      const hasColon = /[:：]/.test(raw[delimiterIndex] || "");
-      const atBoundary = offset === 0 || /[\s|.)-]/.test(before);
-      const headingText = raw.slice(offset, afterIndex);
-      const looksLikeTitle = isUppercaseHeading(headingText) || offset === 0;
-      if (atBoundary && hasColon && looksLikeTitle) {
-        markers.push({
-          ...entry,
-          start: offset,
-          contentStart: delimiterIndex + 1,
-          headingText
-        });
-      }
-      offset = afterIndex || offset + 1;
+  if (leading) {
+    markers.push({
+      key: leading.key,
+      alias: leading.alias,
+      start: 0,
+      headingEnd: leading.headingEnd,
+      contentStart: leading.contentStart,
+      headingText: leading.headingText,
+      delimiter: leading.delimiter
+    });
+    searchOffset = Math.max(leading.contentStart, leading.headingEnd);
+  }
+
+  while (searchOffset < raw.length) {
+    const boundary = findFirstBoundary(raw.slice(searchOffset), ALL_SECTION_ALIASES);
+    if (!boundary) break;
+    const absoluteStart = searchOffset + boundary.start;
+    const absoluteEnd = searchOffset + boundary.end;
+    const match = classifyClinicalHeading(boundary.alias);
+    if (!match) {
+      searchOffset = Math.max(absoluteEnd, searchOffset + 1);
+      continue;
     }
-  });
+    const localBoundary = { ...boundary, end: absoluteEnd };
+    const contentStart = boundaryContentStart(raw, localBoundary);
+    const overlapsPrevious = markers.some((marker) => absoluteStart < marker.headingEnd);
+    if (!overlapsPrevious) {
+      markers.push({
+        key: match.key,
+        alias: match.alias,
+        start: absoluteStart,
+        headingEnd: absoluteEnd,
+        contentStart,
+        headingText: raw.slice(absoluteStart, absoluteEnd).trim(),
+        delimiter: boundary.delimiter || ""
+      });
+    }
+    searchOffset = Math.max(contentStart, absoluteEnd, searchOffset + 1);
+  }
 
-  return markers
-    .sort((a, b) => a.start - b.start || b.normalized.length - a.normalized.length)
-    .filter((marker, index, all) => index === 0 || marker.start >= all[index - 1].contentStart);
+  return markers.sort((left, right) => left.start - right.start || right.headingEnd - left.headingEnd);
 }
 
 function flattenedLines(blocks = []) {
+  let ordinal = 0;
   return flattenNormalizedBlocks(blocks).flatMap((block, flattenedIndex) =>
     String(block.text || "").split(/\r?\n/).map((text, lineIndex) => ({
       text: text.trim(),
       source: block.source || {},
       position: flattenedIndex,
-      lineIndex
+      lineIndex,
+      ordinal: ordinal++
     })).filter((line) => line.text)
   );
 }
 
-function appendSection(secciones, key, value = "") {
+function appendSection(secciones, sectionParts, key, value = "", line = {}) {
   const clean = String(value || "").trim();
   if (!key || !clean) return;
   secciones[key] = [secciones[key], clean].filter(Boolean).join("\n");
+  sectionParts[key].push({
+    text: clean,
+    ordinal: line.ordinal ?? -1,
+    position: line.position ?? -1,
+    blockIndex: line.source?.blockIndex ?? line.position ?? -1,
+    source: line.source || {}
+  });
+}
+
+function joinParts(parts = []) {
+  return parts.map((part) => part.text).filter(Boolean).join("\n").trim();
+}
+
+const ANALYSIS_LANGUAGE_SIGNALS = Object.freeze([
+  /\bpor lo anterior\b/u,
+  /\bse (?:considera|concluye|integra|plantea)\b/u,
+  /\bcompatible con\b/u,
+  /\bamerita\b/u,
+  /\brequiere\b/u,
+  /\bfactores? de riesgo\b/u,
+  /\bimpresion diagnostica\b/u,
+  /\bjuicio clinico\b/u
+]);
+
+function interpretiveLanguageScore(value = "") {
+  const normalized = normalizeClinicalHeading(value);
+  return ANALYSIS_LANGUAGE_SIGNALS.filter((pattern) => pattern.test(normalized)).length;
+}
+
+function groupPartsByBlock(parts = []) {
+  const groups = [];
+  parts.forEach((part) => {
+    const identity = `${part.blockIndex}:${part.position}`;
+    const current = groups.at(-1);
+    if (!current || current.identity !== identity) groups.push({ identity, parts: [part] });
+    else current.parts.push(part);
+  });
+  return groups;
+}
+
+/**
+ * Inferencia deliberadamente conservadora: solo separa el último bloque entre
+ * examen mental y diagnósticos/plan cuando existe contenido mental previo y al
+ * menos dos señales interpretativas independientes.
+ */
+function inferContextualAnalysis({ secciones, sectionParts, encabezados, noteSegment = {} } = {}) {
+  const keys = CORE_CLINICAL_SECTION_KEYS;
+  if (encabezados.some((heading) => heading.key === keys.analysis)) return null;
+
+  for (let mentalIndex = encabezados.length - 1; mentalIndex >= 0; mentalIndex -= 1) {
+    const mentalHeading = encabezados[mentalIndex];
+    if (mentalHeading.key !== keys.mentalExam) continue;
+    const nextHeading = encabezados[mentalIndex + 1];
+    if (!nextHeading || ![keys.diagnoses, keys.plan].includes(nextHeading.key)) continue;
+
+    const mentalParts = sectionParts[keys.mentalExam].filter((part) =>
+      part.ordinal >= mentalHeading.ordinal && part.ordinal < nextHeading.ordinal
+    );
+    const groups = groupPartsByBlock(mentalParts);
+    if (groups.length < 2) continue;
+
+    const candidateGroup = groups.at(-1);
+    const previousGroup = groups.at(-2);
+    if (!candidateGroup || candidateGroup.identity === previousGroup?.identity) continue;
+    const candidateText = joinParts(candidateGroup.parts);
+    if (!candidateText || candidateText.length > 800 || interpretiveLanguageScore(candidateText) < 2) continue;
+
+    const candidateSet = new Set(candidateGroup.parts);
+    sectionParts[keys.mentalExam] = sectionParts[keys.mentalExam].filter((part) => !candidateSet.has(part));
+    sectionParts[keys.analysis].push(...candidateGroup.parts);
+    secciones[keys.mentalExam] = joinParts(sectionParts[keys.mentalExam]);
+    secciones[keys.analysis] = joinParts(sectionParts[keys.analysis]);
+
+    const inference = {
+      key: keys.analysis,
+      detectionMethod: "contextual-inference",
+      start: candidateGroup.parts[0]?.blockIndex ?? null,
+      end: nextHeading.start ?? null,
+      precedingSection: keys.mentalExam,
+      followingSection: nextHeading.key,
+      signalCount: interpretiveLanguageScore(candidateText)
+    };
+    console.info("[patient-transfer] clinical-section:context-inferred", {
+      noteId: noteSegment.id || "",
+      ...inference,
+      length: candidateText.length
+    });
+    return inference;
+  }
+  return null;
 }
 
 function splitPlanAndMedications(secciones) {
   if (!secciones.plan) return;
   const marker = /(?:^|\n|\s)6\s*[.)-]+\s*medicamentos\b/i.exec(secciones.plan);
   if (!marker) return;
-  const markerText = marker[0];
-  const contentStart = marker.index + markerText.length;
+  const contentStart = marker.index + marker[0].length;
   const medicationText = secciones.plan.slice(contentStart).trim();
   secciones.plan = secciones.plan.slice(0, marker.index).trim();
   if (medicationText) secciones.medicamentos = [secciones.medicamentos, medicationText].filter(Boolean).join("\n");
 }
 
-function clampMentalExam(secciones, encabezados, lines, noteSegment = {}) {
-  const mentalHeading = encabezados.find((heading) => heading.key === "examenMental");
-  if (!mentalHeading || !secciones.examenMental) return;
-  const mentalStartPosition = mentalHeading.position ?? -1;
-  let boundary = null;
-  for (const line of lines) {
-    if ((line.position ?? -1) < mentalStartPosition) continue;
-    const match = findFirstBoundaryInsideText(line.text, MENTAL_EXAM_BOUNDARY_ALIASES);
-    if (match) {
-      boundary = { ...match, line };
-      break;
-    }
-  }
-  if (!boundary) return;
-  const before = secciones.examenMental;
-  const inlineBoundary = findFirstBoundaryInsideText(before, MENTAL_EXAM_BOUNDARY_ALIASES);
-  if (!inlineBoundary) return;
-  secciones.examenMental = before.slice(0, inlineBoundary.start).trim();
-  const trace = {
-    noteId: noteSegment.id || "",
-    startBlock: mentalHeading.start ?? null,
-    endBlock: boundary.line.source?.blockIndex ?? boundary.line.position ?? null,
-    matchedBoundary: boundary.alias,
-    length: secciones.examenMental.length
-  };
-  console.info("[patient-transfer] mental-exam:boundary-found", trace);
-  return trace;
-}
-
 const DESTINATION_FOOTER_BOUNDARIES = Object.freeze([
   { pattern: /(?:^|\n)\s*(?:dr\.|dra\.|m[eé]dico adscrito|m[eé]dica residente)(?=\s|$)/i },
-  { pattern: /(?:^|\n)\s*(?:c[eé]d\.?|c[eé]dula|firma|nombre,?\s*firma\s+y\s*c[eé]dula)(?=\s|$)/i },
+  { pattern: /(?:^|\n)\s*(?:c[eé]d\.?|c[eé]dula|firma|nombre,?\s*firma\s+y\s+c[eé]dula)(?=\s|$)/i },
   { pattern: /(?:^|\n)\s*(?:secretar[ií]a de salud|comisi[oó]n nacional|hospital psiqui[aá]trico|conasama|p[aá]gina siguiente|pie institucional)(?=\s|$)/i }
 ]);
 
@@ -166,9 +248,10 @@ function clampDestination(secciones) {
   secciones.destino = source.slice(0, boundaryStart).trim();
 }
 
-/** Separa cada segmento usando todos los encabezados, sin recurrir a rawText como respaldo. */
+/** Separa cada segmento usando un único motor de headings y límites canónicos. */
 export function parseClinicalSections(blocks = [], { noteSegment = {} } = {}) {
   const secciones = Object.fromEntries(CLINICAL_SECTION_KEYS.map((key) => [key, ""]));
+  const sectionParts = Object.fromEntries(CLINICAL_SECTION_KEYS.map((key) => [key, []]));
   const encabezados = [];
   const lines = flattenedLines(blocks);
   let currentKey = "";
@@ -176,72 +259,46 @@ export function parseClinicalSections(blocks = [], { noteSegment = {} } = {}) {
   lines.forEach((line) => {
     const markers = headingMarkers(line.text);
     if (!markers.length) {
-      const exact = detectClinicalHeading(line.text);
-      if (exact) {
-        const previous = encabezados.at(-1);
-        if (previous) previous.end = line.source?.blockIndex ?? line.position;
-        currentKey = exact.key;
-        encabezados.push({
-          key: exact.key,
-          alias: exact.alias,
-          heading: exact.headingText,
-          position: line.position,
-          start: line.source?.blockIndex ?? line.position,
-          end: null,
-          source: line.source || {},
-          inlineContent: exact.inlineContent
-        });
-        appendSection(secciones, currentKey, exact.inlineContent);
-        return;
-      }
-      appendSection(secciones, currentKey, line.text);
+      appendSection(secciones, sectionParts, currentKey, line.text, line);
       return;
     }
 
-    appendSection(secciones, currentKey, line.text.slice(0, markers[0].start));
+    appendSection(secciones, sectionParts, currentKey, line.text.slice(0, markers[0].start), line);
     markers.forEach((marker, markerIndex) => {
       const previous = encabezados.at(-1);
       if (previous) previous.end = line.source?.blockIndex ?? line.position;
       currentKey = marker.key;
-      const end = markers[markerIndex + 1]?.start ?? line.text.length;
-      const inlineContent = line.text.slice(marker.contentStart, end).trim();
+      const nextMarkerStart = markers[markerIndex + 1]?.start ?? line.text.length;
+      const inlineContent = line.text.slice(marker.contentStart, nextMarkerStart).trim();
       encabezados.push({
         key: marker.key,
         alias: marker.alias,
         heading: marker.headingText,
         position: line.position,
+        ordinal: line.ordinal,
         start: line.source?.blockIndex ?? line.position,
         end: null,
         source: line.source || {},
-        inlineContent
+        inlineContent,
+        detectionMethod: "explicit-heading"
       });
-      appendSection(secciones, currentKey, inlineContent);
+      appendSection(secciones, sectionParts, currentKey, inlineContent, line);
     });
   });
 
   if (encabezados.length) {
     encabezados.at(-1).end = Math.max(...lines.map((line) => line.source?.blockIndex ?? line.position), 0) + 1;
   }
+
+  const contextualInference = inferContextualAnalysis({ secciones, sectionParts, encabezados, noteSegment });
   splitPlanAndMedications(secciones);
   clampDestination(secciones);
-  console.info("[patient-transfer] mental-exam:start", {
-    noteId: noteSegment.id || "",
-    startBlock: encabezados.find((heading) => heading.key === "examenMental")?.start ?? null
-  });
-  const mentalBoundary = clampMentalExam(secciones, encabezados, lines, noteSegment);
-  console.info("[patient-transfer] mental-exam:parsed", {
-    noteId: noteSegment.id || "",
-    startBlock: encabezados.find((heading) => heading.key === "examenMental")?.start ?? null,
-    endBlock: mentalBoundary?.endBlock ?? encabezados.find((heading) => heading.key === "examenMental")?.end ?? null,
-    matchedBoundary: mentalBoundary?.matchedBoundary || "",
-    length: secciones.examenMental.length
-  });
   const subjectiveExtraction = parseSubjectiveSection({
     noteSegment: { ...noteSegment, blocks },
     headings: encabezados,
     sectionAliases: CLINICAL_SECTION_ALIASES
   });
-  secciones.subjetivo = subjectiveExtraction.text || "";
+  secciones.subjetivo = secciones.subjetivo || subjectiveExtraction.text || "";
 
   encabezados.forEach((heading, index) => {
     console.info("[patient-transfer] clinical-heading", {
@@ -253,10 +310,15 @@ export function parseClinicalSections(blocks = [], { noteSegment = {} } = {}) {
     });
   });
 
+  const encontradas = [...new Set([
+    ...encabezados.map((item) => item.key),
+    ...(contextualInference ? [contextualInference.key] : [])
+  ])];
   return {
     secciones,
-    encontradas: [...new Set(encabezados.map((item) => item.key))],
+    encontradas,
     encabezados,
+    inferencias: contextualInference ? [contextualInference] : [],
     subjectiveExtraction
   };
 }

@@ -205,7 +205,7 @@ function inicializarImportacionDocxLazy() {
     try {
       if (!traspasoPacientesPromise) {
         // Marcador histórico de cache: import("./modules/patient-transfer/index.js?v=20260804-segmentation-debug-v1")
-traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=v166-imported-notes-v1");
+traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=v170-general-clinical-sections-v1");
       }
       const modulo = await traspasoPacientesPromise;
       modulo.openPatientTransfer();

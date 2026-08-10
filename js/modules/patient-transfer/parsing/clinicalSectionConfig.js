@@ -41,26 +41,23 @@ export const CLINICAL_SECTION_ALIASES = Object.freeze({
     "fundamento de diagnóstico y tratamiento",
     "fundamento diagnóstico y terapéutico",
     "comentario y análisis clínico",
+    "análisis / comentario",
+    "análisis clínico",
+    "razonamiento clínico",
     "consideraciones clínicas",
+    "consideraciones",
     "integración diagnóstica",
+    "integración",
     "discusión clínica",
     "impresión clínica",
     "comentario clínico",
+    "fundamento clínico",
+    "valoración clínica",
+    "juicio clínico",
     "valoración",
     "formulación",
     "comentario",
-    "análisis / comentario",
-    "analisis / comentario",
-    "analisis",
-    "comentario clínico",
-    "comentario clinico",
     "fundamento",
-    "fundamento clínico",
-    "fundamento clinico",
-    "impresión clínica",
-    "impresion clinica",
-    "juicio clínico",
-    "juicio clinico",
     "análisis"
   ],
   diagnosticos: [
@@ -102,24 +99,12 @@ export const NOTE_START_ALIASES = Object.freeze([
 
 export const CLINICAL_SECTION_KEYS = Object.freeze(Object.keys(CLINICAL_SECTION_ALIASES));
 
-// Límites reutilizados por los extractores que deben terminar antes de otra sección clínica.
-export const MENTAL_EXAM_BOUNDARY_ALIASES = Object.freeze([
-  ...CLINICAL_SECTION_ALIASES.analisis,
-  ...CLINICAL_SECTION_ALIASES.diagnosticos,
-  ...CLINICAL_SECTION_ALIASES.plan,
-  "resultados relevantes de los estudios de diagnostico",
-  "resultados relevantes de los estudios",
-  "resultados de los estudios",
-  "estudios de diagnostico",
-  "diagnosticos de acuerdo a cie-10",
-  "diagnostico cie-10",
-  "diagnostico",
-  "plan terapeutico",
-  "tratamiento farmacologico",
-  "comentario y/o analisis",
-  "analisis clinico",
-  "pronostico",
-  "destino",
-  "nota de evolucion",
-  "nota de ingreso"
-]);
+// Nombres conceptuales -> claves públicas históricas consumidas por el modelo de revisión.
+export const CORE_CLINICAL_SECTION_KEYS = Object.freeze({
+  subjective: "subjetivo",
+  physicalExam: "physicalNeurologicalExam",
+  mentalExam: "examenMental",
+  analysis: "analisis",
+  diagnoses: "diagnosticos",
+  plan: "plan"
+});
