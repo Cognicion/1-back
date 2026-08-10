@@ -884,12 +884,14 @@ export function readTransferReview(groups = []) {
       });
       const treatmentCandidates = (doc.treatmentCandidates || []).map((candidate) => {
         const key = `${doc.id}:${candidate.id}`;
+        const includeControl = modal.querySelector(`[data-transfer-tx-include="${doc.id}:${candidate.id}"]`);
+        const selected = includeControl ? includeControl.checked : candidate.include === true || candidate.selectedForImport === true;
         const medicationName = modal.querySelector(`[data-transfer-tx-name="${key}"]`)?.value?.trim() || "";
         return {
         ...candidate,
-        include: modal.querySelector(`[data-transfer-tx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
-        selectedForImport: modal.querySelector(`[data-transfer-tx-include="${doc.id}:${candidate.id}"]`)?.checked || false,
-        medicationName,
+        include: selected,
+        selectedForImport: selected,
+        medicationName: medicationName || candidate.medicationName || "",
         catalogMedicationId: reviewedCatalogMedicationId(key, candidate, medicationName),
         presentation: modal.querySelector(`[data-transfer-tx-presentation="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.presentation || "",
         strengthValue: modal.querySelector(`[data-transfer-tx-strength="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.strengthValue || "",
@@ -904,7 +906,7 @@ export function readTransferReview(groups = []) {
         schedule: modal.querySelector(`[data-transfer-tx-schedule="${doc.id}:${candidate.id}"]`) ? parseMedicationSchedules(modal.querySelector(`[data-transfer-tx-schedule="${doc.id}:${candidate.id}"]`).value) : (candidate.schedule || []),
         action: modal.querySelector(`[data-transfer-tx-status="${doc.id}:${candidate.id}"]`)?.value || candidate.action || candidate.statusSuggestion,
         statusSuggestion: modal.querySelector(`[data-transfer-tx-status="${doc.id}:${candidate.id}"]`)?.value || candidate.statusSuggestion,
-        confirmedByDoctor: modal.querySelector(`[data-transfer-tx-include="${doc.id}:${candidate.id}"]`)?.checked || false
+        confirmedByDoctor: selected
       };
       });
       const vitalSignsCandidates = (doc.vitalSignsCandidates || []).map((candidate) => {
@@ -958,13 +960,14 @@ export function readTransferReview(groups = []) {
         });
         const segmentTreatments = (segment.treatmentCandidates || []).map((candidate) => {
           const key = `${prefix}:${candidate.id}`;
-          const checked = modal.querySelector(`[data-transfer-tx-include="${key}"]`)?.checked || false;
+          const includeControl = modal.querySelector(`[data-transfer-tx-include="${key}"]`);
+          const checked = includeControl ? includeControl.checked : candidate.include === true || candidate.selectedForImport === true;
           const medicationName = modal.querySelector(`[data-transfer-tx-name="${key}"]`)?.value?.trim() || candidate.medicationName || "";
           return {
             ...candidate,
             include: checked,
             selectedForImport: checked,
-            medicationName,
+            medicationName: medicationName || candidate.medicationName || "",
             catalogMedicationId: reviewedCatalogMedicationId(key, candidate, medicationName),
             presentation: modal.querySelector(`[data-transfer-tx-presentation="${key}"]`)?.value?.trim() || candidate.presentation || "",
             strengthValue: modal.querySelector(`[data-transfer-tx-strength="${key}"]`)?.value?.trim() || candidate.strengthValue || "",
@@ -984,14 +987,15 @@ export function readTransferReview(groups = []) {
         });
         const segmentTreatmentPlanCandidates = (segment.treatmentPlanCandidates || []).map((candidate) => {
           const key = `${prefix}:${candidate.id}`;
-          const checked = modal.querySelector(`[data-transfer-plan-include="${key}"]`)?.checked || false;
+          const includeControl = modal.querySelector(`[data-transfer-plan-include="${key}"]`);
+          const checked = includeControl ? includeControl.checked : candidate.include === true || candidate.selectedForImport === true;
           return {
             ...candidate,
             include: checked,
             selectedForImport: checked,
             instructionType: modal.querySelector(`[data-transfer-plan-type="${key}"]`)?.value || candidate.instructionType || "otherInstruction",
-            text: modal.querySelector(`[data-transfer-plan-text="${key}"]`)?.value?.trim() || "",
-            value: modal.querySelector(`[data-transfer-plan-text="${key}"]`)?.value?.trim() || ""
+            text: modal.querySelector(`[data-transfer-plan-text="${key}"]`)?.value?.trim() || candidate.text || candidate.value || "",
+            value: modal.querySelector(`[data-transfer-plan-text="${key}"]`)?.value?.trim() || candidate.text || candidate.value || ""
           };
         });
         const segmentTypeKey = modal.querySelector(`[data-transfer-segment-type="${prefix}"]`)?.value || segment.confirmedType?.key || "tipo_no_reconocido";
@@ -1071,7 +1075,8 @@ export function renderTransferResults(results = []) {
           <span>Notas: ${result.notesCreated || 0} creadas / ${result.notesExisting || 0} ya existentes</span>
           <span>Signos vitales: ${result.vitalSignsCreated || 0} registrados / Somatometria: ${result.anthropometryCreated || 0}</span>
           <span>Diagnosticos: ${escapeHtml(diagnosisTransferSummary(result))}</span>
-          <span>Tratamientos: ${result.treatmentsCreated || 0} registrados / ${result.treatmentsOmitted || 0} omitidos</span>
+          <span>Medicamentos: ${result.treatmentsCreated || 0} registrados / ${result.treatmentsIdempotent || 0} idempotentes / ${result.treatmentsOmitted || 0} omitidos${result.treatmentsError ? ` / Error: ${escapeHtml(result.treatmentsError)}` : ""}</span>
+          <span>Indicaciones: ${result.indicationsCreated || 0} registradas / ${result.indicationsIdempotent || 0} idempotentes / ${result.indicationsOmitted || 0} omitidas${result.indicationsError ? ` / Error: ${escapeHtml(result.indicationsError)}` : ""}</span>
           <span>Documento original: ${result.sourceSaved === false ? "No guardado" : "Guardado"} / Auditoria: ${result.auditRegistered === false ? "No registrada" : "Registrada"}</span>
           <span>Paciente: ${escapeHtml(result.patientName || (result.patientId ? "Paciente creado/asociado" : "No creado"))} · Notas importadas: ${result.notesCreated || 0}</span>
           <span>Paciente reutilizado: ${result.patientReused ? "si" : "no"} · Notas ya existentes: ${result.notesExisting || 0} · Duplicados evitados: ${result.duplicatesAvoided || 0}</span>

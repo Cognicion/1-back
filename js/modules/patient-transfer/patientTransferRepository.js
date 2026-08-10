@@ -5,7 +5,7 @@ import { obtenerNombrePacienteParaMostrar } from "../../utils/nombresPacientes.j
 import { DOCX_IMPORT_CONFIG } from "../importacionDocx/docxImportConfig.js";
 import { createTransferredPatient, mergeTransferredPatientFields } from "./integration/patientCreationAdapter.js?v=20260808-persistence-domains-v1";
 import { buildImportedNotePayload, createTransferredNote } from "./integration/noteCreationAdapter.js";
-import { createImportedDiagnoses, createImportedIndications, createImportedTreatments } from "./integration/clinicalDataImportAdapter.js?v=v160-imported-diagnoses-v1";
+import { createImportedDiagnoses, createImportedIndications, createImportedTreatments } from "./integration/clinicalDataImportAdapter.js?v=v163-medications-indications-v1";
 import { runVitalSignsAndDiagnosesIndependently } from "./domainPersistenceIsolation.js?v=v161-imported-diagnoses-isolation-v1";
 import { vitalSignsToNotePayload } from "./parsing/vitalSignsParser.js?v=20260808-imported-vitals-v1";
 import { construirActualizacionSignosVitalesDesdeNota } from "../../services/signosVitalesNotas.js?v=v161-imported-diagnoses-isolation-v1";
@@ -763,8 +763,12 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
     const diagnosisErrors = [];
     let treatmentsCreated = 0;
     let treatmentsOmitted = 0;
+    let treatmentsIdempotent = 0;
+    const treatmentErrors = [];
     let indicationsCreated = 0;
     let indicationsOmitted = 0;
+    let indicationsIdempotent = 0;
+    const indicationErrors = [];
     let vitalSignsCreated = 0;
     let anthropometryCreated = 0;
     const diagnosisIds = [];
@@ -968,8 +972,50 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           throw firstDomainError;
         }
 
-        stage = "creating_note";
         const noteImportKey = `${operationId}_${documentResults.length}_${patientId}`;
+        const clinicalContext = {
+          transferOperationId: operationId,
+          sourceFileHash: document.hash,
+          noteId: noteImportKey,
+          fileName: document.file.name,
+          date: document.metadata?.documentDate || "",
+          time: document.metadata?.documentHour || "",
+          service: group.confirmedFields?.servicio || "",
+          effectiveAction,
+          user
+        };
+        try {
+          stage = "creating_treatments";
+          onProgress?.({ stage, message: "Registrando tratamientos confirmados...", progress: 64 });
+          console.info("patient-transfer:persist-treatments-start", {
+            candidates: (document.treatmentCandidates || []).length,
+            selected: (document.treatmentCandidates || []).filter((candidate) => candidate.include === true || candidate.selectedForImport === true).length
+          });
+          const treatmentResult = await timed(`create-treatments-${documentResults.length + 1}`, () => createImportedTreatments(patientId, document.treatmentCandidates || [], clinicalContext), TIMEOUTS.createClinicalData);
+          treatmentsCreated += treatmentResult.created.length;
+          treatmentsOmitted += treatmentResult.omitted;
+          treatmentsIdempotent += treatmentResult.existing.length;
+          treatmentIds.push(...treatmentResult.created.map((item) => item.id).filter(Boolean));
+          console.info("patient-transfer:persist-treatments-success", { created: treatmentResult.created.length, existing: treatmentResult.existing.length });
+        } catch (error) {
+          error.stage ||= "creating_treatments";
+          treatmentErrors.push({ code: error?.code || error?.name || "unknown" });
+          console.error("patient-transfer:domain-error", { domain: "medications", stage: "creating_treatments", errorCode: error?.code || error?.name || "unknown" });
+        }
+        try {
+          stage = "creating_indications";
+          const indicationResult = await timed(`create-indications-${documentResults.length + 1}`, () => createImportedIndications(patientId, document.treatmentPlanCandidates || [], clinicalContext), TIMEOUTS.createClinicalData);
+          indicationsCreated += Number(indicationResult.inserted ?? indicationResult.created ?? 0);
+          indicationsIdempotent += Number(indicationResult.idempotent || (indicationResult.existing ? indicationResult.items || 0 : 0));
+          indicationsOmitted += indicationResult.omitted || 0;
+          console.info("patient-transfer:persist-indications-success", { created: Number(indicationResult.inserted ?? indicationResult.created ?? 0), existing: Number(indicationResult.idempotent || 0) });
+        } catch (error) {
+          error.stage ||= "creating_indications";
+          indicationErrors.push({ code: error?.code || error?.name || "unknown" });
+          console.error("patient-transfer:domain-error", { domain: "indications", stage: "creating_indications", errorCode: error?.code || error?.name || "unknown" });
+        }
+
+        stage = "creating_note";
         const noteRef = doc(db, "usuarios", patientId, "notasMedicas", noteImportKey);
         const existingNote = await timed(`check-note-${documentResults.length + 1}`, () => getDoc(noteRef), TIMEOUTS.query);
         const noteWasExisting = existingNote.exists();
@@ -1024,37 +1070,6 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           traceTransfer("create-note-success", { authUid: user.uid, transferOperationId: operationId, patientId, noteId: note.notaId || note.id });
         }
         console.info("patient-transfer:persist-notes-success", { created: !noteWasExisting, existing: noteWasExisting });
-
-        stage = "creating_treatments";
-        onProgress?.({ stage, message: "Registrando tratamientos confirmados...", progress: 64 });
-        console.info("patient-transfer:persist-treatments-start", {
-          candidates: (document.treatmentCandidates || []).length,
-          selected: (document.treatmentCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length,
-          noteExisting: noteWasExisting
-        });
-        const treatmentResult = await timed(`create-treatments-${documentResults.length + 1}`, () => createImportedTreatments(patientId, document.treatmentCandidates || [], {
-          transferOperationId: operationId,
-          sourceFileHash: document.hash,
-          noteId: note.notaId || note.id || noteImportKey,
-          fileName: document.file.name,
-          date: document.metadata?.documentDate || "",
-          user
-        }), TIMEOUTS.createClinicalData);
-        treatmentsCreated += treatmentResult.created.length;
-        treatmentsOmitted += treatmentResult.omitted;
-        treatmentIds.push(...treatmentResult.created.map((item) => item.id).filter(Boolean));
-        console.info("patient-transfer:persist-treatments-success", { created: treatmentResult.created.length, existing: treatmentResult.existing.length });
-
-        const indicationResult = await timed(`create-indications-${documentResults.length + 1}`, () => createImportedIndications(patientId, document.treatmentPlanCandidates || [], {
-          transferOperationId: operationId,
-          sourceFileHash: document.hash,
-          noteId: note.notaId || note.id || noteImportKey,
-          date: document.metadata?.documentDate || "",
-          time: document.metadata?.documentHour || "",
-          service: group.confirmedFields?.servicio || ""
-        }), TIMEOUTS.createClinicalData);
-        indicationsCreated += Number(indicationResult.created);
-        indicationsOmitted += indicationResult.omitted;
 
         if (!noteWasExisting) {
         stage = "uploading_source";
@@ -1171,7 +1186,11 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         diagnosisErrorCount: diagnosisErrors.length,
         diagnosisAttempted: diagnosesAttempted,
         treatmentCount: treatmentsCreated,
+        treatmentIdempotentCount: treatmentsIdempotent,
+        treatmentErrorCount: treatmentErrors.length,
         indicationCount: indicationsCreated,
+        indicationIdempotentCount: indicationsIdempotent,
+        indicationErrorCount: indicationErrors.length,
         sourceSaved,
         documents: documentResults.map((doc) => ({
           fileId: doc.fileId,
@@ -1217,9 +1236,13 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         diagnosisIds,
         treatmentsCreated,
         treatmentsOmitted,
+        treatmentsIdempotent,
+        treatmentsError: treatmentErrors[0]?.code || "",
         treatmentIds,
         indicationsCreated,
         indicationsOmitted,
+        indicationsIdempotent,
+        indicationsError: indicationErrors[0]?.code || "",
         sourceSaved,
         auditRegistered,
         duplicatesAvoided: 0,
@@ -1262,7 +1285,11 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         diagnosisErrorCount: diagnosisErrors.length,
         diagnosisAttempted: diagnosesAttempted,
         treatmentCount: treatmentsCreated,
+        treatmentIdempotentCount: treatmentsIdempotent,
+        treatmentErrorCount: treatmentErrors.length,
         indicationCount: indicationsCreated,
+        indicationIdempotentCount: indicationsIdempotent,
+        indicationErrorCount: indicationErrors.length,
         sourceSaved,
         updatedAt: serverTimestamp(),
         updatedAtIso: new Date().toISOString(),
@@ -1312,9 +1339,13 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         diagnosisIds,
         treatmentsCreated,
         treatmentsOmitted,
+        treatmentsIdempotent,
+        treatmentsError: treatmentErrors[0]?.code || "",
         treatmentIds,
         indicationsCreated,
         indicationsOmitted,
+        indicationsIdempotent,
+        indicationsError: indicationErrors[0]?.code || "",
         sourceSaved,
         auditRegistered
       });

@@ -6,7 +6,7 @@ import {
   construirActualizacionHistorialDiagnosticos,
   fusionarDiagnosticosImportados
 } from "../../../services/diagnosticosPaciente.js?v=v160-imported-diagnoses-v1";
-import { collection, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { collection, doc, getDoc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 function normalizeKey(value = "") {
   return normalizarTextoBusquedaPaciente(value).replace(/[^a-z0-9]+/g, "");
@@ -106,21 +106,30 @@ export async function createImportedDiagnoses(patientId, candidates = [], contex
 
 export async function createImportedTreatments(patientId, candidates = [], context = {}) {
   const selected = candidates.filter((candidate) => candidate.selectedForImport === true || candidate.include === true);
-  console.info("[patient-transfer] treatments:selected", { detected: candidates.length, selected: selected.length });
-  console.info("[patient-transfer] treatments:persist-start", { patientId, selected: selected.length });
+  console.info("patient-transfer:medications-source-real", {
+    candidateCount: candidates.length,
+    includedCount: selected.length,
+    catalogResolvedCount: selected.filter((candidate) => Boolean(candidate.catalogMedicationId)).length,
+    unresolvedCount: selected.filter((candidate) => !candidate.catalogMedicationId).length
+  });
+  console.info("patient-transfer:medications-target", {
+    mode: context.effectiveAction === "associate" ? "associate_existing" : "create_new",
+    hasTarget: Boolean(patientId)
+  });
   if (!selected.length) {
-    console.info("[patient-transfer] treatments:persist-success", { patientId, created: 0, existing: 0 });
-    return { created: [], existing: [], omitted: candidates.length };
+    return { created: [], existing: [], omitted: candidates.length, detected: candidates.length, included: 0 };
   }
 
-  const current = await listarTratamientos(patientId).catch(() => []);
-  const seen = new Set(current.map((item) => item.importCandidateKey || treatmentKey(item)).filter(Boolean));
+  const current = await listarTratamientos(patientId);
+  console.info("patient-transfer:medications-history-before-real", { total: current.length });
+  const seen = new Set(current.map((item) => item.importCandidateKey || treatmentKey(item, { date: item.fechaInicio })).filter(Boolean));
   const created = [];
   const existing = [];
+  console.info("patient-transfer:medications-write-start", { selected: selected.length, hasTarget: Boolean(patientId) });
 
   for (let index = 0; index < selected.length; index += 1) {
     const candidate = selected[index];
-    const key = treatmentKey(candidate);
+    const key = treatmentKey(candidate, context);
     if (seen.has(key)) {
       existing.push({ candidateId: candidate.id, key });
       continue;
@@ -129,15 +138,34 @@ export async function createImportedTreatments(patientId, candidates = [], conte
     const ref = await crearTratamiento(patientId, payload);
     seen.add(key);
     created.push({ id: ref.id, ...payload });
-    console.info("[patient-transfer] persist:firestore-write", JSON.stringify({
-      candidateId: candidate.id || "",
+    console.info("[patient-transfer] persist:firestore-write", {
+      domain: "medications",
       catalogLinked: Boolean(payload.catalogMedicationId),
       created: true
-    }));
+    });
   }
 
-  console.info("[patient-transfer] treatments:persist-success", { patientId, created: created.length, existing: existing.length });
-  return { created, existing, omitted: candidates.length - selected.length };
+  const after = await listarTratamientos(patientId);
+  const expectedKeys = selected.map((candidate) => treatmentKey(candidate, context));
+  const observedKeys = new Set(after.map((item) => item.importCandidateKey || treatmentKey(item, { date: item.fechaInicio })).filter(Boolean));
+  const writeNotObserved = expectedKeys.some((key) => !observedKeys.has(key));
+  console.info("patient-transfer:medications-history-after-real", {
+    total: after.length,
+    inserted: created.length,
+    idempotent: existing.length
+  });
+  if (writeNotObserved) {
+    console.warn("patient-transfer:medications-write-not-observed", { writeResolved: true, expectedFound: false });
+    const error = new Error("La persistencia de medicamentos no pudo verificarse.");
+    error.code = "medications-write-not-observed";
+    throw error;
+  }
+  console.info("patient-transfer:medications-write-result", {
+    inserted: created.length,
+    idempotent: existing.length,
+    observed: true
+  });
+  return { created, existing, omitted: candidates.length - selected.length, detected: candidates.length, included: selected.length };
 }
 
 function instructionText(candidate = {}) {
@@ -187,12 +215,42 @@ export async function createImportedIndications(patientId, candidates = [], cont
   if (!payload.items.length) return { created: false, omitted: candidates.length };
   const indicationId = `imported-${context.transferOperationId || "transfer"}-${context.noteId || "note"}`
     .replace(/[^a-zA-Z0-9_-]+/g, "-");
-  const indicationRef = doc(collection(db, "usuarios", patientId, "indicaciones"), indicationId);
+  const indicationsCollection = collection(db, "usuarios", patientId, "indicaciones");
+  const before = await getDocs(indicationsCollection);
+  console.info("patient-transfer:indications-target", {
+    mode: context.effectiveAction === "associate" ? "associate_existing" : "create_new",
+    hasTarget: Boolean(patientId)
+  });
+  console.info("patient-transfer:indications-history-before-real", { total: before.size });
+  console.info("patient-transfer:indications-write-start", { selected: payload.items.length, hasTarget: Boolean(patientId) });
+  const indicationRef = doc(indicationsCollection, indicationId);
   const current = await getDoc(indicationRef);
+  const existingKeys = new Set(current.exists() ? (current.data()?.importCandidateKeys || []) : []);
+  const inserted = payload.importCandidateKeys.filter((key) => !existingKeys.has(key)).length;
   await setDoc(indicationRef, {
     ...(current.exists() ? current.data() : {}),
     ...payload,
     fechaCreacion: current.exists() ? current.data().fechaCreacion || new Date().toISOString() : new Date().toISOString()
   }, { merge: true });
-  return { created: !current.exists(), existing: current.exists(), omitted: candidates.length - payload.items.length, id: indicationId };
+  const after = await getDocs(indicationsCollection);
+  const saved = await getDoc(indicationRef);
+  const savedKeys = new Set(saved.exists() ? (saved.data()?.importCandidateKeys || []) : []);
+  const expectedFound = payload.importCandidateKeys.every((key) => savedKeys.has(key));
+  console.info("patient-transfer:indications-history-after-real", {
+    total: after.size,
+    inserted,
+    idempotent: payload.items.length - inserted
+  });
+  if (!expectedFound) {
+    console.warn("patient-transfer:indications-write-not-observed", { writeResolved: true, expectedFound: false });
+    const error = new Error("La persistencia de indicaciones no pudo verificarse.");
+    error.code = "indications-write-not-observed";
+    throw error;
+  }
+  console.info("patient-transfer:indications-write-result", {
+    inserted,
+    idempotent: payload.items.length - inserted,
+    observed: true
+  });
+  return { created: inserted > 0, existing: inserted === 0, inserted, idempotent: payload.items.length - inserted, omitted: candidates.length - payload.items.length, id: indicationId };
 }
