@@ -758,11 +758,6 @@ body.tema-claro .diagnostico-opcion:focus-visible {
   gap: 10px;
 }
 
-.tratamiento-captura-rapida { display: grid; gap: .45rem; align-content: start; }
-.tratamiento-dosis-chips { display: flex; flex-wrap: wrap; gap: .4rem; }
-.tratamiento-dosis-chip { border: 1px solid var(--color-borde, #53627a); border-radius: 999px; padding: .45rem .7rem; background: transparent; color: inherit; cursor: pointer; }
-.tratamiento-dosis-chip:hover, .tratamiento-dosis-chip:focus { background: var(--color-acento, #2563eb); color: white; }
-.tratamiento-dosis-otra { border-style: dashed; }
 .tratamiento-momentos-dia { display: flex; flex-wrap: wrap; gap: .75rem; border: 1px solid var(--color-borde, #53627a); padding: .65rem; }
 .tratamiento-momentos-dia legend { padding: 0 .3rem; }
 .tratamiento-momentos-dia label { display: inline-flex; gap: .3rem; align-items: center; }

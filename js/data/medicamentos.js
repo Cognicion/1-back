@@ -692,21 +692,44 @@ export function buscarMedicamentos(query = "", opciones = {}) {
   const filtro = normalizarNombreMedicamento(query);
   const filtroFlexible = normalizarBusquedaMedicamento(query);
   const principio = normalizarPrincipioActivo(query);
+  const busquedaEstricta = opciones.strict === true;
   const tokens = filtroFlexible.split(" ").filter((token) => token.length > 1);
-  const resultados = filtro
-    ? MEDICAMENTOS_MAESTROS.filter((medicamento) => {
+  if (!filtro) {
+    return opciones.strict === true && opciones.allowEmpty !== true
+      ? []
+      : MEDICAMENTOS_MAESTROS.slice(0, limite);
+  }
+
+  const resultados = MEDICAMENTOS_MAESTROS.map((medicamento) => {
+    const nombre = normalizarNombreMedicamento(medicamento.nombre);
+    const generico = normalizarNombreMedicamento(medicamento.genericName);
+    const alias = [...(medicamento.brandNames || []), ...(medicamento.synonyms || [])]
+      .map(normalizarNombreMedicamento);
+    const presentaciones = (medicamento.presentaciones || [])
+      .map((item) => normalizarNombreMedicamento(item.texto));
+    let ranking = null;
+    if (nombre.startsWith(filtro)) ranking = 1;
+    else if (generico.startsWith(filtro)) ranking = 2;
+    else if (alias.some((valor) => valor.startsWith(filtro))) ranking = 3;
+    else if (nombre.includes(filtro)) ranking = 4;
+    else if (generico.includes(filtro)) ranking = 5;
+    else if (alias.some((valor) => valor.includes(filtro))) ranking = 6;
+    else if (presentaciones.some((valor) => valor.includes(filtro))) ranking = 7;
+    else if (!busquedaEstricta) {
       const texto = textoMedicamentoParaBusqueda(medicamento);
       const textoNormalizado = normalizarNombreMedicamento(texto);
       const textoFlexible = normalizarBusquedaMedicamento(texto);
-      return textoNormalizado.includes(filtro) ||
-        textoFlexible.includes(filtroFlexible) ||
+      if (textoNormalizado.includes(filtro) || textoFlexible.includes(filtroFlexible) ||
         (tokens.length > 1 && tokens.every((token) => textoFlexible.includes(token))) ||
-        (principio && normalizarPrincipioActivo(medicamento.nombre) === principio) ||
-        (principio && normalizarPrincipioActivo(medicamento.genericName) === principio);
-    })
-    : MEDICAMENTOS_MAESTROS;
+        (principio && (normalizarPrincipioActivo(medicamento.nombre) === principio ||
+          normalizarPrincipioActivo(medicamento.genericName) === principio))) ranking = 8;
+    }
+    return ranking === null ? null : { medicamento, ranking };
+  })
+    .filter(Boolean)
+    .sort((a, b) => a.ranking - b.ranking || a.medicamento.nombre.localeCompare(b.medicamento.nombre, "es"));
 
-  return resultados.slice(0, limite);
+  return resultados.slice(0, limite).map((item) => item.medicamento);
 }
 
 export function medicamentoPorTexto(texto = "") {

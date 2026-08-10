@@ -28,7 +28,7 @@ assert.doesNotMatch(
 );
 
 const html = readFileSync(new URL("../../paciente.html", import.meta.url), "utf8");
-assert.match(html, /paciente\.js\?v=v164-manual-treatment-editor-v1/);
+assert.match(html, /paciente\.js\?v=v165-filtered-medication-search-v1/);
 assert.match(html, /No fue posible cargar el expediente\./);
 
 console.log("pacienteEntrypointSyntax tests passed");
