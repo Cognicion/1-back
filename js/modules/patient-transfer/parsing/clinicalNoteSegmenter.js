@@ -342,7 +342,15 @@ console.info("[patient-transfer] clinical-note-segmenter:loaded", {
         sections: segment.sections,
         fullText: segment.rawText,
         blocks: segment.blocks,
-        metadata: segment.metadata,
+        sourceNoteDate: segment.date || "",
+        sourceNoteTime: segment.time || "",
+        sourceNoteType: segment.noteType || "",
+        metadata: {
+          ...(document.metadata || {}),
+          ...(segment.metadata || {}),
+          documentDate: segment.date || document.metadata?.documentDate || "",
+          documentHour: segment.time || document.metadata?.documentHour || ""
+        },
         confirmedType: segment.confirmedType,
         diagnosisCandidates: segment.diagnosisCandidates,
         treatmentCandidates: segment.treatmentCandidates,

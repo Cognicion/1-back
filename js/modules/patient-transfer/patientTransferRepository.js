@@ -4,7 +4,7 @@ import { registrarEventoAuditoria, resumenError } from "../../services/auditoria
 import { obtenerNombrePacienteParaMostrar } from "../../utils/nombresPacientes.js";
 import { DOCX_IMPORT_CONFIG } from "../importacionDocx/docxImportConfig.js";
 import { createTransferredPatient, mergeTransferredPatientFields } from "./integration/patientCreationAdapter.js?v=20260808-persistence-domains-v1";
-import { buildImportedNotePayload, createTransferredNote } from "./integration/noteCreationAdapter.js";
+import { buildImportedNotePayload, createTransferredNote, importedNoteHasClinicalContent, importedNoteId } from "./integration/noteCreationAdapter.js";
 import { createImportedDiagnoses, createImportedIndications, createImportedTreatments } from "./integration/clinicalDataImportAdapter.js?v=v163-medications-indications-v1";
 import { runVitalSignsAndDiagnosesIndependently } from "./domainPersistenceIsolation.js?v=v161-imported-diagnoses-isolation-v1";
 import { vitalSignsToNotePayload } from "./parsing/vitalSignsParser.js?v=20260808-imported-vitals-v1";
@@ -769,6 +769,12 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
     let indicationsOmitted = 0;
     let indicationsIdempotent = 0;
     const indicationErrors = [];
+    let notesDetected = eligibleDocuments.length;
+    let notesIncluded = 0;
+    let notesCreated = 0;
+    let notesExisting = 0;
+    let notesOmitted = 0;
+    const noteErrors = [];
     let vitalSignsCreated = 0;
     let anthropometryCreated = 0;
     const diagnosisIds = [];
@@ -892,6 +898,21 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         mode: effectiveAction === "associate" ? "associate_existing" : "create_new",
         targetFingerprint: technicalFingerprint(patientId)
       });
+      const notesWithDate = documentsToSave.filter((item) => Boolean(item.sourceNoteDate || item.metadata?.documentDate || item.date)).length;
+      console.info("patient-transfer:notes-source-real", {
+        segmentCount: documentsToSave.length,
+        includedCount: documentsToSave.filter((item) => !item.omitted).length,
+        withDateCount: notesWithDate,
+        withoutDateCount: documentsToSave.length - notesWithDate
+      });
+      let notesBeforeTotal = 0;
+      try {
+        const notesBefore = await timed("notes-history-before", () => getDocs(collection(db, "usuarios", patientId, "notasMedicas")), TIMEOUTS.query);
+        notesBeforeTotal = notesBefore.size;
+      } catch (error) {
+        console.warn("patient-transfer:notes-history-before-unavailable", { errorCode: error?.code || error?.name || "unknown" });
+      }
+      console.info("patient-transfer:notes-history-before-real", { total: notesBeforeTotal });
 
       console.info("patient-transfer:persist-demographics-start", { patientCreated, associated: effectiveAction === "associate" });
       if (effectiveAction === "associate") {
@@ -972,11 +993,17 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           throw firstDomainError;
         }
 
-        const noteImportKey = `${operationId}_${documentResults.length}_${patientId}`;
+        const clinicalSourceNoteKey = `${operationId}_${documentResults.length}_${patientId}`;
+        const noteImportKey = importedNoteId({
+          targetPatientId: patientId,
+          sourceFileHash: document.hash,
+          sourceNoteSegmentId: document.sourceNoteSegmentId,
+          sourceDocumentIndex: document.sourceDocumentIndex ?? documentResults.length
+        });
         const clinicalContext = {
           transferOperationId: operationId,
           sourceFileHash: document.hash,
-          noteId: noteImportKey,
+          noteId: clinicalSourceNoteKey,
           fileName: document.file.name,
           date: document.metadata?.documentDate || "",
           time: document.metadata?.documentHour || "",
@@ -1015,10 +1042,16 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           console.error("patient-transfer:domain-error", { domain: "indications", stage: "creating_indications", errorCode: error?.code || error?.name || "unknown" });
         }
 
+        try {
         stage = "creating_note";
         const noteRef = doc(db, "usuarios", patientId, "notasMedicas", noteImportKey);
-        const existingNote = await timed(`check-note-${documentResults.length + 1}`, () => getDoc(noteRef), TIMEOUTS.query);
-        const noteWasExisting = existingNote.exists();
+        const noteSourceDocument = { ...document, sourceNoteDate: document.sourceNoteDate || document.metadata?.documentDate || document.date || "", sourceNoteTime: document.sourceNoteTime || document.metadata?.documentHour || document.time || "" };
+        if (!importedNoteHasClinicalContent(noteSourceDocument)) {
+          notesOmitted += 1;
+          console.info("patient-transfer:notes-empty-segment-skipped", { emptySegmentSkipped: true });
+          continue;
+        }
+        notesIncluded += 1;
         const selectedVitals = (document.vitalSignsCandidates || []).find((candidate) => candidate.include === true);
         const vitalSignsFields = vitalSignsFieldsForDocument(document, group.confirmedFields || {});
         const vitalSignsPayload = selectedVitals ? vitalSignsToNotePayload(selectedVitals, vitalSignsFields) : {};
@@ -1029,46 +1062,32 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           ...vitalSignsPresence(vitalSignsPayload)
         });
         const notePayload = buildImportedNotePayload({
-          document: { ...document, vitalSignsPayload },
+          document: { ...noteSourceDocument, vitalSignsPayload },
           confirmedType: document.confirmedType,
           sourceFile: { name: document.file.name, hash: document.hash },
           importId: operationId,
-          user
+          user,
+          service: group.confirmedFields?.servicio || ""
         });
-        let note;
-        if (existingNote.exists()) {
-          const imported = existingNote.data()?.importacionDocx || {};
-          documentResults.push({
-            fileId: document.id,
-            fileName: document.file.name,
-            hash: document.hash,
-            textHash: document.textHash,
-            storagePath: imported.sourceDocumentPath || "",
-            storageUrl: imported.sourceDocumentUrl || "",
-            noteId: noteRef.id,
-            duplicateStatus: "note_existing"
-          });
-          sourceSaved = sourceSaved || Boolean(imported.sourceDocumentPath);
-          note = { notaId: noteRef.id, id: noteRef.id };
-        } else {
-          onProgress?.({ stage, message: `Creando nota ${documentResults.length + 1}...`, progress: 50 });
-          traceTransfer(stage, { operation: "guardarBorradorNotaClinica", path: `usuarios/${patientId}/notasMedicas`, authUid: user.uid, patientId });
-          traceTransfer("create-note-start", { authUid: user.uid, transferOperationId: operationId, patientId, noteId: noteImportKey });
-          console.info("[patient-transfer] note:create", JSON.stringify({ operationId, patientIdPresent: true, noteIndex: documentResults.length }));
-          note = await timed(`create-note-${documentResults.length + 1}`, () => createTransferredNote(patientId, {
-            ...notePayload,
+        onProgress?.({ stage, message: `Creando nota ${documentResults.length + 1}...`, progress: 50 });
+        traceTransfer("notes-write-start", { authUid: user.uid, transferOperationId: operationId, patientId, noteId: noteImportKey });
+        const note = await timed(`create-note-${documentResults.length + 1}`, () => createTransferredNote(patientId, {
+          ...notePayload,
+          transferOperationId: operationId,
+          sourceFileHash: document.hash,
+          sourceDocumentIndex: document.sourceDocumentIndex ?? documentResults.length,
+          noteImportKey,
+          importacionDocx: {
+            ...(notePayload.importacionDocx || {}),
             transferOperationId: operationId,
-            sourceFileHash: document.hash,
-            sourceDocumentIndex: documentResults.length,
-            noteImportKey,
-            importacionDocx: {
-              ...(notePayload.importacionDocx || {}),
-              transferOperationId: operationId,
-              sourceDocumentIndex: documentResults.length
-            }
-          }, noteImportKey), TIMEOUTS.createNote);
-          traceTransfer("create-note-success", { authUid: user.uid, transferOperationId: operationId, patientId, noteId: note.notaId || note.id });
-        }
+            sourceDocumentIndex: document.sourceDocumentIndex ?? documentResults.length,
+            sourceNoteSegmentId: document.sourceNoteSegmentId || ""
+          }
+        }, noteImportKey, user), TIMEOUTS.createNote);
+        const noteWasExisting = note.existing === true;
+        if (noteWasExisting) notesExisting += 1;
+        else notesCreated += 1;
+        traceTransfer("notes-write-result", { inserted: !noteWasExisting, idempotent: noteWasExisting, observed: note.observed === true });
         console.info("patient-transfer:persist-notes-success", { created: !noteWasExisting, existing: noteWasExisting });
 
         if (!noteWasExisting) {
@@ -1142,8 +1161,45 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           creadoEn: serverTimestamp(),
           fechaISO: new Date().toISOString()
         }, { merge: true }), TIMEOUTS.firestoreWrite);
+        } else {
+          const imported = note.data?.importacionDocx || {};
+          documentResults.push({
+            fileId: document.id,
+            fileName: document.file.name,
+            hash: document.hash,
+            textHash: document.textHash,
+            storagePath: imported.sourceDocumentPath || "",
+            storageUrl: imported.sourceDocumentUrl || "",
+            noteId: note.notaId || note.id || noteImportKey,
+            duplicateStatus: "note_existing"
+          });
+          sourceSaved = sourceSaved || Boolean(imported.sourceDocumentPath);
+        }
+        } catch (error) {
+          noteErrors.push({ code: error?.code || error?.name || "unknown" });
+          console.error("patient-transfer:domain-error", { domain: "notes", stage: "creating_note", errorCode: error?.code || error?.name || "unknown" });
+          console.warn("patient-transfer:notes-write-not-observed", { observed: false });
         }
       }
+
+      let notesAfterTotal = 0;
+      try {
+        const notesAfter = await timed("notes-history-after", () => getDocs(collection(db, "usuarios", patientId, "notasMedicas")), TIMEOUTS.query);
+        notesAfterTotal = notesAfter.size;
+      } catch (error) {
+        noteErrors.push({ code: error?.code || error?.name || "unknown" });
+        console.warn("patient-transfer:notes-history-after-unavailable", { errorCode: error?.code || error?.name || "unknown" });
+      }
+      console.info("patient-transfer:notes-history-after-real", {
+        total: notesAfterTotal,
+        inserted: notesCreated,
+        idempotent: notesExisting
+      });
+      console.info("patient-transfer:notes-write-result", {
+        inserted: notesCreated,
+        idempotent: notesExisting,
+        observed: noteErrors.length === 0
+      });
 
       stage = "creating_audit";
       onProgress?.({ stage, message: "Registrando auditoria...", progress: 85 });
@@ -1158,13 +1214,13 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         pacienteUid: patientId,
         pacienteNombre: group.confirmedFields?.nombre || "",
         exito: true,
-        detalles: { groupId: group.id, transferOperationId: operationId, patientCreated, documents: documentResults.length, diagnosesCreated, treatmentsCreated, indicationsCreated }
+        detalles: { groupId: group.id, transferOperationId: operationId, patientCreated, documents: documentResults.length, notesCreated, notesExisting, notesOmitted, notesErrorCount: noteErrors.length, diagnosesCreated, treatmentsCreated, indicationsCreated }
       }), TIMEOUTS.audit);
       auditRegistered = true;
 
       stage = "updating_transfer_record";
       onProgress?.({ stage, message: "Finalizando traspaso...", progress: 92 });
-      traceTransfer(stage, { operation: "setDoc", path: transferRef.path, authUid: user.uid, patientId, notesCreated: documentResults.length });
+      traceTransfer(stage, { operation: "setDoc", path: transferRef.path, authUid: user.uid, patientId, notesCreated });
       await timed("update-transfer-record", () => setDoc(transferRef, {
         status: "completed",
         lastCompletedStage: "completed",
@@ -1172,6 +1228,10 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         completedAtIso: new Date().toISOString(),
         documentCount: documentResults.length,
         noteIds: documentResults.map((doc) => doc.noteId).filter(Boolean),
+        noteCount: notesCreated,
+        noteIdempotentCount: notesExisting,
+        noteOmittedCount: notesOmitted,
+        noteErrorCount: noteErrors.length,
         vitalSignRecordIds,
         anthropometryRecordIds,
         diagnosisIds,
@@ -1211,7 +1271,7 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         updatedAtMs: Date.now()
       }, { merge: true }), TIMEOUTS.firestoreWrite);
 
-      traceTransfer("operation-completed", { authUid: user.uid, transferOperationId: operationId, patientId, notesCreated: documentResults.filter((item) => item.duplicateStatus !== "note_existing").length });
+      traceTransfer("operation-completed", { authUid: user.uid, transferOperationId: operationId, patientId, notesCreated });
       results.push({
         groupId: group.id,
         status: "completed",
@@ -1220,8 +1280,12 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         patientCreated,
         patientReused: !patientCreated,
         transferOperationId: operationId,
-        notesCreated: documentResults.filter((item) => item.duplicateStatus !== "note_existing").length,
-        notesExisting: documentResults.filter((item) => item.duplicateStatus === "note_existing").length,
+        notesDetected,
+        notesIncluded,
+        notesCreated,
+        notesExisting,
+        notesOmitted,
+        notesError: noteErrors[0]?.code || "",
         vitalSignsCreated,
         anthropometryCreated,
         vitalSignRecordIds,
@@ -1248,13 +1312,13 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         duplicatesAvoided: 0,
         documents: documentResults
       });
-      console.info("[patient-transfer] persistence:completed", JSON.stringify({ operationId, patientIdPresent: Boolean(patientId), notesCreated: documentResults.filter((item) => item.duplicateStatus !== "note_existing").length }));
+      console.info("[patient-transfer] persistence:completed", JSON.stringify({ operationId, patientIdPresent: Boolean(patientId), notesCreated }));
     } catch (error) {
       console.info("[patient-transfer] persistence:failed", JSON.stringify({
         operationId,
         stage: error?.stage || stage,
         patientIdPresent: Boolean(patientId),
-        notesCreated: documentResults.filter((item) => item.duplicateStatus !== "note_existing").length
+        notesCreated
       }));
       traceTransfer(stage || "failed", {
         operation: "firebase-write",
@@ -1263,7 +1327,7 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         patientId,
         errorCode: error?.code || error?.name || "unknown",
         message: error?.message || String(error),
-        partialState: { patientCreated, notesCreated: documentResults.length }
+        partialState: { patientCreated, notesCreated, notesExisting, notesOmitted }
       });
       await timed("mark-transfer-failed", () => setDoc(transferRef, {
         status: patientId ? "partially_completed" : "failed",
@@ -1323,8 +1387,8 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         transferOperationId: operationId,
         stage,
         error: error.message || String(error),
-        notesCreated: documentResults.filter((item) => item.duplicateStatus !== "note_existing").length,
-        notesExisting: documentResults.filter((item) => item.duplicateStatus === "note_existing").length,
+        notesCreated,
+        notesExisting,
         vitalSignsCreated,
         anthropometryCreated,
         vitalSignRecordIds,

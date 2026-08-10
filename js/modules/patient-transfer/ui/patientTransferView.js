@@ -29,6 +29,13 @@ export function diagnosisTransferSummary(result = {}) {
   return parts.join(" / ");
 }
 
+function notesTransferSummary(result = {}) {
+  const executed = ["notesDetected", "notesIncluded", "notesCreated", "notesExisting", "notesOmitted", "notesError"]
+    .some((key) => Object.prototype.hasOwnProperty.call(result, key));
+  if (!executed) return "no ejecutadas";
+  return `${result.notesDetected || 0} detectadas / ${result.notesIncluded || 0} incluidas / ${result.notesCreated || 0} creadas / ${result.notesExisting || 0} idempotentes / ${result.notesOmitted || 0} omitidas${result.notesError ? ` / Error: ${escapeHtml(result.notesError)}` : ""}`;
+}
+
 function fileSize(bytes = 0) {
   if (bytes > 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
   return `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -1072,7 +1079,7 @@ export function renderTransferResults(results = []) {
       ${results.map((result) => `
         <article class="patient-transfer-result ${result.status}">
           <strong>${result.status === "completed" ? "Traspaso completado" : result.status === "partially_completed" ? "Traspaso parcialmente completado" : "Traspaso no completado"}</strong>
-          <span>Notas: ${result.notesCreated || 0} creadas / ${result.notesExisting || 0} ya existentes</span>
+          <span>Notas: ${escapeHtml(notesTransferSummary(result))}</span>
           <span>Signos vitales: ${result.vitalSignsCreated || 0} registrados / Somatometria: ${result.anthropometryCreated || 0}</span>
           <span>Diagnosticos: ${escapeHtml(diagnosisTransferSummary(result))}</span>
           <span>Medicamentos: ${result.treatmentsCreated || 0} registrados / ${result.treatmentsIdempotent || 0} idempotentes / ${result.treatmentsOmitted || 0} omitidos${result.treatmentsError ? ` / Error: ${escapeHtml(result.treatmentsError)}` : ""}</span>

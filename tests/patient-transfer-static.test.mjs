@@ -56,8 +56,8 @@ assert.match(controller, /const reviewedGroups = analyzedGroups;/, "el guardado 
 assert.match(controller, /expandSegmentedGroupsForSave/, "la persistencia crea una nota por segmento confirmado");
 assert.match(controller, /setFileMultipleNotesMode/, "la revisión actualiza el modo por archivo en el estado central");
 assert.match(controller, /multipleNotesMode/, "el controlador envía el modo explícito al segmentador");
-assert.match(transferIndex, /patientTransferController\.js\?v=v163-medications-indications-v1/, "el índice fuerza la carga del controlador publicado");
-assert.match(controller, /clinicalNoteSegmenter\.js\?v=20260804-segmentation-debug-v1/, "el controlador fuerza la carga del segmentador publicado");
+assert.match(transferIndex, /patientTransferController\.js\?v=v166-imported-notes-v1/, "el índice fuerza la carga del controlador publicado");
+assert.match(controller, /clinicalNoteSegmenter\.js\?v=20260810-imported-notes-v1/, "el controlador fuerza la carga del segmentador publicado");
 assert.match(segmenter, /patient-transfer-segmentation-debug-v1/, "el segmentador expone un marcador verificable de compilación");
 assert.match(segmenter, /\[patient-transfer\] segmentation:boundaries/, "el segmentador registra los límites usados");
 assert.match(segmenter, /\[patient-transfer\] segmentation:completed/, "el segmentador registra la cantidad final de segmentos");
@@ -100,7 +100,8 @@ const repository = read("js/modules/patient-transfer/patientTransferRepository.j
 const patientAdapter = read("js/modules/patient-transfer/integration/patientCreationAdapter.js");
 const noteAdapter = read("js/modules/patient-transfer/integration/noteCreationAdapter.js");
 assert.match(patientAdapter, /crearPacienteProvisional/, "reutiliza creacion existente de pacientes");
-assert.match(noteAdapter, /guardarBorradorNotaClinica/, "reutiliza creacion existente de notas");
+assert.match(noteAdapter, /finalizarNotaClinica/, "reutiliza el escritor canonico de notas definitivas");
+assert.match(noteAdapter, /getDocFromServer/, "verifica la nota desde el servidor");
 assert.match(repository, /createTransferredPatient/, "el repository usa el adaptador de pacientes");
 assert.match(repository, /createTransferredNote/, "el repository usa el adaptador de notas");
 assert.match(repository, /registrarEventoAuditoria/, "registra auditoria");
