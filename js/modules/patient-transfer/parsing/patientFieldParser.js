@@ -8,6 +8,13 @@ import {
 } from "./patientNameParser.js?v=v167-enedina-name-diagnosis-boundaries-v1";
 
 const DEBUG_FLAG = "cognicion.debug.patientTransfer";
+const CANONICAL_HPFBA = "Hospital Psiquiátrico Fray Bernardino Álvarez";
+const INSTITUTION_ALIAS_KEYS = new Map([
+  ["hpfba", CANONICAL_HPFBA],
+  ["hospitalpsiquiatricofraybernardinoalvarez", CANONICAL_HPFBA],
+  ["fraybernardino", CANONICAL_HPFBA],
+  ["hospitalfraybernardinoalvarez", CANONICAL_HPFBA]
+]);
 
 export const PATIENT_FIELD_DEFINITIONS = FIELD_RULES.map((rule) => ({
   key: rule.key,
@@ -112,6 +119,27 @@ function parseService(value = "") {
   return cleanExtractedFieldValue(value);
 }
 
+function normalizeInstitutionKey(value = "") {
+  return cleanExtractedFieldValue(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[.\-\s]+/g, "");
+}
+
+export function normalizeInstitution(value = "") {
+  const clean = cleanExtractedFieldValue(value);
+  return INSTITUTION_ALIAS_KEYS.get(normalizeInstitutionKey(clean)) || clean;
+}
+
+function institutionAliasFromHeader(text = "") {
+  const normalized = normalizeInstitutionKey(text);
+  for (const [alias, canonical] of INSTITUTION_ALIAS_KEYS) {
+    if (normalized.includes(alias)) return canonical;
+  }
+  return "";
+}
+
 function normalizeValueForField(key, value) {
   if (key === "nombre") return parsePatientName(value);
   if (key === "fechaNacimiento") return parseBirthDate(value);
@@ -121,6 +149,7 @@ function normalizeValueForField(key, value) {
   if (key === "hora") return parseDocumentTime(value);
   if (key === "sexo") return parseSex(value);
   if (key === "genero") return parseGender(value);
+  if (key === "institucion") return normalizeInstitution(value);
   if (key === "servicio") return parseService(value);
   return cleanExtractedFieldValue(value);
 }
@@ -232,6 +261,22 @@ function candidatesFromParagraph(block, sourceFileId = "") {
     detectionRule: "paragraph-multi-label",
     confidence: "alta"
   }));
+  if (block.source?.blockIndex <= 8 && !candidates.some((candidate) => candidate.fieldKey === "institucion")) {
+    const institution = institutionAliasFromHeader(block.text);
+    if (institution) {
+      candidates.push({
+        fieldKey: "institucion",
+        label: "Institucion",
+        rawValue: institution,
+        normalizedValue: institution,
+        sourceType: "header",
+        sourceFileId,
+        blockIndex: block.source?.blockIndex,
+        detectionRule: "institution-header-alias",
+        confidence: "alta"
+      });
+    }
+  }
   debugPatientFields("paragraph", {
     blockIndex: block.source?.blockIndex,
     blockType: "paragraph",
@@ -293,6 +338,7 @@ function candidatesFromTable(block, sourceFileId = "") {
 
 function scoreCandidate(candidate) {
   let score = 0;
+  if (candidate.sourceType === "header") score += 50;
   if (candidate.sourceType === "table") score += 30;
   if (candidate.sourceType === "paragraph") score += 20;
   if (candidate.blockIndex <= 8) score += 20;

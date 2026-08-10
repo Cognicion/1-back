@@ -4,7 +4,7 @@ import { validateTransferDocxFile } from "./docx/docxValidator.js";
 import { calculateDocxHash, calculateNormalizedTextHash } from "./docx/docxHashService.js";
 import { extractDocx } from "./docx/docxExtractor.js";
 import { normalizeDocxBlocks, normalizedBlocksToText } from "./docx/docxBlockNormalizer.js";
-import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js?v=v167-enedina-name-diagnosis-boundaries-v1";
+import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js?v=v168-institution-hpfba-v1";
 import { resolvePatientIdentity } from "./parsing/patientIdentityResolver.js";
 import { parseClinicalSections } from "./parsing/clinicalSectionParser.js";
 import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js?v=v167-enedina-name-diagnosis-boundaries-v1";

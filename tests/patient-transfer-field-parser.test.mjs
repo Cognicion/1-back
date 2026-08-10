@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { parsePatientFields, fieldValues, extractLabeledFieldsFromText, extractAdministrativeField } from "../js/modules/patient-transfer/parsing/patientFieldParser.js";
+import { parsePatientFields, fieldValues, extractLabeledFieldsFromText, extractAdministrativeField, normalizeInstitution } from "../js/modules/patient-transfer/parsing/patientFieldParser.js";
 import { resolvePatientIdentity } from "../js/modules/patient-transfer/parsing/patientIdentityResolver.js";
 import {
   buildFullPatientName,
@@ -28,6 +28,33 @@ assert.equal(candidates.find((item) => item.fieldKey === "sexo")?.normalizedValu
 assert.equal(candidates.find((item) => item.fieldKey === "genero")?.normalizedValue, "Masculino-cis");
 assert.equal(candidates.find((item) => item.fieldKey === "servicio")?.normalizedValue, "Observación");
 assert.equal(candidates.find((item) => item.fieldKey === "alergias")?.normalizedValue, "NEGADAS");
+
+assert.equal(normalizeInstitution("HPFBA"), "Hospital Psiquiátrico Fray Bernardino Álvarez");
+assert.equal(normalizeInstitution("H.P.F.B.A."), "Hospital Psiquiátrico Fray Bernardino Álvarez");
+assert.equal(normalizeInstitution("H P F B A"), "Hospital Psiquiátrico Fray Bernardino Álvarez");
+assert.equal(normalizeInstitution("Hospital Fray Bernardino Álvarez"), "Hospital Psiquiátrico Fray Bernardino Álvarez");
+
+const enedinaInstitution = parsePatientFields([{
+  type: "paragraph",
+  text: "HPFBA Nombre completo del paciente: ENEDINA PEÑA HERNÁNDEZ Servicio: OBSERVACIÓN Fecha: 07/08/2026",
+  source: { blockIndex: 1, origin: "header" }
+}, {
+  type: "paragraph",
+  text: "Diagnósticada previamente en IMSS Morelos",
+  source: { blockIndex: 12, origin: "body" }
+}], "enedina-institution");
+const enedinaInstitutionValues = fieldValues(enedinaInstitution.fields);
+assert.equal(enedinaInstitutionValues.institucion, "Hospital Psiquiátrico Fray Bernardino Álvarez");
+assert.equal(enedinaInstitutionValues.servicio, "OBSERVACIÓN");
+assert.equal(enedinaInstitution.fields.institucion.detectionMethod, "institution-header-alias");
+
+const labelledInstitution = parsePatientFields([{
+  type: "paragraph",
+  text: "Institución: H.P.F.B.A. Servicio: OBSERVACIÓN",
+  source: { blockIndex: 1, origin: "header" }
+}], "labelled-institution");
+assert.equal(fieldValues(labelledInstitution.fields).institucion, "Hospital Psiquiátrico Fray Bernardino Álvarez");
+assert.equal(fieldValues(labelledInstitution.fields).servicio, "OBSERVACIÓN");
 
 const enedinaHeader = "Nombre completo del paciente: ENEDINA PE\u00d1A HERN\u00c1NDEZ Fecha de nacimiento: 16/07/2006 Edad: 20 a\u00f1os";
 const enedinaParsed = parsePatientFields([
