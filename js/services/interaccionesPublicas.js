@@ -61,13 +61,43 @@ export function analizarInteraccionesPublicas(selecciones = []) {
   });
 
   const alertas = evaluarInteraccionesClinicas([...porIngrediente.values()]);
-  return alertas.map((alerta) => ({
+  const alertasPublicas = alertas.map((alerta) => ({
     ...alerta,
     severidad: SEVERIDAD_PUBLICA[alerta.severidad] || alerta.severidad,
     medicamentos: (alerta.medicamentos || []).map((nombre) => String(nombre).replace(/\s*\([^)]*\)/g, "").trim()),
     efectoClinico: alerta.efecto || "",
-    categoria: alerta.categoria || alerta.tipoInteraccion || "medicamento-medicamento"
+    categoria: inferirCategoriaPublica(alerta)
   }));
+  return deduplicarAlertasPublicas(alertasPublicas);
+}
+
+function deduplicarAlertasPublicas(alertas = []) {
+  const porClave = new Map();
+  alertas.forEach((alerta) => {
+    const medicamentos = (alerta.medicamentos || [])
+      .map((medicamento) => normalizarNombreMedicamento(medicamento))
+      .sort()
+      .join("|");
+    const categoria = normalizarNombreMedicamento(alerta.categoria || alerta.tipo || "interaccion");
+    const clave = `${categoria}:${medicamentos}`;
+    const existente = porClave.get(clave);
+    if (!existente || (alerta.prioridad || 0) > (existente.prioridad || 0)) {
+      porClave.set(clave, alerta);
+    }
+  });
+  return [...porClave.values()];
+}
+
+function inferirCategoriaPublica(alerta = {}) {
+  if (alerta.categoria || alerta.tipoInteraccion) return alerta.categoria || alerta.tipoInteraccion;
+  const titulo = normalizarNombreMedicamento(alerta.titulo || "");
+  if (/seroton|tramadol|imao|triptan/.test(titulo)) return "serotoninergica";
+  if (/qt|arritmia/.test(titulo)) return "qt";
+  if (/opioide|benzodiacepina|gabapentinoide|depresor|alcohol|sedacion/.test(titulo)) return "depresora_snc";
+  if (/sangrado|hemorrag|aine|anticoagul/.test(titulo)) return "hemorragica";
+  if (/litio/.test(titulo)) return "renal_electrolitica";
+  if (/sraa|ieca|ara|potasio/.test(titulo)) return "renal_electrolitica";
+  return "medicamento-medicamento";
 }
 
 export function resumirAnalisisPublico(alertas = []) {
