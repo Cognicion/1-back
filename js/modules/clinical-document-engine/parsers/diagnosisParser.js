@@ -14,17 +14,36 @@ const VERSION = "1.0";
 const STATUS_ONLY = /^(?:se agrega|se descarta|antecedente|remision|en remision|probable|a descartar|confirmado)$/i;
 const END_ALIASES = [...BOUNDARY_ALIASES.plan, ...BOUNDARY_ALIASES.medication, ...BOUNDARY_ALIASES.analysis, ...BOUNDARY_ALIASES.prognosis, ...BOUNDARY_ALIASES.destination, ...BOUNDARY_ALIASES.note];
 const NARRATIVE_DIAGNOSIS_START = /(?:cuenta\s+con\s+diagn[oó]stico\s+de|antecedente\s+de|con\s+diagn[oó]stico\s+previo\s+de|diagn[oó]stico\s+previo\s+de|diagnosticad[oa]\s+con|se\s+diagnostic[oó]|diagn[oó]stico\s+de)\s+/i;
-const NARRATIVE_DIAGNOSIS_END = /\s+(?:otorgado\s+en|diagnosticad[oa]\s+en|desde|en\s+seguimiento|tratado\s+con|con\s+tratamiento|con\s+esquema|[úu]ltimo\s+esquema|actualmente\s+recibe|manejado\s+con|hospitalizado\s+en|por\s+parte\s+de|bajo\s+tratamiento)\b/i;
+const NARRATIVE_DIAGNOSIS_END = /\s+(?:otorgado\s+en|diagnosticad[oa]\s+en|desde|en\s+seguimiento|tratad[oa]\s+con|con\s+tratamiento|con\s+esquema|[úu]ltimo\s+esquema|actualmente\s+recibe|manejad[oa]\s+con|hospitalizad[oa]\s+en|por\s+parte\s+de|bajo\s+tratamiento|egres(?:o|ada|ado)|posteriormente|remitid[oa]|referid[oa]|evolucion[oó]|present[oó]\s+mejor[ií]a|en\s+\d{4})\b/i;
 
 const normalizeCatalogName = (value = "") => normalizeClinicalComparisonText(value).replace(/\s+/g, " ").trim();
-const DIAGNOSIS_CATALOG_INDEX = new Map(
-  DIAGNOSTICOS_BIBLIOTECA
-    .filter((entry) => entry?.nombre)
-    .map((entry) => [normalizeCatalogName(entry.nombre), entry.nombre])
-);
+const DIAGNOSIS_CATALOG_INDEX = new Map();
+DIAGNOSTICOS_BIBLIOTECA.filter((entry) => entry?.nombre).forEach((entry) => {
+  const terms = [entry.nombre, ...(Array.isArray(entry.aliases) ? entry.aliases : [])];
+  terms.filter(Boolean).forEach((term) => {
+    const normalized = normalizeCatalogName(term);
+    if (normalized.length >= 2 && !DIAGNOSIS_CATALOG_INDEX.has(normalized)) DIAGNOSIS_CATALOG_INDEX.set(normalized, String(term).trim());
+  });
+});
+const DIAGNOSIS_CATALOG_TERMS = [...DIAGNOSIS_CATALOG_INDEX.keys()].sort((a, b) => b.length - a.length);
 
 function resolveCatalogDiagnosisName(value = "") {
   return DIAGNOSIS_CATALOG_INDEX.get(normalizeCatalogName(value)) || String(value || "").trim();
+}
+
+// Resuelve primero la entidad, no el resto de la oración. Solo acepta un
+// término del catálogo al inicio del candidato y conserva el match más largo.
+function resolveCatalogPrefix(value = "") {
+  const source = String(value || "").replace(/\s+/g, " ").trim();
+  const normalized = normalizeCatalogName(source);
+  const match = DIAGNOSIS_CATALOG_TERMS.find((term) => {
+    if (!normalized.startsWith(term)) return false;
+    const next = normalized[term.length] || "";
+    return !next || /[\s,;:.()[\]-]/.test(next);
+  });
+  if (!match) return "";
+  const raw = source.slice(0, match.length).trim().replace(/[,:;.!?]+\s*$/, "").trim();
+  return DIAGNOSIS_CATALOG_INDEX.get(match) || raw;
 }
 
 function normalizeNarrativeDiagnosisName(value = "") {
@@ -37,8 +56,9 @@ function extractNarrativeDiagnosisEntity(text = "") {
   const start = source.match(NARRATIVE_DIAGNOSIS_START);
   if (!start) return "";
   const tail = source.slice(start.index + start[0].length);
+  const catalogEntity = resolveCatalogPrefix(tail);
   const end = tail.search(NARRATIVE_DIAGNOSIS_END);
-  const entity = (end >= 0 ? tail.slice(0, end) : tail).replace(/[,:;.!?]+\s*$/, "").trim();
+  const entity = (catalogEntity || (end >= 0 ? tail.slice(0, end) : tail)).replace(/[,:;.!?]+\s*$/, "").trim();
   return entity.length >= 2 && entity.length <= 120 ? entity : "";
 }
 
@@ -223,13 +243,15 @@ function createDiagnosisCandidate({ name, code = "", codes = [], status, rawText
     metadata: {
       noteId,
       sourceSection: section,
+      sourceType: section === "diagnosticos" ? "structured_diagnosis" : (detectionRule?.includes("narrative") ? "narrative_history" : "clinical_text"),
       detectionRule,
       parserVersion: VERSION,
       codeEvidence: normalizedCodes.map((value) => ({
         code: value,
         blockIndex: sourceLocation.blockIndex ?? null,
         paragraphIndex: sourceLocation.rowIndex ?? sourceLocation.lineIndex ?? null,
-        rawText: rawText || ""
+        rawText: rawText || "",
+        sourceType: section === "diagnosticos" ? "structured_diagnosis" : (detectionRule?.includes("narrative") ? "narrative_history" : "clinical_text")
       }))
     }
   });
@@ -394,13 +416,13 @@ export function parseDiagnosisCandidates({ text = "", section = "diagnosticos", 
       return;
     }
     if ((explicit || section === "diagnosticos") && name.length >= 3) {
-      pendingNames.push({ name, rawText: rowText, rowIndex, status: rowStatus || diagnosisStatus(rowText) });
+      pendingNames.push({ name, rawText: rowText, rowIndex, status: rowStatus || diagnosisStatus(rowText), detectionRule: narrativeEntity ? "state-machine-narrative-entity" : "state-machine-name-without-code" });
       clinicalImportLogger.info("diagnosisParser:status", JSON.stringify({ documentId, noteId, rowIndex, status: rowStatus || "pending" }));
       state = rowStatus ? "READING_STATUS" : "READING_DIAGNOSIS";
     } else discardedCount += 1;
   });
 
-  pendingNames.forEach((pending) => finish(createDiagnosisCandidate({ name: pending.name, rawText: pending.rawText, section, documentId, noteId, sourceLocation: { ...sourceLocation, rowIndex: pending.rowIndex }, status: pending.status, requiresReview: true, detectionRule: "state-machine-name-without-code" })));
+  pendingNames.forEach((pending) => finish(createDiagnosisCandidate({ name: pending.name, rawText: pending.rawText, section, documentId, noteId, sourceLocation: { ...sourceLocation, rowIndex: pending.rowIndex }, status: pending.status, requiresReview: true, detectionRule: pending.detectionRule || "state-machine-name-without-code" })));
   clinicalImportLogger.info("diagnosisParser:finished", JSON.stringify({ documentId, noteId, tokenCount: tokens.length, detectedCount: candidates.length, pairedCount: candidates.filter((candidate) => candidate.code).length, discardedCount, state: candidates.length ? "FINALIZE_DIAGNOSIS" : "WAITING_DIAGNOSIS" }));
   return candidates;
 }
@@ -412,9 +434,13 @@ export function parseDiagnosisBlock({ text = "", section = "diagnosticos", docum
 export function detectDiagnosisCandidates({ sections = {}, fullText = "", sourceBlocks = [], documentId = "", noteId = "" } = {}) {
   const detected = [];
   let hasStructuredDiagnosisTable = false;
+  const sourcePriority = (item) => (item.metadata?.sourceType === "structured_diagnosis" || item.metadata?.sourceSection === "diagnosticos" ? 3 : item.metadata?.sourceType === "narrative_history" ? 1 : 2) + (item.code ? 1 : 0);
   const add = (items) => items.forEach((item) => {
-    const key = `${item.code || ""}:${item.normalizedDiagnosis || ""}`;
-    if (item.diagnosisName && !detected.some((existing) => `${existing.code || ""}:${existing.normalizedDiagnosis || ""}` === key)) detected.push(item);
+    if (!item.diagnosisName) return;
+    const key = item.normalizedDiagnosis || normalizeClinicalComparisonText(item.diagnosisName);
+    const index = detected.findIndex((existing) => (existing.normalizedDiagnosis || normalizeClinicalComparisonText(existing.diagnosisName)) === key);
+    if (index < 0) detected.push(item);
+    else if (sourcePriority(item) > sourcePriority(detected[index])) detected[index] = item;
   });
   sourceBlocks.filter((block) => block.type === "table").forEach((block) => {
     (block.rows || []).forEach((row, rowIndex) => {

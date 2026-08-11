@@ -36,6 +36,8 @@ export function toLegacyDiagnosisCandidate(candidate = {}) {
     sourceHeading: entity.evidence?.[0]?.heading || entity.metadata?.sourceSection || "diagnosticos",
     sourceText: entity.evidence?.[0]?.rawText || source.diagnosisName || "",
     sourceLocation: { documentId: entity.evidence?.[0]?.documentId || "", blockIndex: entity.evidence?.[0]?.block ?? null, startOffset: entity.evidence?.[0]?.offsetStart ?? null, endOffset: entity.evidence?.[0]?.offsetEnd ?? null },
+    sourceType: entity.metadata?.sourceType || "clinical_text",
+    sourceSpan: { start: entity.evidence?.[0]?.offsetStart ?? null, end: entity.evidence?.[0]?.offsetEnd ?? null, rawText: entity.evidence?.[0]?.rawText || "" },
     evidence: entity.evidence?.[0]?.rawText || "",
     confidence: entity.confidence === "HIGH" ? "high" : entity.confidence === "MEDIUM" ? "medium" : entity.confidence === "LOW" ? "low" : "not-detected",
     requiresReview: Boolean(source.requiresReview || entity.metadata?.validation?.valid === false),

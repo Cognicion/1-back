@@ -75,6 +75,27 @@ assert.equal(narrative[0].status, "Antecedente");
 assert.match(narrative[0].rawText, /Fluoxetina/);
 assert.doesNotMatch(narrative[0].diagnosisName, /Fluoxetina/);
 
+const narrativeEvent = parseDiagnosisBlock({
+  text: "Se otorgó diagnóstico de Esquizofrenia, egresada por petición familiar debido a altercado con otra usuaria.",
+  section: "analisis",
+  explicit: true,
+  documentId: "narrative-event"
+});
+assert.equal(narrativeEvent.length, 1);
+assert.equal(narrativeEvent[0].diagnosisName, "Esquizofrenia");
+assert.doesNotMatch(narrativeEvent[0].diagnosisName, /egresada|petición|altercado/i);
+assert.equal(narrativeEvent[0].sourceType, "narrative_history");
+assert.match(narrativeEvent[0].sourceSpan.rawText, /egresada/);
+
+const temporalTreatment = parseDiagnosisBlock({
+  text: "diagnosticada con depresión en 2022 y tratada con sertralina",
+  section: "analisis",
+  explicit: true,
+  documentId: "narrative-treatment"
+});
+assert.equal(temporalTreatment[0].diagnosisName, "Depresión");
+assert.doesNotMatch(temporalTreatment[0].diagnosisName, /sertralina|2022/i);
+
 const narrativeVariants = parseDiagnosisBlock({
   text: "Antecedente de trastorno bipolar diagnosticado en 2022, actualmente tratado con litio\nCon diagn\u00f3stico previo de TDAH desde la infancia\nTEPT complejo a descartar",
   section: "diagnosticos",
@@ -97,5 +118,16 @@ const codedNarrative = parseDiagnosisBlock({
 });
 assert.equal(codedNarrative[0].diagnosisName, "Trastorno depresivo recurrente, episodio actual grave");
 assert.equal(codedNarrative[0].code, "F33.2");
+
+const deduplicated = detectDiagnosisCandidates({
+  documentId: "dedup",
+  sections: {
+    diagnosticos: "Esquizofrenia F20",
+    analisis: "Cuenta con diagnóstico de Esquizofrenia otorgado previamente."
+  }
+});
+assert.equal(deduplicated.filter((item) => item.normalizedDiagnosisName === "esquizofrenia").length, 1);
+assert.equal(deduplicated[0].code, "F20");
+assert.equal(deduplicated[0].sourceType, "structured_diagnosis");
 
 console.log("patient-transfer-diagnosis-parser: ok");
