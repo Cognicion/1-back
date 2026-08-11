@@ -9,18 +9,36 @@
   <link rel="stylesheet" href="css/modules/patient-transfer.css?v=20260811-medication-presentation-concentration-ui-v1">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <link rel="stylesheet" href="css/ui-density.css">
+  <link rel="stylesheet" href="css/medico-reference-layout.css?v=20260811-reference-v1">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
 
 
 
-<body class="bloqueado">
+<body class="bloqueado panel-medico-page">
 <header class="header-medico">
-  <img class="logo-header" src="assets/favicon-cognicion.png" alt="Cognicion">
-  <div>
-  <h1>Panel Médico</h1>
-  <p>Base de operación clínica de Cognición</p>
-  </div>
+  <a class="marca-medico" href="dashboard.html" aria-label="Ir al Dashboard de Cognición">
+    <img class="logo-header" src="assets/favicon-cognicion.png" alt="Cognicion">
+    <span class="marca-medico-texto">
+      <strong>Cognición</strong>
+      <small>Plataforma clínica integral</small>
+    </span>
+  </a>
+
+  <label class="buscador-global-medico" for="buscadorPacientesGlobal">
+    <span class="icono-lineal" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+    </span>
+    <input id="buscadorPacientesGlobal" type="search" placeholder="Buscar paciente..." autocomplete="off">
+    <kbd>Ctrl K</kbd>
+  </label>
+
+  <nav class="acciones-globales-medico" aria-label="Acciones globales">
+    <a class="accion-global-medico accion-global-icono" href="dashboard.html#avisosDashboardModulo" aria-label="Abrir notificaciones">
+      <span class="icono-lineal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg></span>
+    </a>
+    <a class="accion-global-medico" href="dashboard.html#mensajesPanel">Mensajes <span class="icono-lineal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 3V5Z"></path><path d="M8 9h8M8 12h5"></path></svg></span></a>
+  </nav>
 </header>
 
 <main class="contenedor">
@@ -56,24 +74,32 @@
         Hospital / Consulta
       </div>
 
-      <button class="boton" onclick="window.location.href='dashboard.html'">
-        Volver al inicio
+      <button class="boton nav-medico-activo" onclick="window.location.href='dashboard.html'">
+        <span class="icono-lineal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8"></path><path d="M5 10v10h14V10M9 20v-6h6v6"></path></svg></span> Panel Médico
       </button>
 
       <button class="boton" onclick="window.location.href='agenda.html'">
-        Agenda medica
+        <span class="icono-lineal" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M8 3v4M16 3v4M3 10h18M8 14h3"></path></svg></span> Agenda médica
       </button>
 
       <button class="boton" onclick="window.location.href='apuntes.html'">
-        Mis apuntes
+        <span class="icono-lineal" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h4"></path></svg></span> Mis apuntes
       </button>
 
       <button class="boton" onclick="window.location.href='perfil-profesional.html'">
-        Perfil profesional
+        <span class="icono-lineal" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg></span> Perfil profesional
       </button>
 
       <button class="boton" onclick="window.location.href='biblioteca.html'">
-        Biblioteca clinica
+        <span class="icono-lineal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5a3 3 0 0 1 3-2h5v18H7a3 3 0 0 0-3 2V5Z"></path><path d="M20 5a3 3 0 0 0-3-2h-5v18h5a3 3 0 0 1 3 2V5Z"></path></svg></span> Biblioteca clínica
+      </button>
+
+      <button class="boton" id="btnAdmin" onclick="window.location.href='admin.html'">
+        <span class="icono-lineal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v5c0 5 3.5 8.3 8 10 4.5-1.7 8-5 8-10V6l-8-3Z"></path><path d="m9 12 2 2 4-5"></path></svg></span> Centro de control
+      </button>
+
+      <button class="boton cerrar-sesion-medico" id="cerrarSesionMedico" type="button">
+        <span class="icono-lineal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M10 5H5v14h5M14 8l4 4-4 4M8 12h10"></path></svg></span> Cerrar sesión
       </button>
 
     </aside>
@@ -87,27 +113,35 @@
       <small>Panel</small>
     </button>
 
-    <section>
+    <section class="panel-medico-contenido">
+
+      <div class="panel-medico-encabezado-pagina">
+        <div>
+          <h1>Panel Médico</h1>
+          <p>Base de operación clínica de Cognición</p>
+        </div>
+        <div data-global-header-discovery-host></div>
+      </div>
 
       <div class="estadisticas">
         <div class="stat">
-          <h3 id="totalPacientes">0</h3>
-          <p>Pacientes</p>
+          <span class="stat-icono icono-lineal" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><circle cx="17" cy="9" r="2.5"></circle><path d="M3 20v-2a6 6 0 0 1 12 0v2M15 15a5 5 0 0 1 6 5"></path></svg></span>
+          <div><h3 id="totalPacientes">0</h3><p>Pacientes</p></div>
         </div>
 
         <div class="stat">
-          <h3 id="pacientesActivos">0</h3>
-          <p>Activos</p>
+          <span class="stat-icono icono-lineal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 13h4l2-7 4 13 3-9 2 3h5"></path></svg></span>
+          <div><h3 id="pacientesActivos">0</h3><p>Activos</p></div>
         </div>
 
         <div class="stat">
-          <h3 id="pacientesPendientes">0</h3>
-          <p>Pendientes</p>
+          <span class="stat-icono icono-lineal" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v6l4 2"></path></svg></span>
+          <div><h3 id="pacientesPendientes">0</h3><p>Pendientes</p></div>
         </div>
 
         <div class="stat">
-          <h3 id="expedientesHoy">0</h3>
-          <p>Notas hoy</p>
+          <span class="stat-icono icono-lineal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"></path><path d="M14 3v5h5M9 12h6M9 16h6"></path></svg></span>
+          <div><h3 id="expedientesHoy">0</h3><p>Notas hoy</p></div>
         </div>
       </div>
 
@@ -156,23 +190,22 @@
             Actualizar
           </button>
 
-          <button type="button" id="btnImportarDocxPaciente" class="boton-filtro-atencion">
-            Importar pacientes y notas externas
-          </button>
+          <details class="acciones-avanzadas-medico">
+            <summary>Más acciones</summary>
+            <div class="acciones-avanzadas-medico-contenido">
+              <button type="button" id="btnImportarDocxPaciente" class="boton-filtro-atencion">
+                Importar pacientes y notas externas
+              </button>
 
-          <button type="button" id="btnRevisarDuplicadosPacientes" class="boton-filtro-atencion">
-            Revisar duplicados
-          </button>
+              <button type="button" id="btnRevisarDuplicadosPacientes" class="boton-filtro-atencion">
+                Revisar duplicados
+              </button>
 
-        <button onclick="window.location.href='nuevo-paciente.html'">
-          Nuevo paciente
-        </button>
-
-        <button
-          id="btnAdmin"
-          onclick="window.location.href='admin.html'">
-          Centro de Control
-        </button>
+              <button onclick="window.location.href='nuevo-paciente.html'">
+                Nuevo paciente
+              </button>
+            </div>
+          </details>
         </div>
 
         <div id="modalFiltroAtencion" class="modal-filtro-atencion" aria-hidden="true">
@@ -391,11 +424,12 @@
 
   </div>
 
+  <p class="medico-frase-final">Los datos clínicos también deben servir al cuidado humano.</p>
+
 </main>
 
   <script type="module" src="js/medico.js?v=v177-resizable-medication-columns-v1"></script>
 
-  <script type="module" src="js/components/accesosRapidos.js"></script>
   <script>
     function cargarReportesGlobales() {
       import("./js/reportes.js").catch(function (error) {

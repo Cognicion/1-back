@@ -145,6 +145,9 @@ async function inicializarPanelMedico() {
     }, 300));
   }
 
+  inicializarBusquedaGlobalMedico(buscador);
+  inicializarCierreSesionMedico();
+
   const selectorOrden = document.getElementById("ordenPacientes");
 
   if (selectorOrden) {
@@ -182,6 +185,35 @@ inicializarPanelMedico().catch((error) => {
   console.error("No se pudo inicializar el panel medico:", error);
   window.location.href = "login.html";
 });
+
+function inicializarBusquedaGlobalMedico(buscadorPrincipal) {
+  const buscadorGlobal = document.getElementById("buscadorPacientesGlobal");
+  if (!buscadorGlobal || !buscadorPrincipal) return;
+
+  buscadorGlobal.addEventListener("input", () => {
+    if (buscadorPrincipal.value === buscadorGlobal.value) return;
+    buscadorPrincipal.value = buscadorGlobal.value;
+    buscadorPrincipal.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+
+  buscadorPrincipal.addEventListener("input", () => {
+    if (buscadorGlobal.value !== buscadorPrincipal.value) buscadorGlobal.value = buscadorPrincipal.value;
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "k") return;
+    event.preventDefault();
+    buscadorGlobal.focus();
+    buscadorGlobal.select();
+  });
+}
+
+function inicializarCierreSesionMedico() {
+  document.getElementById("cerrarSesionMedico")?.addEventListener("click", async () => {
+    await auth.signOut();
+    window.location.href = "login.html";
+  });
+}
 
 function inicializarPanelMedicoColapsable() {
   const botonContraer = document.getElementById("contraerPanelMedico");

@@ -220,6 +220,12 @@ function renderizarResultados(contenedor, texto = "") {
 }
 
 function crearContenedorAutomatico() {
+  const contenedorExistente = document.querySelector("[data-accesos-rapidos]");
+  if (contenedorExistente) {
+    contenedorExistente.dataset.accesosGlobal = "true";
+    return;
+  }
+
   let barra = document.querySelector("[data-accesos-rapidos-global]");
   if (!barra) {
     barra = document.createElement("div");
@@ -228,12 +234,9 @@ function crearContenedorAutomatico() {
     document.body.prepend(barra);
   }
 
-  let contenedor = document.querySelector("[data-accesos-rapidos]");
-  if (!contenedor) {
-    contenedor = document.createElement("div");
-    contenedor.dataset.accesosRapidos = "";
-    contenedor.dataset.accesosAuto = "true";
-  }
+  const contenedor = document.createElement("div");
+  contenedor.dataset.accesosRapidos = "";
+  contenedor.dataset.accesosAuto = "true";
 
   contenedor.dataset.accesosGlobal = "true";
   barra.appendChild(contenedor);

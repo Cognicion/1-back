@@ -1,0 +1,684 @@
+/* Panel Médico: composición inspirada en la referencia, preservando el DOM clínico. */
+body.panel-medico-page {
+  --medico-header-height: 84px;
+  --medico-sidebar-width: clamp(224px, 16vw, 272px);
+  --medico-layout-gap: 28px;
+  --medico-page-gutter-start: 16px;
+  --medico-page-gutter-end: clamp(16px, 1.7vw, 30px);
+  background: var(--page-bg);
+  color: var(--text-primary);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.icono-lineal {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.icono-lineal svg {
+  width: 1.25em;
+  height: 1.25em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body.panel-medico-page [data-global-app-header].header-medico,
+body.panel-medico-page .header-medico {
+  position: sticky;
+  top: 0;
+  z-index: 80;
+  min-height: var(--medico-header-height);
+  display: grid;
+  grid-template-columns: minmax(230px, 300px) minmax(280px, 430px) 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--page-bg) 94%, transparent);
+  box-shadow: 0 8px 28px rgb(0 0 0 / 12%);
+  backdrop-filter: blur(12px);
+  flex-wrap: nowrap;
+}
+
+.marca-medico {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+body.panel-medico-page .header-medico .logo-header {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  border-radius: 14px;
+  object-fit: contain;
+  border: 1px solid var(--border-normal);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--accent-primary) 18%, transparent);
+}
+
+.marca-medico-texto {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.marca-medico-texto strong {
+  color: var(--text-primary);
+  font-size: 19px;
+  line-height: 1.1;
+}
+
+.marca-medico-texto small {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.buscador-global-medico {
+  min-width: 0;
+  height: 46px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 13px;
+  border: 1px solid var(--input-border);
+  border-radius: 16px;
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--input-bg) 90%, transparent);
+}
+
+.buscador-global-medico > span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.buscador-global-medico input {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  color: var(--input-text);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+}
+
+.buscador-global-medico kbd {
+  padding: 3px 6px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--text-muted);
+  background: var(--surface-secondary);
+  font: inherit;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.acciones-globales-medico {
+  grid-column: 3;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.accion-global-medico {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  color: var(--text-primary);
+  background: var(--surface-primary);
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.accion-global-medico:hover,
+.accion-global-medico:focus-visible {
+  border-color: var(--accent-primary);
+  background: var(--surface-hover);
+}
+
+.accion-global-icono {
+  position: relative;
+  width: 48px;
+  padding: 0;
+  color: #ffc36b;
+  font-size: 16px;
+}
+
+.accion-global-icono::after {
+  content: "";
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #f59e42;
+}
+
+body.panel-medico-page [data-global-app-header] .global-header-actions {
+  grid-column: 4;
+  justify-self: end;
+  margin-left: 0;
+}
+
+body.panel-medico-page [data-global-app-header] .accesos-rapidos-toggle {
+  min-height: 44px;
+  padding: 0 18px;
+  border-color: color-mix(in srgb, var(--accent-primary) 55%, transparent);
+  border-radius: 10px;
+  color: var(--button-primary-text);
+  background: var(--button-primary-bg);
+  font-size: 13px;
+}
+
+body.panel-medico-page .contenedor {
+  width: 100%;
+  max-width: none;
+  padding: 0 var(--medico-page-gutter-end) 28px var(--medico-page-gutter-start);
+}
+
+body.panel-medico-page .grid-principal {
+  display: grid;
+  grid-template-columns: var(--medico-sidebar-width) minmax(0, 1fr);
+  gap: var(--medico-layout-gap);
+  align-items: start;
+}
+
+body.panel-medico-page .perfil-medico {
+  position: sticky;
+  top: calc(var(--medico-header-height) + 16px);
+  min-height: calc(100dvh - var(--medico-header-height) - 32px);
+  max-height: calc(100dvh - var(--medico-header-height) - 32px);
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  padding: 24px 20px 20px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-primary) 88%, transparent);
+  box-shadow: none;
+  scrollbar-width: thin;
+}
+
+body.panel-medico-page .perfil-medico .avatar {
+  width: 62px;
+  height: 62px;
+  margin-bottom: 18px;
+  flex: 0 0 auto;
+  font-size: 24px;
+}
+
+body.panel-medico-page .perfil-medico h2 {
+  max-width: 205px;
+  margin: 0 0 12px;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+body.panel-medico-page .perfil-medico .dato {
+  margin: 5px 0;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+body.panel-medico-page .perfil-medico .dato span {
+  margin-bottom: 1px;
+  font-size: 10px;
+}
+
+body.panel-medico-page .perfil-medico .boton {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  margin-top: 4px;
+  padding: 0 13px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--text-primary);
+  background: transparent;
+  box-shadow: none;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+body.panel-medico-page .perfil-medico .boton > span {
+  width: 20px;
+  color: var(--accent-primary);
+  text-align: center;
+  font-size: 18px;
+}
+
+body.panel-medico-page .perfil-medico .boton:hover,
+body.panel-medico-page .perfil-medico .boton:focus-visible,
+body.panel-medico-page .perfil-medico .nav-medico-activo {
+  border-color: color-mix(in srgb, var(--accent-primary) 24%, transparent);
+  background: color-mix(in srgb, var(--accent-primary) 28%, var(--surface-primary));
+}
+
+body.panel-medico-page .perfil-medico .cerrar-sesion-medico {
+  margin-top: auto;
+  border-color: color-mix(in srgb, var(--accent-primary) 34%, transparent);
+  color: var(--accent-primary);
+}
+
+body.panel-medico-page .boton-contraer-panel {
+  top: 18px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: var(--surface-secondary);
+}
+
+body.panel-medico-page .panel-medico-contenido {
+  min-width: 0;
+  padding-top: 28px;
+}
+
+.panel-medico-encabezado-pagina {
+  min-height: 74px;
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(360px, 450px);
+  align-items: start;
+  gap: 24px;
+  margin-bottom: 14px;
+}
+
+.panel-medico-encabezado-pagina h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(25px, 2vw, 30px);
+  line-height: 1.15;
+}
+
+.panel-medico-encabezado-pagina p {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+[data-global-header-discovery-host] {
+  min-width: 0;
+}
+
+body.panel-medico-page [data-global-header-discovery-host] .global-header-discovery {
+  width: 100%;
+  max-width: none;
+  min-height: 56px;
+  margin: 0;
+  padding: 10px 15px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--surface-primary) 86%, transparent);
+  font-size: 11px;
+}
+
+body.panel-medico-page [data-global-header-discovery-host] .global-header-discovery__actions a {
+  color: var(--accent-primary);
+  text-decoration: underline;
+}
+
+body.panel-medico-page .estadisticas {
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+body.panel-medico-page .stat {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 18px 20px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-primary) 87%, transparent);
+}
+
+.stat-icono {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 52px;
+  border-radius: 10px;
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.stat-icono svg {
+  width: 30px;
+  height: 30px;
+  stroke-width: 1.9;
+}
+
+body.panel-medico-page .stat h3 {
+  font-size: 22px;
+  line-height: 1;
+}
+
+body.panel-medico-page .stat p {
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+body.panel-medico-page .card.seccion:not(.graficas-medico) {
+  padding: 22px 20px 18px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-primary) 87%, transparent);
+  box-shadow: none;
+}
+
+body.panel-medico-page .card.seccion > h2 {
+  margin: 0 0 22px;
+  font-size: 20px;
+}
+
+body.panel-medico-page .barra-acciones {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(230px, 1.8fr) minmax(130px, .8fr) repeat(5, auto);
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+body.panel-medico-page .barra-acciones #buscadorPacientes.buscador-pacientes-amplio {
+  width: auto;
+  min-width: 0;
+  min-height: 44px;
+  flex: none;
+}
+
+body.panel-medico-page .barra-acciones select,
+body.panel-medico-page .barra-acciones button,
+.acciones-avanzadas-medico > summary {
+  min-height: 44px;
+  border: 1px solid var(--input-border);
+  border-radius: 7px;
+  font-size: 12px;
+}
+
+body.panel-medico-page .barra-acciones button {
+  min-width: auto;
+  padding-inline: 14px;
+  background: color-mix(in srgb, var(--button-primary-bg) 82%, var(--surface-primary));
+  white-space: nowrap;
+}
+
+.acciones-avanzadas-medico {
+  position: absolute;
+  top: -62px;
+  right: 0;
+}
+
+.acciones-avanzadas-medico > summary {
+  min-width: 118px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  color: var(--text-secondary);
+  background: var(--surface-secondary);
+  cursor: pointer;
+  list-style: none;
+}
+
+.acciones-avanzadas-medico > summary::-webkit-details-marker {
+  display: none;
+}
+
+.acciones-avanzadas-medico-contenido {
+  position: absolute;
+  top: calc(100% + 7px);
+  right: 0;
+  z-index: 120;
+  min-width: 270px;
+  display: grid;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid var(--border-normal);
+  border-radius: 10px;
+  background: var(--surface-primary);
+  box-shadow: var(--shadow-raised, 0 18px 50px rgb(0 0 0 / 35%));
+}
+
+.acciones-avanzadas-medico-contenido button {
+  width: 100%;
+  white-space: normal;
+}
+
+body.panel-medico-page .carpetas-lista-pacientes {
+  margin: 0 0 14px;
+  padding: 14px 0 12px;
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: 0;
+  background: transparent;
+}
+
+body.panel-medico-page .carpetas-lista-header {
+  margin-bottom: 9px;
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+body.panel-medico-page .carpetas-inline-medico {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+body.panel-medico-page .tabla-pacientes {
+  margin-top: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+}
+
+body.panel-medico-page .encabezado-pacientes,
+body.panel-medico-page .fila-paciente {
+  border: 0;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--surface-secondary) 82%, transparent);
+}
+
+body.panel-medico-page .fila-paciente {
+  min-height: 76px;
+  background: color-mix(in srgb, var(--surface-primary) 80%, transparent);
+}
+
+body.panel-medico-page .lista-pacientes {
+  gap: 0;
+  margin-top: 0;
+}
+
+body.panel-medico-page .celda-tabla,
+body.panel-medico-page .fila-paciente > span {
+  padding: 11px 14px;
+}
+
+body.panel-medico-page .encabezado-pacientes {
+  font-size: 10px;
+}
+
+body.panel-medico-page .panel-secundario {
+  margin-left: calc(var(--medico-sidebar-width) + var(--medico-layout-gap));
+}
+
+.medico-frase-final {
+  margin: 38px 0 8px calc(var(--medico-sidebar-width) + var(--medico-layout-gap));
+  color: var(--text-secondary);
+  text-align: center;
+  font-size: 12px;
+}
+
+@media (max-width: 1320px) {
+  body.panel-medico-page {
+    --medico-layout-gap: 18px;
+    --medico-page-gutter-start: 16px;
+    --medico-page-gutter-end: 16px;
+  }
+
+  body.panel-medico-page [data-global-app-header].header-medico,
+  body.panel-medico-page .header-medico {
+    grid-template-columns: 230px minmax(240px, 360px) 1fr auto;
+    gap: 10px;
+  }
+
+  .accion-global-medico:not(.accion-global-icono) {
+    width: 48px;
+    overflow: hidden;
+    padding: 0;
+    font-size: 0;
+  }
+
+  .accion-global-medico:not(.accion-global-icono) span {
+    font-size: 14px;
+  }
+
+  body.panel-medico-page .barra-acciones {
+    grid-template-columns: minmax(220px, 1.5fr) minmax(120px, .7fr) repeat(3, auto);
+  }
+
+  body.panel-medico-page .barra-acciones > button:nth-of-type(n + 4) {
+    grid-row: 2;
+  }
+}
+
+@media (max-width: 1050px) {
+  body.panel-medico-page [data-global-app-header].header-medico,
+  body.panel-medico-page .header-medico {
+    grid-template-columns: minmax(210px, 260px) minmax(220px, 1fr) auto;
+  }
+
+  .acciones-globales-medico {
+    display: none;
+  }
+
+  body.panel-medico-page [data-global-app-header] .global-header-actions {
+    grid-column: 3;
+  }
+
+  .panel-medico-encabezado-pagina {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  body.panel-medico-page .barra-acciones {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  body.panel-medico-page .barra-acciones #buscadorPacientes.buscador-pacientes-amplio {
+    flex: 1 0 100%;
+  }
+
+  .acciones-avanzadas-medico {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 900px) {
+  body.panel-medico-page {
+    --medico-header-height: auto;
+  }
+
+  body.panel-medico-page [data-global-app-header].header-medico,
+  body.panel-medico-page .header-medico {
+    position: sticky;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 10px 14px;
+  }
+
+  .buscador-global-medico {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  body.panel-medico-page [data-global-app-header] .global-header-actions {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  body.panel-medico-page .grid-principal {
+    grid-template-columns: 1fr;
+  }
+
+  body.panel-medico-page .perfil-medico {
+    position: relative;
+    top: auto;
+    min-height: 0;
+    max-height: none;
+  }
+
+  body.panel-medico-page .panel-medico-contenido {
+    padding-top: 18px;
+  }
+
+  body.panel-medico-page .estadisticas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.panel-medico-page .panel-secundario,
+  .medico-frase-final {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .marca-medico-texto small,
+  .buscador-global-medico kbd {
+    display: none;
+  }
+
+  body.panel-medico-page .estadisticas {
+    grid-template-columns: 1fr;
+  }
+
+  body.panel-medico-page .stat {
+    min-height: 82px;
+  }
+
+  body.panel-medico-page .card.seccion:not(.graficas-medico) {
+    padding-inline: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.panel-medico-page * {
+    scroll-behavior: auto;
+  }
+}

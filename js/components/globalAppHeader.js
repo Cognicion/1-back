@@ -71,7 +71,8 @@ function ensureBranding(header, pageId) {
 }
 
 function ensureDiscovery(header) {
-  let discovery = header.querySelector(".global-header-discovery");
+  const externalHost = document.querySelector("[data-global-header-discovery-host]");
+  let discovery = externalHost?.querySelector(".global-header-discovery") || header.querySelector(".global-header-discovery");
   if (discovery) return discovery;
   discovery = document.createElement("section");
   discovery.className = "global-header-discovery";
@@ -83,9 +84,12 @@ function ensureDiscovery(header) {
       <a data-global-tip-open hidden>Ver</a>
       <button type="button" data-global-tip-next aria-label="Mostrar otra sugerencia">›</button>
     </span>`;
-  const actions = header.querySelector(".topbar-actions, .global-header-actions");
-  if (actions) actions.before(discovery);
-  else header.append(discovery);
+  if (externalHost) externalHost.append(discovery);
+  else {
+    const actions = header.querySelector(".topbar-actions, .global-header-actions");
+    if (actions) actions.before(discovery);
+    else header.append(discovery);
+  }
   return discovery;
 }
 
@@ -101,7 +105,16 @@ function ensureGlobalActions(header, pageId) {
   if (pageId === "dashboard" || header.querySelector("[data-accesos-rapidos]")) return;
   const actions = document.createElement("div");
   actions.className = "global-header-actions";
-  actions.innerHTML = `<div data-accesos-rapidos data-global-header-access></div>`;
+  const existingAccess = document.querySelector("[data-accesos-rapidos]");
+  const legacyHost = existingAccess?.closest("[data-accesos-rapidos-global]");
+  if (existingAccess) {
+    existingAccess.dataset.globalHeaderAccess = "true";
+    actions.append(existingAccess);
+    if (legacyHost && !legacyHost.children.length) legacyHost.remove();
+    log("Accesos rápidos adoptados por el encabezado", { pageId });
+  } else {
+    actions.innerHTML = `<div data-accesos-rapidos data-global-header-access></div>`;
+  }
   header.append(actions);
 }
 
