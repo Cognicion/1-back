@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <link rel="stylesheet" href="css/theme/public-pages-light.css">
   <link rel="stylesheet" href="css/public-laboratory-home.css?v=20260811-option4-v1">
+  <link rel="stylesheet" href="css/public-interactions.css?v=20260811-interactions-v1">
 </head>
 
 <body class="public-lab-page">
@@ -92,6 +93,7 @@
         <h1 id="heroTitle">Plataforma clínica digital</h1>
         <p class="laboratory-lead">Ciencia, evidencia e inteligencia artificial<br> para comprender al paciente de forma integral.</p>
         <div class="laboratory-actions">
+          <button type="button" class="laboratory-button laboratory-button-secondary" data-open-public-interactions>Consultar interacciones farmacológicas</button>
           <a class="laboratory-button laboratory-button-primary" href="#modulos">Explorar plataforma</a>
           <a class="laboratory-button laboratory-button-secondary" href="login.html">Iniciar sesión</a>
         </div>
@@ -203,6 +205,33 @@
     </section>
   </main>
 
+  <div class="public-interactions-modal" data-public-interactions hidden aria-hidden="true">
+    <section class="public-interactions-panel" role="dialog" aria-modal="true" aria-labelledby="public-interactions-title">
+      <div class="public-interactions-header">
+        <div>
+          <span class="eyebrow">CONSULTA RÁPIDA</span>
+          <h2 id="public-interactions-title">Interacciones farmacológicas</h2>
+        </div>
+        <button type="button" class="public-interactions-close" data-close-public-interactions aria-label="Cerrar">×</button>
+      </div>
+      <p class="public-interactions-muted">Busca por nombre genérico, marca, sinónimo o presentación.</p>
+      <div class="public-interactions-search-row">
+        <input type="search" data-interaction-search placeholder="Ej. fluoxetina, Captopril tabletas 25 mg" autocomplete="off">
+      </div>
+      <div class="public-interactions-suggestions" data-interaction-suggestions hidden></div>
+      <p class="public-interactions-status" data-interaction-status aria-live="polite"></p>
+      <h3>Medicamentos seleccionados (<span data-interaction-count>0</span>)</h3>
+      <ul class="public-interactions-selected" data-interaction-selected></ul>
+      <div class="public-interaction-actions">
+        <button type="button" class="laboratory-button laboratory-button-primary" data-analyze-interactions>Analizar interacciones</button>
+        <button type="button" class="laboratory-button laboratory-button-secondary" data-clear-interactions>Limpiar selección</button>
+        <button type="button" class="laboratory-button laboratory-button-secondary" data-close-public-interactions>Cerrar</button>
+      </div>
+      <div class="public-interactions-results" data-interaction-results></div>
+      <p class="public-interactions-disclaimer">Esta herramienta no sustituye el juicio clínico.</p>
+    </section>
+  </div>
+
   <footer id="contacto" class="public-footer">
     <div class="public-footer-main">
       <a class="public-brand public-footer-brand" href="#inicio" aria-label="COGNICIÓN, volver al inicio">
@@ -224,5 +253,6 @@
 
   <script src="js/public-laboratory-home.js" defer></script>
   <script type="module" src="js/reportes.js"></script>
+  <script type="module" src="js/public/interaccionesFarmacologicasPublicas.js?v=20260811-interactions-v1"></script>
 </body>
 </html>

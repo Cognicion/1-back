@@ -402,6 +402,8 @@ function crearAlerta(base) {
   return {
     id: base.id,
     tipo: base.tipo || "precaucion",
+    tipoInteraccion: base.tipoInteraccion || "",
+    categoria: base.categoria || "",
     severidad,
     prioridad: SEVERIDAD_ORDEN[severidad] || 3,
     titulo: base.titulo,
@@ -410,6 +412,7 @@ function crearAlerta(base) {
     diagnosticos: base.diagnosticos || [],
     mecanismo: base.mecanismo || "Mecanismo no especificado en la regla local",
     efecto: base.efecto || "",
+    efectoClinico: base.efectoClinico || base.efecto || "",
     recomendacion: base.recomendacion || "",
     evidencia: base.evidencia || "regla_local",
     confianza: base.confianza || (base.evidencia === "documentada_en_fuente_local" ? "alta" : "requiere validación clínica"),
