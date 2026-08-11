@@ -396,7 +396,12 @@ body.public-lab-page .laboratory-button-secondary:hover {
   transform: scaleY(var(--orbit-scale-y)) rotate(0deg);
   transform-origin: 0 0;
   animation: laboratoryButtonOrbit var(--orbit-duration) linear infinite;
+  animation-delay: var(--orbit-phase-delay, 0s);
   will-change: transform;
+}
+
+.laboratory-orbit-track--medical {
+  --orbit-phase-delay: -22.5s;
 }
 
 .laboratory-orbit-radius {
@@ -408,6 +413,7 @@ body.public-lab-page .laboratory-button-secondary:hover {
   transform: rotate(0deg) scaleY(var(--orbit-inverse-scale-y));
   transform-origin: 0 0;
   animation: laboratoryButtonCounterRotate var(--orbit-duration) linear infinite;
+  animation-delay: var(--orbit-phase-delay, 0s);
   will-change: transform;
 }
 
@@ -1482,6 +1488,10 @@ html[data-theme="biocelular"] .roadmap-line li::before {
 
   .laboratory-stage {
     --orbit-duration: 60s;
+  }
+
+  .laboratory-orbit-track--medical {
+    --orbit-phase-delay: -30s;
   }
 
   .laboratory-orbit-track,
