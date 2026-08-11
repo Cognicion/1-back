@@ -534,6 +534,12 @@
   }
 }
 
+@media (max-width: 700px) {
+  .patient-transfer-indication-row { grid-template-columns: 18px minmax(0, 1fr) auto; gap: 5px; }
+  .patient-transfer-indication-category { grid-column: 2 / -1; width: max-content !important; max-width: 100%; }
+  .patient-transfer-indication-text, .patient-transfer-indication-meta { grid-column: 2 / -1; }
+}
+
 .patient-transfer-actions {
   position: sticky;
   bottom: 0;
@@ -589,6 +595,19 @@
   gap: 6px;
   white-space: nowrap;
 }
+
+.patient-transfer-indications-header h4 { display: flex; align-items: baseline; gap: 6px; }
+.patient-transfer-indications-count { color: #93a4ba; font-size: 11px; font-weight: 500; }
+.patient-transfer-indications-box { display: grid; gap: 3px; padding: 5px; border: 1px solid rgba(148, 163, 184, .2); border-radius: 8px; background: rgba(2, 6, 23, .28); }
+.patient-transfer-indication-row { display: grid; grid-template-columns: 18px minmax(145px, .35fr) minmax(0, 1fr) auto; align-items: center; gap: 7px; min-height: 32px; padding: 3px 4px; border-bottom: 1px solid rgba(148, 163, 184, .1); }
+.patient-transfer-indication-row:last-child { border-bottom: 0; }
+.patient-transfer-indication-check { width: 16px !important; height: 16px; margin: 0; padding: 0 !important; accent-color: #38bdf8; }
+.patient-transfer-indication-category { width: auto !important; min-width: 0; padding: 5px 7px !important; font-size: 12px; }
+.patient-transfer-indication-text { min-height: 28px !important; height: 28px; max-height: 126px; margin: 0; padding: 5px 7px !important; resize: none; overflow-y: hidden; font-size: 12px; line-height: 1.35; }
+.patient-transfer-indication-meta { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; color: #93a4ba; font-size: 10px; }
+.patient-transfer-indication-meta details { display: inline-block; }
+.patient-transfer-indication-meta summary { cursor: pointer; color: #7dd3fc; font-size: 10px; }
+.patient-transfer-indication-meta details small { display: block; max-width: 260px; white-space: normal; }
 
 .patient-transfer-candidates article {
   display: grid;

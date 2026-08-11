@@ -55,5 +55,10 @@ assert.match(documentLoop, /indicationErrors/);
 assert.match(view, /const selected = includeControl \? includeControl\.checked : candidate\.include === true \|\| candidate\.selectedForImport === true/);
 assert.match(view, /const checked = includeControl \? includeControl\.checked : candidate\.include === true \|\| candidate\.selectedForImport === true/);
 assert.match(view, /candidate\.text \|\| candidate\.value/);
+assert.match(view, /patient-transfer-indications-box/);
+assert.match(view, /patient-transfer-indication-row/);
+assert.match(view, /data-transfer-plan-include/);
+assert.match(view, /candidateType === "indication"/);
+assert.match(view, /resizeTransferIndicationTextarea/);
 
 console.log("patient-transfer-medications-indications.test.mjs OK");

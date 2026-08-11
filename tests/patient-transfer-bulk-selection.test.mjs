@@ -30,7 +30,12 @@ const groups = [{
           { id: "dx-1", diagnosisName: "Diagnóstico 1", code: "F33.2", codes: ["F33.2"] },
           { id: "dx-2", diagnosisName: "Diagnóstico 2", code: "F43.1", codes: ["F43.1"], include: true, selectedForImport: true }
         ],
-        treatmentCandidates: [{ ...medication }, { id: "tx-review", medicationName: "Sin resolver", requiresCatalogReview: true }]
+        treatmentCandidates: [{ ...medication }, { id: "tx-review", medicationName: "Sin resolver", requiresCatalogReview: true }],
+        treatmentPlanCandidates: [
+          { id: "ind-1", instructionType: "diet", text: "Normal", include: true, selectedForImport: true },
+          { id: "ind-2", instructionType: "monitoring", text: "Vigilancia estrecha" },
+          { id: "ind-3", instructionType: "allergies", text: "Negadas", include: true, selectedForImport: true }
+        ]
       },
       {
         id: "note-2",
@@ -88,6 +93,23 @@ assert.equal(selectedMedication.include, true);
 assert.equal(selectedMedication.catalogMedicationId, "olanzapina", "conserva la identidad del catálogo");
 assert.deepEqual(selectedMedication.schedule, [{ time: "22:00", quantity: 1, unit: "tableta" }], "conserva horarios y dosis estructurados");
 assert.equal(treatmentsSelected.groups[0].documents[0].noteSegments[0].treatmentCandidates[1].include, undefined);
+
+const indicationsSelected = applyBulkCandidateSelection(groups, {
+  documentId: "document-1",
+  noteId: "note-1",
+  candidateType: "indication",
+  selected: true
+});
+assert.equal(indicationsSelected.candidateCount, 3);
+assert.equal(indicationsSelected.affectedCount, 3);
+assert.ok(indicationsSelected.groups[0].documents[0].noteSegments[0].treatmentPlanCandidates.every((candidate) => candidate.include && candidate.selectedForImport));
+const indicationsCleared = applyBulkCandidateSelection(indicationsSelected.groups, {
+  documentId: "document-1",
+  noteId: "note-1",
+  candidateType: "indication",
+  selected: false
+});
+assert.ok(indicationsCleared.groups[0].documents[0].noteSegments[0].treatmentPlanCandidates.every((candidate) => !candidate.include && !candidate.selectedForImport));
 
 const omitted = applyBulkCandidateSelection(groups, {
   documentId: "document-1",

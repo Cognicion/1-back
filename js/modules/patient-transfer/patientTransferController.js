@@ -39,9 +39,10 @@ import {
   setTransferSavingState,
   showPatientTransferError,
   isTransferSaving,
+  resizeTransferIndicationTextarea,
   syncBulkSelectionControls,
   syncPatientNameInputs
-} from "./ui/patientTransferView.js?v=v163-medications-indications-v1";
+} from "./ui/patientTransferView.js?v=v164-compact-indications-v1";
 
 let initialized = false;
 let selectedFiles = [];
@@ -1225,6 +1226,7 @@ export function initializePatientTransfer() {
 
   root.addEventListener("input", (event) => {
     if (event.target.closest("[data-action='toggle-all-candidates']")) return;
+    if (event.target.matches("[data-transfer-plan-text]")) resizeTransferIndicationTextarea(event.target);
     syncPatientNameInputs(event);
     if (updateSubjectiveFromInput(event)) return;
     syncReviewedGroupsFromView();

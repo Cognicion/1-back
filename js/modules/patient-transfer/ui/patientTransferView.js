@@ -406,6 +406,8 @@ function candidatesForType(segment = {}, candidateType = "") {
     ? (segment.diagnosisCandidates || [])
     : candidateType === "treatment"
       ? (segment.treatmentCandidates || [])
+      : candidateType === "indication"
+        ? (segment.treatmentPlanCandidates || []).filter((candidate) => candidate.instructionType !== "medications")
       : [];
 }
 
@@ -452,9 +454,15 @@ export function applyBulkCandidateSelection(groups = [], { documentId = "", note
               confirmedByDoctor: selected
             };
           });
+          if (candidateType === "indication") {
+            const selectedById = new Map(updatedCandidates.map((candidate) => [candidate.id, candidate]));
+            return { ...segment, treatmentPlanCandidates: (segment.treatmentPlanCandidates || []).map((candidate) => selectedById.get(candidate.id) || candidate) };
+          }
           return candidateType === "diagnosis"
             ? { ...segment, diagnosisCandidates: updatedCandidates }
-            : { ...segment, treatmentCandidates: updatedCandidates };
+            : candidateType === "treatment"
+              ? { ...segment, treatmentCandidates: updatedCandidates }
+              : segment;
         })
       };
     })
@@ -484,6 +492,11 @@ export function syncBulkSelectionControls(groups = []) {
     control.indeterminate = state.indeterminate;
     control.disabled = state.disabled;
   });
+  root.querySelectorAll("[data-transfer-indications-list]").forEach((list) => {
+    const checks = [...list.querySelectorAll("[data-transfer-plan-include]")];
+    const header = list.closest(".patient-transfer-treatment-plan")?.querySelector(".patient-transfer-indications-count");
+    if (header) header.textContent = `(${checks.filter((control) => control.checked).length}/${checks.length} seleccionadas)`;
+  });
 }
 
 function renderBulkSelectionControl(doc, segment, candidateType, label) {
@@ -492,7 +505,9 @@ function renderBulkSelectionControl(doc, segment, candidateType, label) {
   const controlId = `transfer-select-all-${doc.id}-${segment.id}-${candidateType}`;
   const help = candidateType === "diagnosis"
     ? "Selecciona todos los diagnósticos de esta nota"
-    : "Selecciona todos los tratamientos de esta nota";
+    : candidateType === "indication"
+      ? "Selecciona todas las indicaciones de esta nota"
+      : "Selecciona todos los tratamientos de esta nota";
   console.info("[patient-transfer] select-all-render", {
     documentId: doc.id,
     noteId: segment.id,
@@ -502,6 +517,19 @@ function renderBulkSelectionControl(doc, segment, candidateType, label) {
     affectedCount: 0
   });
   return `<label for="${escapeHtml(controlId)}" title="${help}"><input id="${escapeHtml(controlId)}" type="checkbox" data-action="toggle-all-candidates" data-transfer-select-all data-document-id="${escapeHtml(doc.id)}" data-note-id="${escapeHtml(segment.id)}" data-candidate-type="${candidateType}" ${state.checked ? "checked" : ""} ${state.disabled ? "disabled" : ""}> ${label}</label>`;
+}
+
+export function resizeTransferIndicationTextarea(textarea) {
+  if (!textarea) return;
+  textarea.style.height = "auto";
+  const lineHeight = Number.parseFloat(getComputedStyle(textarea).lineHeight) || 20;
+  const maxHeight = lineHeight * 6 + 14;
+  textarea.style.height = `${Math.min(Math.max(textarea.scrollHeight, lineHeight + 10), maxHeight)}px`;
+  textarea.style.overflowY = textarea.scrollHeight > maxHeight ? "auto" : "hidden";
+}
+
+export function resizeTransferIndicationTextareas(rootElement = root) {
+  rootElement?.querySelectorAll("[data-transfer-plan-text]").forEach(resizeTransferIndicationTextarea);
 }
 
 function renderSegmentVitalSigns(doc, segment) {
@@ -629,7 +657,29 @@ const TREATMENT_PLAN_TYPE_LABELS = {
   otherInstruction: "Otras indicaciones"
 };
 
+function renderCompactIndications(doc, segment) {
+  const candidates = (segment.treatmentPlanCandidates || []).filter((candidate) => candidate.instructionType !== "medications");
+  const delegatedMedicationCount = (segment.treatmentCandidates || []).length;
+  const selectedCount = candidates.filter((candidate) => candidate.include || candidate.selectedForImport).length;
+  const rows = candidates.map((candidate) => {
+    const type = candidate.instructionType || "otherInstruction";
+    const key = `${doc.id}:${segment.id}:${candidate.id}`;
+    return `<div class="patient-transfer-indication-row">
+      <input class="patient-transfer-indication-check" aria-label="Incluir indicacion" type="checkbox" data-transfer-plan-include="${key}" ${candidate.include || candidate.selectedForImport ? "checked" : ""}>
+      <select class="patient-transfer-indication-category" aria-label="Categoria de indicacion" data-transfer-plan-type="${key}">${Object.entries(TREATMENT_PLAN_TYPE_LABELS).filter(([value]) => value !== "medications").map(([value, label]) => option(value, label, value === type)).join("")}</select>
+      <textarea class="patient-transfer-indication-text" rows="1" data-transfer-plan-text="${key}" placeholder="Indicacion">${escapeHtml(candidate.text || candidate.value || "")}</textarea>
+      <span class="patient-transfer-indication-meta"><small>${escapeHtml(candidate.confidence || "not-detected")}</small><details><summary>Fuente</summary><small>${escapeHtml(candidate.evidence?.[0]?.rawText || candidate.text || "")}</small></details></span>
+    </div>`;
+  }).join("");
+  return `<section class="patient-transfer-candidates patient-transfer-treatment-plan">
+    <div class="patient-transfer-candidates-header patient-transfer-indications-header"><h4>Indicaciones <span class="patient-transfer-indications-count">(${selectedCount}/${candidates.length} seleccionadas)</span></h4>${candidates.length ? renderBulkSelectionControl(doc, segment, "indication", "Seleccionar todas") : ""}</div>
+    ${delegatedMedicationCount ? `<p>${delegatedMedicationCount} medicamento${delegatedMedicationCount === 1 ? "" : "s"} delegado al parser farmacologico. Revise la tabla de Medicamentos detectados.</p>` : ""}
+    ${candidates.length ? `<div class="patient-transfer-indications-box" data-transfer-indications-list>${rows}</div>` : "<p>No se detectaron indicaciones estructuradas.</p>"}
+  </section>`;
+}
+
 function renderSegmentTreatmentPlanCandidates(doc, segment) {
+  return renderCompactIndications(doc, segment);
   const candidates = (segment.treatmentPlanCandidates || []).filter((candidate) => candidate.instructionType !== "medications");
   const delegatedMedicationCount = (segment.treatmentCandidates || []).length;
   const groups = candidates.reduce((result, candidate) => {
@@ -803,6 +853,7 @@ export function renderDetectedGroups(groups = []) {
     );
   });
   syncBulkSelectionControls(groups);
+  resizeTransferIndicationTextareas(modal);
 }
 
 export function collectRenderedSubjectiveMetrics(groups = []) {
