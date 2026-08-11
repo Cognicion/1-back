@@ -163,6 +163,30 @@ export function normalizarMedicamentoClinico(medicamento) {
     });
   });
 
+  // Los riesgos del ingrediente también funcionan como tags clínicos para
+  // reglas farmacodinámicas de clase (p. ej. QT + QT), sin cambiar la
+  // identidad clínica ni depender de una presentación.
+  const tagsPorRiesgo = {
+    qt: "qt",
+    sedacion: "depresor_snc",
+    respiratorio: "depresor_snc",
+    sangrado: "riesgo_hemorragico",
+    renal: "riesgo_renal",
+    potasio: "riesgo_electrolitico",
+    potasio_bajo: "riesgo_electrolitico",
+    cardiovascular: "riesgo_cardiovascular",
+    presion: "riesgo_cardiovascular"
+  };
+  Object.keys(riesgos).forEach((riesgo) => {
+    const valor = Number(riesgos[riesgo] || 0);
+    if (valor <= 0) return;
+    // Un riesgo QT bajo aislado no debe convertirse automáticamente en una
+    // alerta QT-QT; la regla de clase exige una señal moderada/alta.
+    if (riesgo === "qt" && valor < 2) return;
+    const tag = tagsPorRiesgo[riesgo];
+    if (tag) clases.add(tag);
+  });
+
   return {
     id: medicamento?.id || texto || "medicamento",
     textoOriginal,
@@ -172,6 +196,8 @@ export function normalizarMedicamentoClinico(medicamento) {
     ingredienteIds: ingredientes.map((ingrediente) => ingrediente.id),
     nombresIngredientes: ingredientes.map((ingrediente) => ingrediente.nombre),
     clases: [...clases],
+    therapeuticClasses: [...clases],
+    tags: [...clases],
     riesgos,
     datosOriginales: medicamento
   };
