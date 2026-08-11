@@ -1,0 +1,59 @@
+.selector-vista-modulos {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+}
+
+.boton-vista-modulos {
+  min-height: 34px;
+  padding: 7px 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--muted);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 750;
+  transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease;
+}
+
+.boton-vista-modulos:hover,
+.boton-vista-modulos:focus-visible {
+  color: var(--text);
+  border-color: var(--border-normal);
+}
+
+.boton-vista-modulos[aria-pressed="true"] {
+  color: var(--text);
+  border-color: var(--border-normal);
+  background: rgba(82, 152, 102, 0.18);
+}
+
+orbita-panel-principal {
+  display: block;
+  width: 100%;
+}
+
+orbita-panel-principal[hidden],
+.module-grid[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .dashboard-section .section-heading {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .selector-vista-modulos {
+    align-self: stretch;
+    justify-content: center;
+  }
+
+  .boton-vista-modulos {
+    flex: 1;
+  }
+}

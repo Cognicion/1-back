@@ -125,6 +125,15 @@ body.public-lab-page :where(a, button, summary):focus-visible {
   white-space: nowrap;
 }
 
+.public-brand .public-brand-version {
+  min-height: 8px;
+  color: var(--public-cyan);
+  font-size: 7px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .12em;
+  line-height: 1;
+}
+
 .public-nav {
   display: flex;
   align-items: center;
@@ -1129,9 +1138,13 @@ html[data-theme="biocelular"] .roadmap-line li::before {
     font-size: 11px;
   }
 
-  .public-brand small,
+  .public-brand small:not(.public-brand-version),
   .public-nav {
     display: none;
+  }
+
+  .public-brand .public-brand-version {
+    display: block;
   }
 
   .public-mobile-actions {

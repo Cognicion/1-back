@@ -1261,6 +1261,8 @@ footer {
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
 <link rel="stylesheet" href="css/ui-density.css">
 <link rel="stylesheet" href="css/reconocimiento-colaborador.css">
+<link rel="stylesheet" href="css/control-maestro.css?v=1.863">
+<link rel="stylesheet" href="css/vista-orbital-panel-principal.css?v=1.863">
 <style id="dashboard-light-theme-structure">
 html[data-theme="light"] body {
   --bg: var(--page-bg);
@@ -1520,9 +1522,15 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
                 <h2 id="modulosTitulo">Tu espacio de trabajo</h2>
             </div>
             <p class="section-description">Accesos pensados para retomar tu trabajo médico sin fricción.</p>
+            <div class="selector-vista-modulos" role="group" aria-label="Presentación de los módulos">
+                <button type="button" class="boton-vista-modulos" data-seleccionar-vista="orbita" aria-pressed="true">Órbita</button>
+                <button type="button" class="boton-vista-modulos" data-seleccionar-vista="tarjetas" aria-pressed="false">Tarjetas</button>
+            </div>
         </div>
 
-        <div class="module-grid">
+        <orbita-panel-principal aria-labelledby="modulosTitulo"></orbita-panel-principal>
+
+        <div class="module-grid" data-vista-tarjetas hidden>
             <article class="module-card card-prioridad-media">
                 <div class="module-top">
                     <div class="module-icon">SALUD</div>
@@ -1743,6 +1751,7 @@ document.addEventListener("DOMContentLoaded", function () {
   console.timeEnd?.("COGNICION dashboard | primera fase HTML");
 }, { once: true });
 </script>
+<script type="module" src="js/componentes/vista-orbital-panel-principal.js?v=1.863"></script>
 <script type="module" src="js/dashboard.js?v=20260727-colaboradores-v1"></script>
 <script type="module" src="js/components/accesosRapidos.js"></script>
 <script type="module" src="js/components/themeSelector.js"></script>

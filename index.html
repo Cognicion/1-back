@@ -19,8 +19,8 @@
   <link rel="icon" type="image/png" href="assets/favicon-cognicion-128.png">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <link rel="stylesheet" href="css/theme/public-pages-light.css">
-  <link rel="stylesheet" href="css/public-landing-controls.css?v=20260811-controls-v1">
-  <link rel="stylesheet" href="css/public-laboratory-home.css?v=20260811-orbital-cta-v7">
+  <link rel="stylesheet" href="css/control-maestro.css?v=1.862">
+  <link rel="stylesheet" href="css/public-laboratory-home.css?v=20260811-orbital-cta-v8">
   <link rel="stylesheet" href="css/public-interactions.css?v=20260811-interactions-v2">
 </head>
 
@@ -42,7 +42,11 @@
   <header class="public-header" data-public-header>
     <a class="public-brand" href="#inicio" aria-label="COGNICIÓN, ir al inicio">
       <img src="assets/favicon-cognicion-128.png" alt="" width="42" height="42">
-      <span><strong>COGNICIÓN</strong><small>Ciencia · Evidencia · Salud mental</small></span>
+      <span>
+        <strong>COGNICIÓN</strong>
+        <small>Ciencia · Evidencia · Salud mental</small>
+        <small class="public-brand-version" data-public-app-version aria-label="Versión de COGNICIÓN"></small>
+      </span>
     </a>
 
     <nav class="public-nav" aria-label="Navegación principal">
@@ -254,6 +258,7 @@
   </button>
 
   <script src="js/public-laboratory-home.js" defer></script>
+  <script type="module" src="js/public/publicAppVersion.js"></script>
   <script type="module" src="js/reportes.js"></script>
 <script type="module" src="js/public/interaccionesFarmacologicasPublicas.js?v=20260811-cytochrome-bridge-v1"></script>
 </body>
