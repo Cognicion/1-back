@@ -358,7 +358,7 @@ body.public-lab-page .laboratory-button-secondary:hover {
 }
 
 .laboratory-stage {
-  --orbit-duration: 60s;
+  --orbit-duration: var(--index-orbit-translation-duration, 60s);
   --orbit-width: 912px;
   --orbit-height: 288px;
   --orbit-radius: 456px;
@@ -396,12 +396,14 @@ body.public-lab-page .laboratory-button-secondary:hover {
   transform: scaleY(var(--orbit-scale-y)) rotate(0deg);
   transform-origin: 0 0;
   animation: laboratoryButtonOrbit var(--orbit-duration) linear infinite;
-  animation-delay: var(--orbit-phase-delay, 0s);
   will-change: transform;
 }
 
 .laboratory-orbit-track--medical {
-  --orbit-phase-delay: -22.5s;
+  --orbit-start-angle: 180deg;
+  --orbit-end-angle: 540deg;
+  --orbit-counter-start-angle: -180deg;
+  --orbit-counter-end-angle: -540deg;
 }
 
 .laboratory-orbit-radius {
@@ -413,7 +415,6 @@ body.public-lab-page .laboratory-button-secondary:hover {
   transform: rotate(0deg) scaleY(var(--orbit-inverse-scale-y));
   transform-origin: 0 0;
   animation: laboratoryButtonCounterRotate var(--orbit-duration) linear infinite;
-  animation-delay: var(--orbit-phase-delay, 0s);
   will-change: transform;
 }
 
@@ -955,13 +956,13 @@ body.public-lab-page #reporteGlobalWidget.reporte-widget-contraido .reporte-floa
 }
 
 @keyframes laboratoryButtonOrbit {
-  from { transform: scaleY(var(--orbit-scale-y)) rotate(0deg); }
-  to { transform: scaleY(var(--orbit-scale-y)) rotate(360deg); }
+  from { transform: scaleY(var(--orbit-scale-y)) rotate(var(--orbit-start-angle, 0deg)); }
+  to { transform: scaleY(var(--orbit-scale-y)) rotate(var(--orbit-end-angle, 360deg)); }
 }
 
 @keyframes laboratoryButtonCounterRotate {
-  from { transform: rotate(0deg) scaleY(var(--orbit-inverse-scale-y)); }
-  to { transform: rotate(-360deg) scaleY(var(--orbit-inverse-scale-y)); }
+  from { transform: rotate(var(--orbit-counter-start-angle, 0deg)) scaleY(var(--orbit-inverse-scale-y)); }
+  to { transform: rotate(var(--orbit-counter-end-angle, -360deg)) scaleY(var(--orbit-inverse-scale-y)); }
 }
 
 @keyframes laboratoryButtonFloat {
@@ -1484,14 +1485,6 @@ html[data-theme="biocelular"] .roadmap-line li::before {
   .platform-ring,
   .stage-particles circle {
     animation: none;
-  }
-
-  .laboratory-stage {
-    --orbit-duration: 60s;
-  }
-
-  .laboratory-orbit-track--medical {
-    --orbit-phase-delay: -30s;
   }
 
   .laboratory-orbit-track,

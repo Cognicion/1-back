@@ -1,0 +1,4 @@
+:root {
+  /* Duración de una vuelta completa de los botones alrededor de la órbita. */
+  --index-orbit-translation-duration: 60s;
+}
