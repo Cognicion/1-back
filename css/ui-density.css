@@ -1,0 +1,375 @@
+:root {
+  --ui-density-scale: .9;
+  --ui-space-1: 6px;
+  --ui-space-2: 10px;
+  --ui-space-3: 14px;
+  --ui-space-4: 18px;
+  --ui-space-5: 24px;
+  --ui-header-height: 78px;
+  --ui-header-padding-x: 24px;
+  --ui-header-padding-y: 10px;
+  --ui-card-padding: 20px;
+  --ui-card-gap: 14px;
+  --ui-section-gap: 14px;
+  --ui-control-height: 38px;
+  --ui-control-padding-x: 12px;
+  --ui-button-height: 38px;
+  --ui-button-padding-x: 14px;
+  --ui-font-xs: 11px;
+  --ui-font-sm: 12px;
+  --ui-font-base: 14px;
+  --ui-font-lg: 18px;
+  --ui-font-xl: 30px;
+  --ui-radius-sm: 10px;
+  --ui-radius-md: 16px;
+}
+
+@media (min-width: 901px) {
+  /* Dashboard: compactar el layout sin alterar su estructura ni acciones. */
+  body:has(.module-grid) .app-shell {
+    width: min(1440px, calc(100% - 48px));
+  }
+
+  body:has(.module-grid) [data-global-app-header] .topbar {
+    min-height: var(--ui-header-height);
+    gap: 16px;
+  }
+
+  body:has(.module-grid) [data-global-app-header] .brand {
+    gap: 12px;
+  }
+
+  body:has(.module-grid) [data-global-app-header] .brand img {
+    width: 54px;
+    height: 54px;
+    border-radius: 15px;
+  }
+
+  body:has(.module-grid) [data-global-app-header] .brand-name {
+    font-size: 1.35rem;
+  }
+
+  body:has(.module-grid) [data-global-app-header] .brand-subtitle {
+    margin-top: 2px;
+    font-size: .82rem;
+    line-height: 1.25;
+  }
+
+  body:has(.module-grid) .primary-button,
+  body:has(.module-grid) .secondary-button,
+  body:has(.module-grid) .ghost-button,
+  body:has(.module-grid) .logout-button {
+    min-height: var(--ui-button-height);
+    padding-inline: var(--ui-button-padding-x);
+  }
+
+  body:has(.module-grid) .hero {
+    padding: 24px 0 16px;
+  }
+
+  body:has(.module-grid) .hero-copy {
+    padding: 10px 0;
+  }
+
+  body:has(.module-grid) .hero-subtitle {
+    margin-top: 8px;
+    max-width: 660px;
+    font-size: clamp(1rem, 1.15vw, 1.18rem);
+    line-height: 1.4;
+  }
+
+  body:has(.module-grid) .clinical-phrase {
+    margin-top: 6px;
+    font-size: .9rem;
+  }
+
+  body:has(.module-grid) #bienvenida {
+    margin-top: 14px;
+    font-size: 1.18rem;
+  }
+
+  body:has(.module-grid) .hero-stats {
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  body:has(.module-grid) .hero-stat {
+    min-height: 68px;
+    padding: 12px 14px;
+    border-radius: 15px;
+  }
+
+  body:has(.module-grid) .hero-stat span {
+    margin-top: 5px;
+    font-size: .72rem;
+  }
+
+  body:has(.module-grid) .medical-scope {
+    gap: 8px;
+    margin-top: 18px;
+  }
+
+  body:has(.module-grid) .medical-scope span {
+    min-height: 30px;
+    padding-inline: 11px;
+    font-size: .76rem;
+  }
+
+  body:has(.module-grid) .dashboard-section,
+  body:has(.module-grid) .activity-center,
+  body:has(.module-grid) .quick-actions {
+    padding-block: 12px;
+  }
+
+  body:has(.module-grid) .section-heading {
+    gap: 18px;
+    margin-bottom: 12px;
+  }
+
+  body:has(.module-grid) .section-heading h2 {
+    margin-top: 5px;
+    font-size: clamp(1.45rem, 2.2vw, 2rem);
+  }
+
+  body:has(.module-grid) .module-grid {
+    gap: var(--ui-card-gap);
+  }
+
+  body:has(.module-grid) .module-card {
+    min-height: 240px;
+    padding: var(--ui-card-padding);
+    border-radius: 20px;
+  }
+
+  body:has(.module-grid) .module-top {
+    gap: 12px;
+  }
+
+  body:has(.module-grid) .module-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    font-size: 1.25rem;
+  }
+
+  body:has(.module-grid) .module-card .badge {
+    padding: 5px 8px;
+    font-size: .68rem;
+  }
+
+  body:has(.module-grid) .module-card h3 {
+    margin-top: 18px;
+    font-size: 1.2rem;
+  }
+
+  body:has(.module-grid) .module-card p,
+  body:has(.module-grid) .section-description {
+    line-height: 1.45;
+    font-size: .92rem;
+  }
+
+  body:has(.module-grid) .module-card .card-actions {
+    padding-top: 18px;
+  }
+
+  body:has(.module-grid) .module-subareas {
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  body:has(.module-grid) .module-subareas span {
+    padding: 5px 8px;
+    font-size: .7rem;
+  }
+
+  /* Panel Médico: más filas visibles sin reducir controles por debajo de un uso cómodo. */
+  body:has(.grid-principal) .header-medico {
+    padding: var(--ui-header-padding-y) var(--ui-header-padding-x);
+    gap: 12px;
+  }
+
+  body:has(.grid-principal) .header-medico .logo-header {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+  }
+
+  body:has(.grid-principal) .header-medico h1 {
+    font-size: 22px;
+  }
+
+  body:has(.grid-principal) .header-medico p {
+    margin-top: 3px;
+    font-size: 12px;
+  }
+
+  body:has(.grid-principal) .contenedor {
+    padding: 16px 24px;
+  }
+
+  body:has(.grid-principal) .grid-principal {
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  body:has(.grid-principal) .card {
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  body:has(.grid-principal) .avatar {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 12px;
+    font-size: 24px;
+  }
+
+  body:has(.grid-principal) .perfil-medico h2 {
+    font-size: 18px;
+  }
+
+  body:has(.grid-principal) .perfil-medico .boton {
+    margin-top: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  body:has(.grid-principal) .dato {
+    margin: 7px 0;
+    font-size: 13px;
+  }
+
+  body:has(.grid-principal) .dato span {
+    font-size: 11px;
+  }
+
+  body:has(.grid-principal) .estadisticas {
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  body:has(.grid-principal) .stat {
+    padding: 10px 12px;
+  }
+
+  body:has(.grid-principal) .stat h3 {
+    font-size: 21px;
+  }
+
+  body:has(.grid-principal) .stat p {
+    margin-top: 4px;
+    font-size: 12px;
+  }
+
+  body:has(.grid-principal) .seccion-header {
+    margin-bottom: 10px;
+  }
+
+  body:has(.grid-principal) .barra-acciones {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  body:has(.grid-principal) .barra-acciones input,
+  body:has(.grid-principal) .barra-acciones select {
+    padding: 8px 10px;
+  }
+
+  body:has(.grid-principal) .barra-acciones #buscadorPacientes.buscador-pacientes-amplio {
+    min-height: 40px;
+    font-size: 13px;
+  }
+
+  body:has(.grid-principal) .barra-acciones button,
+  body:has(.grid-principal) .boton {
+    min-height: var(--ui-control-height);
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  body:has(.grid-principal) .tabla-pacientes {
+    margin-top: 10px;
+    padding-bottom: 4px;
+  }
+
+  body:has(.grid-principal) .lista-pacientes {
+    gap: 5px;
+    margin-top: 6px;
+  }
+
+  body:has(.grid-principal) .celda-tabla,
+  body:has(.grid-principal) .fila-paciente > span {
+    padding: 9px 10px;
+  }
+
+  body:has(.grid-principal) .acciones-paginacion-pacientes {
+    padding: 10px 0 2px;
+  }
+}
+
+/* La altura limitada de una laptop recibe una reducción adicional, sin ocultar controles. */
+@media (min-width: 901px) and (max-height: 900px) {
+  :root {
+    --ui-header-height: 72px;
+    --ui-header-padding-y: 8px;
+    --ui-card-padding: 17px;
+    --ui-card-gap: 12px;
+  }
+
+  body:has(.module-grid) .hero {
+    padding-top: 18px;
+    padding-bottom: 10px;
+  }
+
+  body:has(.module-grid) .module-card {
+    min-height: 220px;
+    padding: var(--ui-card-padding);
+  }
+
+  body:has(.grid-principal) .contenedor {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  body:has(.grid-principal) .estadisticas {
+    margin-bottom: 10px;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 800px) {
+  body:has(.module-grid) .hero-copy {
+    padding-block: 6px;
+  }
+
+  body:has(.module-grid) #bienvenida {
+    margin-top: 10px;
+  }
+
+  body:has(.module-grid) .module-card {
+    min-height: 205px;
+  }
+
+  body:has(.grid-principal) .header-medico .logo-header {
+    width: 54px;
+    height: 54px;
+  }
+
+  body:has(.grid-principal) .card {
+    padding: 12px;
+  }
+}
+
+/* Mantener una densidad cómoda cuando el usuario aumenta el zoom del navegador. */
+@media (min-width: 901px) and (min-resolution: 1.5dppx) {
+  :root {
+    --ui-density-scale: 1;
+  }
+
+  body:has(.grid-principal) .barra-acciones button,
+  body:has(.grid-principal) .boton,
+  body:has(.module-grid) .primary-button,
+  body:has(.module-grid) .secondary-button,
+  body:has(.module-grid) .ghost-button {
+    min-height: 40px;
+  }
+}
