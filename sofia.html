@@ -8,6 +8,7 @@
   <link rel="icon" href="assets/favicon-cognicion.png" />
   <link rel="stylesheet" href="css/sofia.css" />
   <link rel="stylesheet" href="./css/sofia-mascota.css" />
+  <link rel="stylesheet" href="./css/clinical-analysis.css" />
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -65,6 +66,11 @@
       <article class="sofia-panel span-2">
         <div class="panel-title"><span>Mapa de relaciones</span><small>Vista tipo grafo</small></div>
         <div id="mapaSofia" class="sofia-graph empty-state">Sin nodos.</div>
+      </article>
+
+      <article class="sofia-panel span-2 clinical-analysis-panel" id="clinicalAnalysisSofia" aria-live="polite">
+        <div class="panel-title"><span>Análisis de SOFÍA</span><small>Solo expediente autorizado</small></div>
+        <p class="empty-state">Selecciona un paciente para solicitar el análisis estructurado.</p>
       </article>
 
       <article class="sofia-panel span-2">

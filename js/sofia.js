@@ -2,13 +2,12 @@ import { auth, db, obtenerFunctions } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { aplicarAparienciaGuardada } from "./services/apariencia.js";
-import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { emitSofiaState } from "./sofia-mascota/mascotaEvents.js";
+import { analyzeSelectedPatient, listAuthorizedSofiaPatients, renderClinicalAnalysis, renderClinicalAnalysisError } from "./sofia/clinicalAnalysis/clinicalAnalysisController.js";
 import {
   analizarInteraccionesMedicamentos,
   cargarExpedientePacienteSofia,
-  cargarPacientesSofia,
   construirLineaTiempo,
   construirMapaRelaciones,
   construirPacienteDigital,
@@ -115,13 +114,13 @@ onAuthStateChanged(auth, async (user) => {
 
 async function cargarSelectorPacientes() {
   selectorPaciente.innerHTML = `<option value="">Cargando pacientes...</option>`;
-  pacientesSofia = await cargarPacientesSofia(usuarioActual, perfilActual);
+  pacientesSofia = await listAuthorizedSofiaPatients();
   if (!pacientesSofia.length) {
     selectorPaciente.innerHTML = `<option value="">Sin pacientes disponibles</option>`;
     renderEstadoVacio("No hay pacientes disponibles para SOFIA con los permisos actuales.");
     return;
   }
-  selectorPaciente.innerHTML = `<option value="">Selecciona un paciente</option>` + pacientesSofia.map((p) => `<option value="${escapeHtml(p.id)}">${escapeHtml(nombrePaciente(p))}</option>`).join("");
+  selectorPaciente.innerHTML = `<option value="">Selecciona un paciente</option>` + pacientesSofia.map((p) => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.label || "Paciente")}</option>`).join("");
 }
 
 selectorPaciente?.addEventListener("change", () => {
@@ -147,8 +146,15 @@ limpiarCritica?.addEventListener("click", () => {
 async function cargarPacienteSeleccionado(idPaciente) {
   emitSofiaState("analyzing", "patient-selection");
   setLoadingPanels("Construyendo paciente digital...");
+  const analysisContainer = document.getElementById("clinicalAnalysisSofia");
+  if (analysisContainer) analysisContainer.innerHTML = "<p>SOFÍA está estructurando el expediente autorizado…</p>";
   try {
-    expedienteActual = await cargarExpedientePacienteSofia(idPaciente);
+    const [analysisResult, expediente] = await Promise.all([
+      analyzeSelectedPatient(idPaciente),
+      cargarExpedientePacienteSofia(idPaciente)
+    ]);
+    renderClinicalAnalysis(analysisContainer, analysisResult);
+    expedienteActual = expediente;
     timelineActual = construirLineaTiempo(expedienteActual);
     renderPacienteDigital(construirPacienteDigital(expedienteActual));
     renderTimeline(timelineActual);
@@ -162,6 +168,7 @@ async function cargarPacienteSeleccionado(idPaciente) {
     emitSofiaState("completed", "patient-selection", { duration: 1600, fallbackState: "idle" });
   } catch (error) {
     console.error(error);
+    renderClinicalAnalysisError(analysisContainer, error);
     emitSofiaState("error", "patient-selection", { duration: 2200, fallbackState: "idle" });
     renderEstadoVacio("No se pudo cargar el expediente del paciente seleccionado.");
   }
@@ -312,6 +319,5 @@ formSofia?.addEventListener("submit", async (e) => {
 
 function metric(label, value) { return `<div class="metric-card"><small>${escapeHtml(label)}</small><strong>${escapeHtml(value)}</strong></div>`; }
 function lista(titulo, items = []) { return `<div class="reason-block"><b>${escapeHtml(titulo)}</b><ul>${items.map((i) => `<li>${escapeHtml(i)}</li>`).join("") || "<li>Sin datos</li>"}</ul></div>`; }
-function nombrePaciente(p) { return obtenerNombrePacienteParaMostrar(p) || "Paciente sin nombre"; }
 function formatearDiagnostico(diag) { return [diag.codigo, diag.nombre || diag.texto || diag.diagnostico].filter(Boolean).join(" - ") || "Diagnostico sin nombre"; }
 function escapeHtml(value) { return String(value ?? "").replace(/[&<>'"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[ch])); }

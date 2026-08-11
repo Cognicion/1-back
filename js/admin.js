@@ -244,6 +244,7 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("adminStartupState")?.setAttribute("hidden", "");
     console.log("[ADMIN] Iniciando render");
     renderizarAccesoMotorPatrones();
+    await renderizarAccesoConocimientoSofia();
     configurarFiltros();
     await cargarResumen();
     await cargarCodigosMedicoAdmin();
@@ -548,6 +549,19 @@ function renderizarAccesoMotorPatrones() {
     <div class="filtros-auditoria patrones-filtros"><input id="filtroPatronBusqueda" placeholder="Buscar frase o palabra"><input id="filtroPatronMedico" placeholder="UID médico"><input id="filtroPatronPaciente" placeholder="UID paciente"><input id="filtroPatronInstitucion" placeholder="Institución"><input id="filtroPatronServicio" placeholder="Servicio / atención"><input id="filtroPatronDesde" type="date" aria-label="Fecha desde"><input id="filtroPatronHasta" type="date" aria-label="Fecha hasta"></div>
     <div class="tabla-scroll"><table><thead><tr><th>Frase original</th><th>Frase normalizada</th><th>Firma léxica</th><th>Frecuencia total</th><th>Notas</th><th>Pacientes</th><th>Médicos</th><th>Primera aparición</th><th>Última aparición</th><th>Palabras</th></tr></thead><tbody id="tablaPatronesTexto"><tr><td colspan="10">Sin resultados temporales.</td></tr></tbody></table></div>`;
   principal.appendChild(seccion);
+}
+
+async function renderizarAccesoConocimientoSofia() {
+  if (!datosUsuarioSonAdmin(adminDatosActual || {})) return;
+  const nav = document.querySelector(".admin-section-nav");
+  const main = document.querySelector("main.admin-contenedor");
+  if (!nav || !main) return;
+  try {
+    const modulo = await import("./admin/clinicalKnowledge/clinicalKnowledgeController.js?v=20260811-clinical-knowledge-v1");
+    await modulo.initializeClinicalKnowledgePanel({ nav, main });
+  } catch (error) {
+    console.error("[ADMIN] No se pudo preparar Conocimiento registrado por SOFÍA", error);
+  }
 }
 
 async function cargarMotorPatronesBajoDemanda() {

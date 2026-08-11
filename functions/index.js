@@ -5,6 +5,13 @@ const admin = require("firebase-admin");
 const { runSegmentClinicalConversation } = require("./segmentationHandler");
 const { runGenerateStructuredNoteFromDictation } = require("./noteGenerationHandler");
 const { discoverTextPatterns } = require("./patternDiscoveryHandler");
+const { onDocumentWritten } = require("firebase-functions/v2/firestore");
+const {
+  analyzePatientClinicalContext,
+  listAuthorizedSofiaPatients,
+  getClinicalKnowledgeAdmin,
+  processClinicalAnalyticsWrite
+} = require("./clinicalAnalytics/handlers");
 
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 if (!admin.apps.length) admin.initializeApp();
@@ -161,6 +168,11 @@ exports.actualizarReconocimientoColaborador = onCall(async (request) => {
 exports.discoverTextPatterns = onCall({ region: "us-central1", timeoutSeconds: 300, memory: "1GiB" }, async (request) => {
   return discoverTextPatterns({ request, db: adminDb });
 });
+
+exports.analyzePatientClinicalContext = onCall({ region: "us-central1", timeoutSeconds: 120, memory: "1GiB" }, async (request) => analyzePatientClinicalContext({ request, db: adminDb }));
+exports.listAuthorizedSofiaPatients = onCall({ region: "us-central1", timeoutSeconds: 60 }, async (request) => listAuthorizedSofiaPatients({ request, db: adminDb }));
+exports.getClinicalKnowledgeAdmin = onCall({ region: "us-central1", timeoutSeconds: 60 }, async (request) => getClinicalKnowledgeAdmin({ request, db: adminDb }));
+exports.clinicalAnalyticsOnRecordWrite = onDocumentWritten("usuarios/{patientId}/{collectionId}/{recordId}", async (event) => processClinicalAnalyticsWrite({ event, db: adminDb }));
 
 exports.chatSofia = onCall(
   {

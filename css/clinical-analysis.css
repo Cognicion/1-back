@@ -1,0 +1,17 @@
+.clinical-analysis-panel { border-color: color-mix(in srgb, var(--accent-primary, #8b5cf6) 35%, transparent); }
+.clinical-analysis-header { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
+.clinical-analysis-header h2 { margin:0 0 6px; }
+.clinical-analysis-header p, .clinical-analysis-warning { color:var(--gray-300, #cbd5e1); }
+.clinical-analysis-badge { padding:6px 10px; border-radius:999px; background:rgba(139,92,246,.15); color:#c4b5fd; font-size:.78rem; font-weight:800; white-space:nowrap; }
+.clinical-analysis-summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:18px 0; }
+.clinical-analysis-summary span { padding:10px; border:1px solid rgba(148,163,184,.18); border-radius:12px; color:var(--gray-300,#cbd5e1); }
+.clinical-analysis-summary strong { display:block; margin-top:4px; color:var(--text,#f8fafc); font-size:1.2rem; }
+.clinical-analysis-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.clinical-analysis-grid article { padding:14px; border:1px solid rgba(148,163,184,.15); border-radius:14px; background:rgba(15,23,42,.34); }
+.clinical-analysis-grid h3 { margin:0 0 10px; font-size:1rem; }
+.clinical-analysis-grid ul { margin:0; padding-left:18px; display:grid; gap:7px; }
+.clinical-analysis-empty, .clinical-analysis-error { color:var(--gray-300,#cbd5e1); }
+.clinical-analysis-error { color:#fda4af; }
+.clinical-analysis-warning { margin:16px 0 0; font-size:.9rem; }
+@media (max-width:720px) { .clinical-analysis-summary, .clinical-analysis-grid { grid-template-columns:1fr 1fr; } .clinical-analysis-grid article:last-child { grid-column:1/-1; } }
+@media (max-width:480px) { .clinical-analysis-summary, .clinical-analysis-grid { grid-template-columns:1fr; } .clinical-analysis-grid article:last-child { grid-column:auto; } }
