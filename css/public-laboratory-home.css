@@ -358,10 +358,10 @@ body.public-lab-page .laboratory-button-secondary:hover {
 }
 
 .laboratory-stage {
-  --orbit-duration: 18s;
-  --orbit-width: 760px;
-  --orbit-height: 240px;
-  --orbit-radius: 380px;
+  --orbit-duration: 45s;
+  --orbit-width: 912px;
+  --orbit-height: 288px;
+  --orbit-radius: 456px;
   --orbit-scale-y: .315789;
   --orbit-inverse-scale-y: 3.1667;
   position: relative;
@@ -412,6 +412,9 @@ body.public-lab-page .laboratory-button-secondary:hover {
 }
 
 .laboratory-orbit-float {
+  display: inline-flex;
+  width: max-content;
+  height: max-content;
   transform: translate(-50%, -50%) rotate(-2.2deg) scale(.995);
   transform-origin: center;
   animation: laboratoryButtonFloat 3.2s ease-in-out infinite;
@@ -1066,9 +1069,9 @@ html[data-theme="biocelular"] .roadmap-line li::before {
 
 @media (max-width: 980px) {
   .laboratory-stage {
-    --orbit-width: 600px;
-    --orbit-height: 210px;
-    --orbit-radius: 300px;
+    --orbit-width: 720px;
+    --orbit-height: 252px;
+    --orbit-radius: 360px;
     --orbit-scale-y: .35;
     --orbit-inverse-scale-y: 2.8572;
   }
@@ -1254,9 +1257,9 @@ html[data-theme="biocelular"] .roadmap-line li::before {
   }
 
   .laboratory-stage {
-    --orbit-width: 242px;
-    --orbit-height: 220px;
-    --orbit-radius: 121px;
+    --orbit-width: 290.4px;
+    --orbit-height: 264px;
+    --orbit-radius: 145.2px;
     --orbit-scale-y: .909091;
     --orbit-inverse-scale-y: 1.1;
     width: 100%;
@@ -1410,9 +1413,9 @@ html[data-theme="biocelular"] .roadmap-line li::before {
 
 @media (max-width: 390px) {
   .laboratory-stage {
-    --orbit-width: 210px;
-    --orbit-height: 190px;
-    --orbit-radius: 105px;
+    --orbit-width: 252px;
+    --orbit-height: 228px;
+    --orbit-radius: 126px;
     --orbit-scale-y: .904762;
     --orbit-inverse-scale-y: 1.1053;
   }
@@ -1478,7 +1481,7 @@ html[data-theme="biocelular"] .roadmap-line li::before {
   }
 
   .laboratory-stage {
-    --orbit-duration: 24s;
+    --orbit-duration: 60s;
   }
 
   .laboratory-orbit-track,
