@@ -847,6 +847,34 @@
   width: calc(50% - 2px);
 }
 
+.patient-transfer-medication-presentation-compact {
+  width: 100%;
+  min-width: 0;
+  white-space: normal;
+}
+
+.patient-transfer-medication-presentation-compact > summary {
+  min-height: 26px;
+  padding: 5px 6px;
+  border: 1px solid rgba(148, 163, 184, .24);
+  border-radius: 5px;
+  cursor: pointer;
+  list-style-position: inside;
+  overflow-wrap: anywhere;
+}
+
+.patient-transfer-medication-presentation-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(48px, .65fr) minmax(54px, .8fr);
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.patient-transfer-medication-presentation-editor [data-transfer-tx-strength],
+.patient-transfer-medication-presentation-editor [data-transfer-tx-strength-unit] {
+  width: 100%;
+}
+
 .patient-transfer-medication-identity {
   min-width: 0;
   max-width: none;

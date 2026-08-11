@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {
   clampMedicationColumnWidth,
   defaultMedicationColumnWidths,
+  formatMedicationPresentation,
   isMeaningfulMedicationAdministration,
   loadMedicationColumnWidths,
   MEDICATION_COLUMN_WIDTHS,
@@ -19,7 +20,6 @@ assert.deepEqual(Object.keys(MEDICATION_COLUMN_WIDTHS), [
   "include",
   "medication",
   "presentation",
-  "strength",
   "route",
   "frequency",
   "schedule",
@@ -37,8 +37,7 @@ assert.equal(medicationColumnWidthFromDrag("include", 48, 100, 500), 70, "el dra
 assert.deepEqual(normalizeMedicationColumnWidths({ medication: 500, schedule: 360, unknown: 999 }), {
   include: 48,
   medication: 320,
-  presentation: 105,
-  strength: 118,
+  presentation: 220,
   route: 76,
   frequency: 135,
   schedule: 360,
@@ -87,5 +86,14 @@ assert.deepEqual(administration, { time: "08:00", quantity: 2, administrationUni
 assert.equal(isMeaningfulMedicationAdministration({ time: "", quantity: null, administrationUnit: "tableta" }), false, "una unidad heredada no crea una toma fantasma");
 assert.equal(isMeaningfulMedicationAdministration({ time: "08:00", quantity: null, administrationUnit: "tableta" }), true);
 assert.equal(isMeaningfulMedicationAdministration({ time: "", quantity: 0, administrationUnit: "mL" }), true);
+
+assert.equal(formatMedicationPresentation({ presentation: "tabletas", concentration: { value: 20, unit: "mg" } }), "tabletas de 20 mg");
+assert.equal(formatMedicationPresentation({ presentation: "cápsulas", strengthValue: 40, strengthUnit: "mg" }), "cápsulas de 40 mg");
+assert.equal(formatMedicationPresentation({ presentation: "solución", strengthValue: 5, strengthUnit: "mg/mL" }), "solución de 5 mg/mL");
+assert.equal(formatMedicationPresentation({ presentation: "tabletas" }), "tabletas");
+assert.equal(formatMedicationPresentation({ strengthValue: 20, strengthUnit: "mg" }), "20 mg");
+assert.equal(formatMedicationPresentation({ presentation: "tabletas de 20 mg", strengthValue: 20, strengthUnit: "mg" }), "tabletas de 20 mg");
+assert.equal(formatMedicationPresentation({ presentation: "tabletas", strengthValue: 20 }), "tabletas de 20");
+assert.equal(formatMedicationPresentation({ presentation: "tabletas", strengthValue: 20, strengthUnit: "" }), "tabletas de 20");
 
 console.log("patient-transfer-medication-table-ui: ok");

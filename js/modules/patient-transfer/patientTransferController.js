@@ -44,7 +44,7 @@ import {
   syncBulkSelectionControls,
   syncPatientNameInputs,
   updateMedicationScheduleUnitVisibility
-} from "./ui/patientTransferView.js?v=v168-resizable-medication-columns-v1";
+} from "./ui/patientTransferView.js?v=v179-medication-presentation-concentration-ui-v1";
 
 let initialized = false;
 let selectedFiles = [];

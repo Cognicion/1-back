@@ -14,8 +14,7 @@ export const MEDICATION_COLUMN_WIDTHS_STORAGE_KEY = "patientTransferMedicationCo
 export const MEDICATION_COLUMN_WIDTHS = Object.freeze({
   include: { index: 0, min: 40, max: 70, default: 48 },
   medication: { index: 1, min: 120, max: 320, default: 180 },
-  presentation: { index: 3, min: 80, max: 180, default: 105 },
-  strength: { index: 4, min: 70, max: 160, default: 118 },
+  presentation: { index: 3, min: 150, max: 280, default: 220 },
   route: { index: 6, min: 55, max: 120, default: 76 },
   frequency: { index: 7, min: 90, max: 220, default: 135 },
   schedule: { index: 8, min: 220, max: 500, default: 285 },
@@ -62,6 +61,25 @@ export function normalizeMedicationUnitForDisplay(value = "") {
     .replace(/(?:gotas|gota)$/i, "gota")
     .replace(/(?:mililitros|mililitro|ml)$/i, "ml");
   return singular;
+}
+
+export function formatMedicationPresentation(candidate = {}) {
+  const presentation = String(candidate.presentation || candidate.formulation || "").trim();
+  const concentration = candidate.concentration || {};
+  const rawValue = concentration.value ?? candidate.strengthValue ?? candidate.dose ?? "";
+  const value = String(rawValue ?? "").trim();
+  const unit = String(concentration.unit ?? candidate.strengthUnit ?? candidate.doseUnit ?? "").trim();
+  const concentrationText = value
+    ? `${value}${unit && !new RegExp(`\\b${escapeRegExp(unit)}\\b`, "i").test(value) ? ` ${unit}` : ""}`
+    : unit;
+  if (!presentation) return concentrationText;
+  if (!concentrationText) return presentation;
+  if (new RegExp(`(?:^|\\s)${escapeRegExp(concentrationText)}(?:$|\\s)`, "i").test(presentation)) return presentation;
+  return `${presentation} de ${concentrationText}`.trim();
+}
+
+function escapeRegExp(value = "") {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 export function shouldShowMedicationAdministrationUnit(presentation = "", administrationUnit = "") {
@@ -967,7 +985,11 @@ export function loadMedicationColumnWidths(storage = null) {
   if (!target) return defaults;
   try {
     const stored = JSON.parse(target.getItem(MEDICATION_COLUMN_WIDTHS_STORAGE_KEY) || "{}");
-    return normalizeMedicationColumnWidths(stored);
+    const normalized = normalizeMedicationColumnWidths(stored);
+    if (Object.prototype.hasOwnProperty.call(stored, "strength")) {
+      target.setItem(MEDICATION_COLUMN_WIDTHS_STORAGE_KEY, JSON.stringify(normalized));
+    }
+    return normalized;
   } catch {
     return defaults;
   }
@@ -1072,15 +1094,67 @@ function initializeMedicationColumnResize(modal) {
   applyMedicationColumnWidths(modal, widths);
 }
 
+function updateMedicationPresentationSummary(details) {
+  const presentationInput = details.querySelector("[data-transfer-tx-presentation]");
+  const strengthInput = details.querySelector("[data-transfer-tx-strength]");
+  const unitInput = details.querySelector("[data-transfer-tx-strength-unit]");
+  const summary = details.querySelector("[data-transfer-tx-presentation-summary]");
+  if (!summary) return;
+  summary.textContent = formatMedicationPresentation({
+    presentation: presentationInput?.value || "",
+    strengthValue: strengthInput?.value || "",
+    strengthUnit: unitInput?.value || ""
+  }) || "Sin presentación";
+}
+
+function mergeMedicationPresentationColumn(table, strengthIndex) {
+  if (strengthIndex < 0) return;
+  const presentationIndex = MEDICATION_COLUMN_WIDTHS.presentation.index;
+  const strengthHeader = table.querySelectorAll("thead th")[strengthIndex];
+  if (strengthHeader) {
+    strengthHeader.hidden = true;
+    strengthHeader.setAttribute("aria-hidden", "true");
+    strengthHeader.textContent = "";
+  }
+  table.querySelectorAll("tbody tr").forEach((row) => {
+    const presentationCell = row.cells[presentationIndex];
+    const strengthCell = row.cells[strengthIndex];
+    if (!presentationCell || !strengthCell || presentationCell.querySelector("[data-transfer-tx-presentation-summary]")) return;
+    const presentationInput = presentationCell.querySelector("[data-transfer-tx-presentation]");
+    const strengthInput = strengthCell.querySelector("[data-transfer-tx-strength]");
+    const unitInput = strengthCell.querySelector("[data-transfer-tx-strength-unit]");
+    if (!presentationInput || !strengthInput || !unitInput) return;
+    const details = document.createElement("details");
+    details.className = "patient-transfer-medication-presentation-compact";
+    const summary = document.createElement("summary");
+    summary.dataset.transferTxPresentationSummary = "true";
+    details.append(summary);
+    const editor = document.createElement("div");
+    editor.className = "patient-transfer-medication-presentation-editor";
+    editor.append(presentationInput, strengthInput, unitInput);
+    details.append(editor);
+    presentationCell.textContent = "";
+    presentationCell.append(details);
+    strengthCell.hidden = true;
+    strengthCell.setAttribute("aria-hidden", "true");
+    presentationInput.addEventListener("input", () => updateMedicationPresentationSummary(details));
+    strengthInput.addEventListener("input", () => updateMedicationPresentationSummary(details));
+    unitInput.addEventListener("input", () => updateMedicationPresentationSummary(details));
+    updateMedicationPresentationSummary(details);
+  });
+}
+
 function enhanceMedicationPautaTables(modal) {
   modal.querySelectorAll(".patient-transfer-data-table").forEach((table) => {
     const headers = [...table.querySelectorAll("thead th")];
     const doseIndex = headers.findIndex((header) => /dosis por toma/i.test(header.textContent || ""));
     const catalogIndex = headers.findIndex((header) => /cat.*logo/i.test(header.textContent || ""));
+    const strengthIndex = headers.findIndex((header) => /concentraci/i.test(header.textContent || ""));
     const scheduleIndex = headers.findIndex((header) => /horario/i.test(header.textContent || ""));
     if (scheduleIndex < 0) return;
     table.classList.add("patient-transfer-medication-table");
     headers.forEach((header) => header.classList.add("patient-transfer-vertical-header"));
+    mergeMedicationPresentationColumn(table, strengthIndex);
     if (doseIndex >= 0) {
       headers[doseIndex].hidden = true;
       table.querySelectorAll("tbody tr").forEach((row) => { if (row.cells[doseIndex]) row.cells[doseIndex].hidden = true; });
