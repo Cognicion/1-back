@@ -358,14 +358,11 @@ body.public-lab-page .laboratory-button-secondary:hover {
 }
 
 .laboratory-stage {
-  --orbit-left: -330px;
-  --orbit-right: 330px;
-  --orbit-top: -112px;
-  --orbit-bottom: 112px;
-  --orbit-left-mid: -233px;
-  --orbit-right-mid: 233px;
-  --orbit-top-mid: -79px;
-  --orbit-bottom-mid: 79px;
+  --orbit-width: 760px;
+  --orbit-height: 240px;
+  --orbit-radius: 380px;
+  --orbit-scale-y: .315789;
+  --orbit-inverse-scale-y: 3.1667;
   position: relative;
   min-height: 380px;
   display: grid;
@@ -378,8 +375,8 @@ body.public-lab-page .laboratory-button-secondary:hover {
   z-index: 2;
   left: 50%;
   top: 48%;
-  width: min(72vw, 760px);
-  height: min(25vw, 240px);
+  width: var(--orbit-width);
+  height: var(--orbit-height);
   border: 1px dashed rgb(245 158 56 / 24%);
   border-radius: 50%;
   box-shadow: 0 0 24px rgb(245 158 56 / 5%);
@@ -395,8 +392,21 @@ body.public-lab-page .laboratory-button-secondary:hover {
   width: 0;
   height: 0;
   pointer-events: none;
-  transform: translate3d(var(--orbit-left), 0, 0);
+  transform: scaleY(var(--orbit-scale-y)) rotate(0deg);
+  transform-origin: 0 0;
   animation: laboratoryButtonOrbit 20s linear infinite;
+  will-change: transform;
+}
+
+.laboratory-orbit-radius {
+  transform: translateX(var(--orbit-radius));
+  transform-origin: 0 0;
+}
+
+.laboratory-orbit-upright {
+  transform: rotate(0deg) scaleY(var(--orbit-inverse-scale-y));
+  transform-origin: 0 0;
+  animation: laboratoryButtonCounterRotate 20s linear infinite;
   will-change: transform;
 }
 
@@ -428,7 +438,9 @@ body.public-lab-page .laboratory-orbit-action:focus-visible {
 }
 
 .laboratory-orbit-track:hover .laboratory-orbit-float,
-.laboratory-orbit-track:focus-within .laboratory-orbit-float {
+.laboratory-orbit-track:focus-within .laboratory-orbit-float,
+.laboratory-orbit-track:hover .laboratory-orbit-upright,
+.laboratory-orbit-track:focus-within .laboratory-orbit-upright {
   animation-play-state: paused;
 }
 
@@ -930,14 +942,13 @@ body.public-lab-page #reporteGlobalWidget.reporte-widget-contraido .reporte-floa
 }
 
 @keyframes laboratoryButtonOrbit {
-  0%, 100% { transform: translate3d(var(--orbit-left), 0, 0); }
-  12.5% { transform: translate3d(var(--orbit-left-mid), var(--orbit-top-mid), 0); }
-  25% { transform: translate3d(0, var(--orbit-top), 0); }
-  37.5% { transform: translate3d(var(--orbit-right-mid), var(--orbit-top-mid), 0); }
-  50% { transform: translate3d(var(--orbit-right), 0, 0); }
-  62.5% { transform: translate3d(var(--orbit-right-mid), var(--orbit-bottom-mid), 0); }
-  75% { transform: translate3d(0, var(--orbit-bottom), 0); }
-  87.5% { transform: translate3d(var(--orbit-left-mid), var(--orbit-bottom-mid), 0); }
+  from { transform: scaleY(var(--orbit-scale-y)) rotate(0deg); }
+  to { transform: scaleY(var(--orbit-scale-y)) rotate(360deg); }
+}
+
+@keyframes laboratoryButtonCounterRotate {
+  from { transform: rotate(0deg) scaleY(var(--orbit-inverse-scale-y)); }
+  to { transform: rotate(-360deg) scaleY(var(--orbit-inverse-scale-y)); }
 }
 
 @keyframes laboratoryButtonFloat {
@@ -1050,6 +1061,14 @@ html[data-theme="biocelular"] .roadmap-line li::before {
 }
 
 @media (max-width: 980px) {
+  .laboratory-stage {
+    --orbit-width: 600px;
+    --orbit-height: 210px;
+    --orbit-radius: 300px;
+    --orbit-scale-y: .35;
+    --orbit-inverse-scale-y: 2.8572;
+  }
+
   .public-header {
     padding-inline: 18px;
   }
@@ -1231,14 +1250,11 @@ html[data-theme="biocelular"] .roadmap-line li::before {
   }
 
   .laboratory-stage {
-    --orbit-left: -90px;
-    --orbit-right: 90px;
-    --orbit-top: -118px;
-    --orbit-bottom: 118px;
-    --orbit-left-mid: -64px;
-    --orbit-right-mid: 64px;
-    --orbit-top-mid: -83px;
-    --orbit-bottom-mid: 83px;
+    --orbit-width: 242px;
+    --orbit-height: 220px;
+    --orbit-radius: 121px;
+    --orbit-scale-y: .909091;
+    --orbit-inverse-scale-y: 1.1;
     width: 100%;
     min-width: 0;
     min-height: 330px;
@@ -1246,8 +1262,6 @@ html[data-theme="biocelular"] .roadmap-line li::before {
 
   .laboratory-orbit-path {
     top: 49%;
-    width: min(76vw, 300px);
-    height: 236px;
   }
 
   .laboratory-orbit-track {
@@ -1392,6 +1406,14 @@ html[data-theme="biocelular"] .roadmap-line li::before {
 }
 
 @media (max-width: 390px) {
+  .laboratory-stage {
+    --orbit-width: 210px;
+    --orbit-height: 190px;
+    --orbit-radius: 105px;
+    --orbit-scale-y: .904762;
+    --orbit-inverse-scale-y: 1.1053;
+  }
+
   .public-header {
     padding-inline: 12px;
   }
@@ -1450,12 +1472,17 @@ html[data-theme="biocelular"] .roadmap-line li::before {
   .platform-ring,
   .stage-particles circle,
   .laboratory-orbit-track,
+  .laboratory-orbit-upright,
   .laboratory-orbit-float {
     animation: none;
   }
 
   .laboratory-orbit-track {
-    transform: translate3d(var(--orbit-left), 0, 0);
+    transform: scaleY(var(--orbit-scale-y)) rotate(180deg);
+  }
+
+  .laboratory-orbit-upright {
+    transform: rotate(-180deg) scaleY(var(--orbit-inverse-scale-y));
   }
 
   body.public-lab-page *,
