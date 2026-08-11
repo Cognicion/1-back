@@ -116,7 +116,7 @@ class OrbitaPanelPrincipal extends HTMLElement {
     this.accesos = [];
     this.attachShadow({ mode: "open" });
     this.shadowRoot.innerHTML = `
-      <link rel="stylesheet" href="css/public-laboratory-home.css?v=20260811-orbital-cta-v8">
+      <link rel="stylesheet" href="css/public-laboratory-home.css?v=20260811-orbital-cta-v9">
       <style>
         :host {
           --public-cyan: #29d3ff;
@@ -154,6 +154,7 @@ class OrbitaPanelPrincipal extends HTMLElement {
         }
 
         .laboratory-stage {
+          --duracion-traslacion-orbita: var(--duracion-traslacion-orbita-dashboard, 60s);
           --orbit-width: 1120px;
           --orbit-height: 520px;
           --orbit-radius: 560px;

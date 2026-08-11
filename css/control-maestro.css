@@ -1,4 +1,7 @@
 :root {
-  /* Duración de una vuelta completa de los botones alrededor de la órbita. */
-  --index-orbit-translation-duration: 60s;
+  /* Duración de una vuelta completa en la landing pública. */
+  --duracion-traslacion-orbita-index: 80s;
+
+  /* Duración de una vuelta completa en el Dashboard. */
+  --duracion-traslacion-orbita-dashboard: 80s;
 }
