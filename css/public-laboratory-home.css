@@ -316,13 +316,6 @@ body.public-lab-page .public-login-button:hover {
   text-wrap: balance;
 }
 
-.laboratory-actions {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 24px;
-}
-
 body.public-lab-page .laboratory-button {
   min-width: 142px;
   min-height: 40px;
@@ -365,11 +358,78 @@ body.public-lab-page .laboratory-button-secondary:hover {
 }
 
 .laboratory-stage {
+  --orbit-left: -330px;
+  --orbit-right: 330px;
+  --orbit-top: -112px;
+  --orbit-bottom: 112px;
+  --orbit-left-mid: -233px;
+  --orbit-right-mid: 233px;
+  --orbit-top-mid: -79px;
+  --orbit-bottom-mid: 79px;
   position: relative;
   min-height: 380px;
   display: grid;
   place-items: center;
   overflow: hidden;
+}
+
+.laboratory-orbit-path {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 48%;
+  width: min(72vw, 760px);
+  height: min(25vw, 240px);
+  border: 1px dashed rgb(245 158 56 / 24%);
+  border-radius: 50%;
+  box-shadow: 0 0 24px rgb(245 158 56 / 5%);
+  pointer-events: none;
+  transform: translate(-50%, -50%) rotate(7deg);
+}
+
+.laboratory-orbit-track {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  top: 48%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  transform: translate3d(var(--orbit-left), 0, 0);
+  animation: laboratoryButtonOrbit 22s linear infinite;
+  will-change: transform;
+}
+
+.laboratory-orbit-float {
+  transform: translate(-50%, -50%) rotate(-1.5deg);
+  animation: laboratoryButtonFloat 3.6s ease-in-out infinite;
+}
+
+body.public-lab-page .laboratory-orbit-action {
+  width: clamp(174px, 17vw, 228px);
+  min-width: 0;
+  min-height: 46px;
+  padding: 10px 16px;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 28%), 0 0 24px rgb(245 158 56 / 9%);
+  font-size: clamp(10px, .85vw, 12px);
+  line-height: 1.35;
+  pointer-events: auto;
+  text-wrap: balance;
+}
+
+body.public-lab-page .laboratory-orbit-action:hover,
+body.public-lab-page .laboratory-orbit-action:focus-visible {
+  box-shadow: 0 14px 38px rgb(0 0 0 / 34%), 0 0 28px rgb(245 158 56 / 17%);
+}
+
+.laboratory-orbit-track:hover,
+.laboratory-orbit-track:focus-within {
+  animation-play-state: paused;
+}
+
+.laboratory-orbit-track:hover .laboratory-orbit-float,
+.laboratory-orbit-track:focus-within .laboratory-orbit-float {
+  animation-play-state: paused;
 }
 
 .laboratory-stage-glow {
@@ -901,6 +961,22 @@ body.public-lab-page #reporteGlobalWidget.reporte-widget-contraido .reporte-floa
   to { opacity: .9; }
 }
 
+@keyframes laboratoryButtonOrbit {
+  0%, 100% { transform: translate3d(var(--orbit-left), 0, 0); }
+  12.5% { transform: translate3d(var(--orbit-left-mid), var(--orbit-top-mid), 0); }
+  25% { transform: translate3d(0, var(--orbit-top), 0); }
+  37.5% { transform: translate3d(var(--orbit-right-mid), var(--orbit-top-mid), 0); }
+  50% { transform: translate3d(var(--orbit-right), 0, 0); }
+  62.5% { transform: translate3d(var(--orbit-right-mid), var(--orbit-bottom-mid), 0); }
+  75% { transform: translate3d(0, var(--orbit-bottom), 0); }
+  87.5% { transform: translate3d(var(--orbit-left-mid), var(--orbit-bottom-mid), 0); }
+}
+
+@keyframes laboratoryButtonFloat {
+  0%, 100% { transform: translate(-50%, -50%) translateY(-3px) rotate(-1.5deg); }
+  50% { transform: translate(-50%, -50%) translateY(4px) rotate(1.5deg); }
+}
+
 html[data-theme="light"] body.public-lab-page {
   --public-bg: #edf6fb;
   --public-bg-elevated: #e3f0f7;
@@ -1180,19 +1256,41 @@ html[data-theme="biocelular"] .roadmap-line li::before {
     display: none;
   }
 
-  .laboratory-actions {
-    margin-top: 21px;
-  }
-
   body.public-lab-page .laboratory-button {
     min-width: 128px;
     padding-inline: 12px;
   }
 
   .laboratory-stage {
+    --orbit-left: -90px;
+    --orbit-right: 90px;
+    --orbit-top: -118px;
+    --orbit-bottom: 118px;
+    --orbit-left-mid: -64px;
+    --orbit-right-mid: 64px;
+    --orbit-top-mid: -83px;
+    --orbit-bottom-mid: 83px;
     width: 100%;
     min-width: 0;
     min-height: 330px;
+  }
+
+  .laboratory-orbit-path {
+    top: 49%;
+    width: min(76vw, 300px);
+    height: 236px;
+  }
+
+  .laboratory-orbit-track {
+    top: 49%;
+    animation-duration: 20s;
+  }
+
+  body.public-lab-page .laboratory-orbit-action {
+    width: clamp(156px, 46vw, 188px);
+    min-height: 42px;
+    padding: 8px 11px;
+    font-size: 10px;
   }
 
   .laboratory-brain-visual {
@@ -1350,13 +1448,14 @@ html[data-theme="biocelular"] .roadmap-line li::before {
     padding-inline: 9px;
   }
 
-  .laboratory-actions {
-    gap: 8px;
-  }
-
   body.public-lab-page .laboratory-button {
     min-width: 0;
     flex: 1 1 0;
+  }
+
+  body.public-lab-page .laboratory-orbit-action {
+    width: clamp(150px, 48vw, 178px);
+    flex: none;
   }
 
   .module-card p {
@@ -1383,9 +1482,6 @@ html[data-theme="biocelular"] .roadmap-line li::before {
     margin-top: 18px;
   }
 
-  .laboratory-actions {
-    margin-top: 18px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1395,8 +1491,14 @@ html[data-theme="biocelular"] .roadmap-line li::before {
 
   .brain-system,
   .platform-ring,
-  .stage-particles circle {
+  .stage-particles circle,
+  .laboratory-orbit-track,
+  .laboratory-orbit-float {
     animation: none;
+  }
+
+  .laboratory-orbit-track {
+    transform: translate3d(var(--orbit-left), 0, 0);
   }
 
   body.public-lab-page *,

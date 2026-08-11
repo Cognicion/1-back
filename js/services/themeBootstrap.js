@@ -2,7 +2,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/f
 import { auth } from "../firebase.js";
 import { applyTheme, initializeThemeForUser } from "./themeService.js";
 
-applyTheme(document.documentElement.dataset.theme || "dark");
+applyTheme(document.documentElement.dataset.theme || "biocelular");
 document.documentElement.style.removeProperty("background-color");
 console.debug("[ThemeBootstrap] inicialización modular completada", { theme: document.documentElement.dataset.theme });
 onAuthStateChanged(auth, (user) => { void initializeThemeForUser(user); });

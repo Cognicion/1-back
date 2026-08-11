@@ -34,6 +34,12 @@ export const OPCIONES_TEMA_COGNICION = [
 
 export const OPCIONES_MODO_INTERFAZ_COGNICION = [
   {
+    id: MODOS_INTERFAZ_COGNICION.BIOCELULAR,
+    nombre: "Biocelular",
+    icono: "◉",
+    descripcion: "Tema predeterminado. Entorno microscópico orgánico con animación ligera o fondo estático según el dispositivo."
+  },
+  {
     id: MODOS_INTERFAZ_COGNICION.OSCURO,
     nombre: "Futurista Oscuro",
     icono: "\u{1F319}",
@@ -44,18 +50,12 @@ export const OPCIONES_MODO_INTERFAZ_COGNICION = [
     nombre: "Claro",
     icono: "\u2600\uFE0F",
     descripcion: "Gris neutro, paneles blancos, texto oscuro y acento verde profundo."
-  },
-  {
-    id: MODOS_INTERFAZ_COGNICION.BIOCELULAR,
-    nombre: "Biocelular",
-    icono: "◉",
-    descripcion: "Entorno microscópico orgánico, científico y cinematográfico, con animación ligera."
   }
 ];
 
 const CLAVE_LOCAL = "cognicion.apariencia.tema";
 const TEMA_PREDETERMINADO_COGNICION = TEMAS_COGNICION.LABORATORIO;
-const MODO_PREDETERMINADO_COGNICION = MODOS_INTERFAZ_COGNICION.CLARO;
+const MODO_PREDETERMINADO_COGNICION = MODOS_INTERFAZ_COGNICION.BIOCELULAR;
 const cacheAparienciaUsuario = new Map();
 
 export function normalizarTemaCognicion(tema) {
@@ -112,7 +112,7 @@ export function aplicarTemaCognicion(tema) {
 }
 
 export function aplicarAparienciaGuardada() {
-  applyTheme(document.documentElement.dataset.theme || "light");
+  applyTheme(document.documentElement.dataset.theme || MODO_PREDETERMINADO_COGNICION);
   return aplicarTemaCognicion(obtenerTemaLocalCognicion());
 }
 

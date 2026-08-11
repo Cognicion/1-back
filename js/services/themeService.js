@@ -3,6 +3,7 @@ import { db } from "../firebase.js";
 
 const LEGACY_KEYS = ["cognicion.apariencia.modoInterfaz", "theme"];
 const LAST_THEME_STORAGE_KEY = "cognicion:theme:last";
+export const DEFAULT_THEME = "biocelular";
 const pendingByUid = new Map();
 const userSelectionVersion = new Map();
 
@@ -11,7 +12,7 @@ export function getThemeStorageKey(uid) {
 }
 
 export function normalizeTheme(value) {
-  return value === "light" || value === "biocelular" ? value : "dark";
+  return isValidTheme(value) ? value : DEFAULT_THEME;
 }
 
 function isValidTheme(value) {
@@ -49,7 +50,9 @@ export function applyTheme(theme) {
   const root = document.documentElement;
   root.dataset.theme = normalizedTheme;
   root.style.colorScheme = normalizedTheme === "light" ? "light" : "dark";
-  root.style.backgroundColor = normalizedTheme === "light" ? "#f3f3f1" : "#050505";
+  root.style.backgroundColor = normalizedTheme === "light"
+    ? "#f3f3f1"
+    : normalizedTheme === "biocelular" ? "#120609" : "#050505";
   if (normalizedTheme === "biocelular") {
     void import("../themes/biocellularThemeController.js")
       .then(({ activateBiocellularTheme }) => { console.debug("[BIOCELULAR] Módulo cargado"); return activateBiocellularTheme(); })
@@ -92,7 +95,7 @@ export async function getThemeFromUserProfile(uid, profile = null) {
 
 export async function initializeThemeForUser(user, profile = null) {
   const uid = user?.uid;
-  if (!uid) return applyTheme(document.documentElement.dataset.theme || readStorage(LAST_THEME_STORAGE_KEY) || "dark");
+  if (!uid) return applyTheme(document.documentElement.dataset.theme || readStorage(LAST_THEME_STORAGE_KEY) || DEFAULT_THEME);
   if (pendingByUid.has(uid)) return pendingByUid.get(uid);
 
   const task = (async () => {

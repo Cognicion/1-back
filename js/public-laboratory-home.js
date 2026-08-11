@@ -9,7 +9,7 @@
   const themeStorageKeys = ["cognicion:theme:last", "cognicion.apariencia.tema"];
 
   function currentTheme() {
-    return validThemes.has(root.dataset.theme) ? root.dataset.theme : "dark";
+    return validThemes.has(root.dataset.theme) ? root.dataset.theme : "biocelular";
   }
 
   function updateThemeControls(theme) {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="dark">
+<html lang="es" data-theme="biocelular">
 <head>
   <script src="js/theme-preload.js"></script>
   <meta charset="UTF-8">
@@ -19,7 +19,7 @@
   <link rel="icon" type="image/png" href="assets/favicon-cognicion-128.png">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <link rel="stylesheet" href="css/theme/public-pages-light.css">
-  <link rel="stylesheet" href="css/public-laboratory-home.css?v=20260811-option4-v1">
+  <link rel="stylesheet" href="css/public-laboratory-home.css?v=20260811-orbital-cta-v1">
   <link rel="stylesheet" href="css/public-interactions.css?v=20260811-interactions-v2">
 </head>
 
@@ -52,9 +52,9 @@
       <details class="public-theme-menu">
         <summary>Tema</summary>
         <div class="public-theme-options" role="group" aria-label="Seleccionar tema">
-          <button type="button" data-public-theme="light" aria-pressed="false">Claro</button>
+          <button type="button" data-public-theme="biocelular" aria-pressed="false">Biocelular · Predeterminado</button>
           <button type="button" data-public-theme="dark" aria-pressed="false">Oscuro</button>
-          <button type="button" data-public-theme="biocelular" aria-pressed="false">Biocelular</button>
+          <button type="button" data-public-theme="light" aria-pressed="false">Claro</button>
         </div>
       </details>
       <a class="public-login-button" href="login.html">Iniciar sesión</a>
@@ -78,9 +78,9 @@
       <div class="public-mobile-theme" role="group" aria-label="Seleccionar tema">
         <span>Tema</span>
         <div>
-          <button type="button" data-public-theme="light" aria-pressed="false">Claro</button>
+          <button type="button" data-public-theme="biocelular" aria-pressed="false">Biocelular · Predeterminado</button>
           <button type="button" data-public-theme="dark" aria-pressed="false">Oscuro</button>
-          <button type="button" data-public-theme="biocelular" aria-pressed="false">Biocelular</button>
+          <button type="button" data-public-theme="light" aria-pressed="false">Claro</button>
         </div>
       </div>
     </div>
@@ -92,14 +92,16 @@
         <p class="laboratory-kicker">COGNICIÓN</p>
         <h1 id="heroTitle">Plataforma clínica digital</h1>
         <p class="laboratory-lead">Ciencia, evidencia e inteligencia artificial<br> para comprender al paciente de forma integral.</p>
-        <div class="laboratory-actions">
-          <button type="button" class="laboratory-button laboratory-button-secondary" data-open-public-interactions>Consultar interacciones farmacológicas</button>
-          <a class="laboratory-button laboratory-button-primary" href="#modulos">Explorar plataforma</a>
-        </div>
       </div>
 
-      <div class="laboratory-stage" aria-label="Representación abstracta de una plataforma clínica y neurotecnológica" role="img">
+      <div class="laboratory-stage" aria-label="Representación abstracta de una plataforma clínica y neurotecnológica" role="group">
         <div class="laboratory-stage-glow" aria-hidden="true"></div>
+        <div class="laboratory-orbit-path" aria-hidden="true"></div>
+        <div class="laboratory-orbit-track">
+          <div class="laboratory-orbit-float">
+            <button type="button" class="laboratory-button laboratory-button-secondary laboratory-orbit-action" data-open-public-interactions>Consultar interacciones farmacológicas</button>
+          </div>
+        </div>
         <svg class="laboratory-brain-visual" viewBox="0 0 900 520" aria-hidden="true">
           <defs>
             <linearGradient id="brainFill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#073f59" stop-opacity=".72"></stop><stop offset=".52" stop-color="#071b32" stop-opacity=".92"></stop><stop offset="1" stop-color="#04202e" stop-opacity=".8"></stop></linearGradient>

@@ -3,6 +3,7 @@
   const GLOBAL_THEME_KEY = "cognicion:theme:last";
   const VISUAL_THEME_KEY = "cognicion.apariencia.tema";
   const LEGACY_KEYS = ["cognicion.apariencia.modoInterfaz", "theme"];
+  const DEFAULT_THEME = "biocelular";
   const root = document.documentElement;
   const isValid = (value) => value === "dark" || value === "light" || value === "biocelular";
   const read = (key) => {
@@ -24,16 +25,18 @@
           if (isValid(storedTheme)) return storedTheme;
         }
       }
-    } catch (_) { /* se usa oscuro como fallback seguro */ }
-    return isValid(visualTheme) ? visualTheme : "dark";
+    } catch (_) { /* se usa Biocelular como fallback seguro */ }
+    return isValid(visualTheme) ? visualTheme : DEFAULT_THEME;
   };
   const apply = () => {
     const storedTheme = readImmediateTheme();
-    const appliedTheme = isValid(storedTheme) ? storedTheme : "dark";
+    const appliedTheme = isValid(storedTheme) ? storedTheme : DEFAULT_THEME;
     root.dataset.theme = appliedTheme;
     root.dataset.cognicionTheme = read(VISUAL_THEME_KEY) || "laboratorio";
     root.style.colorScheme = appliedTheme === "light" ? "light" : "dark";
-    root.style.backgroundColor = appliedTheme === "dark" ? "#050505" : "#f3f3f1";
+    root.style.backgroundColor = appliedTheme === "light"
+      ? "#f3f3f1"
+      : appliedTheme === "biocelular" ? "#120609" : "#050505";
     root.dataset.themeReady = "true";
     if (appliedTheme === "biocelular" && !document.getElementById("cognicion-biocellular-theme-css")) {
       const link = document.createElement("link");

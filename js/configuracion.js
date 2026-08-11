@@ -131,7 +131,7 @@ function renderizarModosInterfaz() {
           <span>${modo.icono}</span>
           <i></i><i></i><i></i>
         </div>
-        <strong>${modo.icono} ${modo.nombre}</strong>
+        <strong>${modo.icono} ${modo.nombre}${modo.id === MODOS_INTERFAZ_COGNICION.BIOCELULAR ? ' <span class="tema-default-badge">Predeterminado</span>' : ""}</strong>
         <small>${modo.descripcion}</small>
       </button>
     `;
@@ -202,7 +202,7 @@ function cancelarVistaPrevia() {
 
 function restaurarTemaPredeterminado() {
   temaPendiente = TEMAS_COGNICION.LABORATORIO;
-  modoInterfazPendiente = MODOS_INTERFAZ_COGNICION.CLARO;
+  modoInterfazPendiente = MODOS_INTERFAZ_COGNICION.BIOCELULAR;
   biocellularPendiente = getBiocellularPreferences();
   actualizarVistaPrevia();
   renderizarTemas();
