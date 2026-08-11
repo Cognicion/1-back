@@ -870,11 +870,45 @@ function enhanceMedicationPautaTables(modal) {
   modal.querySelectorAll(".patient-transfer-data-table").forEach((table) => {
     const headers = [...table.querySelectorAll("thead th")];
     const doseIndex = headers.findIndex((header) => /dosis por toma/i.test(header.textContent || ""));
+    const catalogIndex = headers.findIndex((header) => /cat.*logo/i.test(header.textContent || ""));
     const scheduleIndex = headers.findIndex((header) => /horario/i.test(header.textContent || ""));
     if (scheduleIndex < 0) return;
+    table.classList.add("patient-transfer-medication-table");
+    headers.forEach((header) => header.classList.add("patient-transfer-vertical-header"));
     if (doseIndex >= 0) {
       headers[doseIndex].hidden = true;
       table.querySelectorAll("tbody tr").forEach((row) => { if (row.cells[doseIndex]) row.cells[doseIndex].hidden = true; });
+    }
+    if (catalogIndex >= 0) {
+      headers[catalogIndex].hidden = true;
+      table.querySelectorAll("tbody tr").forEach((row) => {
+        const medicationCell = row.cells[1];
+        const catalogCell = row.cells[catalogIndex];
+        const nameInput = medicationCell?.querySelector("[data-transfer-tx-name]");
+        const catalogSelect = catalogCell?.querySelector("[data-transfer-tx-catalog]");
+        if (!medicationCell || !catalogCell || !nameInput || medicationCell.querySelector("[data-transfer-tx-catalog-compact]")) return;
+        catalogCell.hidden = true;
+        medicationCell.classList.add("patient-transfer-medication-identity");
+        medicationCell.innerHTML = "";
+        medicationCell.append(nameInput);
+        const catalogMeta = document.createElement("div");
+        catalogMeta.className = "patient-transfer-medication-catalog-meta";
+        catalogMeta.title = catalogSelect?.value ? "Medicamento resuelto contra el catálogo" : "Medicamento pendiente de vincular al catálogo";
+        catalogMeta.textContent = `Catálogo: ${catalogSelect?.value ? "Sí" : "No"}`;
+        medicationCell.append(catalogMeta);
+        if (catalogSelect) {
+          catalogSelect.hidden = true;
+          catalogSelect.dataset.transferTxCatalogCompact = "true";
+          medicationCell.append(catalogSelect);
+          const changeButton = document.createElement("button");
+          changeButton.type = "button";
+          changeButton.className = "patient-transfer-medication-catalog-change";
+          changeButton.dataset.transferTxCatalogToggle = catalogSelect.dataset.transferTxCatalog;
+          changeButton.textContent = "Cambiar";
+          changeButton.title = "Cambiar medicamento vinculado al catálogo";
+          medicationCell.append(changeButton);
+        }
+      });
     }
     headers[scheduleIndex].textContent = "Pauta";
     table.querySelectorAll("tbody tr").forEach((row) => {

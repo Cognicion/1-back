@@ -746,3 +746,90 @@
   .patient-transfer-medication-pauta { width: min(100%, 260px); }
   .patient-transfer-medication-pauta-row { grid-template-columns: 70px 48px minmax(55px, 1fr) 20px; }
 }
+
+.patient-transfer-medication-table {
+  width: max-content;
+  min-width: 0;
+  table-layout: auto;
+}
+
+.patient-transfer-medication-table .patient-transfer-vertical-header {
+  height: 92px;
+  min-width: 28px;
+  padding: 7px 5px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.patient-transfer-medication-table .patient-transfer-vertical-header {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+}
+
+.patient-transfer-medication-table th[hidden],
+.patient-transfer-medication-table td[hidden] {
+  display: none;
+}
+
+.patient-transfer-medication-table td {
+  padding: 4px;
+  white-space: nowrap;
+}
+
+.patient-transfer-medication-table input:not([type="checkbox"]),
+.patient-transfer-medication-table select {
+  field-sizing: content;
+  width: fit-content;
+  min-width: 0;
+  max-width: 180px;
+  padding: 4px 5px;
+  font-size: 11px;
+}
+
+.patient-transfer-medication-table [data-transfer-tx-name] {
+  min-width: 90px;
+  max-width: 180px;
+}
+
+.patient-transfer-medication-table [data-transfer-tx-presentation] { max-width: 92px; }
+.patient-transfer-medication-table [data-transfer-tx-strength] { max-width: 56px; }
+.patient-transfer-medication-table [data-transfer-tx-strength-unit] { max-width: 56px; }
+.patient-transfer-medication-table [data-transfer-tx-route] { max-width: 64px; }
+.patient-transfer-medication-table [data-transfer-tx-frequency] { max-width: 108px; }
+.patient-transfer-medication-table [data-transfer-tx-status] { max-width: 104px; }
+
+.patient-transfer-medication-identity {
+  min-width: 120px;
+  max-width: 190px;
+  white-space: normal !important;
+}
+
+.patient-transfer-medication-catalog-meta {
+  margin-top: 2px;
+  color: #93a4ba;
+  font-size: 10px;
+  line-height: 1.15;
+}
+
+.patient-transfer-medication-catalog-change {
+  display: inline-block;
+  margin-top: 2px;
+  padding: 1px 4px;
+  border: 0;
+  background: transparent;
+  color: #7dd3fc;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.patient-transfer-medication-identity [data-transfer-tx-catalog] {
+  display: block;
+  max-width: 180px;
+  margin-top: 3px;
+}
+
+@media (max-width: 720px) {
+  .patient-transfer-medication-table .patient-transfer-vertical-header { height: 82px; }
+  .patient-transfer-medication-table [data-transfer-tx-name] { max-width: 150px; }
+}

@@ -42,7 +42,7 @@ import {
   resizeTransferIndicationTextarea,
   syncBulkSelectionControls,
   syncPatientNameInputs
-} from "./ui/patientTransferView.js?v=v166-medication-administration-schedules-v1";
+} from "./ui/patientTransferView.js?v=v167-compact-medication-columns-v1";
 
 let initialized = false;
 let selectedFiles = [];
@@ -1179,6 +1179,16 @@ export function initializePatientTransfer() {
       const list = removeAdministration.closest("[data-transfer-tx-schedule-list]");
       if (row && list && list.querySelectorAll("[data-transfer-tx-administration-row]").length > 1) row.remove();
       else row?.querySelectorAll("input").forEach((control) => { control.value = ""; });
+      return;
+    }
+    const toggleCatalog = event.target.closest("[data-transfer-tx-catalog-toggle]");
+    if (toggleCatalog) {
+      const select = root.querySelector(`[data-transfer-tx-catalog="${toggleCatalog.dataset.transferTxCatalogToggle}"]`);
+      if (select) {
+        select.hidden = !select.hidden;
+        toggleCatalog.textContent = select.hidden ? "Cambiar" : "Ocultar";
+        if (!select.hidden) select.focus();
+      }
       return;
     }
     const removeButton = event.target.closest("[data-transfer-remove-file]");

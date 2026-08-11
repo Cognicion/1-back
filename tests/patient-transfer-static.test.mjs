@@ -56,9 +56,9 @@ assert.match(controller, /const reviewedGroups = analyzedGroups;/, "el guardado 
 assert.match(controller, /expandSegmentedGroupsForSave/, "la persistencia crea una nota por segmento confirmado");
 assert.match(controller, /setFileMultipleNotesMode/, "la revisión actualiza el modo por archivo en el estado central");
 assert.match(controller, /multipleNotesMode/, "el controlador envía el modo explícito al segmentador");
-assert.match(transferIndex, /patientTransferController\.js\?v=v175-medication-administration-schedules-v1/, "el índice fuerza la carga del controlador publicado");
+assert.match(transferIndex, /patientTransferController\.js\?v=v176-compact-medication-columns-v1/, "el índice fuerza la carga del controlador publicado");
 assert.match(controller, /clinicalNoteSegmenter\.js\?v=20260810-imported-notes-v1/, "el controlador fuerza la carga del segmentador publicado");
-assert.match(controller, /patientTransferView\.js\?v=v166-medication-administration-schedules-v1/, "el controlador fuerza la carga de la UI de pautas por administración");
+assert.match(controller, /patientTransferView\.js\?v=v167-compact-medication-columns-v1/, "el controlador fuerza la carga de la UI compacta de medicamentos");
 assert.match(segmenter, /patient-transfer-segmentation-debug-v1/, "el segmentador expone un marcador verificable de compilación");
 assert.match(segmenter, /\[patient-transfer\] segmentation:boundaries/, "el segmentador registra los límites usados");
 assert.match(segmenter, /\[patient-transfer\] segmentation:completed/, "el segmentador registra la cantidad final de segmentos");
@@ -88,6 +88,10 @@ assert.match(transferView, /patient-transfer-vitals-table/, "los signos vitales 
 assert.match(transferView, /data-transfer-tx-schedule-dose/, "la pauta expone la dosis de cada administraciÃ³n");
 assert.match(transferView, /data-transfer-tx-schedule-add/, "la pauta permite agregar administraciones");
 assert.match(controller, /data-transfer-tx-schedule-remove/, "el controlador permite quitar administraciones");
+assert.match(transferView, /patient-transfer-vertical-header/, "los encabezados de medicamentos usan orientación vertical");
+assert.match(transferView, /patient-transfer-medication-catalog-meta/, "medicamento y estado de catálogo se muestran en una sola celda");
+assert.match(controller, /data-transfer-tx-catalog-toggle/, "el vínculo de catálogo puede cambiarse mediante una acción compacta");
+assert.match(read("css/modules/patient-transfer.css"), /writing-mode:\s*vertical-rl/, "el CSS rota solo el texto de los encabezados");
 assert.match(transferView, /index === 0 \? "open" : ""/, "solo la primera nota inicia expandida");
 assert.match(transferView, /Ver texto original/, "el texto fuente queda en un panel contraíble independiente");
 assert.doesNotMatch(transferView, /<textarea readonly>\$\{escapeHtml\(doc\.fullText/, "el texto completo no se repite al final del documento");
