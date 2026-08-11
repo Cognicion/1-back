@@ -328,6 +328,8 @@ export function parseMedicationSchedules(text = "") {
     const time = normalizeTime(match[1]);
     if (!time) continue;
     const before = source.slice(Math.max(0, match.index - 50), match.index);
+    // "cada 8 horas" is an interval, not an explicit administration time.
+    if (/\bcada\s*$/i.test(before)) continue;
     const quantityMatches = [...before.matchAll(/(\d+(?:[.,]\d+)?|una|un|uno|dos|tres|[¼½¾⅓⅔⅛⅜⅝⅞]|\d+\s*\/\s*\d+)\s*(?:de\s+)?(tabletas?|capsulas?|comprimidos?|ml|mililitros|cucharadas?|cucharaditas?|vasos?|gotas?)/gi)];
     const nonContainerQuantities = quantityMatches.filter((item) => !/^vaso/i.test(item[2]));
     let quantityMatch = (nonContainerQuantities.length ? nonContainerQuantities : quantityMatches).at(-1);

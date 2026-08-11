@@ -53,6 +53,7 @@ export function parseMedicationSchedules(value = "") {
     const minute = Number(match[2] ?? match[5] ?? 0);
     if (hour > 23 || minute > 59) continue;
     const before = text.slice(Math.max(0, match.index - 45), match.index);
+    if (/\bcada\s*$/i.test(before)) continue;
     const quantities = [...before.matchAll(/(\d+(?:[.,]\d+)?|una|un|uno|dos|tres|½|¼|¾|\d+\/\d+)\s*(?:de\s+)?(tabletas?|capsulas?|comprimidos?|ml|mililitros|cucharadas?|cucharaditas?|gotas?)/gi)];
     const quantity = quantities.at(-1);
     schedules.push({ time: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`, quantity: quantity ? parseClinicalQuantity(quantity[1]) : null, unit: quantity ? quantity[2].toLowerCase() : "" });

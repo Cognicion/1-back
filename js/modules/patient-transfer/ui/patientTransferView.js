@@ -56,6 +56,54 @@ function formatMedicationSchedule(schedule = []) {
     : "";
 }
 
+function medicationAdministrations(candidate = {}) {
+  const source = Array.isArray(candidate.schedule) ? candidate.schedule
+    : Array.isArray(candidate.administrations) ? candidate.administrations
+      : Array.isArray(candidate.horarios) ? candidate.horarios : [];
+  return source.map((item) => ({
+    time: String(item.time || "").trim(),
+    quantity: item.quantity ?? item.doseAmount ?? item.administrationQuantity ?? null,
+    administrationUnit: item.administrationUnit || item.unit || item.doseUnit || candidate.administrationUnit || ""
+  }));
+}
+
+function renderMedicationScheduleRows(candidate, key) {
+  const administrations = medicationAdministrations(candidate);
+  const rows = administrations.length ? administrations : [{
+    time: "",
+    quantity: candidate.administrationQuantity ?? "",
+    administrationUnit: candidate.administrationUnit || ""
+  }];
+  return rows.map((item, index) => `<div class="patient-transfer-medication-pauta-row" data-transfer-tx-administration-row>
+    <input type="time" aria-label="Hora de administracion" data-transfer-tx-schedule-time="${key}:${index}" value="${escapeHtml(item.time || "")}">
+    <input inputmode="decimal" aria-label="Dosis de administracion" data-transfer-tx-schedule-dose="${key}:${index}" value="${escapeHtml(item.quantity ?? "")}" placeholder="dosis">
+    <input aria-label="Unidad de administracion" data-transfer-tx-schedule-unit="${key}:${index}" value="${escapeHtml(item.administrationUnit || "")}" placeholder="unidad">
+    <button type="button" class="patient-transfer-medication-pauta-remove" data-transfer-tx-schedule-remove="${key}:${index}" aria-label="Eliminar toma">×</button>
+  </div>`).join("");
+}
+
+function readMedicationAdministrations(modal, key, candidate = {}) {
+  const list = modal.querySelector(`[data-transfer-tx-schedule-list="${key}"]`);
+  if (!list) return medicationAdministrations(candidate);
+  return [...list.querySelectorAll("[data-transfer-tx-administration-row]")].map((row) => {
+    const time = row.querySelector("[data-transfer-tx-schedule-time]")?.value?.trim() || "";
+    const rawQuantity = row.querySelector("[data-transfer-tx-schedule-dose]")?.value?.trim() || "";
+    const numericQuantity = rawQuantity === "" ? null : Number(rawQuantity.replace(",", "."));
+    const quantity = Number.isFinite(numericQuantity) ? numericQuantity : rawQuantity;
+    const administrationUnit = row.querySelector("[data-transfer-tx-schedule-unit]")?.value?.trim() || "";
+    return { time, quantity, administrationUnit };
+  }).filter((item) => item.time || item.quantity !== null || item.administrationUnit);
+}
+
+function medicationScheduleText(administrations = [], candidate = {}) {
+  const formatted = formatMedicationSchedule(administrations);
+  if (formatted) return formatted;
+  const frequency = String(candidate.frequencyRaw || candidate.frequency || "").trim();
+  const quantity = candidate.administrationQuantity ?? "";
+  const unit = candidate.administrationUnit || "";
+  return frequency && quantity !== "" ? `${frequency} Â· ${quantity} ${unit}`.trim() : frequency;
+}
+
 function debugEnabled() {
   return typeof localStorage !== "undefined" && localStorage.getItem("cognicion.debug.patientTransfer") === "1";
 }
@@ -613,7 +661,7 @@ function renderSegmentTreatmentCandidates(doc, segment) {
       ${candidates.length ? `<div class="patient-transfer-table-scroll"><table class="patient-transfer-data-table">
         <thead><tr><th>Incluir</th><th>Medicamento</th><th>Catálogo</th><th>Presentación</th><th>Concentración</th><th>Dosis por toma</th><th>Vía</th><th>Frecuencia</th><th>Horario</th><th>Acción</th><th>Fecha</th><th>Fuente</th></tr></thead><tbody>${candidates.map((candidate) => {
         const key = segmentControlKey(doc, segment, candidate);
-        const scheduleText = formatMedicationSchedule(candidate.schedule) || candidate.scheduleText || "";
+        const scheduleText = medicationScheduleText(medicationAdministrations(candidate), candidate);
         console.info("[patient-transfer] medication:rendered", JSON.stringify({ noteId: segment.id, medicationName: candidate.medicationName, strength: candidate.strengthValue ?? candidate.dose ?? null, route: candidate.route || "", frequency: candidate.frequencyRaw || "", schedulesCount: Array.isArray(candidate.schedule) ? candidate.schedule.length : 0, action: candidate.action || candidate.statusSuggestion || "" }));
         return `<tr>
           <td><input aria-label="Incluir medicamento" type="checkbox" data-transfer-tx-include="${key}" ${candidate.selectedForImport ? "checked" : ""}></td>
@@ -818,6 +866,34 @@ export function countTransferNotes(groups = []) {
   }, 0), 0);
 }
 
+function enhanceMedicationPautaTables(modal) {
+  modal.querySelectorAll(".patient-transfer-data-table").forEach((table) => {
+    const headers = [...table.querySelectorAll("thead th")];
+    const doseIndex = headers.findIndex((header) => /dosis por toma/i.test(header.textContent || ""));
+    const scheduleIndex = headers.findIndex((header) => /horario/i.test(header.textContent || ""));
+    if (scheduleIndex < 0) return;
+    if (doseIndex >= 0) {
+      headers[doseIndex].hidden = true;
+      table.querySelectorAll("tbody tr").forEach((row) => { if (row.cells[doseIndex]) row.cells[doseIndex].hidden = true; });
+    }
+    headers[scheduleIndex].textContent = "Pauta";
+    table.querySelectorAll("tbody tr").forEach((row) => {
+      const scheduleCell = row.cells[scheduleIndex];
+      const scheduleInput = scheduleCell?.querySelector("[data-transfer-tx-schedule]");
+      if (!scheduleCell || !scheduleInput || scheduleCell.querySelector("[data-transfer-tx-schedule-list]")) return;
+      const key = scheduleInput.dataset.transferTxSchedule;
+      const candidate = {
+        schedule: parseMedicationSchedules(scheduleInput.value),
+        scheduleText: scheduleInput.value,
+        frequencyRaw: row.querySelector("[data-transfer-tx-frequency]")?.value || "",
+        administrationQuantity: row.querySelector("[data-transfer-tx-admin-quantity]")?.value || "",
+        administrationUnit: row.querySelector("[data-transfer-tx-admin-unit]")?.value || ""
+      };
+      scheduleCell.innerHTML = `<div class="patient-transfer-medication-pauta" data-transfer-tx-schedule-list="${key}">${renderMedicationScheduleRows(candidate, key)}</div><button type="button" class="patient-transfer-medication-pauta-add" data-transfer-tx-schedule-add="${key}" aria-label="Agregar toma">+</button>`;
+    });
+  });
+}
+
 export function renderDetectedGroups(groups = []) {
   const modal = ensureRoot();
   const saveButton = modal.querySelector("[data-transfer-save]");
@@ -854,6 +930,7 @@ export function renderDetectedGroups(groups = []) {
   });
   syncBulkSelectionControls(groups);
   resizeTransferIndicationTextareas(modal);
+  enhanceMedicationPautaTables(modal);
 }
 
 export function collectRenderedSubjectiveMetrics(groups = []) {
@@ -945,6 +1022,7 @@ export function readTransferReview(groups = []) {
         const includeControl = modal.querySelector(`[data-transfer-tx-include="${doc.id}:${candidate.id}"]`);
         const selected = includeControl ? includeControl.checked : candidate.include === true || candidate.selectedForImport === true;
         const medicationName = modal.querySelector(`[data-transfer-tx-name="${key}"]`)?.value?.trim() || "";
+        const administrations = readMedicationAdministrations(modal, key, candidate);
         return {
         ...candidate,
         include: selected,
@@ -960,8 +1038,8 @@ export function readTransferReview(groups = []) {
         doseUnit: modal.querySelector(`[data-transfer-tx-strength-unit="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.doseUnit || "",
         route: modal.querySelector(`[data-transfer-tx-route="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
         frequencyRaw: modal.querySelector(`[data-transfer-tx-frequency="${doc.id}:${candidate.id}"]`)?.value?.trim() || "",
-        scheduleText: modal.querySelector(`[data-transfer-tx-schedule="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.scheduleText || "",
-        schedule: modal.querySelector(`[data-transfer-tx-schedule="${doc.id}:${candidate.id}"]`) ? parseMedicationSchedules(modal.querySelector(`[data-transfer-tx-schedule="${doc.id}:${candidate.id}"]`).value) : (candidate.schedule || []),
+        scheduleText: medicationScheduleText(administrations, candidate),
+        schedule: administrations,
         action: modal.querySelector(`[data-transfer-tx-status="${doc.id}:${candidate.id}"]`)?.value || candidate.action || candidate.statusSuggestion,
         statusSuggestion: modal.querySelector(`[data-transfer-tx-status="${doc.id}:${candidate.id}"]`)?.value || candidate.statusSuggestion,
         confirmedByDoctor: selected
@@ -1021,6 +1099,7 @@ export function readTransferReview(groups = []) {
           const includeControl = modal.querySelector(`[data-transfer-tx-include="${key}"]`);
           const checked = includeControl ? includeControl.checked : candidate.include === true || candidate.selectedForImport === true;
           const medicationName = modal.querySelector(`[data-transfer-tx-name="${key}"]`)?.value?.trim() || candidate.medicationName || "";
+          const administrations = readMedicationAdministrations(modal, key, candidate);
           return {
             ...candidate,
             include: checked,
@@ -1036,8 +1115,8 @@ export function readTransferReview(groups = []) {
             doseUnit: modal.querySelector(`[data-transfer-tx-strength-unit="${key}"]`)?.value?.trim() || candidate.doseUnit || "",
             route: modal.querySelector(`[data-transfer-tx-route="${key}"]`)?.value?.trim() || "",
             frequencyRaw: modal.querySelector(`[data-transfer-tx-frequency="${key}"]`)?.value?.trim() || "",
-            scheduleText: modal.querySelector(`[data-transfer-tx-schedule="${key}"]`)?.value?.trim() || candidate.scheduleText || "",
-            schedule: modal.querySelector(`[data-transfer-tx-schedule="${key}"]`) ? parseMedicationSchedules(modal.querySelector(`[data-transfer-tx-schedule="${key}"]`).value) : (candidate.schedule || []),
+            scheduleText: medicationScheduleText(administrations, candidate),
+            schedule: administrations,
             action: modal.querySelector(`[data-transfer-tx-status="${key}"]`)?.value || candidate.action || candidate.statusSuggestion,
             statusSuggestion: modal.querySelector(`[data-transfer-tx-status="${key}"]`)?.value || candidate.statusSuggestion,
             confirmedByDoctor: checked

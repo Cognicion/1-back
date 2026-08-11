@@ -56,9 +56,9 @@ assert.match(controller, /const reviewedGroups = analyzedGroups;/, "el guardado 
 assert.match(controller, /expandSegmentedGroupsForSave/, "la persistencia crea una nota por segmento confirmado");
 assert.match(controller, /setFileMultipleNotesMode/, "la revisión actualiza el modo por archivo en el estado central");
 assert.match(controller, /multipleNotesMode/, "el controlador envía el modo explícito al segmentador");
-assert.match(transferIndex, /patientTransferController\.js\?v=v174-plan-hierarchy-dedup-v1/, "el índice fuerza la carga del controlador publicado");
+assert.match(transferIndex, /patientTransferController\.js\?v=v175-medication-administration-schedules-v1/, "el índice fuerza la carga del controlador publicado");
 assert.match(controller, /clinicalNoteSegmenter\.js\?v=20260810-imported-notes-v1/, "el controlador fuerza la carga del segmentador publicado");
-assert.match(controller, /patientTransferView\.js\?v=v165-plan-hierarchy-dedup-v1/, "el controlador fuerza la carga de la UI compacta");
+assert.match(controller, /patientTransferView\.js\?v=v166-medication-administration-schedules-v1/, "el controlador fuerza la carga de la UI de pautas por administración");
 assert.match(segmenter, /patient-transfer-segmentation-debug-v1/, "el segmentador expone un marcador verificable de compilación");
 assert.match(segmenter, /\[patient-transfer\] segmentation:boundaries/, "el segmentador registra los límites usados");
 assert.match(segmenter, /\[patient-transfer\] segmentation:completed/, "el segmentador registra la cantidad final de segmentos");
@@ -85,6 +85,9 @@ assert.match(controller, /event\.target\.closest\("\[data-action='toggle-all-can
 assert.match(controller, /patient-transfer\] \$\{candidateType === "diagnosis" \? "select-all-diagnoses" : "select-all-treatments"\}/, "el controlador conserva trazas resumidas de selección masiva");
 assert.match(transferView, /Exploración física \/ neurológica/, "la vista usa el nombre clínico solicitado");
 assert.match(transferView, /patient-transfer-vitals-table/, "los signos vitales se presentan en tabla compacta");
+assert.match(transferView, /data-transfer-tx-schedule-dose/, "la pauta expone la dosis de cada administraciÃ³n");
+assert.match(transferView, /data-transfer-tx-schedule-add/, "la pauta permite agregar administraciones");
+assert.match(controller, /data-transfer-tx-schedule-remove/, "el controlador permite quitar administraciones");
 assert.match(transferView, /index === 0 \? "open" : ""/, "solo la primera nota inicia expandida");
 assert.match(transferView, /Ver texto original/, "el texto fuente queda en un panel contraíble independiente");
 assert.doesNotMatch(transferView, /<textarea readonly>\$\{escapeHtml\(doc\.fullText/, "el texto completo no se repite al final del documento");

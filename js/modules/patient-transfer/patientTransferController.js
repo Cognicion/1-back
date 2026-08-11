@@ -42,7 +42,7 @@ import {
   resizeTransferIndicationTextarea,
   syncBulkSelectionControls,
   syncPatientNameInputs
-} from "./ui/patientTransferView.js?v=v165-plan-hierarchy-dedup-v1";
+} from "./ui/patientTransferView.js?v=v166-medication-administration-schedules-v1";
 
 let initialized = false;
 let selectedFiles = [];
@@ -1153,6 +1153,32 @@ export function initializePatientTransfer() {
     }
     if (event.target.closest("[data-transfer-import-another]")) {
       resetAndOpen();
+      return;
+    }
+    const addAdministration = event.target.closest("[data-transfer-tx-schedule-add]");
+    if (addAdministration) {
+      const list = root.querySelector(`[data-transfer-tx-schedule-list="${addAdministration.dataset.transferTxScheduleAdd}"]`);
+      const first = list?.querySelector("[data-transfer-tx-administration-row]");
+      if (list && first) {
+        const row = first.cloneNode(true);
+        const index = list.querySelectorAll("[data-transfer-tx-administration-row]").length;
+        row.querySelectorAll("[data-transfer-tx-schedule-time],[data-transfer-tx-schedule-dose],[data-transfer-tx-schedule-unit]").forEach((control) => {
+          control.value = "";
+          const attribute = control.getAttributeNames().find((name) => name.startsWith("data-transfer-tx-schedule-"));
+          if (attribute) control.setAttribute(attribute, `${addAdministration.dataset.transferTxScheduleAdd}:${index}`);
+        });
+        const remove = row.querySelector("[data-transfer-tx-schedule-remove]");
+        if (remove) remove.setAttribute("data-transfer-tx-schedule-remove", `${addAdministration.dataset.transferTxScheduleAdd}:${index}`);
+        list.appendChild(row);
+      }
+      return;
+    }
+    const removeAdministration = event.target.closest("[data-transfer-tx-schedule-remove]");
+    if (removeAdministration) {
+      const row = removeAdministration.closest("[data-transfer-tx-administration-row]");
+      const list = removeAdministration.closest("[data-transfer-tx-schedule-list]");
+      if (row && list && list.querySelectorAll("[data-transfer-tx-administration-row]").length > 1) row.remove();
+      else row?.querySelectorAll("input").forEach((control) => { control.value = ""; });
       return;
     }
     const removeButton = event.target.closest("[data-transfer-remove-file]");

@@ -21,6 +21,7 @@ function findMedicationName(item = "", catalog = MEDICAMENTOS) {
   const manual = String(item).match(/^([A-Za-zÁÉÍÓÚáéíóúÑñ-]+(?:\s+[A-Za-zÁÉÍÓÚáéíóúÑñ-]+){0,2})(?=\s+(?:tabletas?|cápsulas?|capsulas?|jarabe|polvo|\d|tomar|administrar|vía|via)|$)/i);
   const value = manual?.[1]?.trim() || "";
   if (/^antecedente\s+de$/i.test(value)) return "";
+  if (/^(?:cada|hora|horas)$/i.test(value)) return "";
   if (/^(?:tomar|administrar|aplicar|via|oral|se|se inicio|se inició|inicia|inicio|suspende|suspendio|suspendió|se suspendio|se suspendió|suspender|aumenta|disminuye|cambia|recibio|recibió|previamente|previo|antecedente)$/i.test(value)) return "";
   return value;
 }
