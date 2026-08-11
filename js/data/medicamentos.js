@@ -1,6 +1,6 @@
 // LEGACY/ADAPTADOR: conserva exports históricos. Los módulos consumidores
 // deben importar catalogoFarmacologicoUnificado.js como fuente oficial.
-import { MEDICAMENTOS_SUPLEMENTARIOS } from "./medicamentosSuplementarios.js";
+import { MEDICAMENTOS_SUPLEMENTARIOS } from "./medicamentosSuplementarios.js?v=20260811-ssri-interactions-v1";
 import { enriquecerMedicamentoClinico } from "./vinculosClinicos.js";
 import {
   FARMACOLOGIA_VERIFICADA,

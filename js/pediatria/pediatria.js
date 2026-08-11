@@ -40,7 +40,7 @@ import {
   savePediatricPrescription,
   searchPediatricMedication,
   synchronizeFrequencyAndInterval
-} from "./prescripcionPediatrica.js?v=20260811-pharmacology-ssot-v1";
+} from "./prescripcionPediatrica.js?v=20260811-ssri-interactions-v1";
 import { MEDICAMENTOS_PEDIATRICOS } from "./medicamentos.js";
 import { FUENTES_PEDIATRIA } from "./fuentes.js";
 

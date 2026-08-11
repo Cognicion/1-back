@@ -8,7 +8,7 @@ import {
 import {
   obtenerMedicamentoPorId,
   resolverMedicamentoCanonico
-} from "../data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-ssot-v1";
+} from "../data/catalogoFarmacologicoUnificado.js?v=20260811-ssri-interactions-v1";
 
 const SEVERIDAD_ORDEN = {
   informativa: 1,

@@ -1,6 +1,9 @@
 // Seed suplementario legacy. Se fusiona una sola vez en el catálogo oficial;
 // no debe consumirse directamente como catálogo independiente.
-const HOY_CATALOGO = "2026-07-14";
+const HOY_CATALOGO = "2026-08-11";
+const FUENTES_INTERACCIONES_ISRS = [
+  "DailyMed: fichas tecnicas vigentes de sertralina, fluoxetina, paroxetina, citalopram, escitalopram y fluvoxamina; seccion Drug Interactions, consultadas el 2026-08-11."
+];
 
 function presentacion(texto, via = "oral") {
   return {
@@ -24,14 +27,17 @@ function med({
   contraindicaciones = [],
   precauciones = [],
   monitoreo = [],
-  interacciones = []
+  interacciones = [],
+  clases = [],
+  riesgos = {},
+  referencias = []
 }) {
   return {
     id,
     nombre,
     genericName: nombre,
     clase,
-    therapeuticClasses: [clase],
+    therapeuticClasses: [...new Set([clase, ...clases])],
     especialidades,
     specialties: especialidades,
     brandNames: marcas,
@@ -60,8 +66,9 @@ function med({
     warnings: precauciones,
     monitoring: monitoreo,
     interactions: interacciones,
+    riesgos,
     notas,
-    references: [
+    references: referencias.length ? referencias : [
       "Ficha técnica institucional o nacional vigente.",
       "Lexicomp/Micromedex/guía clínica local: validar antes de uso clínico."
     ],
@@ -69,6 +76,32 @@ function med({
     contentStatus: "revision_inicial",
     updatedAt: HOY_CATALOGO
   };
+}
+
+function medInteraccionISRS({
+  id,
+  nombre,
+  clase,
+  clases = [],
+  sinonimos = [],
+  via = "oral",
+  presentacionTexto = "presentacion segun disponibilidad",
+  notas = "Contraparte documentada en fichas tecnicas regulatorias de ISRS.",
+  riesgos = {}
+}) {
+  return med({
+    id,
+    nombre,
+    clase,
+    clases,
+    sinonimos,
+    especialidades: ["Farmacologia clinica"],
+    presentaciones: [{ texto: presentacionTexto, via }],
+    dosisHabitual: "Individualizar segun indicacion, producto y ficha tecnica",
+    notas,
+    riesgos,
+    referencias: FUENTES_INTERACCIONES_ISRS
+  });
 }
 
 export const MEDICAMENTOS_SUPLEMENTARIOS = [
@@ -105,7 +138,7 @@ export const MEDICAMENTOS_SUPLEMENTARIOS = [
   med({ id: "dabigatran", nombre: "Dabigatrán", clase: "Anticoagulante inhibidor de trombina", especialidades: ["Cardiología", "Hematología"], presentaciones: ["cápsulas de 110 mg", "cápsulas de 150 mg"], dosisHabitual: "110-150 mg cada 12 horas según indicación", notas: "Vigilar función renal y riesgo de sangrado." }),
   med({ id: "heparina", nombre: "Heparina no fraccionada", clase: "Anticoagulante", especialidades: ["Hematología", "Urgencias"], presentaciones: [{ texto: "frasco ámpula de 5000 UI/ml", via: "subcutánea/intravenosa" }], dosisHabitual: "Según protocolo y TTPa/anti-Xa", notas: "Vigilar sangrado, plaquetas y tiempos de coagulación." }),
   med({ id: "enoxaparina", nombre: "Enoxaparina", clase: "Heparina de bajo peso molecular", especialidades: ["Hematología"], presentaciones: [{ texto: "jeringa de 40 mg", via: "subcutánea" }, { texto: "jeringa de 60 mg", via: "subcutánea" }], dosisHabitual: "Profilaxis o tratamiento según peso, indicación y función renal", notas: "Ajustar en enfermedad renal; vigilar sangrado." }),
-  med({ id: "acido_acetilsalicilico", nombre: "Ácido acetilsalicílico", clase: "Antiagregante plaquetario", especialidades: ["Cardiología"], presentaciones: ["tabletas de 100 mg", "tabletas de 300 mg"], dosisHabitual: "75-100 mg/día para antiagregación", notas: "Vigilar sangrado y antecedente de alergia o úlcera." }),
+  med({ id: "acido_acetilsalicilico", nombre: "Ácido acetilsalicílico", clase: "Antiagregante plaquetario", clases: ["antiagregante", "aine"], especialidades: ["Cardiología"], presentaciones: ["tabletas de 100 mg", "tabletas de 300 mg"], dosisHabitual: "75-100 mg/día para antiagregación", notas: "Vigilar sangrado y antecedente de alergia o úlcera.", sinonimos: ["aspirina", "aspirin", "ASA"] }),
   med({ id: "clopidogrel", nombre: "Clopidogrel", clase: "Antiagregante P2Y12", especialidades: ["Cardiología"], presentaciones: ["tabletas de 75 mg"], dosisHabitual: "75 mg cada 24 horas", notas: "Vigilar sangrado e interacciones con inhibidores CYP2C19." }),
   med({ id: "atorvastatina", nombre: "Atorvastatina", clase: "Estatina", especialidades: ["Cardiología", "Medicina interna"], presentaciones: ["tabletas de 10 mg", "tabletas de 20 mg", "tabletas de 40 mg", "tabletas de 80 mg"], dosisHabitual: "10-80 mg cada 24 horas", notas: "Vigilar mialgias, transaminasas si hay sospecha clínica e interacciones." }),
   med({ id: "rosuvastatina", nombre: "Rosuvastatina", clase: "Estatina", especialidades: ["Cardiología"], presentaciones: ["tabletas de 10 mg", "tabletas de 20 mg", "tabletas de 40 mg"], dosisHabitual: "5-40 mg cada 24 horas", notas: "Ajustar en función renal avanzada." }),
@@ -162,7 +195,7 @@ export const MEDICAMENTOS_SUPLEMENTARIOS = [
   med({ id: "acetilcisteina", nombre: "Acetilcisteína", clase: "Mucolítico/antídoto", especialidades: ["Neumología", "Urgencias"], presentaciones: ["sobres de 600 mg", { texto: "solución intravenosa", via: "intravenosa" }], dosisHabitual: "Según indicación", notas: "Como antídoto de paracetamol requiere protocolo específico." }),
   med({ id: "dextrometorfano", nombre: "Dextrometorfano", clase: "Antitusivo", especialidades: ["Medicina general"], presentaciones: ["jarabe", "cápsulas"], dosisHabitual: "Según edad y presentación", notas: "Precaución con serotonérgicos y uso indebido." }),
 
-  med({ id: "omeprazol", nombre: "Omeprazol", clase: "Inhibidor de bomba de protones", especialidades: ["Gastroenterología"], presentaciones: ["cápsulas de 20 mg", "cápsulas de 40 mg"], dosisHabitual: "20-40 mg cada 24 horas", notas: "Usar indicación clara; valorar Mg/B12 si uso prolongado." }),
+  med({ id: "omeprazol", nombre: "Omeprazol", clase: "Inhibidor de bomba de protones", clases: ["inhibidor_cyp2c19", "sustrato_cyp2c19"], especialidades: ["Gastroenterología"], presentaciones: ["cápsulas de 20 mg", "cápsulas de 40 mg"], dosisHabitual: "20-40 mg cada 24 horas", notas: "Usar indicación clara; valorar Mg/B12 si uso prolongado." }),
   med({ id: "pantoprazol", nombre: "Pantoprazol", clase: "Inhibidor de bomba de protones", especialidades: ["Gastroenterología"], presentaciones: ["tabletas de 40 mg", { texto: "frasco ámpula de 40 mg", via: "intravenosa" }], dosisHabitual: "40 mg cada 24 horas", notas: "Útil si se requiere vía IV." }),
   med({ id: "famotidina", nombre: "Famotidina", clase: "Antagonista H2", especialidades: ["Gastroenterología"], presentaciones: ["tabletas de 20 mg", "tabletas de 40 mg"], dosisHabitual: "20-40 mg/día", notas: "Ajustar en enfermedad renal." }),
   med({ id: "metoclopramida", nombre: "Metoclopramida", clase: "Procinético/antiemético", especialidades: ["Gastroenterología", "Urgencias"], presentaciones: ["tabletas de 10 mg", { texto: "ampolleta de 10 mg/2 ml", via: "intramuscular/intravenosa" }], dosisHabitual: "10 mg cada 8 horas por tiempo corto", notas: "Riesgo extrapiramidal y discinesia tardía; evitar uso prolongado." }),
@@ -235,5 +268,53 @@ export const MEDICAMENTOS_SUPLEMENTARIOS = [
   med({ id: "acamprosato", nombre: "Acamprosato", clase: "Modulador glutamatérgico/GABA", especialidades: ["Psiquiatría", "Adicciones"], presentaciones: ["tabletas de 333 mg"], dosisHabitual: "666 mg cada 8 horas en adultos; ajustar renal", notas: "Apoyo en mantenimiento de abstinencia alcohólica; vigilar función renal." }),
   med({ id: "vareniclina", nombre: "Vareniclina", clase: "Agonista parcial nicotínico", especialidades: ["Adicciones", "Medicina general"], presentaciones: ["tabletas de 0.5 mg", "tabletas de 1 mg"], dosisHabitual: "Titular hasta 1 mg cada 12 horas", notas: "Vigilar náusea, sueños vívidos y síntomas neuropsiquiátricos." }),
   med({ id: "zolpidem", nombre: "Zolpidem", clase: "Hipnótico no benzodiacepínico", especialidades: ["Psiquiatría", "Medicina del sueño"], presentaciones: ["tabletas de 5 mg", "tabletas de 10 mg"], dosisHabitual: "5-10 mg al acostarse por tiempo corto", notas: "Riesgo de sedación, caídas, conductas complejas del sueño y dependencia." }),
-  med({ id: "buspirona", nombre: "Buspirona", clase: "Ansiolítico 5-HT1A", especialidades: ["Psiquiatría"], presentaciones: ["tabletas de 5 mg", "tabletas de 10 mg"], dosisHabitual: "5-15 mg cada 8-12 horas", notas: "No es de efecto inmediato; bajo potencial sedante comparado con benzodiacepinas." })
+  med({ id: "buspirona", nombre: "Buspirona", clase: "Ansiolítico 5-HT1A", especialidades: ["Psiquiatría"], presentaciones: ["tabletas de 5 mg", "tabletas de 10 mg"], dosisHabitual: "5-15 mg cada 8-12 horas", notas: "No es de efecto inmediato; bajo potencial sedante comparado con benzodiacepinas." }),
+
+  medInteraccionISRS({ id: "selegilina", nombre: "Selegilina", clase: "IMAO", clases: ["imao"], sinonimos: ["selegiline"], notas: "IMAO; combinacion contraindicada con ISRS." }),
+  medInteraccionISRS({ id: "tranilcipromina", nombre: "Tranilcipromina", clase: "IMAO", clases: ["imao"], sinonimos: ["tranylcypromine"], notas: "IMAO irreversible; requiere periodo de lavado con ISRS." }),
+  medInteraccionISRS({ id: "isocarboxazida", nombre: "Isocarboxazida", clase: "IMAO", clases: ["imao"], sinonimos: ["isocarboxazid"], notas: "IMAO irreversible; requiere periodo de lavado con ISRS." }),
+  medInteraccionISRS({ id: "fenelzina", nombre: "Fenelzina", clase: "IMAO", clases: ["imao"], sinonimos: ["phenelzine"], notas: "IMAO irreversible; combinacion contraindicada con ISRS." }),
+  medInteraccionISRS({ id: "linezolid", nombre: "Linezolid", clase: "Antibiotico oxazolidinona", clases: ["antibiotico", "imao_reversible"], notas: "Actividad IMAO reversible; riesgo serotoninergico con ISRS." }),
+  medInteraccionISRS({ id: "azul_metileno", nombre: "Azul de metileno", clase: "Antidoto", clases: ["imao_reversible"], via: "intravenosa", presentacionTexto: "solucion inyectable", notas: "La via intravenosa puede precipitar sindrome serotoninergico con ISRS." }),
+  medInteraccionISRS({ id: "pimozida", nombre: "Pimozida", clase: "Antipsicotico", clases: ["antipsicotico", "qt", "sustrato_cyp2d6"], sinonimos: ["pimozide"], riesgos: { qt: 3 }, notas: "Margen estrecho y riesgo QT; contraindicada con ISRS." }),
+  medInteraccionISRS({ id: "tioridazina", nombre: "Tioridazina", clase: "Antipsicotico fenotiazinico", clases: ["antipsicotico", "qt", "sustrato_cyp2d6"], sinonimos: ["thioridazine"], riesgos: { qt: 3 }, notas: "Riesgo alto de prolongacion QT y arritmia." }),
+  medInteraccionISRS({ id: "desipramina", nombre: "Desipramina", clase: "Antidepresivo triciclico", clases: ["triciclico", "serotoninergico", "sustrato_cyp2d6", "qt"], riesgos: { qt: 2 }, notas: "Margen terapeutico estrecho; vigilar niveles y ECG en interacciones." }),
+  medInteraccionISRS({ id: "fentanilo", nombre: "Fentanilo", clase: "Opioide", clases: ["opioide", "depresor_snc", "serotoninergico", "sustrato_cyp3a4"], sinonimos: ["fentanyl"], via: "intravenosa", presentacionTexto: "solucion inyectable o parche transdermico", riesgos: { respiratorio: 3 }, notas: "Riesgo de depresion respiratoria y toxicidad serotoninergica." }),
+  medInteraccionISRS({ id: "metadona", nombre: "Metadona", clase: "Opioide", clases: ["opioide", "depresor_snc", "serotoninergico", "qt"], sinonimos: ["methadone"], riesgos: { qt: 3, respiratorio: 3 }, notas: "Riesgo de acumulacion, depresion respiratoria, QT y toxicidad serotoninergica." }),
+  medInteraccionISRS({ id: "triptofano", nombre: "L-triptofano", clase: "Aminoacido y suplemento", clases: ["serotoninergico", "suplemento"], sinonimos: ["tryptophan", "L-tryptophan"], notas: "Puede aumentar la carga serotoninergica con ISRS." }),
+  medInteraccionISRS({ id: "anfetamina", nombre: "Anfetamina", clase: "Estimulante", clases: ["estimulante", "serotoninergico", "simpaticomimetico"], sinonimos: ["amphetamine", "dextroanfetamina"], notas: "Puede aumentar riesgo serotoninergico y cardiovascular con ISRS." }),
+  medInteraccionISRS({ id: "hierba_san_juan", nombre: "Hierba de San Juan", clase: "Producto herbolario", clases: ["suplemento", "serotoninergico", "inductor_cyp3a4"], sinonimos: ["hiperico", "St. John's wort"], notas: "Puede causar toxicidad serotoninergica y multiples interacciones metabolicas." }),
+  medInteraccionISRS({ id: "flecainida", nombre: "Flecainida", clase: "Antiarritmico clase IC", clases: ["antiarritmico", "sustrato_cyp2d6"], notas: "Margen terapeutico estrecho; inhibidores CYP2D6 pueden aumentar toxicidad." }),
+  medInteraccionISRS({ id: "nebivolol", nombre: "Nebivolol", clase: "Betabloqueador", clases: ["betabloqueador", "sustrato_cyp2d6"], notas: "Vigilar bradicardia e hipotension con inhibidores CYP2D6." }),
+  medInteraccionISRS({ id: "perfenazina", nombre: "Perfenazina", clase: "Antipsicotico fenotiazinico", clases: ["antipsicotico", "sustrato_cyp2d6", "qt"], riesgos: { qt: 2 }, notas: "Vigilar efectos extrapiramidales y QT." }),
+  medInteraccionISRS({ id: "tolterodina", nombre: "Tolterodina", clase: "Antimuscarinico urinario", clases: ["anticolinergico", "sustrato_cyp2d6", "qt"], riesgos: { qt: 1 }, notas: "La inhibicion CYP2D6 puede elevar exposicion y carga anticolinergica." }),
+  medInteraccionISRS({ id: "tamoxifeno", nombre: "Tamoxifeno", clase: "Modulador selectivo del receptor de estrogeno", clases: ["oncologico", "profarmaco_cyp2d6"], notas: "Requiere CYP2D6 para formar endoxifeno." }),
+  medInteraccionISRS({ id: "fosamprenavir", nombre: "Fosamprenavir", clase: "Antirretroviral inhibidor de proteasa", clases: ["antirretroviral", "sustrato_cyp3a4"], notas: "Con ritonavir puede disminuir la exposicion a paroxetina." }),
+  medInteraccionISRS({ id: "ritonavir", nombre: "Ritonavir", clase: "Antirretroviral y potenciador farmacocinetico", clases: ["antirretroviral", "inhibidor_cyp3a4", "inhibidor_pgp"], notas: "Potente modificador metabolico con numerosas interacciones." }),
+  medInteraccionISRS({ id: "fosfenitoina", nombre: "Fosfenitoina", clase: "Anticonvulsivo", clases: ["antiepileptico"], via: "intravenosa", presentacionTexto: "solucion inyectable", notas: "Profarmaco de fenitoina; monitorizar niveles y toxicidad." }),
+  medInteraccionISRS({ id: "iloperidona", nombre: "Iloperidona", clase: "Antipsicotico atipico", clases: ["antipsicotico", "qt", "sustrato_cyp2d6", "sustrato_cyp3a4"], riesgos: { qt: 3 }, notas: "Riesgo de QT e hipotension; revisar inhibidores metabolicos." }),
+  medInteraccionISRS({ id: "mesoridazina", nombre: "Mesoridazina", clase: "Antipsicotico fenotiazinico", clases: ["antipsicotico", "qt"], riesgos: { qt: 3 }, notas: "Uso historico/restringido por riesgo alto de QT." }),
+  medInteraccionISRS({ id: "droperidol", nombre: "Droperidol", clase: "Antipsicotico y antiemetico", clases: ["antipsicotico", "antiemetico", "qt"], via: "intravenosa", presentacionTexto: "solucion inyectable", riesgos: { qt: 3 }, notas: "Riesgo de prolongacion QT; valorar ECG y factores concomitantes." }),
+  medInteraccionISRS({ id: "eritromicina", nombre: "Eritromicina", clase: "Antibiotico macrolido", clases: ["macrolido", "qt", "inhibidor_cyp3a4"], riesgos: { qt: 2 }, notas: "Puede prolongar QT e inhibir CYP3A4." }),
+  medInteraccionISRS({ id: "gatifloxacino", nombre: "Gatifloxacino", clase: "Antibiotico fluoroquinolona", clases: ["fluoroquinolona", "qt"], riesgos: { qt: 2 }, notas: "Riesgo QT; disponibilidad sistemica restringida en diversos mercados." }),
+  medInteraccionISRS({ id: "moxifloxacino", nombre: "Moxifloxacino", clase: "Antibiotico fluoroquinolona", clases: ["fluoroquinolona", "qt"], riesgos: { qt: 3 }, notas: "Prolonga QT; evitar combinaciones de riesgo cuando sea posible." }),
+  medInteraccionISRS({ id: "sparfloxacino", nombre: "Sparfloxacino", clase: "Antibiotico fluoroquinolona", clases: ["fluoroquinolona", "qt"], riesgos: { qt: 3 }, notas: "Uso historico/restringido por riesgo alto de QT." }),
+  medInteraccionISRS({ id: "quinidina", nombre: "Quinidina", clase: "Antiarritmico clase IA", clases: ["antiarritmico", "qt", "inhibidor_cyp2d6"], riesgos: { qt: 3 }, notas: "Margen estrecho y riesgo de torsades de pointes." }),
+  medInteraccionISRS({ id: "procainamida", nombre: "Procainamida", clase: "Antiarritmico clase IA", clases: ["antiarritmico", "qt"], via: "intravenosa", presentacionTexto: "solucion inyectable", riesgos: { qt: 3 }, notas: "Riesgo de QT, hipotension y toxicidad acumulativa." }),
+  medInteraccionISRS({ id: "sotalol", nombre: "Sotalol", clase: "Antiarritmico clase III y betabloqueador", clases: ["antiarritmico", "betabloqueador", "qt"], riesgos: { qt: 3 }, notas: "Riesgo de torsades; requiere control de QT y electrolitos." }),
+  medInteraccionISRS({ id: "pentamidina", nombre: "Pentamidina", clase: "Antimicrobiano antiprotozoario", clases: ["antimicrobiano", "qt"], via: "intravenosa", presentacionTexto: "solucion inyectable o inhalada", riesgos: { qt: 3 }, notas: "Puede prolongar QT y alterar glucosa/electrolitos." }),
+  medInteraccionISRS({ id: "levometadilo", nombre: "Levacetilmetadol", clase: "Opioide de accion prolongada", clases: ["opioide", "depresor_snc", "qt"], sinonimos: ["levomethadyl acetate", "LAAM"], riesgos: { qt: 3 }, notas: "Uso historico/restringido por riesgo de QT." }),
+  medInteraccionISRS({ id: "halofantrina", nombre: "Halofantrina", clase: "Antipaludico", clases: ["antipaludico", "qt"], riesgos: { qt: 3 }, notas: "Riesgo alto de prolongacion QT." }),
+  medInteraccionISRS({ id: "mefloquina", nombre: "Mefloquina", clase: "Antipaludico", clases: ["antipaludico", "qt"], riesgos: { qt: 2 }, notas: "Revisar riesgo neuropsiquiatrico y cardiaco." }),
+  medInteraccionISRS({ id: "dolasetron", nombre: "Dolasetron", clase: "Antiemetico antagonista 5-HT3", clases: ["antiemetico", "qt"], riesgos: { qt: 2 }, notas: "Puede prolongar QT." }),
+  medInteraccionISRS({ id: "probucol", nombre: "Probucol", clase: "Hipolipemiante", clases: ["hipolipemiante", "qt"], riesgos: { qt: 3 }, notas: "Uso historico/restringido; puede prolongar QT." }),
+  medInteraccionISRS({ id: "tacrolimus", nombre: "Tacrolimus", clase: "Inmunosupresor calcineurinico", clases: ["inmunosupresor", "sustrato_cyp3a4", "qt"], riesgos: { qt: 2, renal: 2 }, notas: "Margen estrecho; vigilar niveles, funcion renal, electrolitos y QT." }),
+  medInteraccionISRS({ id: "cimetidina", nombre: "Cimetidina", clase: "Antagonista H2", clases: ["inhibidor_cyp2c19"], notas: "Inhibe varias enzimas CYP y puede elevar concentraciones de otros farmacos." }),
+  medInteraccionISRS({ id: "alosetron", nombre: "Alosetron", clase: "Antagonista 5-HT3 gastrointestinal", clases: ["gastrointestinal", "sustrato_cyp1a2"], notas: "Contraindicado con fluvoxamina por aumento marcado de exposicion." }),
+  medInteraccionISRS({ id: "ramelteon", nombre: "Ramelteon", clase: "Agonista de receptores de melatonina", clases: ["hipnotico", "sustrato_cyp1a2"], notas: "No usar con fluvoxamina." }),
+  medInteraccionISRS({ id: "triazolam", nombre: "Triazolam", clase: "Benzodiacepina", clases: ["benzodiacepina", "depresor_snc", "sustrato_cyp3a4"], notas: "Fluvoxamina puede reducir su depuracion y aumentar sedacion." }),
+  medInteraccionISRS({ id: "mexiletina", nombre: "Mexiletina", clase: "Antiarritmico clase IB", clases: ["antiarritmico", "sustrato_cyp1a2"], notas: "Margen estrecho; fluvoxamina reduce su depuracion." }),
+  medInteraccionISRS({ id: "teofilina", nombre: "Teofilina", clase: "Metilxantina broncodilatadora", clases: ["broncodilatador", "sustrato_cyp1a2"], notas: "Margen estrecho; fluvoxamina puede reducir aproximadamente tres veces su depuracion." }),
+  medInteraccionISRS({ id: "tacrina", nombre: "Tacrina", clase: "Inhibidor de acetilcolinesterasa", clases: ["inhibidor_acetilcolinesterasa", "sustrato_cyp1a2"], notas: "Fluvoxamina puede aumentar marcadamente su exposicion y toxicidad colinergica." }),
+  medInteraccionISRS({ id: "alcohol", nombre: "Alcohol etilico", clase: "Sustancia depresora del SNC", clases: ["sustancia", "depresor_snc"], sinonimos: ["etanol", "bebidas alcoholicas"], presentacionTexto: "exposicion por bebidas alcoholicas", notas: "Evitar durante tratamiento por deterioro del juicio, coordinacion y sedacion." })
 ];

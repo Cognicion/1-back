@@ -9,8 +9,11 @@ import {
   medicamentoPorTexto as medicamentoPorTextoLegacy,
   normalizarNombreMedicamento,
   textoMedicamentoParaBusqueda
-} from "./medicamentos.js";
-import { INGREDIENTES_MEDICAMENTOS } from "./reglasClinicasMedicamentosExtendidas.js";
+} from "./medicamentos.js?v=20260811-ssri-interactions-v1";
+import {
+  INGREDIENTES_MEDICAMENTOS,
+  REGLAS_INTERACCIONES_CLINICAS
+} from "./reglasClinicasMedicamentosExtendidas.js?v=20260811-ssri-interactions-v1";
 import { normalizarPrincipioActivo } from "./farmacologiaMerge.js";
 
 const METADATOS_CLINICOS = new Map(INGREDIENTES_MEDICAMENTOS.map((item) => [item.id, item]));
@@ -69,7 +72,7 @@ function enriquecerMedicamentoOficial(medicamento = {}) {
   const riesgos = { ...(metadata.riesgos || {}), ...(medicamento.riesgos || {}) };
   const presentaciones = presentacionesCanonicas(medicamento);
   const principioActivo = normalizarPrincipioActivo(medicamento.genericName || medicamento.nombre || medicamento.id) || medicamento.id;
-  return Object.freeze({
+  return {
     ...medicamento,
     id: medicamento.id,
     medicationId: medicamento.id,
@@ -107,13 +110,85 @@ function enriquecerMedicamentoOficial(medicamento = {}) {
     interacciones: medicamento.interactions || [],
     relacionDiagnosticos: medicamento.interaccionesDiagnostico || [],
     referencias: medicamento.references || []
-  });
+  };
 }
 
 /** Fuente oficial única de identidad farmacológica de COGNICIÓN. */
-export const CATALOGO_FARMACOLOGICO_OFICIAL = Object.freeze(
-  MEDICAMENTOS_MAESTROS_LEGACY.map(enriquecerMedicamentoOficial)
-);
+const CATALOGO_BASE = MEDICAMENTOS_MAESTROS_LEGACY.map(enriquecerMedicamentoOficial);
+
+function tagClinico(valor = "") {
+  return normalizarNombreMedicamento(valor).replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+}
+
+function coincideConLado(medicamento, ingredientes = [], clases = []) {
+  const ids = new Set([
+    medicamento.id,
+    medicamento.clinicalMedicationId,
+    medicamento.principioActivoNormalizado
+  ].filter(Boolean));
+  if ((ingredientes || []).some((id) => ids.has(id))) return true;
+  const tags = new Set([
+    ...(medicamento.clases || []),
+    ...(medicamento.therapeuticClasses || []),
+    ...(medicamento.tagsClinicos || []),
+    ...Object.entries(medicamento.riesgos || {})
+      .filter(([, valor]) => Number(valor) > 0)
+      .map(([riesgo]) => riesgo)
+  ].map(tagClinico));
+  return (clases || []).some((clase) => tags.has(tagClinico(clase)));
+}
+
+function construirIndiceInteraccionesReciprocas() {
+  const indice = new Map(CATALOGO_BASE.map((medicamento) => [medicamento.id, []]));
+  const registrar = (medicamento, regla, contrapartes) => {
+    const contraparteIds = [...new Set(contrapartes.filter((item) => item.id !== medicamento.id).map((item) => item.id))].sort();
+    if (!contraparteIds.length) return;
+    indice.get(medicamento.id).push({
+      id: regla.id,
+      idRegla: regla.id,
+      severidad: regla.severidad,
+      categoria: regla.categoria || regla.tipoInteraccion || "otra",
+      tipo: regla.tipoInteraccion || "farmacodinamica",
+      titulo: regla.titulo,
+      mecanismo: regla.mecanismo || "",
+      efectoClinico: regla.efectoClinico || regla.efecto || "",
+      recomendacion: regla.recomendacion || "",
+      medicamentos: [medicamento.id, ...contraparteIds],
+      contraparteIds,
+      fuentes: regla.fuentes || [],
+      evidencia: regla.evidencia || "regla_local"
+    });
+  };
+  REGLAS_INTERACCIONES_CLINICAS.forEach((regla) => {
+    const ladoA = CATALOGO_BASE.filter((medicamento) => coincideConLado(medicamento, regla.ingredientesA, regla.clasesA));
+    const ladoB = CATALOGO_BASE.filter((medicamento) => coincideConLado(medicamento, regla.ingredientesB, regla.clasesB));
+    ladoA.forEach((medicamento) => registrar(medicamento, regla, ladoB));
+    ladoB.forEach((medicamento) => registrar(medicamento, regla, ladoA));
+  });
+  return indice;
+}
+
+const INDICE_INTERACCIONES_RECIPROCAS = construirIndiceInteraccionesReciprocas();
+
+function interaccionesReciprocas(medicamento) {
+  return INDICE_INTERACCIONES_RECIPROCAS.get(medicamento.id) || [];
+}
+
+export const CATALOGO_FARMACOLOGICO_OFICIAL = Object.freeze(CATALOGO_BASE.map((medicamento) => {
+  const interaccionesEstructuradas = Object.freeze(interaccionesReciprocas(medicamento).map(Object.freeze));
+  const textosGenerados = interaccionesEstructuradas.map((interaccion) => {
+    const nombres = interaccion.contraparteIds
+      .map((id) => CATALOGO_BASE.find((item) => item.id === id)?.nombre || id)
+      .join(", ");
+    return `${interaccion.titulo}: ${nombres}`;
+  });
+  return Object.freeze({
+    ...medicamento,
+    interacciones: Object.freeze(listaUnica(medicamento.interacciones, textosGenerados)),
+    interaccionesEstructuradas,
+    interactionDetails: interaccionesEstructuradas
+  });
+}));
 
 const POR_ID = new Map(CATALOGO_FARMACOLOGICO_OFICIAL.map((medicamento) => [medicamento.id, medicamento]));
 const PRESENTACIONES_POR_ID = new Map(CATALOGO_FARMACOLOGICO_OFICIAL.flatMap((medicamento) =>

@@ -1,5 +1,5 @@
 ﻿import { normalizarComparacion, normalizarTextoClinicoConservador } from "./clinicalTextNormalizer.js";
-import { MEDICAMENTOS_MAESTROS } from "../data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-ssot-v1";
+import { MEDICAMENTOS_MAESTROS } from "../data/catalogoFarmacologicoUnificado.js?v=20260811-ssri-interactions-v1";
 
 export const ESTADOS_AFIRMACION = Object.freeze({
   AFIRMADO: "afirmado", NEGADO: "negado", NO_EXPLORADO: "no_explorado", INCIERTO: "incierto",

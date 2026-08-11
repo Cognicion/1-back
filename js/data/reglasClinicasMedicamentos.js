@@ -576,6 +576,8 @@ export const REGLAS_INTERACCIONES_CLINICAS = [
     titulo: "Serotoninérgico + tramadol",
     efecto: "Aumenta riesgo serotoninérgico y convulsivo.",
     recomendacion: "Valorar analgesia alternativa y vigilar síntomas serotoninérgicos.",
+    categoria: "serotoninergica",
+    tipoInteraccion: "serotoninergica",
     permiteOverride: true,
     requiereJustificacion: true
   },

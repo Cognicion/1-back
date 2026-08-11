@@ -1,5 +1,5 @@
 import { normalizarConcentracionMgMl, normalizarPesoKg } from "./formulas.js";
-import { normalizarMedicamento } from "../data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-ssot-v1";
+import { normalizarMedicamento } from "../data/catalogoFarmacologicoUnificado.js?v=20260811-ssri-interactions-v1";
 
 const MEDICAMENTOS_PEDIATRICOS_LEGACY = [
   {
