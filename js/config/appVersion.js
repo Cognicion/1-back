@@ -4,5 +4,6 @@
 // deployment marker: 2026-08-11-public-interactions-class-rules-v1
 // deployment marker: 2026-08-11-pharmacology-ssot-v1
 // deployment marker: 2026-08-11-ssri-interactions-v1
-export const APP_VERSION = "1.85";
+// deployment marker: 2026-08-11-cytochrome-bridge-v1
+export const APP_VERSION = "1.86";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

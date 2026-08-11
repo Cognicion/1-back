@@ -9,11 +9,11 @@ import {
   medicamentoPorTexto as medicamentoPorTextoLegacy,
   normalizarNombreMedicamento,
   textoMedicamentoParaBusqueda
-} from "./medicamentos.js?v=20260811-ssri-interactions-v1";
+} from "./medicamentos.js?v=20260811-cytochrome-bridge-v1";
 import {
   INGREDIENTES_MEDICAMENTOS,
   REGLAS_INTERACCIONES_CLINICAS
-} from "./reglasClinicasMedicamentosExtendidas.js?v=20260811-ssri-interactions-v1";
+} from "./reglasClinicasMedicamentosExtendidas.js?v=20260811-cytochrome-bridge-v1";
 import { normalizarPrincipioActivo } from "./farmacologiaMerge.js";
 
 const METADATOS_CLINICOS = new Map(INGREDIENTES_MEDICAMENTOS.map((item) => [item.id, item]));

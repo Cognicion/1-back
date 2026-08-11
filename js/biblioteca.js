@@ -1,6 +1,7 @@
-﻿import { auth } from "./firebase.js";
+import { auth } from "./firebase.js";
 import { obtenerUsuario } from "./services/usuarios.js";
-import { MEDICAMENTOS_MAESTROS, textoMedicamentoParaBusqueda } from "./data/catalogoFarmacologicoUnificado.js?v=20260811-ssri-interactions-v1";
+import { MEDICAMENTOS_MAESTROS, textoMedicamentoParaBusqueda } from "./data/catalogoFarmacologicoUnificado.js?v=20260811-cytochrome-bridge-v1";
+import { CITOCROMOS_FARMACOLOGICOS } from "./data/citocromosFarmacologicos.js?v=20260811-cytochrome-bridge-v1";
 import { GRUPOS_CIE10_BIBLIOTECA } from "./data/vinculosClinicos.js";
 import { obtenerGrupoCie10 } from "./data/vinculosClinicos.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
@@ -286,6 +287,59 @@ function listaResumen(titulo, items = [], limite = 6) {
   `;
 }
 
+const MEDICAMENTOS_BIBLIOTECA_POR_ID = new Map(MEDICAMENTOS_MAESTROS.map((medicamento) => [medicamento.id, medicamento]));
+const ETIQUETA_ROL_CYP = {
+  sustrato: "Metaboliza / sustratos",
+  profarmaco: "Profármacos que requieren activación",
+  inhibidor: "Inhibidores",
+  inductor: "Inductores",
+  relacion_farmacogenetica: "Relación farmacogenética"
+};
+
+function nombreMedicamentoCyp(relacion) {
+  return MEDICAMENTOS_BIBLIOTECA_POR_ID.get(relacion.medicationId)?.nombre || relacion.medicationId;
+}
+
+function textoBusquedaCitocromo(citocromo) {
+  return [
+    citocromo.id,
+    citocromo.nombre,
+    citocromo.descripcion,
+    citocromo.relevanciaClinica,
+    ...citocromo.relaciones.flatMap((relacion) => [
+      nombreMedicamentoCyp(relacion),
+      relacion.rol,
+      relacion.potencia,
+      relacion.notas
+    ])
+  ].filter(Boolean).join(" ");
+}
+
+function renderizarGrupoCyp(citocromo, rol) {
+  const relaciones = citocromo.relaciones.filter((relacion) => relacion.rol === rol);
+  if (!relaciones.length) return "";
+  return `<section class="cyp-role cyp-role--${escaparHTML(rol)}">
+    <h4>${escaparHTML(ETIQUETA_ROL_CYP[rol] || rol)}</h4>
+    <div class="cyp-medications">${relaciones.map((relacion) => `
+      <span class="cyp-medication" title="${escaparHTML(relacion.notas || relacion.potencia)}">
+        ${escaparHTML(nombreMedicamentoCyp(relacion))}
+        ${relacion.potencia && relacion.potencia !== "no_clasificada" ? `<small>${escaparHTML(relacion.potencia.replaceAll("_", " "))}</small>` : ""}
+      </span>`).join("")}</div>
+  </section>`;
+}
+
+function renderizarCitocromo(citocromo) {
+  return `<article class="card cyp-card">
+    <header class="cyp-card__header">
+      <div><h3>${escaparHTML(citocromo.nombre)}</h3><span class="tag">Relevancia ${escaparHTML(citocromo.relevanciaClinica.replaceAll("_", " "))}</span></div>
+      <strong>${citocromo.relaciones.length} relaciones</strong>
+    </header>
+    <p>${escaparHTML(citocromo.descripcion)}</p>
+    ${["sustrato", "profarmaco", "inhibidor", "inductor", "relacion_farmacogenetica"].map((rol) => renderizarGrupoCyp(citocromo, rol)).join("")}
+    <p class="muted">Las relaciones predicen mecanismos posibles; la magnitud depende de dosis, vía, exposición, genotipo y contexto clínico. Confirmar en ficha técnica vigente.</p>
+  </article>`;
+}
+
 function convertirDiagnosticosManuales() {
   return cargarCatalogoManualDiagnosticos().map((diagnostico, index) => ({
     id: diagnostico.id || `manual-${index}-${normalizarNombreDiagnostico(diagnostico.nombre).replace(/ /g, "-")}`,
@@ -462,6 +516,17 @@ function conectarAcordeonesDiagnosticos(panel) {
 function render() {
   const panel = document.getElementById("panelBiblioteca");
   panel.className = tabActual === "diagnosticos" ? "diagnosticos-lista" : "grid";
+  document.querySelector(".filtro-cie10")?.classList.toggle("oculto", tabActual !== "diagnosticos");
+  document.querySelector(".filtro-categoria-biblioteca")?.classList.toggle("oculto", tabActual !== "diagnosticos");
+  document.querySelector(".filtro-sistemas-biblioteca")?.classList.toggle("oculto", tabActual !== "diagnosticos");
+  if (tabActual === "citocromos") {
+    panel.className = "cyp-grid";
+    const resultados = CITOCROMOS_FARMACOLOGICOS.filter((citocromo) => coincide(textoBusquedaCitocromo(citocromo)));
+    panel.innerHTML = resultados.length
+      ? `<article class="card cyp-intro"><h2>Citocromos P450 y medicamentos</h2><p>Consulta por enzima o medicamento. Los fármacos se resuelven desde el catálogo farmacológico maestro; este módulo solo conserva sus relaciones de metabolismo, inhibición e inducción.</p><p class="muted">Cobertura de isoenzimas humanas relevantes para farmacología clínica. Las enzimas regulatorias principales cuentan con mayor evidencia clínica; las relaciones limitadas, emergentes o in vitro se identifican expresamente.</p></article>${resultados.map(renderizarCitocromo).join("")}`
+      : `<article class="card"><h3>Sin coincidencias</h3><p>No se encontró un citocromo o medicamento relacionado con “${escaparHTML(filtro)}”.</p></article>`;
+    return;
+  }
   if (tabActual === "vademecum") {
     panel.innerHTML = MEDICAMENTOS_MAESTROS
       .filter((m) => coincide(textoMedicamentoParaBusqueda(m)))

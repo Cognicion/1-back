@@ -8,7 +8,8 @@ import {
 import {
   obtenerMedicamentoPorId,
   resolverMedicamentoCanonico
-} from "../data/catalogoFarmacologicoUnificado.js?v=20260811-ssri-interactions-v1";
+} from "../data/catalogoFarmacologicoUnificado.js?v=20260811-cytochrome-bridge-v1";
+import { detectarInteraccionesPorCitocromos } from "../data/citocromosFarmacologicos.js?v=20260811-cytochrome-bridge-v1";
 
 const SEVERIDAD_ORDEN = {
   informativa: 1,
@@ -707,6 +708,29 @@ export function evaluarInteraccionesClinicas(medicamentosNormalizados = []) {
       });
     }
   }
+  const idsIngredientes = medicamentosNormalizados.flatMap((medicamento) => medicamento.ingredienteIds || []);
+  detectarInteraccionesPorCitocromos(idsIngredientes).forEach((interaccion) => {
+    const implicados = interaccion.medicamentos
+      .map((id) => medicamentosNormalizados.find((medicamento) => medicamento.ingredienteIds?.includes(id)))
+      .filter(Boolean);
+    if (implicados.length !== 2) return;
+    alertas.push(crearAlerta({
+      id: interaccion.id,
+      tipo: "interaccion_farmacocinetica_cyp",
+      categoria: "metabolica_cyp",
+      severidad: interaccion.severidad,
+      titulo: `${interaccion.tipo === "inhibidor" ? "Inhibición" : "Inducción"} de ${interaccion.citocromoId}`,
+      medicamentos: nombresNormalizadosAlerta(...implicados),
+      presentacionesOriginales: presentacionesOriginalesAlerta(...implicados),
+      mecanismo: interaccion.mecanismo,
+      efecto: interaccion.efectoClinico,
+      recomendacion: interaccion.recomendacion,
+      parametrosVigilancia: ["Respuesta clínica", "Efectos adversos", "Concentraciones si aplica"],
+      evidencia: "mecanismo_cyp_documentado",
+      confianza: "moderada",
+      fuentes: ["FDA: Drug Development and Drug Interactions — Table of Substrates, Inhibitors and Inducers."]
+    }));
+  });
   const porCategoriaYPar = new Map();
   alertas.forEach((alerta) => {
     if (!alerta.categoria) {
@@ -716,7 +740,13 @@ export function evaluarInteraccionesClinicas(medicamentosNormalizados = []) {
     const par = (alerta.medicamentos || []).map(normalizarTextoClinico).sort().join("|");
     const clave = `${alerta.categoria}:${par}`;
     const existente = porCategoriaYPar.get(clave);
-    if (!existente || (alerta.prioridad || 0) >= (existente.prioridad || 0)) porCategoriaYPar.set(clave, alerta);
+    const nuevaEsPuenteCyp = alerta.tipo === "interaccion_farmacocinetica_cyp";
+    const existenteEsPuenteCyp = existente?.tipo === "interaccion_farmacocinetica_cyp";
+    const reemplaza = !existente || (
+      !(nuevaEsPuenteCyp && !existenteEsPuenteCyp) &&
+      ((alerta.prioridad || 0) > (existente.prioridad || 0) || (existenteEsPuenteCyp && !nuevaEsPuenteCyp))
+    );
+    if (reemplaza) porCategoriaYPar.set(clave, alerta);
   });
   return [...porCategoriaYPar.values()];
 }

@@ -17,7 +17,7 @@ import {
   generarRazonamientoClinico,
   generarRecomendacionesLaboratorio,
   obtenerBaseFarmacologicaInicial
-} from "./services/sofiaClinica.js?v=20260811-ssri-interactions-v1";
+} from "./services/sofiaClinica.js?v=20260811-cytochrome-bridge-v1";
 
 aplicarAparienciaGuardada();
 
