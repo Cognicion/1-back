@@ -1,3 +1,5 @@
+// Seed suplementario legacy. Se fusiona una sola vez en el catálogo oficial;
+// no debe consumirse directamente como catálogo independiente.
 const HOY_CATALOGO = "2026-07-14";
 
 function presentacion(texto, via = "oral") {

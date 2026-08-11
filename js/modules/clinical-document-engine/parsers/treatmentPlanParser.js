@@ -7,7 +7,7 @@ import { normalizeClinicalComparisonText } from "../normalizers/textNormalizer.j
 import { splitMedicationItems } from "../normalizers/medicationNormalizer.js";
 import { parseMedicationCandidates } from "./medicationParser.js";
 import { clinicalImportLogger } from "../utils/logger.js";
-import { MEDICAMENTOS } from "../../../data/medicamentos.js";
+import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-ssot-v1";
 
 const VERSION = "1.0";
 const MEDICATION_SUBSECTION_HEADING = /(?:^|\n)\s*(?:(?:\d+)\s*[.)-]\s*)?(?:medicamentos|medicaci[oó]n|tratamiento farmacol[oó]gico|f[aá]rmacos)\b[^\n]*/gi;
@@ -114,7 +114,7 @@ function extractMedicationSubsections(text = "") {
   // El extractor de secciones puede consumir el encabezado "MEDICAMENTOS" y
   // entregar solamente su contenido. Recuperamos el subbloque desde el texto
   // completo del Plan sin volver a interpretar la prescripción.
-  const prescriptionItems = splitMedicationItems(source, MEDICAMENTOS)
+  const prescriptionItems = splitMedicationItems(source, MEDICAMENTOS_MAESTROS)
     .map((item) => truncateAtNextPrimaryPlanItem(item))
     .filter(looksLikeMedicationPrescription);
   if (!prescriptionItems.length) return [];
@@ -181,7 +181,7 @@ export function parseTreatmentPlan({ text = "", documentId = "", noteId = "", da
   medicationSubsections.forEach((item) => clinicalImportLogger.info("treatmentPlanParser:medication-heading", JSON.stringify({ documentId, noteId, found: true, recovered: Boolean(item.recovered), heading: item.heading.slice(0, 80) })));
   const medicationText = medicationSubsections.map((item) => item.value).join("\n");
   const delegatedItems = medicationText
-    ? splitMedicationItems(medicationText, MEDICAMENTOS).map((item) => truncateAtNextPrimaryPlanItem(item)).filter(looksLikeMedicationPrescription)
+    ? splitMedicationItems(medicationText, MEDICAMENTOS_MAESTROS).map((item) => truncateAtNextPrimaryPlanItem(item)).filter(looksLikeMedicationPrescription)
     : [];
   clinicalImportLogger.info("treatmentPlanParser:medication-block", JSON.stringify({ documentId, noteId, subsectionCount: medicationSubsections.length, sourceLength: medicationText.length }));
   const medicationCandidates = delegatedItems.length ? parseMedicationCandidates({ text: delegatedItems.join("\n"), section: "plan", documentId, noteId, date }) : [];

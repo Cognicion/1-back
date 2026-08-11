@@ -1,4 +1,4 @@
-import { MEDICAMENTOS, MEDICAMENTOS_MAESTROS, medicamentoPorTexto } from "../../../data/medicamentos.js";
+import { MEDICAMENTOS_MAESTROS, medicamentoPorTexto } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-ssot-v1";
 import { adaptDiagnosisBlock, adaptDiagnosisCandidates } from "../../clinical-document-engine/adapters/diagnosisAdapter.js?v=v167-enedina-name-diagnosis-boundaries-v1";
 import { adaptMedicationBlock, adaptMedicationCandidates } from "../../clinical-document-engine/adapters/medicationAdapter.js";
 
@@ -268,11 +268,11 @@ export function detectDiagnosisCandidates(args = {}) {
   return adaptDiagnosisCandidates(args);
 }
 
-const medicationNames = [...new Set(MEDICAMENTOS.map((item) => String(item.nombre || "").trim()).filter(Boolean))];
+const medicationNames = [...new Set(MEDICAMENTOS_MAESTROS.map((item) => String(item.nombre || "").trim()).filter(Boolean))];
 const PRESENTATIONS = ["tabletas", "tableta", "comprimidos", "comprimido", "capsulas", "capsula", "jarabe", "solucion", "suspension", "gotas", "polvo", "ampolla", "vial", "parche", "spray", "inhalador", "crema", "unguento", "supositorio"];
 // Productos que aparecen en documentos clínicos pero no forman parte del
 // catálogo farmacológico estructurado. Se conservan como candidatos manuales.
-const MANUAL_MEDICATION_NAMES = ["Yasmin", "Lactobacilos", "Lamotrigina"];
+const MANUAL_MEDICATION_NAMES = ["Yasmin", "Lactobacilos"];
 
 function escapeRegex(value = "") { return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
 
@@ -369,7 +369,7 @@ function actionFromText(text = "") {
   return "Continúa";
 }
 
-export function splitMedicationItems(text = "", medicationCatalog = MEDICAMENTOS) {
+export function splitMedicationItems(text = "", medicationCatalog = MEDICAMENTOS_MAESTROS) {
   const catalog = [...medicationCatalog, ...MEDICAMENTOS_MAESTROS];
   const names = [...new Set([...catalog.flatMap((item) => [item.nombre, item.nombreGenerico]), ...MANUAL_MEDICATION_NAMES].map((name) => String(name || "").trim()).filter(Boolean))].sort((a, b) => b.length - a.length);
   const markers = /(?:^|\s)([a-z]|\d+)[.)](?:-|\s)*(?=[A-Za-zÁÉÍÓÚáéíóúÑñ])/g;
@@ -400,7 +400,7 @@ export function splitMedicationItems(text = "", medicationCatalog = MEDICAMENTOS
   return result;
 }
 
-function medicationMentions(line = "", catalog = MEDICAMENTOS) {
+function medicationMentions(line = "", catalog = MEDICAMENTOS_MAESTROS) {
   const names = [...new Set([...catalog, ...MEDICAMENTOS_MAESTROS].flatMap((item) => [item.nombre, item.nombreGenerico]).concat(MANUAL_MEDICATION_NAMES).map((name) => String(name || "").trim()).filter(Boolean))];
   return names.filter((name) => new RegExp(`\\b${escapeRegex(name)}\\b`, "i").test(line));
 }
@@ -467,7 +467,7 @@ function medicationCandidate({ name, line, contextText = line, index, section, d
   return candidate;
 }
 
-function detectTreatmentCandidatesLegacy({ sections = {}, fullText = "", sourceBlocks = [], medicationCatalog = MEDICAMENTOS, documentId = "", date = "" } = {}) {
+function detectTreatmentCandidatesLegacy({ sections = {}, fullText = "", sourceBlocks = [], medicationCatalog = MEDICAMENTOS_MAESTROS, documentId = "", date = "" } = {}) {
   void sourceBlocks;
   const sources = sourceEntries(sections, fullText, ["tratamiento", "medicamentos", "plan", "subjetivo"]);
   const candidates = [];

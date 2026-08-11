@@ -13,7 +13,7 @@ import {
   repairDuplicateAdaptiveBlockIds,
   validateAdaptiveManifestTree
 } from "./services/conversationSegmentationProviders.js?v=20260725-adaptive-split-v1-4";
-import { segmentarConversacionClinica } from "./services/clinicalPipeline.js";
+import { segmentarConversacionClinica } from "./services/clinicalPipeline.js?v=20260811-pharmacology-ssot-v1";
 import { validarExamenMentalNarrativo } from "./services/notaAutomatica.js";
 import { VOICE_NOTE_MODULE_VERSION } from "./services/voiceNoteModuleVersion.js?v=20260726-fray-style-v1-44";
 import {

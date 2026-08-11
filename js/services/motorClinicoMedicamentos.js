@@ -5,7 +5,10 @@ import {
   REGLAS_MEDICAMENTO_DIAGNOSTICO,
   UMBRALES_RIESGO_ACUMULATIVO
 } from "../data/reglasClinicasMedicamentosExtendidas.js";
-import { FARMACOLOGIA_VERIFICADA } from "../data/farmacologiaUnificada.js";
+import {
+  obtenerMedicamentoPorId,
+  resolverMedicamentoCanonico
+} from "../data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-ssot-v1";
 
 const SEVERIDAD_ORDEN = {
   informativa: 1,
@@ -105,6 +108,9 @@ function textoMedicamento(medicamento) {
   if (typeof medicamento === "string") return medicamento;
   return [...new Set([
     medicamento.medicamento,
+    medicamento.clinicalMedicationId,
+    medicamento.medicationId,
+    medicamento.catalogMedicationId,
     medicamento.genericName,
     medicamento.nombreGenerico,
     medicamento.principioActivo,
@@ -142,10 +148,19 @@ function extraerClasesDeclaradas(medicamento) {
 }
 
 export function normalizarMedicamentoClinico(medicamento) {
-  const textoOriginal = textoMedicamento(medicamento);
+  const resolucionCanonica = resolverMedicamentoCanonico(medicamento);
+  const medicamentoCanonico = resolucionCanonica?.medicamento || null;
+  const datosParaNormalizar = medicamentoCanonico
+    ? { ...medicamentoCanonico, ...(typeof medicamento === "object" ? medicamento : {}), medicamento: resolucionCanonica.medicationName }
+    : medicamento;
+  const textoOriginal = textoMedicamento(medicamento) || resolucionCanonica?.originalText || resolucionCanonica?.medicationName || "";
   const texto = normalizarTextoClinico(textoOriginal);
+  const idsCanonicos = new Set([
+    resolucionCanonica?.clinicalMedicationId,
+    ...(medicamentoCanonico?.principiosActivos || []).map((principio) => resolverMedicamentoCanonico(principio)?.clinicalMedicationId || normalizarTextoClinico(principio).replace(/\s+/g, "_"))
+  ].filter(Boolean));
   const ingredientesDirectos = INGREDIENTES_MEDICAMENTOS.filter((ingrediente) =>
-    ingrediente.sinonimos.some((sinonimo) => texto.includes(normalizarTextoClinico(sinonimo)))
+    idsCanonicos.has(ingrediente.id) || ingrediente.sinonimos.some((sinonimo) => texto.includes(normalizarTextoClinico(sinonimo)))
   );
   const ingredientes = ingredientesDirectos.length
     ? ingredientesDirectos
@@ -153,9 +168,20 @@ export function normalizarMedicamentoClinico(medicamento) {
       ingrediente.sinonimos.some((sinonimo) => contieneConFuzzy(texto, sinonimo))
     );
 
+  if (!ingredientes.length && resolucionCanonica?.clinicalMedicationId) {
+    ingredientes.push({
+      id: resolucionCanonica.clinicalMedicationId,
+      nombre: resolucionCanonica.medicationName,
+      sinonimos: medicamentoCanonico?.sinonimos || [],
+      clases: medicamentoCanonico?.tagsClinicos || medicamentoCanonico?.clases || [],
+      riesgos: medicamentoCanonico?.riesgos || {}
+    });
+  }
+
   const clases = new Set();
   const riesgos = {};
-  extraerClasesDeclaradas(medicamento).forEach((clase) => clases.add(clase));
+  extraerClasesDeclaradas(datosParaNormalizar).forEach((clase) => clases.add(clase));
+  (medicamentoCanonico?.tagsClinicos || []).map(normalizarClaseTerapeutica).forEach((clase) => clases.add(clase));
   ingredientes.forEach((ingrediente) => {
     (ingrediente.clases || []).forEach((clase) => clases.add(clase));
     Object.entries(ingrediente.riesgos || {}).forEach(([riesgo, valor]) => {
@@ -188,7 +214,8 @@ export function normalizarMedicamentoClinico(medicamento) {
   });
 
   return {
-    id: medicamento?.id || texto || "medicamento",
+    id: resolucionCanonica?.clinicalMedicationId || medicamento?.id || texto || "medicamento",
+    clinicalMedicationId: resolucionCanonica?.clinicalMedicationId || medicamento?.clinicalMedicationId || null,
     textoOriginal,
     textoNormalizado: texto,
     posologiaNormalizada: normalizarPosologiaMedicamento(medicamento, textoOriginal),
@@ -269,7 +296,6 @@ function diagnosticoDesdeObjeto(item, origen = "expediente") {
     return texto ? { texto, estado: "confirmado", origen } : null;
   }
   if (typeof item !== "object") return null;
-  if (item.estado === "descartado") return null;
   const codigo = item.codigo || item.cie10 || item.cie11 || item.codigoCie10 || item.codigoCie11 || "";
   const nombre = item.nombre || item.diagnostico || item.descripcion || item.texto || item.label || item.visibleText || "";
   const textoVisible = [codigo, nombre].filter(Boolean).join(" - ").trim();
@@ -681,7 +707,18 @@ export function evaluarInteraccionesClinicas(medicamentosNormalizados = []) {
       });
     }
   }
-  return alertas;
+  const porCategoriaYPar = new Map();
+  alertas.forEach((alerta) => {
+    if (!alerta.categoria) {
+      porCategoriaYPar.set(alerta.id, alerta);
+      return;
+    }
+    const par = (alerta.medicamentos || []).map(normalizarTextoClinico).sort().join("|");
+    const clave = `${alerta.categoria}:${par}`;
+    const existente = porCategoriaYPar.get(clave);
+    if (!existente || (alerta.prioridad || 0) >= (existente.prioridad || 0)) porCategoriaYPar.set(clave, alerta);
+  });
+  return [...porCategoriaYPar.values()];
 }
 
 function evaluarInteraccionesMultifarmaco(medicamentosNormalizados = []) {
@@ -838,8 +875,8 @@ export function evaluarMedicamentosPaciente({ paciente = {}, medicamentos = [], 
   ]);
   const cobertura = {
     total: medicamentosNormalizados.length,
-    fuenteVerificada: medicamentosNormalizados.filter((med) => med.ingredienteIds.some((id) => FARMACOLOGIA_VERIFICADA[id])).length,
-    fuentePendiente: medicamentosNormalizados.filter((med) => !med.ingredienteIds.some((id) => FARMACOLOGIA_VERIFICADA[id])).length,
+    fuenteVerificada: medicamentosNormalizados.filter((med) => med.ingredienteIds.some((id) => obtenerMedicamentoPorId(id)?.estadoFuente === "verificada_local")).length,
+    fuentePendiente: medicamentosNormalizados.filter((med) => !med.ingredienteIds.some((id) => obtenerMedicamentoPorId(id)?.estadoFuente === "verificada_local")).length,
     sinReglaIngrediente: medicamentosNormalizados.filter((med) => !med.ingredienteIds.length).length
   };
 

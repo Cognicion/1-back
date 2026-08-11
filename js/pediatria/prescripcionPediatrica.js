@@ -1,5 +1,5 @@
 import { CATALOGO_MEDICAMENTOS_PEDIATRICOS } from "./catalogoMedicamentosPediatricos.js";
-import { MEDICAMENTOS_MAESTROS, normalizarNombreMedicamento, textoMedicamentoParaBusqueda } from "../data/medicamentos.js";
+import { MEDICAMENTOS_MAESTROS, normalizarNombreMedicamento, textoMedicamentoParaBusqueda } from "../data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-ssot-v1";
 import { numero, superficieCorporal } from "./formulas.js";
 
 export const MODOS_DOSIFICACION_PEDIATRICA = [
@@ -32,7 +32,9 @@ function normalizarPresentacionesMaestras(medicamento) {
   return presentaciones.map((presentacion, index) => {
     const texto = typeof presentacion === "string" ? presentacion : presentacion?.texto || "";
     return {
-      presentationId: `${crearIdMedicamento(medicamento.nombre || medicamento.genericName)}_${index}`,
+      presentationId: presentacion?.id || presentacion?.presentationId || `${medicamento.id}-presentacion-${index + 1}`,
+      medicationId: medicamento.id,
+      clinicalMedicationId: medicamento.id,
       form: inferForm(texto),
       unitStrength: texto || "Presentación no especificada",
       amountMg: extraerMg(texto),
@@ -48,7 +50,7 @@ function normalizarPresentacionesMaestras(medicamento) {
 
 function normalizarMedicamentoMaestro(medicamento) {
   const nombre = medicamento.genericName || medicamento.nombre || "";
-  const medicationId = crearIdMedicamento(nombre);
+  const medicationId = medicamento.clinicalMedicationId || medicamento.medicationId || medicamento.id || crearIdMedicamento(nombre);
   return {
     medicationId,
     genericName: nombre,
@@ -137,16 +139,15 @@ export function validatePresentationConsistency(presentation = {}) {
 function unirCatalogoPediatricoYMaestro() {
   const indice = new Map();
   CATALOGO_MEDICAMENTOS_PEDIATRICOS.forEach((medicamento) => {
-    indice.set(normalizeSearchText(medicamento.genericName), {
+    indice.set(medicamento.medicationId, {
       ...medicamento,
       pediatricStatus: medicamento.indications?.some((ind) => ind.dosingSchemes?.length) ? "validated" : "partial"
     });
   });
   MEDICAMENTOS_MAESTROS.forEach((medicamento) => {
-    const normalizado = normalizeSearchText(medicamento.genericName || medicamento.nombre);
-    const claveCompatible = Array.from(indice.keys()).find((key) => key === normalizado || key.includes(normalizado) || normalizado.includes(key));
+    const claveCompatible = medicamento.id;
     const maestro = normalizarMedicamentoMaestro(medicamento);
-    if (claveCompatible) {
+    if (indice.has(claveCompatible)) {
       const existente = indice.get(claveCompatible);
       indice.set(claveCompatible, {
         ...existente,
@@ -157,7 +158,7 @@ function unirCatalogoPediatricoYMaestro() {
         masterMedication: medicamento
       });
     } else {
-      indice.set(normalizado, maestro);
+      indice.set(medicamento.id, maestro);
     }
   });
   return Array.from(indice.values()).sort((a, b) => a.genericName.localeCompare(b.genericName, "es"));

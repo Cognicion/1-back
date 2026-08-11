@@ -1,3 +1,5 @@
+// Overlay de dosificación pediátrica por medicationId canónico; no constituye
+// un catálogo de identidades farmacológicas independiente.
 export const CATALOGO_MEDICAMENTOS_PEDIATRICOS = [
   {
     medicationId: "paracetamol",

@@ -1,4 +1,4 @@
-import { MEDICAMENTOS, MEDICAMENTOS_MAESTROS } from "../../../data/medicamentos.js";
+import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-ssot-v1";
 import { ClinicalCandidate } from "../core/ClinicalCandidate.js";
 import { ClinicalEvidence } from "../core/ClinicalEvidence.js";
 import { evaluateConfidence, requiresReviewForConfidence } from "../confidence/confidenceEngine.js";
@@ -8,13 +8,13 @@ import { clinicalImportLogger } from "../utils/logger.js";
 
 const VERSION = "1.0";
 const PARSER = "midc.medicationParser";
-const MANUAL_NAMES = ["Sertralina", "Pregabalina", "Espironolactona", "Colchicina", "Yasmin", "Lactobacilos", "Lamotrigina"];
+const MANUAL_NAMES = ["Yasmin", "Lactobacilos"];
 
-function catalogNames(catalog = MEDICAMENTOS) {
+function catalogNames(catalog = MEDICAMENTOS_MAESTROS) {
   return [...new Set([...catalog, ...MEDICAMENTOS_MAESTROS].flatMap((item) => [item.nombre, item.nombreGenerico]).concat(MANUAL_NAMES).filter(Boolean))].sort((a, b) => String(b).length - String(a).length);
 }
 
-function findMedicationName(item = "", catalog = MEDICAMENTOS) {
+function findMedicationName(item = "", catalog = MEDICAMENTOS_MAESTROS) {
   const names = catalogNames(catalog);
   const match = names.find((name) => new RegExp(`\\b${String(name).replace(/[.*+?^${}()|[\\]\\]/g, "\\\\$&")}\\b`, "i").test(item));
   if (match) return match;
@@ -112,7 +112,7 @@ function createCandidate({ item, itemIndex, section, documentId, noteId, date, c
 }
 
 /** Parser nativo MIDC de medicamentos; una entidad estructurada por inciso. */
-export function parseMedicationCandidates({ text = "", section = "tratamiento", documentId = "", noteId = "", date = "", medicationCatalog = MEDICAMENTOS } = {}) {
+export function parseMedicationCandidates({ text = "", section = "tratamiento", documentId = "", noteId = "", date = "", medicationCatalog = MEDICAMENTOS_MAESTROS } = {}) {
   clinicalImportLogger.info("medicationParser:start", JSON.stringify({ documentId, noteId, section, sourceLength: String(text || "").length }));
   const items = splitMedicationItems(text, medicationCatalog);
   clinicalImportLogger.info("medicationParser:input-count", JSON.stringify({ documentId, noteId, count: items.length }));
@@ -157,7 +157,7 @@ export function parseMedicationCandidates({ text = "", section = "tratamiento", 
   return candidates;
 }
 
-export function detectMedicationCandidates({ sections = {}, fullText = "", sourceBlocks = [], medicationCatalog = MEDICAMENTOS, documentId = "", noteId = "", date = "" } = {}) {
+export function detectMedicationCandidates({ sections = {}, fullText = "", sourceBlocks = [], medicationCatalog = MEDICAMENTOS_MAESTROS, documentId = "", noteId = "", date = "" } = {}) {
   const sources = Object.entries(sections).filter(([section, value]) => /tratamiento|medicamentos|plan|subjetivo/.test(section) && String(value || "").trim());
   if (!sources.length && String(fullText || "").trim()) sources.push(["texto_completo", fullText]);
   const result = [];
