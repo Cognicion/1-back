@@ -172,7 +172,7 @@ exports.discoverTextPatterns = onCall({ region: "us-central1", timeoutSeconds: 3
 exports.analyzePatientClinicalContext = onCall({ region: "us-central1", timeoutSeconds: 120, memory: "1GiB" }, async (request) => analyzePatientClinicalContext({ request, db: adminDb }));
 exports.listAuthorizedSofiaPatients = onCall({ region: "us-central1", timeoutSeconds: 60 }, async (request) => listAuthorizedSofiaPatients({ request, db: adminDb }));
 exports.getClinicalKnowledgeAdmin = onCall({ region: "us-central1", timeoutSeconds: 60 }, async (request) => getClinicalKnowledgeAdmin({ request, db: adminDb }));
-exports.clinicalAnalyticsOnRecordWrite = onDocumentWritten("usuarios/{patientId}/{collectionId}/{recordId}", async (event) => processClinicalAnalyticsWrite({ event, db: adminDb }));
+exports.clinicalAnalyticsOnRecordWrite = onDocumentWritten({ region: "us-central1", document: "usuarios/{patientId}/{collectionId}/{recordId}" }, async (event) => processClinicalAnalyticsWrite({ event, db: adminDb }));
 
 exports.chatSofia = onCall(
   {
