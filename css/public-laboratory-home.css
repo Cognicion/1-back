@@ -358,7 +358,7 @@ body.public-lab-page .laboratory-button-secondary:hover {
 }
 
 .laboratory-stage {
-  --orbit-duration: 45s;
+  --orbit-duration: 60s;
   --orbit-width: 912px;
   --orbit-height: 288px;
   --orbit-radius: 456px;
