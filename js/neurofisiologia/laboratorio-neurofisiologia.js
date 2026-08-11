@@ -11,6 +11,12 @@ import { dibujarGraficaIntegrada, poblarSelectorEcuaciones, poblarSelectorGrafic
 import { identificarZonaNeuroCanvas } from "./curvedMembraneRenderer.js";
 import { inicializarAtlasCerebral3D } from "./atlasCerebral3d.js";
 
+const CONNECTOME_BUILD = "20260811-memory-connectome-v2";
+const PARAMS_INICIALES = new URLSearchParams(window.location.search);
+const TAB_INICIAL_SOLICITADA = PARAMS_INICIALES.get("tab")
+  || (PARAMS_INICIALES.has("estructura") || PARAMS_INICIALES.has("structure") || PARAMS_INICIALES.has("circuito") || PARAMS_INICIALES.has("circuit") ? "mapa-circuitos" : "integrada");
+let mapaCircuitosPromise = null;
+let mapaCircuitosController = null;
 
 const $ = (id) => document.getElementById(id);
 let estadoMembrana = aplicarPresetMembrana("fisiologica");
@@ -247,6 +253,67 @@ function configurarSaltosEntreSimuladores() {
       cambiarTab(destino);
     });
   });
+  window.addEventListener("neuro-connectome:open-physiology", abrirFisiologiaDesdeMapa);
+}
+
+function configurarPestanasAccesibles() {
+  const tabs = [...document.querySelectorAll(".tabs-lab button[data-tab]")];
+  tabs.forEach((btn, index) => {
+    const panelId = `tab-${btn.dataset.tab}`;
+    btn.id ||= `lab-tab-${btn.dataset.tab}`;
+    btn.setAttribute("role", "tab");
+    btn.setAttribute("aria-controls", panelId);
+    btn.setAttribute("aria-selected", btn.classList.contains("activo") ? "true" : "false");
+    btn.tabIndex = btn.classList.contains("activo") ? 0 : -1;
+    btn.addEventListener("click", () => cambiarTab(btn.dataset.tab));
+    btn.addEventListener("keydown", (event) => {
+      let nextIndex = null;
+      if (["ArrowRight", "ArrowDown"].includes(event.key)) nextIndex = (index + 1) % tabs.length;
+      if (["ArrowLeft", "ArrowUp"].includes(event.key)) nextIndex = (index - 1 + tabs.length) % tabs.length;
+      if (event.key === "Home") nextIndex = 0;
+      if (event.key === "End") nextIndex = tabs.length - 1;
+      if (nextIndex == null) return;
+      event.preventDefault();
+      tabs[nextIndex].focus();
+      cambiarTab(tabs[nextIndex].dataset.tab);
+    });
+    const panel = document.getElementById(panelId);
+    panel?.setAttribute("role", "tabpanel");
+    panel?.setAttribute("aria-labelledby", btn.id);
+  });
+}
+
+async function cargarMapaCircuitos() {
+  const root = $("connectomeApp");
+  if (!root) throw new Error("No se encontro el contenedor del mapa de circuitos.");
+  if (!mapaCircuitosPromise) {
+    root.dataset.state = "loading";
+    root.setAttribute("aria-busy", "true");
+    mapaCircuitosPromise = import(`./connectome/ui/connectomeController.js?v=${CONNECTOME_BUILD}`)
+      .then(({ inicializarMapaCircuitos }) => inicializarMapaCircuitos({ root }))
+      .then((controller) => {
+        mapaCircuitosController = controller;
+        return controller;
+      })
+      .catch((error) => {
+        mapaCircuitosPromise = null;
+        throw error;
+      });
+  }
+  const controller = await mapaCircuitosPromise;
+  controller.setActive?.(true);
+  return controller;
+}
+
+function abrirFisiologiaDesdeMapa(event) {
+  const targets = event.detail?.targets || [];
+  cambiarTab("integrada");
+  const camara = targets.some((target) => ["plasticidad_ltp", "sinapsis_glutamatergica"].includes(target)) ? "sinapsis" : "membrana";
+  const selector = $("intCamaraNeuro");
+  if (selector && [...selector.options].some((option) => option.value === camara)) {
+    selector.value = camara;
+    selector.dispatchEvent(new Event("change", { bubbles: true }));
+  }
 }
 function inicializarSeguro() {
   try {
@@ -267,7 +334,7 @@ function ejecutarBloqueLaboratorio(nombre, fn) {
 }
 
 function inicializar() {
-  ejecutarBloqueLaboratorio("tabs", () => document.querySelectorAll(".tabs-lab button").forEach((btn) => btn.addEventListener("click", () => cambiarTab(btn.dataset.tab))));
+  ejecutarBloqueLaboratorio("tabs", configurarPestanasAccesibles);
   ejecutarBloqueLaboratorio("ayudas", () => { asignarAyudasNeuro(); instalarAyudasContextualesNeuro(); instalarCierreGlobalDetalleNeuro(); });
   ejecutarBloqueLaboratorio("presets", poblarPresets);
   ejecutarBloqueLaboratorio("simulador integrado", vincularIntegrada);
@@ -284,6 +351,7 @@ function inicializar() {
   ejecutarBloqueLaboratorio("render accion", actualizarAccion);
   ejecutarBloqueLaboratorio("render axon", actualizarAxon);
   ejecutarBloqueLaboratorio("proyectos", renderizarProyectos);
+  cambiarTab(document.getElementById(`tab-${TAB_INICIAL_SOLICITADA}`) ? TAB_INICIAL_SOLICITADA : "integrada");
 }
 
 function mostrarErrorLaboratorio(error, contexto = "laboratorio") {
@@ -297,8 +365,22 @@ function mostrarErrorLaboratorio(error, contexto = "laboratorio") {
 }
 
 function cambiarTab(tab) {
-  document.querySelectorAll(".tabs-lab button").forEach((b) => b.classList.toggle("activo", b.dataset.tab === tab));
-  document.querySelectorAll(".tab-panel").forEach((p) => p.classList.toggle("activo", p.id === `tab-${tab}`));
+  if (!document.getElementById(`tab-${tab}`)) return;
+  document.querySelectorAll(".tabs-lab button[data-tab]").forEach((button) => {
+    const active = button.dataset.tab === tab;
+    button.classList.toggle("activo", active);
+    button.setAttribute("aria-selected", String(active));
+    button.tabIndex = active ? 0 : -1;
+  });
+  document.querySelectorAll(".tab-panel").forEach((panel) => {
+    const active = panel.id === `tab-${tab}`;
+    panel.classList.toggle("activo", active);
+    panel.hidden = !active;
+  });
+  mapaCircuitosController?.setActive?.(tab === "mapa-circuitos");
+  if (tab === "mapa-circuitos") {
+    cargarMapaCircuitos().catch((error) => console.error("No fue posible cargar el mapa de circuitos", error));
+  }
 }
 
 function poblarPresets() {
@@ -878,7 +960,7 @@ function vincularIntegrada() {
   uiModeNeuro.focusedStructure = "reposo";
   renderizarIntegrada(true);
   ocultarDetalleNeuroSinSeleccion();
-  if (!tutorialVistoNeuro) iniciarTutorialNeuro();
+  if (!tutorialVistoNeuro && TAB_INICIAL_SOLICITADA === "integrada") iniciarTutorialNeuro();
 }
 
 function ocultarDetalleNeuroSinSeleccion() {

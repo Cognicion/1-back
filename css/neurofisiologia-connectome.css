@@ -1,0 +1,2475 @@
+/* Mapa de Circuitos Cerebrales — estilos aislados del Laboratorio de Neurofisiologia. */
+
+@keyframes connectome-route-flow {
+  to {
+    stroke-dashoffset: -32;
+  }
+}
+
+@keyframes connectome-current-node {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px rgb(126 182 138 / 35%));
+    transform: scale(1);
+  }
+
+  50% {
+    filter: drop-shadow(0 0 12px rgb(126 182 138 / 72%));
+    transform: scale(1.045);
+  }
+}
+
+@keyframes connectome-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* El panel es un item de grid del laboratorio: permitir que en movil reduzca su ancho real. */
+.connectome-panel-host {
+  min-width: 0;
+  overflow: clip;
+}
+
+.connectome-module {
+  --connectome-bg: var(--page-bg, #050706);
+  --connectome-bg-alt: var(--page-bg-alt, #090d0b);
+  --connectome-surface: var(--surface-primary, #0e1411);
+  --connectome-surface-soft: var(--surface-secondary, #101b15);
+  --connectome-surface-raised: var(--surface-elevated, var(--surface-tertiary, #18241d));
+  --connectome-surface-hover: var(--surface-hover, #203328);
+  --connectome-surface-selected: var(--surface-selected, #163824);
+  --connectome-text: var(--text-primary, #f5f8f5);
+  --connectome-text-soft: var(--text-secondary, #c7d0c8);
+  --connectome-text-muted: var(--text-muted, #98a29a);
+  --connectome-border: var(--border-normal, rgb(126 182 138 / 28%));
+  --connectome-border-soft: var(--border-subtle, rgb(126 182 138 / 14%));
+  --connectome-border-strong: var(--border-strong, #529866);
+  --connectome-accent: var(--accent-primary, #529866);
+  --connectome-accent-hover: var(--accent-hover, #7eb68a);
+  --connectome-accent-soft: var(--accent-soft, rgb(82 152 102 / 18%));
+  --connectome-focus: var(--focus-ring, #7eb68a);
+  --connectome-button-bg: var(--button-secondary-bg, var(--action-secondary-bg, #0e1411));
+  --connectome-button-hover: var(--button-secondary-hover, var(--action-secondary-hover, #203328));
+  --connectome-button-text: var(--button-secondary-text, var(--action-secondary-text, #f5f8f5));
+  --connectome-button-border: var(--button-secondary-border, var(--border-normal, rgb(126 182 138 / 28%)));
+  --connectome-primary-bg: var(--button-primary-bg, var(--action-primary-bg, #347a4d));
+  --connectome-primary-hover: var(--button-primary-hover, var(--action-primary-hover, #529866));
+  --connectome-primary-text: var(--button-primary-text, var(--action-primary-text, #fff));
+  --connectome-input-bg: var(--input-bg, #0e1411);
+  --connectome-input-text: var(--input-text, #f5f8f5);
+  --connectome-input-border: var(--input-border, var(--border-normal, rgb(126 182 138 / 28%)));
+  --connectome-shadow: 0 22px 64px rgb(0 0 0 / 30%);
+  --connectome-cortex: #69b986;
+  --connectome-nucleus: #9b8ee7;
+  --connectome-tract: #63c7df;
+  --connectome-subfield: #e7b95a;
+  --connectome-modulator: #e17878;
+  --connectome-excitatory: #72d28f;
+  --connectome-inhibitory: #e99292;
+  --connectome-modulatory: #e9bd64;
+  --connectome-reciprocal: #87a9ef;
+  --connectome-functional: #b5a2de;
+  --connectome-edge-excitatory: var(--connectome-excitatory);
+  --connectome-edge-inhibitory: var(--connectome-inhibitory);
+  --connectome-edge-modulatory: var(--connectome-modulatory);
+  --connectome-edge-mixed: var(--connectome-functional);
+  --connectome-edge-label: var(--connectome-text-soft);
+  --connectome-node-text: var(--connectome-text);
+  --connectome-node-stroke: var(--connectome-text-soft);
+  --connectome-muted-text: var(--connectome-text-muted);
+  --connectome-cluster-fill: var(--connectome-accent-soft);
+  --connectome-cluster-stroke: var(--connectome-border);
+  --connectome-cortex-fill: color-mix(in srgb, var(--connectome-cortex) 26%, var(--connectome-surface-raised));
+  --connectome-nucleus-fill: color-mix(in srgb, var(--connectome-nucleus) 26%, var(--connectome-surface-raised));
+  --connectome-tract-fill: color-mix(in srgb, var(--connectome-tract) 24%, var(--connectome-surface-raised));
+  --connectome-subfield-fill: color-mix(in srgb, var(--connectome-subfield) 27%, var(--connectome-surface-raised));
+  --connectome-modulator-fill: color-mix(in srgb, var(--connectome-modulator) 25%, var(--connectome-surface-raised));
+  --connectome-region-fill: color-mix(in srgb, var(--connectome-text-muted) 18%, var(--connectome-surface-raised));
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  min-width: 0;
+  color: var(--connectome-text);
+  background: var(--connectome-bg);
+  border: 1px solid var(--connectome-border-soft);
+  border-radius: 24px;
+  box-shadow: var(--connectome-shadow);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.45;
+  overflow: clip;
+}
+
+.connectome-module,
+.connectome-module *,
+.connectome-module *::before,
+.connectome-module *::after {
+  box-sizing: border-box;
+}
+
+.connectome-module [hidden] {
+  display: none !important;
+}
+
+.connectome-module :where(button, input, select, textarea) {
+  font: inherit;
+}
+
+.connectome-module :where(button, [role="button"], input, select, textarea, a):focus-visible {
+  outline: 3px solid var(--connectome-focus);
+  outline-offset: 3px;
+}
+
+.connectome-module :where(button, input, select, textarea):disabled,
+.connectome-module [aria-disabled="true"] {
+  cursor: not-allowed;
+  filter: grayscale(.45);
+  opacity: .52;
+}
+
+.connectome-module ::selection {
+  color: var(--connectome-primary-text);
+  background: var(--connectome-primary-bg);
+}
+
+.connectome-module :where(.connectome-controls, .connectome-detail, .connectome-search-results, .connectome-context-menu, .connectome-text-alternative) {
+  scrollbar-color: var(--connectome-border-strong) var(--connectome-surface-soft);
+  scrollbar-width: thin;
+}
+
+.connectome-module :where(.connectome-controls, .connectome-detail, .connectome-search-results, .connectome-context-menu, .connectome-text-alternative)::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.connectome-module :where(.connectome-controls, .connectome-detail, .connectome-search-results, .connectome-context-menu, .connectome-text-alternative)::-webkit-scrollbar-track {
+  background: var(--connectome-surface-soft);
+}
+
+.connectome-module :where(.connectome-controls, .connectome-detail, .connectome-search-results, .connectome-context-menu, .connectome-text-alternative)::-webkit-scrollbar-thumb {
+  background: var(--connectome-border-strong);
+  border: 3px solid var(--connectome-surface-soft);
+  border-radius: 999px;
+}
+
+/* Cabecera, navegacion y acciones generales */
+
+.connectome-module .connectome-header {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px 14px;
+  color: var(--connectome-text);
+  background: var(--connectome-surface);
+  border-bottom: 1px solid var(--connectome-border-soft);
+}
+
+.connectome-module .connectome-header h1,
+.connectome-module .connectome-header h2,
+.connectome-module .connectome-header h3 {
+  margin: 0;
+  color: var(--connectome-text);
+  font-size: clamp(1.2rem, 2vw, 1.65rem);
+  line-height: 1.15;
+  letter-spacing: -.02em;
+}
+
+.connectome-module .connectome-header p {
+  max-width: 74ch;
+  margin: 6px 0 0;
+  color: var(--connectome-text-soft);
+  font-size: .9rem;
+}
+
+.connectome-module .connectome-toolbar,
+.connectome-module .connectome-bottom-actions,
+.connectome-module .connectome-tour-actions,
+.connectome-module .connectome-route-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.connectome-module .connectome-toolbar {
+  justify-content: flex-end;
+}
+
+.connectome-module button,
+.connectome-module .connectome-button {
+  min-height: 40px;
+  padding: 8px 12px;
+  color: var(--connectome-button-text);
+  background: var(--connectome-button-bg);
+  border: 1px solid var(--connectome-button-border);
+  border-radius: 11px;
+  box-shadow: none;
+  font-weight: 750;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease, color .16s ease, transform .16s ease;
+}
+
+.connectome-module button:hover:not(:disabled),
+.connectome-module .connectome-button:hover:not([aria-disabled="true"]) {
+  color: var(--connectome-text);
+  background: var(--connectome-button-hover);
+  border-color: var(--connectome-border-strong);
+}
+
+.connectome-module button:active:not(:disabled),
+.connectome-module .connectome-button:active:not([aria-disabled="true"]) {
+  transform: translateY(1px);
+}
+
+.connectome-module :where(button, .connectome-button).is-primary,
+.connectome-module :where(button, .connectome-button)[data-variant="primary"] {
+  color: var(--connectome-primary-text);
+  background: var(--connectome-primary-bg);
+  border-color: var(--connectome-primary-bg);
+}
+
+.connectome-module :where(button, .connectome-button).is-primary:hover:not(:disabled),
+.connectome-module :where(button, .connectome-button)[data-variant="primary"]:hover:not(:disabled) {
+  color: var(--connectome-primary-text);
+  background: var(--connectome-primary-hover);
+  border-color: var(--connectome-accent-hover);
+}
+
+.connectome-module :where(button, .connectome-button).is-active,
+.connectome-module :where(button, .connectome-button)[aria-pressed="true"] {
+  color: var(--connectome-primary-text);
+  background: var(--connectome-primary-bg);
+  border-color: var(--connectome-accent-hover);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 16%);
+}
+
+.connectome-module .connectome-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 9px 18px;
+  overflow-x: auto;
+  color: var(--connectome-text-muted);
+  background: var(--connectome-bg-alt);
+  border-bottom: 1px solid var(--connectome-border-soft);
+  scrollbar-width: none;
+}
+
+.connectome-module .connectome-breadcrumb::-webkit-scrollbar {
+  display: none;
+}
+
+.connectome-module .connectome-breadcrumb :where(ol, ul) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.connectome-module .connectome-breadcrumb :where(li, a, button, span) {
+  flex: 0 0 auto;
+}
+
+.connectome-module .connectome-breadcrumb button,
+.connectome-module .connectome-breadcrumb a {
+  min-height: 32px;
+  padding: 5px 8px;
+  color: var(--connectome-text-soft);
+  background: transparent;
+  border-color: transparent;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+.connectome-module .connectome-breadcrumb :where(li + li)::before {
+  content: ">";
+  margin-inline-end: 6px;
+  color: var(--connectome-text-muted);
+  font-weight: 900;
+}
+
+.connectome-module .connectome-breadcrumb [aria-current="page"] {
+  color: var(--connectome-text);
+  background: var(--connectome-accent-soft);
+}
+
+/* Espacio principal */
+
+.connectome-module .connectome-workspace {
+  position: relative;
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr) 360px;
+  min-width: 0;
+  height: clamp(650px, calc(100dvh - 210px), 940px);
+  min-height: 650px;
+  color: var(--connectome-text);
+  background: var(--connectome-bg);
+}
+
+.connectome-module .connectome-controls,
+.connectome-module .connectome-detail {
+  position: relative;
+  z-index: 3;
+  min-width: 0;
+  min-height: 0;
+  padding: 15px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  color: var(--connectome-text);
+  background: var(--connectome-surface);
+}
+
+.connectome-module .connectome-controls {
+  border-inline-end: 1px solid var(--connectome-border-soft);
+}
+
+.connectome-module .connectome-detail {
+  border-inline-start: 1px solid var(--connectome-border-soft);
+}
+
+.connectome-module .connectome-detail-close {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-end: 10px;
+  z-index: 5;
+  display: none;
+  place-items: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 999px;
+  font-size: 1rem;
+}
+
+.connectome-module .connectome-controls > :first-child,
+.connectome-module .connectome-detail > :first-child {
+  margin-top: 0;
+}
+
+.connectome-module .connectome-panel-heading,
+.connectome-module .connectome-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.connectome-module :where(.connectome-panel-heading, .connectome-detail-header) h2,
+.connectome-module :where(.connectome-panel-heading, .connectome-detail-header) h3 {
+  margin: 0;
+  color: var(--connectome-text);
+  font-size: 1rem;
+}
+
+.connectome-module .connectome-viewport-panel {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--connectome-bg-alt);
+}
+
+.connectome-module .connectome-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 600px;
+  overflow: hidden;
+  touch-action: none;
+  cursor: grab;
+  background-color: var(--connectome-bg-alt);
+  background-image:
+    linear-gradient(var(--connectome-border-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--connectome-border-soft) 1px, transparent 1px),
+    radial-gradient(circle at 50% 45%, var(--connectome-accent-soft), transparent 58%);
+  background-size: 32px 32px, 32px 32px, 100% 100%;
+}
+
+.connectome-module .connectome-viewport:active,
+.connectome-module .connectome-viewport.is-panning {
+  cursor: grabbing;
+}
+
+.connectome-module .connectome-viewport:focus-visible {
+  outline: 3px solid var(--connectome-focus);
+  outline-offset: -4px;
+}
+
+/* Campos, busqueda y filtros */
+
+.connectome-module .connectome-field,
+.connectome-module .connectome-control-group {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.connectome-module label,
+.connectome-module .connectome-field-label {
+  color: var(--connectome-text-soft);
+  font-size: .82rem;
+  font-weight: 760;
+}
+
+.connectome-module :where(input[type="search"], input[type="text"], select, textarea) {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 11px;
+  color: var(--connectome-input-text);
+  background: var(--connectome-input-bg);
+  border: 1px solid var(--connectome-input-border);
+  border-radius: 11px;
+  outline: 0;
+}
+
+.connectome-module textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.connectome-module :where(input[type="search"], input[type="text"], select, textarea):hover {
+  border-color: var(--connectome-border-strong);
+}
+
+.connectome-module :where(input[type="search"], input[type="text"], select, textarea):focus {
+  border-color: var(--connectome-accent);
+  box-shadow: 0 0 0 3px var(--connectome-accent-soft);
+}
+
+.connectome-module :where(input, textarea)::placeholder {
+  color: var(--connectome-text-muted);
+  opacity: 1;
+}
+
+.connectome-module :where(input[type="checkbox"], input[type="radio"]) {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--connectome-accent);
+}
+
+.connectome-module .connectome-search {
+  position: relative;
+  z-index: 12;
+  margin-bottom: 14px;
+}
+
+.connectome-module .connectome-search-results {
+  position: absolute;
+  inset: calc(100% + 6px) 0 auto;
+  z-index: 30;
+  max-height: min(360px, 44vh);
+  padding: 6px;
+  overflow-y: auto;
+  color: var(--connectome-text);
+  background: var(--connectome-surface-raised);
+  border: 1px solid var(--connectome-border);
+  border-radius: 13px;
+  box-shadow: 0 18px 48px rgb(0 0 0 / 34%);
+}
+
+.connectome-module .connectome-search-results :where(ul, ol) {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.connectome-module .connectome-search-results :where(button, [role="option"], a) {
+  display: grid;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  color: var(--connectome-text-soft);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  text-align: start;
+  text-decoration: none;
+}
+
+.connectome-module .connectome-search-results :where(button, [role="option"], a):hover,
+.connectome-module .connectome-search-results [aria-selected="true"] {
+  color: var(--connectome-text);
+  background: var(--connectome-surface-hover);
+  border-color: var(--connectome-border);
+}
+
+.connectome-module .connectome-search-results small {
+  color: var(--connectome-text-muted);
+  font-size: .75rem;
+}
+
+.connectome-module .connectome-filter-section {
+  margin: 0 0 10px;
+  padding: 11px;
+  color: var(--connectome-text);
+  background: var(--connectome-bg-alt);
+  border: 1px solid var(--connectome-border-soft);
+  border-radius: 13px;
+}
+
+.connectome-module details.connectome-filter-section {
+  padding: 0;
+}
+
+.connectome-module .connectome-filter-section > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 42px;
+  padding: 9px 11px;
+  color: var(--connectome-text);
+  border-radius: 12px;
+  font-size: .86rem;
+  font-weight: 800;
+  cursor: pointer;
+  list-style: none;
+}
+
+.connectome-module .connectome-filter-section > summary::-webkit-details-marker {
+  display: none;
+}
+
+.connectome-module .connectome-filter-section > summary::after {
+  content: "+";
+  flex: 0 0 auto;
+  color: var(--connectome-text-muted);
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.connectome-module .connectome-filter-section[open] > summary::after {
+  content: "−";
+}
+
+.connectome-module .connectome-filter-section > :not(summary) {
+  margin-inline: 11px;
+}
+
+.connectome-module .connectome-filter-section > :last-child {
+  margin-bottom: 11px;
+}
+
+.connectome-module .connectome-chip-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.connectome-module .connectome-chip,
+.connectome-module .connectome-chip-grid label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 38px;
+  padding: 7px 8px;
+  color: var(--connectome-text-soft);
+  background: var(--connectome-surface-soft);
+  border: 1px solid var(--connectome-border-soft);
+  border-radius: 9px;
+  font-size: .76rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.connectome-module .connectome-chip:hover,
+.connectome-module .connectome-chip-grid label:hover {
+  color: var(--connectome-text);
+  border-color: var(--connectome-border-strong);
+}
+
+.connectome-module .connectome-chip.is-active,
+.connectome-module .connectome-chip[aria-pressed="true"],
+.connectome-module .connectome-chip-grid label:has(input:checked) {
+  color: var(--connectome-text);
+  background: var(--connectome-accent-soft);
+  border-color: var(--connectome-accent);
+  box-shadow: inset 3px 0 0 var(--connectome-accent);
+}
+
+.connectome-module .connectome-help {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  color: var(--connectome-text);
+  background: var(--connectome-accent-soft);
+  border: 1px solid var(--connectome-border-strong);
+  border-radius: 50%;
+  font-size: .82rem;
+  font-weight: 900;
+}
+
+.connectome-module .connectome-help-panel {
+  margin: 8px 0 0;
+  padding: 10px;
+  color: var(--connectome-text-soft);
+  background: var(--connectome-surface-raised);
+  border: 1px solid var(--connectome-border);
+  border-inline-start: 4px solid var(--connectome-accent);
+  border-radius: 10px;
+  font-size: .8rem;
+}
+
+/* Controles superpuestos del mapa */
+
+.connectome-module .connectome-camera-toolbar {
+  position: absolute;
+  inset-block-start: 12px;
+  inset-inline-end: 12px;
+  z-index: 10;
+  display: grid;
+  gap: 6px;
+  padding: 6px;
+  background: var(--connectome-surface);
+  border: 1px solid var(--connectome-border);
+  border-radius: 13px;
+  box-shadow: 0 10px 28px rgb(0 0 0 / 24%);
+}
+
+.connectome-module .connectome-camera-toolbar button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  font-size: 1rem;
+}
+
+.connectome-module .connectome-legend {
+  position: absolute;
+  inset-inline-start: 12px;
+  inset-block-end: 12px;
+  z-index: 9;
+  width: min(310px, calc(100% - 80px));
+  max-height: min(46%, 340px);
+  padding: 10px;
+  overflow: auto;
+  color: var(--connectome-text-soft);
+  background: color-mix(in srgb, var(--connectome-surface) 94%, transparent);
+  border: 1px solid var(--connectome-border);
+  border-radius: 13px;
+  box-shadow: 0 12px 34px rgb(0 0 0 / 25%);
+  font-size: .75rem;
+}
+
+.connectome-module .connectome-legend > summary {
+  min-height: 30px;
+  color: var(--connectome-text);
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.connectome-module .connectome-legend-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px 10px;
+  margin-top: 8px;
+}
+
+.connectome-module .connectome-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.connectome-module .connectome-legend-symbol {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 22px;
+  width: 22px;
+  height: 16px;
+  background: var(--connectome-cortex);
+  border: 2px solid var(--connectome-text-soft);
+  border-radius: 5px;
+}
+
+.connectome-module .connectome-legend-symbol[data-node-type*="nucleo"],
+.connectome-module .connectome-legend-symbol[data-node-type*="nucleus"] {
+  background: var(--connectome-nucleus);
+  border-style: dotted;
+  border-radius: 50%;
+}
+
+.connectome-module .connectome-legend-symbol[data-node-type*="tracto"],
+.connectome-module .connectome-legend-symbol[data-node-type*="fasciculo"],
+.connectome-module .connectome-legend-symbol[data-node-type*="tract"] {
+  height: 8px;
+  background: var(--connectome-tract);
+  border-style: dashed;
+  border-radius: 999px;
+}
+
+.connectome-module .connectome-legend-symbol[data-node-type*="subcampo"],
+.connectome-module .connectome-legend-symbol[data-node-type*="subfield"] {
+  background: var(--connectome-subfield);
+  border-style: double;
+  border-radius: 2px 8px 2px 8px;
+}
+
+.connectome-module .connectome-legend-symbol[data-node-type*="modul"] {
+  background: var(--connectome-modulator);
+  border-style: dotted;
+  border-radius: 50% 12% 50% 12%;
+  transform: rotate(12deg);
+}
+
+.connectome-module .connectome-legend-symbol[data-polarity] {
+  height: 12px;
+  background: transparent;
+  border: 0;
+  border-top: 3px solid var(--connectome-excitatory);
+  border-radius: 0;
+}
+
+.connectome-module .connectome-legend-symbol[data-polarity]::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: -1px;
+  inset-block-start: -6px;
+  width: 0;
+  height: 0;
+  border-block: 4px solid transparent;
+  border-inline-start: 7px solid currentColor;
+  color: inherit;
+}
+
+.connectome-module .connectome-legend-symbol[data-polarity*="inhib"] {
+  color: var(--connectome-inhibitory);
+  border-top-color: var(--connectome-inhibitory);
+  border-top-style: dashed;
+}
+
+.connectome-module .connectome-legend-symbol[data-polarity*="inhib"]::after {
+  width: 2px;
+  height: 9px;
+  inset-block-start: -6px;
+  background: currentColor;
+  border: 0;
+}
+
+.connectome-module .connectome-legend-symbol[data-polarity*="modul"] {
+  color: var(--connectome-modulatory);
+  border-top-color: var(--connectome-modulatory);
+  border-top-style: dotted;
+}
+
+.connectome-module .connectome-legend-symbol[data-polarity*="recipr"] {
+  color: var(--connectome-reciprocal);
+  border-top: 4px double var(--connectome-reciprocal);
+}
+
+.connectome-module .connectome-legend-symbol[data-polarity*="funcional"] {
+  color: var(--connectome-functional);
+  border-top-color: var(--connectome-functional);
+  border-top-style: dashed;
+}
+
+/* Grafo SVG */
+
+.connectome-module .connectome-renderer.connectome-graph {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  overflow: visible;
+  color: var(--connectome-text);
+  background: transparent;
+  cursor: grab;
+  outline: none;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.connectome-module .connectome-renderer.connectome-graph.is-panning {
+  cursor: grabbing;
+}
+
+.connectome-module .connectome-renderer.connectome-graph:focus-visible {
+  outline: 3px solid var(--connectome-focus);
+  outline-offset: -4px;
+}
+
+.connectome-module .connectome-renderer.viewport-animated > .connectome-viewport {
+  transition: transform .25s ease-out;
+}
+
+.connectome-module .connectome-renderer.reduced-motion > .connectome-viewport {
+  transition: none;
+}
+
+.connectome-module .connectome-layer {
+  isolation: isolate;
+}
+
+.connectome-module .connectome-cluster {
+  pointer-events: none;
+}
+
+.connectome-module .connectome-cluster__shape {
+  fill: var(--connectome-cluster-fill);
+  stroke: var(--connectome-cluster-stroke);
+  stroke-width: 1.5;
+  stroke-dasharray: 8 7;
+  vector-effect: non-scaling-stroke;
+}
+
+.connectome-module .connectome-cluster__label {
+  fill: var(--connectome-muted-text);
+  stroke: var(--connectome-bg-alt);
+  stroke-width: 4px;
+  paint-order: stroke fill;
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.connectome-module .connectome-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  overflow: visible;
+  color: var(--connectome-text);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.connectome-module .connectome-edge {
+  fill: none;
+  stroke: var(--connectome-tract);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+  transition: opacity .18s ease, stroke .18s ease, stroke-width .18s ease, filter .18s ease;
+}
+
+.connectome-module .connectome-edge__path {
+  fill: none;
+  stroke: var(--connectome-tract);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+  transition: opacity .18s ease, stroke .18s ease, stroke-width .18s ease, filter .18s ease;
+}
+
+.connectome-module .connectome-edge-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 18;
+  vector-effect: non-scaling-stroke;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.connectome-module .connectome-edge__hit-area {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 18;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.connectome-module .connectome-edge-label {
+  fill: var(--connectome-text-soft);
+  stroke: var(--connectome-bg-alt);
+  stroke-width: 4px;
+  paint-order: stroke fill;
+  font-size: 11px;
+  font-weight: 720;
+  text-anchor: middle;
+  pointer-events: none;
+  user-select: none;
+  transition: fill .18s ease, opacity .18s ease, font-size .18s ease;
+}
+
+.connectome-module .connectome-edge__label {
+  fill: var(--connectome-edge-label);
+  stroke: var(--connectome-surface);
+  stroke-width: 4px;
+  paint-order: stroke fill;
+  font-size: 11px;
+  font-weight: 720;
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+  transition: fill .18s ease, opacity .18s ease, font-size .18s ease;
+}
+
+.connectome-module :where(.connectome-edge__label.edge-label--visible, .connectome-edge.hovered .connectome-edge__label, .connectome-edge.is-hovered .connectome-edge__label, .connectome-edge.highlighted .connectome-edge__label, .connectome-edge.selected .connectome-edge__label, .connectome-edge.current .connectome-edge__label) {
+  fill: var(--connectome-text);
+  font-size: 12px;
+  font-weight: 850;
+  opacity: 1;
+}
+
+.connectome-module .connectome-edge.polarity--excitatory .connectome-edge__path {
+  stroke: var(--connectome-edge-excitatory);
+  stroke-dasharray: none;
+}
+
+.connectome-module .connectome-edge.polarity--inhibitory .connectome-edge__path {
+  stroke: var(--connectome-edge-inhibitory);
+  stroke-dasharray: 8 5;
+}
+
+.connectome-module .connectome-edge.polarity--modulatory .connectome-edge__path {
+  stroke: var(--connectome-edge-modulatory);
+  stroke-width: 2.7;
+  stroke-dasharray: 3 6;
+  stroke-linecap: round;
+}
+
+.connectome-module .connectome-edge.polarity--mixed .connectome-edge__path {
+  stroke: var(--connectome-edge-mixed);
+  stroke-width: 2.7;
+  stroke-dasharray: 12 4 3 4;
+}
+
+.connectome-module .connectome-edge.edge--jerarquia_anatomica {
+  pointer-events: none;
+}
+
+.connectome-module .connectome-edge.edge--jerarquia_anatomica .connectome-edge__path {
+  stroke: var(--connectome-muted-text);
+  stroke-width: 1.8;
+  stroke-dasharray: 2 7;
+  opacity: .78;
+}
+
+.connectome-module .connectome-edge.edge--jerarquia_anatomica .connectome-edge__label,
+.connectome-module .connectome-edge.edge--jerarquia_anatomica .connectome-edge__hit-area {
+  display: none;
+}
+
+.connectome-module .connectome-edge.edge--reciprocal .connectome-edge__path {
+  stroke-width: 3.2;
+  stroke-dasharray: 13 3 3 3;
+}
+
+.connectome-module :where(.connectome-edge.hovered, .connectome-edge.is-hovered, .connectome-edge.highlighted, .connectome-edge.is-highlighted, .connectome-edge.selected, .connectome-edge.is-selected) .connectome-edge__path {
+  stroke-width: 4.2;
+  filter: drop-shadow(0 0 4px currentColor);
+}
+
+.connectome-module :where(.connectome-edge.route, .connectome-edge.is-route) .connectome-edge__path {
+  stroke: var(--connectome-accent-hover);
+  stroke-width: 4;
+  stroke-dasharray: 10 6;
+  filter: drop-shadow(0 0 5px var(--connectome-accent));
+  animation: connectome-route-flow 1.35s linear infinite;
+}
+
+.connectome-module :where(.connectome-edge.current, .connectome-edge.is-current) .connectome-edge__path {
+  stroke: var(--connectome-accent-hover);
+  stroke-width: 5;
+  filter: drop-shadow(0 0 7px var(--connectome-accent-hover));
+}
+
+.connectome-module :where(.connectome-edge.lesioned, .connectome-edge.is-lesioned) {
+  filter: grayscale(.7);
+  opacity: .58;
+}
+
+.connectome-module :where(.connectome-edge.lesioned, .connectome-edge.is-lesioned) .connectome-edge__path {
+  stroke: var(--connectome-edge-inhibitory);
+  stroke-width: 4;
+  stroke-dasharray: 2 9;
+}
+
+.connectome-module :where(.connectome-edge.dimmed, .connectome-edge.is-dimmed) {
+  opacity: .12;
+}
+
+.connectome-module :where(.connectome-edge.dimmed, .connectome-edge.is-dimmed):focus-visible {
+  opacity: .5;
+}
+
+.connectome-module .connectome-edge:focus-visible .connectome-edge__path {
+  stroke: var(--connectome-focus);
+  stroke-width: 5;
+  filter: drop-shadow(0 0 5px var(--connectome-focus));
+}
+
+.connectome-module :where(.connectome-edge[data-polarity*="excitat"], [data-polarity*="excitat"] .connectome-edge) {
+  stroke: var(--connectome-excitatory);
+  stroke-dasharray: none;
+}
+
+.connectome-module :where(.connectome-edge[data-polarity*="inhib"], [data-polarity*="inhib"] .connectome-edge) {
+  stroke: var(--connectome-inhibitory);
+  stroke-dasharray: 8 5;
+}
+
+.connectome-module :where(.connectome-edge[data-polarity*="modul"], [data-polarity*="modul"] .connectome-edge) {
+  stroke: var(--connectome-modulatory);
+  stroke-width: 2.5;
+  stroke-dasharray: 2 6;
+  stroke-linecap: round;
+}
+
+.connectome-module :where(.connectome-edge[data-polarity*="recipr"], [data-polarity*="recipr"] .connectome-edge, .connectome-edge[data-direction*="recipr"], [data-direction*="recipr"] .connectome-edge) {
+  stroke: var(--connectome-reciprocal);
+  stroke-width: 3;
+  stroke-dasharray: 13 3 3 3;
+}
+
+.connectome-module :where(.connectome-edge[data-polarity*="funcional"], [data-polarity*="funcional"] .connectome-edge, .connectome-edge[data-edge-type*="funcional"], [data-edge-type*="funcional"] .connectome-edge) {
+  stroke: var(--connectome-functional);
+  stroke-dasharray: 14 7;
+}
+
+.connectome-module :where(.connectome-edge.is-hovered, .is-hovered > .connectome-edge, .connectome-edge.is-selected, .is-selected > .connectome-edge) {
+  stroke-width: 4;
+  filter: drop-shadow(0 0 4px currentColor);
+}
+
+.connectome-module :where(.is-hovered, .is-selected) > .connectome-edge-label,
+.connectome-module .connectome-edge-label.is-hovered,
+.connectome-module .connectome-edge-label.is-selected {
+  fill: var(--connectome-text);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.connectome-module :where(.connectome-edge.is-route, .is-route > .connectome-edge) {
+  stroke: var(--connectome-accent-hover);
+  stroke-width: 4;
+  stroke-dasharray: 10 6;
+  filter: drop-shadow(0 0 5px var(--connectome-accent));
+  animation: connectome-route-flow 1.35s linear infinite;
+}
+
+.connectome-module :where(.connectome-edge.is-current, .is-current > .connectome-edge) {
+  stroke-width: 5;
+  filter: drop-shadow(0 0 7px var(--connectome-accent-hover));
+}
+
+.connectome-module :where(.connectome-edge.is-lesioned, .is-lesioned > .connectome-edge) {
+  stroke: var(--connectome-inhibitory);
+  stroke-width: 4;
+  stroke-dasharray: 2 9;
+  opacity: .55;
+  filter: grayscale(.7);
+}
+
+.connectome-module :where(.connectome-edge.is-dimmed, .is-dimmed > .connectome-edge),
+.connectome-module :where(.is-dimmed > .connectome-edge-label, .connectome-edge-label.is-dimmed) {
+  opacity: .12;
+}
+
+.connectome-module .connectome-node {
+  color: var(--connectome-cortex);
+  cursor: pointer;
+  outline: none;
+  transition: opacity .18s ease, filter .18s ease;
+}
+
+.connectome-module .connectome-node-shape {
+  fill: color-mix(in srgb, currentColor 24%, var(--connectome-surface-raised));
+  stroke: currentColor;
+  stroke-width: 2.25;
+  vector-effect: non-scaling-stroke;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: fill .18s ease, stroke .18s ease, stroke-width .18s ease, filter .18s ease, opacity .18s ease, transform .18s ease;
+}
+
+.connectome-module .connectome-node__shape {
+  fill: var(--connectome-region-fill);
+  stroke: currentColor;
+  stroke-width: 2.25;
+  vector-effect: non-scaling-stroke;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: fill .18s ease, stroke .18s ease, stroke-width .18s ease, filter .18s ease, opacity .18s ease, transform .18s ease;
+}
+
+.connectome-module .connectome-node-label {
+  fill: var(--connectome-text);
+  stroke: var(--connectome-bg-alt);
+  stroke-width: 4px;
+  paint-order: stroke fill;
+  font-size: 12px;
+  font-weight: 820;
+  text-anchor: middle;
+  pointer-events: none;
+  user-select: none;
+}
+
+.connectome-module .connectome-node__label {
+  fill: var(--connectome-node-text);
+  stroke: var(--connectome-bg-alt);
+  stroke-width: 4px;
+  paint-order: stroke fill;
+  font-size: 12px;
+  font-weight: 820;
+  pointer-events: none;
+  user-select: none;
+}
+
+.connectome-module .connectome-node__icon {
+  fill: currentColor;
+  stroke: var(--connectome-bg-alt);
+  stroke-width: 3px;
+  paint-order: stroke fill;
+  font-size: 12px;
+  font-weight: 950;
+  pointer-events: none;
+}
+
+.connectome-module .connectome-node-secondary-label {
+  fill: var(--connectome-text-muted);
+  stroke: var(--connectome-bg-alt);
+  stroke-width: 3px;
+  paint-order: stroke fill;
+  font-size: 9px;
+  font-weight: 650;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.connectome-module :where(.connectome-node[data-node-type*="corte"], .connectome-node[data-node-type*="cortex"]) {
+  color: var(--connectome-cortex);
+}
+
+.connectome-module .connectome-node.node--corteza {
+  color: var(--connectome-cortex);
+}
+
+.connectome-module .connectome-node.node--corteza .connectome-node__shape {
+  fill: var(--connectome-cortex-fill);
+  stroke-width: 2.5;
+}
+
+.connectome-module :where(.connectome-node[data-node-type*="corte"], .connectome-node[data-node-type*="cortex"]) .connectome-node-shape {
+  stroke-width: 2.5;
+  rx: 13px;
+  ry: 13px;
+}
+
+.connectome-module :where(.connectome-node[data-node-type*="nucleo"], .connectome-node[data-node-type*="nucleus"]) {
+  color: var(--connectome-nucleus);
+}
+
+.connectome-module .connectome-node.node--nucleo {
+  color: var(--connectome-nucleus);
+}
+
+.connectome-module .connectome-node.node--nucleo .connectome-node__shape {
+  fill: var(--connectome-nucleus-fill);
+  stroke-width: 3;
+  stroke-dasharray: 2 2;
+}
+
+.connectome-module :where(.connectome-node[data-node-type*="nucleo"], .connectome-node[data-node-type*="nucleus"]) .connectome-node-shape {
+  stroke-width: 3;
+  stroke-dasharray: 2 2;
+}
+
+.connectome-module :where(.connectome-node[data-node-type*="tracto"], .connectome-node[data-node-type*="fasciculo"], .connectome-node[data-node-type*="via"], .connectome-node[data-node-type*="tract"]) {
+  color: var(--connectome-tract);
+}
+
+.connectome-module .connectome-node.node--tracto {
+  color: var(--connectome-tract);
+}
+
+.connectome-module .connectome-node.node--tracto .connectome-node__shape {
+  fill: var(--connectome-tract-fill);
+  stroke-width: 4;
+  stroke-dasharray: 11 4;
+}
+
+.connectome-module :where(.connectome-node[data-node-type*="tracto"], .connectome-node[data-node-type*="fasciculo"], .connectome-node[data-node-type*="via"], .connectome-node[data-node-type*="tract"]) .connectome-node-shape {
+  fill-opacity: .55;
+  stroke-width: 4;
+  stroke-dasharray: 11 4;
+}
+
+.connectome-module :where(.connectome-node[data-node-type*="subcampo"], .connectome-node[data-node-type*="subfield"]) {
+  color: var(--connectome-subfield);
+}
+
+.connectome-module .connectome-node.node--subcampo {
+  color: var(--connectome-subfield);
+}
+
+.connectome-module .connectome-node.node--subcampo .connectome-node__shape {
+  fill: var(--connectome-subfield-fill);
+  stroke-width: 3.5;
+  stroke-dasharray: 8 2;
+}
+
+.connectome-module :where(.connectome-node[data-node-type*="subcampo"], .connectome-node[data-node-type*="subfield"]) .connectome-node-shape {
+  stroke-width: 3.5;
+  stroke-dasharray: 8 2;
+}
+
+.connectome-module .connectome-node[data-node-type*="modul"] {
+  color: var(--connectome-modulator);
+}
+
+.connectome-module .connectome-node.node--sistema_modulador {
+  color: var(--connectome-modulator);
+}
+
+.connectome-module .connectome-node.node--sistema_modulador .connectome-node__shape {
+  fill: var(--connectome-modulator-fill);
+  stroke-width: 3;
+  stroke-dasharray: 1 5;
+  stroke-linecap: round;
+}
+
+.connectome-module .connectome-node.node--region {
+  color: var(--connectome-text-muted);
+}
+
+.connectome-module .connectome-node.node--region .connectome-node__shape {
+  fill: var(--connectome-region-fill);
+  stroke-width: 2.5;
+  stroke-dasharray: 14 4;
+}
+
+.connectome-module :where(.connectome-node:hover, .connectome-node.hovered, .connectome-node.is-hovered, .connectome-node.highlighted, .connectome-node.is-highlighted, .connectome-node:focus-visible) .connectome-node__shape {
+  stroke: var(--connectome-text);
+  stroke-width: 3.5;
+  filter: drop-shadow(0 0 7px currentColor);
+  transform: scale(1.025);
+}
+
+.connectome-module :where(.connectome-node.selected, .connectome-node.is-selected, .connectome-node[aria-selected="true"]) .connectome-node__shape {
+  stroke: var(--connectome-text);
+  stroke-width: 4;
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.connectome-module :where(.connectome-node.selected, .connectome-node.is-selected, .connectome-node[aria-selected="true"]) .connectome-node__label {
+  font-weight: 950;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.connectome-module :where(.connectome-node.route, .connectome-node.is-route) .connectome-node__shape {
+  stroke: var(--connectome-accent-hover);
+  stroke-width: 4;
+  stroke-dasharray: 9 4;
+}
+
+.connectome-module :where(.connectome-node.current, .connectome-node.is-current) {
+  filter: drop-shadow(0 0 7px var(--connectome-accent-hover));
+}
+
+.connectome-module :where(.connectome-node.current, .connectome-node.is-current) .connectome-node__shape {
+  stroke: var(--connectome-text);
+  stroke-width: 5;
+  animation: connectome-current-node 2.2s ease-in-out infinite;
+}
+
+.connectome-module :where(.connectome-node.lesioned, .connectome-node.is-lesioned) {
+  filter: grayscale(.75);
+  opacity: .62;
+}
+
+.connectome-module :where(.connectome-node.lesioned, .connectome-node.is-lesioned) .connectome-node__shape {
+  stroke: var(--connectome-edge-inhibitory);
+  stroke-width: 4;
+  stroke-dasharray: 3 6;
+}
+
+.connectome-module :where(.connectome-node.lesioned, .connectome-node.is-lesioned) .connectome-node__label {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+.connectome-module :where(.connectome-node.dimmed, .connectome-node.is-dimmed) {
+  opacity: .14;
+}
+
+.connectome-module :where(.connectome-node.dimmed, .connectome-node.is-dimmed):is(:hover, :focus-visible) {
+  opacity: .52;
+}
+
+.connectome-module .connectome-node[data-node-type*="modul"] .connectome-node-shape {
+  stroke-width: 3;
+  stroke-dasharray: 1 5;
+  stroke-linecap: round;
+}
+
+.connectome-module :where(.connectome-node:hover, .connectome-node.is-hovered, .connectome-node:focus-visible) {
+  filter: drop-shadow(0 0 7px currentColor);
+}
+
+.connectome-module :where(.connectome-node:hover, .connectome-node.is-hovered, .connectome-node:focus-visible) .connectome-node-shape {
+  fill: color-mix(in srgb, currentColor 34%, var(--connectome-surface-raised));
+  stroke-width: 3.5;
+  transform: scale(1.025);
+}
+
+.connectome-module :where(.connectome-node.is-selected, .connectome-node[aria-selected="true"]) .connectome-node-shape {
+  fill: color-mix(in srgb, currentColor 40%, var(--connectome-surface-raised));
+  stroke: var(--connectome-text);
+  stroke-width: 4;
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.connectome-module :where(.connectome-node.is-selected, .connectome-node[aria-selected="true"]) .connectome-node-label {
+  font-weight: 950;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.connectome-module .connectome-node.is-route .connectome-node-shape {
+  stroke: var(--connectome-accent-hover);
+  stroke-width: 4;
+  stroke-dasharray: 9 4;
+}
+
+.connectome-module .connectome-node.is-current {
+  z-index: 4;
+}
+
+.connectome-module .connectome-node.is-current .connectome-node-shape {
+  stroke: var(--connectome-text);
+  stroke-width: 5;
+  animation: connectome-current-node 2.2s ease-in-out infinite;
+}
+
+.connectome-module .connectome-node.is-lesioned {
+  filter: grayscale(.75);
+  opacity: .62;
+}
+
+.connectome-module .connectome-node.is-lesioned .connectome-node-shape {
+  stroke: var(--connectome-inhibitory);
+  stroke-width: 4;
+  stroke-dasharray: 3 6;
+}
+
+.connectome-module .connectome-node.is-lesioned .connectome-node-label {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+.connectome-module .connectome-lesion-mark {
+  fill: none;
+  stroke: var(--connectome-inhibitory);
+  stroke-width: 4;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.connectome-module .connectome-node.is-dimmed {
+  opacity: .14;
+}
+
+.connectome-module .connectome-node.is-dimmed:hover,
+.connectome-module .connectome-node.is-dimmed:focus-visible {
+  opacity: .52;
+}
+
+/* Paneles informativos y educativos */
+
+.connectome-module .connectome-detail-section {
+  margin: 0 0 12px;
+  padding: 12px;
+  color: var(--connectome-text-soft);
+  background: var(--connectome-bg-alt);
+  border: 1px solid var(--connectome-border-soft);
+  border-radius: 12px;
+}
+
+.connectome-module .connectome-detail-section h3,
+.connectome-module .connectome-detail-section h4 {
+  margin: 0 0 7px;
+  color: var(--connectome-text);
+  font-size: .9rem;
+}
+
+.connectome-module .connectome-detail-section :where(p, ul, ol, dl) {
+  margin-block: 6px;
+}
+
+.connectome-module .connectome-detail-section :where(ul, ol) {
+  padding-inline-start: 20px;
+}
+
+.connectome-module .connectome-detail-section dl {
+  display: grid;
+  grid-template-columns: minmax(92px, .65fr) minmax(0, 1fr);
+  gap: 7px 10px;
+}
+
+.connectome-module .connectome-detail-section dt {
+  color: var(--connectome-text-muted);
+  font-size: .75rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.connectome-module .connectome-detail-section dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.connectome-module .connectome-badge,
+.connectome-module .connectome-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  margin: 2px;
+  padding: 4px 8px;
+  color: var(--connectome-text-soft);
+  background: var(--connectome-accent-soft);
+  border: 1px solid var(--connectome-border);
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 760;
+}
+
+.connectome-module .connectome-reference-list a {
+  color: var(--connectome-accent-hover);
+  overflow-wrap: anywhere;
+  text-underline-offset: 3px;
+}
+
+.connectome-module .connectome-bottom-actions {
+  position: sticky;
+  inset-block-end: -15px;
+  z-index: 4;
+  margin: 16px -15px -15px;
+  padding: 12px 15px calc(12px + env(safe-area-inset-bottom));
+  background: var(--connectome-surface);
+  border-top: 1px solid var(--connectome-border-soft);
+  box-shadow: 0 -10px 26px rgb(0 0 0 / 18%);
+}
+
+.connectome-module .connectome-tooltip {
+  position: absolute;
+  z-index: 40;
+  width: max-content;
+  max-width: min(310px, calc(100vw - 32px));
+  padding: 9px 11px;
+  color: var(--connectome-text);
+  background: var(--connectome-surface-raised);
+  border: 1px solid var(--connectome-border-strong);
+  border-radius: 10px;
+  box-shadow: 0 14px 38px rgb(0 0 0 / 36%);
+  font-size: .78rem;
+  line-height: 1.38;
+  pointer-events: none;
+}
+
+.connectome-module .connectome-tooltip strong {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.connectome-module .connectome-context-menu {
+  position: absolute;
+  z-index: 50;
+  display: grid;
+  width: min(240px, calc(100vw - 24px));
+  max-height: min(430px, 68vh);
+  padding: 6px;
+  overflow-y: auto;
+  color: var(--connectome-text);
+  background: var(--connectome-surface-raised);
+  border: 1px solid var(--connectome-border);
+  border-radius: 13px;
+  box-shadow: 0 20px 55px rgb(0 0 0 / 42%);
+  animation: connectome-panel-enter .14s ease-out both;
+}
+
+.connectome-module .connectome-context-menu :where(ul, ol) {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.connectome-module .connectome-context-menu button {
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 40px;
+  text-align: start;
+  background: transparent;
+  border-color: transparent;
+}
+
+.connectome-module .connectome-context-menu hr {
+  width: 100%;
+  margin: 5px 0;
+  border: 0;
+  border-top: 1px solid var(--connectome-border-soft);
+}
+
+.connectome-module .connectome-tour {
+  position: absolute;
+  inset-inline: 50% auto;
+  inset-block-end: 16px;
+  z-index: 18;
+  width: min(640px, calc(100% - 32px));
+  padding: 15px;
+  color: var(--connectome-text);
+  background: color-mix(in srgb, var(--connectome-surface-raised) 96%, transparent);
+  border: 1px solid var(--connectome-border-strong);
+  border-radius: 16px;
+  box-shadow: 0 24px 70px rgb(0 0 0 / 42%);
+  transform: translateX(-50%);
+}
+
+.connectome-module .connectome-tour h3 {
+  margin: 0 0 6px;
+  color: var(--connectome-text);
+  font-size: 1rem;
+}
+
+.connectome-module .connectome-tour p {
+  margin: 0 0 12px;
+  color: var(--connectome-text-soft);
+}
+
+.connectome-module .connectome-tour-progress {
+  height: 5px;
+  margin-block: 10px;
+  overflow: hidden;
+  background: var(--connectome-surface-soft);
+  border-radius: 999px;
+}
+
+.connectome-module .connectome-tour-progress > span {
+  display: block;
+  width: var(--connectome-tour-progress, 0%);
+  height: 100%;
+  background: var(--connectome-accent);
+  border-radius: inherit;
+  transition: width .25s ease;
+}
+
+.connectome-module .connectome-comparison {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  color: var(--connectome-text-soft);
+  background: var(--connectome-surface);
+  border: 1px solid var(--connectome-border);
+  border-radius: 14px;
+}
+
+.connectome-module .connectome-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.connectome-module .connectome-comparison-grid > * {
+  min-width: 0;
+  padding: 10px;
+  background: var(--connectome-bg-alt);
+  border: 1px solid var(--connectome-border-soft);
+  border-radius: 10px;
+}
+
+.connectome-module .connectome-text-alternative {
+  max-height: 320px;
+  margin: 12px 0 0;
+  padding: 13px;
+  overflow: auto;
+  color: var(--connectome-text-soft);
+  background: var(--connectome-bg-alt);
+  border: 1px solid var(--connectome-border);
+  border-inline-start: 4px solid var(--connectome-accent);
+  border-radius: 11px;
+}
+
+.connectome-module .connectome-text-alternative :where(ol, ul) {
+  margin: 8px 0;
+  padding-inline-start: 22px;
+}
+
+.connectome-module .connectome-text-alternative li + li {
+  margin-top: 6px;
+}
+
+.connectome-module .connectome-status {
+  position: absolute;
+  inset-inline: 50% auto;
+  inset-block-start: 12px;
+  z-index: 16;
+  max-width: min(560px, calc(100% - 132px));
+  padding: 7px 11px;
+  color: var(--connectome-text-soft);
+  background: var(--connectome-surface);
+  border: 1px solid var(--connectome-border);
+  border-radius: 999px;
+  box-shadow: 0 8px 22px rgb(0 0 0 / 20%);
+  font-size: .75rem;
+  text-align: center;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.connectome-module .connectome-empty-state {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  padding: 24px;
+  color: var(--connectome-text-muted);
+  border: 1px dashed var(--connectome-border);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.connectome-module .connectome-sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Variantes de tema */
+
+html[data-theme="light"] .connectome-module,
+html[data-theme^="light-"] .connectome-module,
+body.tema-claro .connectome-module {
+  --connectome-shadow: 0 18px 48px rgb(26 54 38 / 13%);
+  --connectome-cortex: #347a4d;
+  --connectome-nucleus: #6859b3;
+  --connectome-tract: #237c94;
+  --connectome-subfield: #9a6816;
+  --connectome-modulator: #aa4141;
+  --connectome-excitatory: #267640;
+  --connectome-inhibitory: #ad3d3d;
+  --connectome-modulatory: #8a631a;
+  --connectome-reciprocal: #3d5eaa;
+  --connectome-functional: #6f539c;
+}
+
+html[data-theme="light"] .connectome-module .connectome-viewport,
+html[data-theme^="light-"] .connectome-module .connectome-viewport,
+body.tema-claro .connectome-module .connectome-viewport {
+  background-image:
+    linear-gradient(rgb(16 51 32 / 9%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(16 51 32 / 9%) 1px, transparent 1px),
+    radial-gradient(circle at 50% 45%, var(--connectome-accent-soft), transparent 58%);
+}
+
+html[data-theme="biocelular"] .connectome-module {
+  --connectome-shadow: 0 22px 70px rgb(0 0 0 / 42%);
+  --connectome-cortex: #e1664e;
+  --connectome-nucleus: #d98abd;
+  --connectome-tract: #ffbd58;
+  --connectome-subfield: #e8a36f;
+  --connectome-modulator: #ef6c72;
+  --connectome-excitatory: #ffbd58;
+  --connectome-inhibitory: #f47b82;
+  --connectome-modulatory: #e8a36f;
+  --connectome-reciprocal: #d98abd;
+  --connectome-functional: #d1a6d7;
+  background: var(--bio-bg-panel, var(--surface-primary, #22080e));
+  box-shadow: var(--bio-shadow, var(--connectome-shadow));
+}
+
+html[data-theme="biocelular"] .connectome-module .connectome-viewport {
+  background-image:
+    linear-gradient(rgb(205 79 68 / 12%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(205 79 68 / 12%) 1px, transparent 1px),
+    radial-gradient(circle at 50% 45%, var(--bio-glow, rgb(255 145 62 / 20%)), transparent 60%);
+}
+
+html[data-theme="biocelular"] .connectome-module :where(.connectome-header, .connectome-controls, .connectome-detail, .connectome-camera-toolbar, .connectome-legend, .connectome-tour, .connectome-context-menu) {
+  box-shadow: 0 16px 46px rgb(0 0 0 / 30%), inset 0 1px 0 rgb(255 189 88 / 5%);
+}
+
+/* Tableta: el detalle se convierte en panel superpuesto colapsable. */
+
+@media (max-width: 1180px) {
+  .connectome-module .connectome-workspace {
+    grid-template-columns: 280px minmax(0, 1fr);
+  }
+
+  .connectome-module .connectome-detail {
+    position: absolute;
+    inset-block: 0;
+    inset-inline: auto 0;
+    z-index: 24;
+    width: min(390px, calc(100% - 24px));
+    padding-block-start: 58px;
+    border: 1px solid var(--connectome-border);
+    border-block: 0;
+    box-shadow: -18px 0 48px rgb(0 0 0 / 34%);
+    transition: transform .22s ease, visibility .22s ease;
+  }
+
+  .connectome-module .connectome-detail-close:not([hidden]) {
+    display: grid;
+  }
+
+  .connectome-module .connectome-detail.is-collapsed,
+  .connectome-module .connectome-detail[aria-hidden="true"] {
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateX(calc(100% + 24px));
+  }
+
+  .connectome-module .connectome-detail.is-open,
+  .connectome-module .connectome-detail[aria-hidden="false"] {
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(0);
+  }
+
+  .connectome-module .connectome-comparison-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .connectome-module .connectome-header {
+    display: grid;
+  }
+
+  .connectome-module .connectome-toolbar {
+    justify-content: flex-start;
+  }
+
+  .connectome-module .connectome-workspace {
+    grid-template-columns: 250px minmax(0, 1fr);
+  }
+
+  .connectome-module .connectome-chip-grid,
+  .connectome-module .connectome-legend-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Movil: controles horizontales, mapa legible y detalle como bottom sheet. */
+
+@media (max-width: 720px) {
+  .connectome-module {
+    border-inline: 0;
+    border-radius: 16px;
+  }
+
+  .connectome-module .connectome-header {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .connectome-module .connectome-header p {
+    font-size: .82rem;
+  }
+
+  .connectome-module .connectome-toolbar {
+    flex-wrap: nowrap;
+    max-width: 100%;
+    padding: 2px 2px 5px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .connectome-module .connectome-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .connectome-module .connectome-toolbar > * {
+    flex: 0 0 auto;
+  }
+
+  .connectome-module .connectome-breadcrumb {
+    padding-inline: 12px;
+  }
+
+  .connectome-module .connectome-breadcrumb button,
+  .connectome-module .connectome-breadcrumb a {
+    min-height: 44px;
+  }
+
+  .connectome-module .connectome-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(60vh, 1fr);
+    height: auto;
+    min-height: 0;
+  }
+
+  .connectome-module .connectome-controls {
+    z-index: 12;
+    display: flex;
+    align-items: stretch;
+    gap: 9px;
+    width: 100%;
+    max-height: none;
+    padding: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-inline-end: 0;
+    border-bottom: 1px solid var(--connectome-border-soft);
+    scroll-snap-type: x proximity;
+  }
+
+  .connectome-module .connectome-controls > * {
+    flex: 0 0 min(78vw, 290px);
+    min-width: 0;
+    margin: 0;
+    scroll-snap-align: start;
+  }
+
+  .connectome-module .connectome-controls > :where(h2, h3, .connectome-panel-heading) {
+    display: none;
+  }
+
+  .connectome-module .connectome-search {
+    z-index: 15;
+  }
+
+  .connectome-module .connectome-search-results {
+    position: fixed;
+    inset: auto 10px calc(10px + env(safe-area-inset-bottom));
+    max-height: min(52dvh, 420px);
+  }
+
+  .connectome-module .connectome-filter-section {
+    min-width: min(78vw, 290px);
+  }
+
+  .connectome-module .connectome-filter-section > summary,
+  .connectome-module :where(input[type="search"], input[type="text"], select, textarea),
+  .connectome-module button,
+  .connectome-module .connectome-button,
+  .connectome-module .connectome-chip,
+  .connectome-module .connectome-chip-grid label {
+    min-height: 44px;
+  }
+
+  .connectome-module .connectome-help {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .connectome-module .connectome-viewport-panel {
+    min-height: max(60vh, 460px);
+  }
+
+  .connectome-module .connectome-viewport {
+    height: 60vh;
+    height: max(60dvh, 460px);
+    min-height: max(60vh, 460px);
+  }
+
+  .connectome-module .connectome-detail {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 1200;
+    width: 100%;
+    max-width: none;
+    max-height: min(82dvh, 720px);
+    padding: 58px 14px 14px;
+    border: 1px solid var(--connectome-border);
+    border-bottom: 0;
+    border-radius: 22px 22px 0 0;
+    box-shadow: 0 -20px 60px rgb(0 0 0 / 48%);
+    transform: translateY(0);
+    transition: transform .24s ease, visibility .24s ease;
+    touch-action: pan-y;
+  }
+
+  .connectome-module .connectome-detail::before {
+    content: "";
+    position: absolute;
+    inset: 9px auto auto 50%;
+    width: 48px;
+    height: 5px;
+    background: var(--connectome-border-strong);
+    border-radius: 999px;
+    transform: translateX(-50%);
+  }
+
+  .connectome-module .connectome-detail.is-collapsed,
+  .connectome-module .connectome-detail[aria-hidden="true"] {
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(calc(100% + 16px));
+  }
+
+  .connectome-module .connectome-detail.is-open,
+  .connectome-module .connectome-detail[aria-hidden="false"] {
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .connectome-module .connectome-detail.is-dragging {
+    transition: none;
+  }
+
+  .connectome-module .connectome-detail-section dl {
+    grid-template-columns: 1fr;
+  }
+
+  .connectome-module .connectome-bottom-actions {
+    inset-block-end: -14px;
+    margin: 14px -14px -14px;
+  }
+
+  .connectome-module .connectome-camera-toolbar {
+    inset-block-start: 8px;
+    inset-inline-end: 8px;
+  }
+
+  .connectome-module .connectome-camera-toolbar button {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+
+  .connectome-module .connectome-legend {
+    inset-inline-start: 8px;
+    inset-block-end: 8px;
+    width: min(270px, calc(100% - 68px));
+    max-height: 34%;
+  }
+
+  .connectome-module .connectome-legend:not([open]) {
+    width: auto;
+  }
+
+  .connectome-module .connectome-tour {
+    position: fixed;
+    inset: auto 8px calc(8px + env(safe-area-inset-bottom));
+    z-index: 1190;
+    width: auto;
+    max-height: 52dvh;
+    overflow-y: auto;
+    transform: none;
+  }
+
+  .connectome-module .connectome-tooltip {
+    display: none;
+  }
+
+  .connectome-module .connectome-context-menu {
+    position: fixed;
+    inset: auto 8px calc(8px + env(safe-area-inset-bottom));
+    width: auto;
+    max-height: 68dvh;
+  }
+
+  .connectome-module .connectome-status {
+    inset-block-start: auto;
+    inset-block-end: 10px;
+    max-width: calc(100% - 92px);
+  }
+
+  .connectome-module .connectome-edge-hit {
+    stroke-width: 24;
+  }
+
+  .connectome-module .connectome-edge__hit-area {
+    stroke-width: 24;
+  }
+
+  .connectome-module .connectome-node-label,
+  .connectome-module .connectome-node__label {
+    font-size: 13px;
+    stroke-width: 5px;
+  }
+}
+
+@media (max-width: 420px) {
+  .connectome-module .connectome-header p {
+    display: none;
+  }
+
+  .connectome-module .connectome-controls > *,
+  .connectome-module .connectome-filter-section {
+    flex-basis: calc(100vw - 38px);
+    min-width: calc(100vw - 38px);
+  }
+
+  .connectome-module .connectome-legend-list,
+  .connectome-module .connectome-chip-grid,
+  .connectome-module .connectome-comparison-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .connectome-module button,
+  .connectome-module .connectome-button,
+  .connectome-module :where(input, select),
+  .connectome-module .connectome-search-results :where([role="option"], a) {
+    min-height: 44px;
+  }
+
+  .connectome-module .connectome-edge-hit {
+    stroke-width: 24;
+  }
+
+  .connectome-module .connectome-edge__hit-area {
+    stroke-width: 24;
+  }
+}
+
+/* Contraste reforzado seleccionable y preferencia del sistema. */
+
+.connectome-module.is-high-contrast,
+[data-contrast="high"] .connectome-module,
+.alto-contraste .connectome-module {
+  --connectome-border: var(--connectome-text);
+  --connectome-border-soft: color-mix(in srgb, var(--connectome-text) 48%, transparent);
+  --connectome-border-strong: var(--connectome-text);
+  --connectome-text-muted: var(--connectome-text-soft);
+  --connectome-shadow: none;
+}
+
+.connectome-module.is-high-contrast :where(button, input, select, textarea, .connectome-filter-section, .connectome-detail-section),
+[data-contrast="high"] .connectome-module :where(button, input, select, textarea, .connectome-filter-section, .connectome-detail-section),
+.alto-contraste .connectome-module :where(button, input, select, textarea, .connectome-filter-section, .connectome-detail-section) {
+  border-width: 2px;
+}
+
+.connectome-module.is-high-contrast :where(.connectome-edge__path, .connectome-node-shape, .connectome-node__shape),
+[data-contrast="high"] .connectome-module :where(.connectome-edge__path, .connectome-node-shape, .connectome-node__shape),
+.alto-contraste .connectome-module :where(.connectome-edge__path, .connectome-node-shape, .connectome-node__shape) {
+  stroke-width: 4;
+}
+
+@media (prefers-contrast: more) {
+  .connectome-module {
+    --connectome-border: var(--connectome-text);
+    --connectome-border-soft: color-mix(in srgb, var(--connectome-text) 46%, transparent);
+    --connectome-border-strong: var(--connectome-text);
+    --connectome-text-muted: var(--connectome-text-soft);
+    --connectome-shadow: none;
+  }
+
+  .connectome-module :where(button, input, select, textarea, .connectome-filter-section, .connectome-detail-section) {
+    border-width: 2px;
+  }
+
+  .connectome-module :where(.connectome-edge__path, .connectome-node-shape, .connectome-node__shape) {
+    stroke-width: 4;
+  }
+
+  .connectome-module .connectome-node.is-dimmed,
+  .connectome-module :where(.connectome-edge.is-dimmed, .is-dimmed > .connectome-edge) {
+    opacity: .28;
+  }
+}
+
+@media (forced-colors: active) {
+  .connectome-module {
+    --connectome-bg: Canvas;
+    --connectome-bg-alt: Canvas;
+    --connectome-surface: Canvas;
+    --connectome-surface-soft: Canvas;
+    --connectome-surface-raised: Canvas;
+    --connectome-text: CanvasText;
+    --connectome-text-soft: CanvasText;
+    --connectome-text-muted: CanvasText;
+    --connectome-border: CanvasText;
+    --connectome-border-soft: CanvasText;
+    --connectome-border-strong: CanvasText;
+    --connectome-accent: Highlight;
+    --connectome-focus: Highlight;
+    --connectome-shadow: none;
+    forced-color-adjust: auto;
+  }
+
+  .connectome-module .connectome-viewport {
+    background-image: none;
+  }
+
+  .connectome-module .connectome-node-shape {
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+
+  .connectome-module .connectome-node__shape {
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+
+  .connectome-module :where(.connectome-node.is-selected, .connectome-node.is-current) .connectome-node-shape,
+  .connectome-module :where(.connectome-node.selected, .connectome-node.current, .connectome-node.is-selected, .connectome-node.is-current) .connectome-node__shape,
+  .connectome-module :where(.connectome-edge.selected, .connectome-edge.current, .connectome-edge.route, .connectome-edge.is-selected, .connectome-edge.is-current, .connectome-edge.is-route) .connectome-edge__path {
+    stroke: Highlight;
+  }
+
+  .connectome-module .connectome-edge-label,
+  .connectome-module .connectome-edge__label,
+  .connectome-module .connectome-node-label,
+  .connectome-module .connectome-node__label,
+  .connectome-module .connectome-node__icon,
+  .connectome-module .connectome-node-secondary-label {
+    fill: CanvasText;
+    stroke: Canvas;
+  }
+
+  .connectome-module .connectome-node.is-lesioned .connectome-node-shape,
+  .connectome-module :where(.connectome-node.lesioned, .connectome-node.is-lesioned) .connectome-node__shape,
+  .connectome-module :where(.connectome-edge.lesioned, .connectome-edge.is-lesioned) .connectome-edge__path,
+  .connectome-module :where(.connectome-edge.is-lesioned, .is-lesioned > .connectome-edge) {
+    stroke: Mark;
+  }
+}
+
+/* Movimiento reducido: conserva el estado sin flujo ni pulsos. */
+
+.connectome-module.is-reduced-motion *,
+.connectome-module.is-reduced-motion *::before,
+.connectome-module.is-reduced-motion *::after {
+  scroll-behavior: auto !important;
+  animation-duration: .01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .01ms !important;
+}
+
+.connectome-module.is-reduced-motion :where(.connectome-edge.is-route, .is-route > .connectome-edge) {
+  animation: none;
+}
+
+.connectome-module.is-reduced-motion :where(.connectome-edge.route, .connectome-edge.is-route) .connectome-edge__path,
+.connectome-module.is-reduced-motion :where(.connectome-node.current, .connectome-node.is-current) .connectome-node__shape,
+.connectome-module .connectome-renderer.reduced-motion :where(.connectome-edge.route, .connectome-edge.is-route) .connectome-edge__path,
+.connectome-module .connectome-renderer.reduced-motion :where(.connectome-node.current, .connectome-node.is-current) .connectome-node__shape {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connectome-module *,
+  .connectome-module *::before,
+  .connectome-module *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+
+  .connectome-module :where(.connectome-edge.is-route, .is-route > .connectome-edge),
+  .connectome-module .connectome-node.is-current,
+  .connectome-module :where(.connectome-edge.route, .connectome-edge.is-route) .connectome-edge__path,
+  .connectome-module :where(.connectome-node.current, .connectome-node.is-current) .connectome-node__shape {
+    animation: none;
+  }
+}
+
+/* Contrato de la UI declarativa del controlador. */
+
+.connectome-module .connectome-header-copy {
+  min-width: 0;
+}
+
+.connectome-module .connectome-mode-switch,
+.connectome-module .connectome-badges,
+.connectome-module .connectome-detail-actions,
+.connectome-module .connectome-memory-groups,
+.connectome-module .connectome-legend-items {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.connectome-module .connectome-mode-switch {
+  flex: 0 0 auto;
+  justify-content: flex-end;
+}
+
+.connectome-module .connectome-badges {
+  margin-top: 10px;
+  color: var(--connectome-text-muted);
+  font-size: .76rem;
+}
+
+.connectome-module .connectome-badges span {
+  padding: 4px 8px;
+  background: var(--connectome-accent-soft);
+  border: 1px solid var(--connectome-border-soft);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.connectome-module .connectome-disclaimer {
+  margin: 0;
+  padding: 10px 20px;
+  color: var(--connectome-text-soft);
+  background: color-mix(in srgb, var(--connectome-bg-alt) 88%, var(--connectome-accent-soft));
+  border-bottom: 1px solid var(--connectome-border-soft);
+  font-size: .8rem;
+}
+
+.connectome-module .connectome-toolbar > label,
+.connectome-module .connectome-search-wrap {
+  min-width: min(205px, 100%);
+}
+
+.connectome-module .connectome-toolbar > label {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 5px 8px;
+}
+
+.connectome-module .connectome-toolbar > label > select {
+  grid-column: 1 / -1;
+}
+
+.connectome-module .connectome-search-wrap {
+  position: relative;
+}
+
+.connectome-module .connectome-search-wrap > label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.connectome-module .connectome-section-title,
+.connectome-module .connectome-detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.connectome-module .connectome-section-title h3,
+.connectome-module .connectome-detail-head h3,
+.connectome-module .connectome-detail-empty h3 {
+  margin: 0;
+}
+
+.connectome-module .connectome-memory-groups {
+  align-items: stretch;
+  margin-top: 9px;
+}
+
+.connectome-module .connectome-memory-groups button {
+  flex: 1 1 120px;
+  min-width: 0;
+  text-align: start;
+}
+
+.connectome-module .connectome-check {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 6px 8px;
+  background: var(--connectome-surface-soft);
+  border: 1px solid var(--connectome-border-soft);
+  border-radius: 10px;
+}
+
+.connectome-module .connectome-check input {
+  margin: 0;
+}
+
+.connectome-module .connectome-evidence {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  color: var(--connectome-text-soft);
+  background: var(--connectome-surface-raised);
+  border: 1px solid var(--connectome-border);
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 800;
+}
+
+.connectome-module .connectome-evidence[data-evidence="controvertida"] {
+  border-style: dashed;
+}
+
+.connectome-module .connectome-detail-actions {
+  align-items: stretch;
+  margin: 14px 0;
+}
+
+.connectome-module .connectome-detail-actions button {
+  flex: 1 1 112px;
+}
+
+.connectome-module .connectome-detail-empty {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-height: 180px;
+}
+
+.connectome-module .connectome-facts {
+  display: grid;
+  grid-template-columns: minmax(92px, .7fr) minmax(0, 1.3fr);
+  gap: 0;
+  margin: 14px 0;
+  overflow: hidden;
+  border: 1px solid var(--connectome-border-soft);
+  border-radius: 10px;
+}
+
+.connectome-module .connectome-facts :where(dt, dd) {
+  margin: 0;
+  padding: 7px 9px;
+  border-bottom: 1px solid var(--connectome-border-soft);
+}
+
+.connectome-module .connectome-facts dt {
+  color: var(--connectome-text-muted);
+  background: var(--connectome-bg-alt);
+  font-weight: 800;
+}
+
+.connectome-module .connectome-facts dd {
+  color: var(--connectome-text-soft);
+}
+
+.connectome-module .connectome-route-title,
+.connectome-module .connectome-circuit-text {
+  padding: 10px;
+  background: var(--connectome-bg-alt);
+  border: 1px solid var(--connectome-border-soft);
+  border-radius: 10px;
+}
+
+.connectome-module .connectome-route-title button,
+.connectome-module .connectome-inline-link {
+  min-height: 30px;
+  padding: 4px 7px;
+  color: var(--connectome-accent-hover);
+  background: transparent;
+  border-color: transparent;
+  font-size: .8rem;
+}
+
+.connectome-module .connectome-references {
+  padding-inline-start: 22px;
+}
+
+.connectome-module .connectome-references li {
+  margin-bottom: 9px;
+}
+
+.connectome-module .connectome-references small {
+  display: block;
+  margin-top: 3px;
+  color: var(--connectome-text-muted);
+}
+
+.connectome-module .connectome-path-results,
+.connectome-module .connectome-comparison {
+  display: grid;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.connectome-module .connectome-legend-items span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  color: var(--connectome-text-soft);
+  font-size: .74rem;
+}
+
+.connectome-module .connectome-legend-items i {
+  display: inline-block;
+  width: 18px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-radius: 4px;
+}
+
+.connectome-module .connectome-help-popover {
+  position: absolute;
+  z-index: 40;
+  width: min(320px, calc(100% - 16px));
+  padding: 11px 12px;
+  color: var(--connectome-text);
+  background: var(--connectome-surface-raised);
+  border: 1px solid var(--connectome-border-strong);
+  border-radius: 11px;
+  box-shadow: var(--connectome-shadow);
+  font-size: .8rem;
+}
+
+@media (max-width: 1180px) {
+  .connectome-module .connectome-header {
+    flex-wrap: wrap;
+  }
+
+  .connectome-module .connectome-mode-switch {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  .connectome-module .connectome-disclaimer {
+    padding-inline: 12px;
+  }
+
+  .connectome-module .connectome-badges {
+    gap: 5px;
+  }
+
+  .connectome-module .connectome-mode-switch {
+    width: 100%;
+  }
+
+  .connectome-module .connectome-mode-switch button {
+    flex: 1 1 120px;
+  }
+}
