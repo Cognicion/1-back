@@ -355,7 +355,10 @@ export const BRAIN_CONNECTIONS_BASE = Object.freeze([
 
   connection("dlpfc_parietal", "corteza_prefrontal_dorsolateral", "corteza_parietal_posterior", "Conexion frontoparietal", {
     direccion: "reciproca",
-    tipo: "conexion_reciproca",
+    tipo: "conectividad_funcional",
+    claseEntidad: "relacion_funcional",
+    polaridad: "no_aplica",
+    neurotransmisorPrincipal: "no_aplica",
     funcion: "Interaccion recurrente entre regiones frontales y parietales segun contenido y demanda.",
     importanciaAprendizaje: "Sostiene mantenimiento, actualizacion y control de informacion en memoria de trabajo.",
     evidencia: "modelo_funcional",
@@ -495,10 +498,11 @@ export const BRAIN_CONNECTIONS_BASE = Object.freeze([
   connection("amigdala_central_hipotalamo", "amigdala_central", "hipotalamo", "Salida amigdalohipotalamica", {
     polaridad: "mixta",
     neurotransmisorPrincipal: "GABA y peptidos",
+    tractoFasciculo: "Via amigdalofugal ventral (componente agregado)",
     funcion: "Proyecciones hacia circuitos autonomicos y endocrinos hipotalamicos.",
     importanciaAprendizaje: "Participa en expresion corporal de respuestas emocionales aprendidas.",
     etiquetas: ["condicionamiento", "respuesta_autonomica"],
-    referencias: ["ledoux_2000"]
+    referencias: ["ledoux_2000", "kamali_2016"]
   }),
   connection("amigdala_central_pag", "amigdala_central", "sustancia_gris_periacueductal", "Salida amigdaloperiacueductal", {
     polaridad: "mixta",
@@ -697,6 +701,696 @@ export const BRAIN_CONNECTIONS_BASE = Object.freeze([
     importanciaAprendizaje: "Puede favorecer procesamiento de senales relevantes y plasticidad cortical.",
     etiquetas: ["acetilcolina", "atencion", "aprendizaje", "modulacion"],
     referencias: ["hasselmo_2006", "kandel_2021"]
+  }),
+
+  // Formacion hipocampal ampliada y vias temporales.
+  connection("via_perforante_lec_dg", "corteza_entorrinal_lateral", "giro_dentado", "Via perforante lateral", {
+    tipo: "via",
+    claseEntidad: "via",
+    tractoFasciculo: "Via perforante lateral",
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Proyeccion entorrinal lateral hacia giro dentado dentro de vias corticohipocampales.",
+    importanciaAprendizaje: "Aporta informacion sobre items y contexto a representaciones hipocampales; la topografia depende de especie y eje anatomico.",
+    evidencia: "establecida",
+    especies: ["roedor", "primate"],
+    tiposEvidencia: ["trazado_anatomico", "revision"],
+    etiquetas: ["memoria_episodica", "reconocimiento", "plasticidad"],
+    referencias: ["van_strien_2009", "schultz_engelhardt_2014"]
+  }),
+  connection("via_temporoamonica_lec_ca1", "corteza_entorrinal_lateral", "ca1", "Via temporoamonica lateral", {
+    tipo: "via",
+    claseEntidad: "via",
+    tractoFasciculo: "Via temporoamonica lateral",
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Entrada entorrinal lateral directa hacia CA1, con topografia complementaria a entradas mediales en modelos animales.",
+    importanciaAprendizaje: "Permite convergencia de informacion entorrinal e intrahipocampal sin asumir una division funcional absoluta.",
+    evidencia: "probable",
+    especies: ["roedor"],
+    tiposEvidencia: ["trazado_anatomico", "electrofisiologia", "revision"],
+    etiquetas: ["memoria_episodica", "reconocimiento"],
+    referencias: ["van_strien_2009", "brandon_koenig_leutgeb_2014"]
+  }),
+  connection("giro_dentado_hilus_local", "giro_dentado", "hilus_giro_dentado", "Microcircuito dentado-hiliar", {
+    tipo: "conexion_local",
+    claseEntidad: "microcircuito",
+    direccion: "reciproca",
+    polaridad: "mixta",
+    neurotransmisorPrincipal: "glutamato y GABA",
+    funcion: "Resume colaterales de celulas granulares, celulas musgosas e interneuronas entre capa granular e hilus.",
+    importanciaAprendizaje: "Modula dispersion y recurrencia de actividad; no representa una sinapsis unica ni uniformemente excitatoria.",
+    evidencia: "establecida",
+    especies: ["roedor", "primate"],
+    tiposEvidencia: ["histologia", "electrofisiologia", "revision"],
+    etiquetas: ["memoria", "microcircuito_hipocampal", "procesamiento_patrones"],
+    referencias: ["schultz_engelhardt_2014", "kandel_2021"]
+  }),
+  connection("fibras_musgosas_dg_ca4", "giro_dentado", "ca4", "Fibras musgosas hacia CA4", {
+    tipo: "via",
+    claseEntidad: "via",
+    tractoFasciculo: "Fibras musgosas hipocampales",
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Representa el contacto de axones de celulas granulares con neuronas de la region CA4/hiliar en nomenclatura humana.",
+    importanciaAprendizaje: "Anade detalle anatomico sin convertir CA4 en sinonimo del hilus completo.",
+    evidencia: "probable",
+    especies: ["humano", "primate"],
+    tiposEvidencia: ["histologia", "revision_anatomica"],
+    etiquetas: ["memoria", "terminologia_variable"],
+    referencias: ["schultz_engelhardt_2014", "fipat_tna"]
+  }),
+  connection("presubiculo_mec", "presubiculo", "corteza_entorrinal_medial", "Conexion presubiculo-entorrinal medial", {
+    direccion: "reciproca",
+    tipo: "conexion_reciproca",
+    funcion: "Intercambio topografico entre presubiculo y corteza entorrinal medial dentro del sistema espacial.",
+    importanciaAprendizaje: "Vincula senales de orientacion con codigos espaciales entorrinales.",
+    evidencia: "establecida",
+    especies: ["roedor", "primate"],
+    tiposEvidencia: ["trazado_anatomico", "revision"],
+    etiquetas: ["navegacion", "head_direction"],
+    referencias: ["witter_canto_2014", "witter_amaral_2021"]
+  }),
+  connection("parasubiculo_mec", "parasubiculo", "corteza_entorrinal_medial", "Conexion parasubiculo-entorrinal medial", {
+    direccion: "reciproca",
+    tipo: "conexion_reciproca",
+    funcion: "Intercambio entre parasubiculo y capas entorrinales mediales dentro de circuitos espaciales.",
+    importanciaAprendizaje: "Contribuye a integrar direccion y limites con representaciones entorrinales.",
+    evidencia: "establecida",
+    especies: ["roedor", "primate"],
+    tiposEvidencia: ["trazado_anatomico", "revision"],
+    etiquetas: ["navegacion", "grid_cells", "border_cells"],
+    referencias: ["witter_canto_2014", "witter_amaral_2021"]
+  }),
+  connection("ca1_fornix_alveus_fimbria", "ca1", "fornix", "Salida CA1 por alveus y fimbria", {
+    tipo: "via",
+    claseEntidad: "via",
+    tractoFasciculo: "Alveus-fimbria-fornix",
+    funcion: "Agrupa fibras eferentes de CA1 que alcanzan la fimbria y el fornix; no convierte alveus o fimbria en nucleos.",
+    importanciaAprendizaje: "Expone la continuidad de sustancia blanca de la salida hipocampal a escala de via.",
+    evidencia: "establecida",
+    tiposEvidencia: ["histologia", "trazado_anatomico", "revision"],
+    etiquetas: ["memoria_episodica", "alveus", "fimbria", "fornix"],
+    referencias: ["schultz_engelhardt_2014", "aggleton_brown_1999"]
+  }),
+  connection("fusiforme_perirrinal", "giro_fusiforme", "corteza_perirrinal", "Conexion fusiforme-perirrinal", {
+    direccion: "reciproca",
+    tipo: "conexion_reciproca",
+    funcion: "Interaccion entre procesamiento visual ventral y redes perirrinales de reconocimiento.",
+    importanciaAprendizaje: "Permite que representaciones visuales complejas participen en reconocimiento y memoria de items.",
+    evidencia: "probable",
+    etiquetas: ["reconocimiento", "memoria_semantica"],
+    referencias: ["van_strien_2009", "lambon_ralph_2017"]
+  }),
+  connection("polo_temporal_orbitofrontal_uncinado", "polo_temporal", "corteza_orbitofrontal", "Fasciculo uncinado temporo-orbitofrontal", {
+    direccion: "reciproca",
+    tipo: "via",
+    claseEntidad: "via",
+    tractoFasciculo: "Fasciculo uncinado",
+    funcion: "Conecta regiones temporales anteriores con corteza orbitofrontal y frontal polar de forma bidireccional.",
+    importanciaAprendizaje: "Puede permitir que asociaciones temporales influyan en valoracion y conducta; la funcion no se deriva solo de la anatomia.",
+    evidencia: "establecida",
+    especies: ["humano", "primate"],
+    tiposEvidencia: ["diseccion", "trazado_anatomico", "tractografia", "revision"],
+    etiquetas: ["memoria_semantica", "emocion", "recompensa", "tracto"],
+    referencias: ["von_der_heide_2013"]
+  }),
+  connection("temporal_lateral_vlpfc_arqueado", "corteza_temporal_lateral", "corteza_prefrontal_ventrolateral", "Conectividad dorsal temporofrontal", {
+    direccion: "reciproca",
+    tipo: "via",
+    claseEntidad: "via",
+    tractoFasciculo: "Fasciculo arqueado",
+    funcion: "Representacion simplificada de componentes dorsales que conectan corteza temporal lateral con regiones frontales inferiores.",
+    importanciaAprendizaje: "Apoya interacciones de lenguaje, memoria de trabajo verbal y recuperacion semantica; la anatomia real tiene varios segmentos.",
+    evidencia: "probable",
+    tiposEvidencia: ["diseccion", "tractografia"],
+    etiquetas: ["lenguaje", "memoria_trabajo", "tracto"],
+    referencias: ["catani_thiebaut_2012", "kandel_2021", "fipat_tna"]
+  }),
+  connection("fusiforme_temporal_anterior_ilf", "giro_fusiforme", "corteza_temporal_anterior", "Conectividad temporal ventral longitudinal", {
+    direccion: "reciproca",
+    tipo: "via",
+    claseEntidad: "via",
+    tractoFasciculo: "Fasciculo longitudinal inferior",
+    funcion: "Representa un componente ventral longitudinal entre corteza visual temporal y temporal anterior.",
+    importanciaAprendizaje: "Relaciona contenido visual con redes semanticas sin atribuir toda la funcion al fasciculo.",
+    evidencia: "probable",
+    tiposEvidencia: ["diseccion", "tractografia"],
+    etiquetas: ["reconocimiento", "memoria_semantica", "tracto"],
+    referencias: ["catani_thiebaut_2012", "lambon_ralph_2017", "kandel_2021"]
+  }),
+  connection("dlpfc_parietal_slf", "corteza_prefrontal_dorsolateral", "corteza_parietal_posterior", "Fasciculo longitudinal superior frontoparietal", {
+    direccion: "reciproca",
+    tipo: "via",
+    claseEntidad: "via",
+    tractoFasciculo: "Fasciculo longitudinal superior",
+    funcion: "Conectividad estructural frontoparietal representada a escala agregada y separada de la relacion funcional homonima.",
+    importanciaAprendizaje: "Proporciona un sustrato anatomico para redes de control sin equiparar tractografia con funcion causal.",
+    evidencia: "establecida",
+    tiposEvidencia: ["diseccion", "tractografia"],
+    etiquetas: ["memoria_trabajo", "ejecutivo", "atencion", "tracto"],
+    referencias: ["catani_thiebaut_2012", "kandel_2021", "desposito_postle_2015"]
+  }),
+
+  // Sistema septal y eje prefrontal-reuniens-hipocampo.
+  connection("banda_diagonal_hipocampo_acetilcolina", "banda_diagonal_broca", "hipocampo", "Proyeccion banda diagonal-hipocampo", {
+    tipo: "senal_moduladora",
+    claseEntidad: "senal_moduladora",
+    polaridad: "moduladora",
+    neurotransmisorPrincipal: "acetilcolina",
+    funcion: "Componente colinergico de la proyeccion septohipocampal desde la banda diagonal.",
+    importanciaAprendizaje: "Modula theta, plasticidad y balance entre codificacion y recuperacion de manera dependiente del estado.",
+    evidencia: "establecida",
+    especies: ["roedor", "primate", "humano"],
+    tiposEvidencia: ["trazado_anatomico", "histologia", "revision"],
+    etiquetas: ["acetilcolina", "theta", "memoria", "modulacion"],
+    referencias: ["nunez_buno_2021", "hasselmo_2006"]
+  }),
+  connection("banda_diagonal_entorrinal_acetilcolina", "banda_diagonal_broca", "corteza_entorrinal", "Proyeccion banda diagonal-entorrinal", {
+    tipo: "senal_moduladora",
+    claseEntidad: "senal_moduladora",
+    polaridad: "moduladora",
+    neurotransmisorPrincipal: "acetilcolina",
+    funcion: "Modulacion colinergica de corteza entorrinal desde el prosencefalo basal septal.",
+    importanciaAprendizaje: "Ajusta excitabilidad y dinamica de la interfaz entorrinal-hipocampal.",
+    evidencia: "establecida",
+    tiposEvidencia: ["trazado_anatomico", "revision"],
+    etiquetas: ["acetilcolina", "memoria", "navegacion", "modulacion"],
+    referencias: ["nunez_buno_2021", "hasselmo_2006"]
+  }),
+  connection("septum_hipocampo_gaba", "septum_medial", "hipocampo", "Proyeccion septohipocampal GABAergica", {
+    tipo: "senal_moduladora",
+    claseEntidad: "senal_moduladora",
+    polaridad: "moduladora",
+    neurotransmisorPrincipal: "GABA",
+    funcion: "Proyeccion septal GABAergica dirigida en gran medida a interneuronas hipocampales.",
+    importanciaAprendizaje: "Coordina fases de theta mediante desinhibicion ritmica; no es una inhibicion uniforme de todo el hipocampo.",
+    evidencia: "establecida",
+    especies: ["roedor"],
+    tiposEvidencia: ["trazado_anatomico", "electrofisiologia"],
+    etiquetas: ["GABA", "theta", "navegacion", "modulacion"],
+    referencias: ["nunez_buno_2021"]
+  }),
+  connection("hipocampo_septales_laterales", "hipocampo", "nucleos_septales_laterales", "Proyeccion hipocampo-septum lateral", {
+    tipo: "via",
+    claseEntidad: "via",
+    tractoFasciculo: "Fimbria-fornix",
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Salida topografica hipocampal hacia complejos septales laterales.",
+    importanciaAprendizaje: "Conecta contexto y navegacion con circuitos motivacionales e hipotalamicos.",
+    evidencia: "establecida",
+    especies: ["roedor"],
+    tiposEvidencia: ["trazado_anatomico", "revision"],
+    etiquetas: ["memoria_contextual", "navegacion", "septum"],
+    referencias: ["nunez_buno_2021", "kandel_2021"]
+  }),
+  connection("prefrontal_medial_reuniens", "corteza_prefrontal_medial", "nucleo_reuniens_talamo", "Bucle prefrontal-reuniens", {
+    direccion: "reciproca",
+    tipo: "conexion_reciproca",
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Conectividad bidireccional entre mPFC y reuniens descrita principalmente en modelos animales.",
+    importanciaAprendizaje: "Coordina control prefrontal y organizacion temporal/contextual de memoria.",
+    evidencia: "establecida",
+    especies: ["roedor"],
+    tiposEvidencia: ["trazado_anatomico", "electrofisiologia", "revision"],
+    etiquetas: ["memoria_trabajo", "memoria_episodica", "ejecutivo"],
+    referencias: ["dolleman_reuniens_2019"]
+  }),
+  connection("reuniens_ca1", "nucleo_reuniens_talamo", "ca1", "Proyeccion reuniens-CA1", {
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Proyeccion talamohipocampal hacia estrato lacunosum-moleculare de CA1, especialmente desde reuniens rostral.",
+    importanciaAprendizaje: "Permite convergencia de senales talamicas y entorrinales en dendritas de CA1.",
+    evidencia: "establecida",
+    especies: ["roedor"],
+    tiposEvidencia: ["trazado_anatomico", "electrofisiologia", "revision"],
+    etiquetas: ["memoria_episodica", "memoria_trabajo", "integracion"],
+    referencias: ["dolleman_reuniens_2019"]
+  }),
+  connection("subiculo_reuniens", "subiculo", "nucleo_reuniens_talamo", "Proyeccion subiculo-reuniens", {
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Salida subicular hacia regiones de reuniens que contribuye a cerrar el bucle hipocampo-talamo-prefrontal.",
+    importanciaAprendizaje: "Proporciona retorno contextual hipocampal al circuito de linea media talamica.",
+    evidencia: "establecida",
+    especies: ["roedor"],
+    tiposEvidencia: ["trazado_anatomico", "revision"],
+    etiquetas: ["memoria_episodica", "memoria_trabajo"],
+    referencias: ["dolleman_reuniens_2019"]
+  }),
+  connection("reticular_mediodorsal_gaba", "nucleo_reticular_talamo", "nucleo_mediodorsal_talamo", "Inhibicion reticular-mediodorsal", {
+    polaridad: "predominantemente_inhibitoria",
+    neurotransmisorPrincipal: "GABA",
+    funcion: "Control inhibitorio del nucleo mediodorsal por poblaciones del nucleo reticular talamico.",
+    importanciaAprendizaje: "Puede regular ventanas de comunicacion talamocortical; no se presenta como compuerta binaria.",
+    evidencia: "establecida",
+    tiposEvidencia: ["trazado_anatomico", "electrofisiologia", "revision"],
+    etiquetas: ["atencion", "memoria_trabajo", "talamo"],
+    referencias: ["pinault_2004"]
+  }),
+  connection("prefrontal_reticular_talamo", "corteza_prefrontal", "nucleo_reticular_talamo", "Colateral corticoreticular", {
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Colaterales corticotalamicas prefrontales alcanzan sectores asociados del nucleo reticular.",
+    importanciaAprendizaje: "Aporta control cortical sobre dinamica talamica durante atencion y memoria de trabajo.",
+    evidencia: "probable",
+    tiposEvidencia: ["trazado_anatomico", "revision"],
+    etiquetas: ["atencion", "ejecutivo", "talamo"],
+    referencias: ["pinault_2004", "kandel_2021"]
+  }),
+
+  // Relaciones de red funcional: no son tractos ni aristas sinapticas.
+  connection("insula_anterior_cingulada_anterior_funcional", "insula_anterior", "corteza_cingulada_anterior", "Acoplamiento funcional de red de saliencia", {
+    direccion: "reciproca",
+    tipo: "conectividad_funcional",
+    claseEntidad: "relacion_funcional",
+    polaridad: "no_aplica",
+    neurotransmisorPrincipal: "no_aplica",
+    funcion: "Covariacion funcional entre nodos principales de la red de saliencia.",
+    importanciaAprendizaje: "Ayuda a visualizar priorizacion de informacion sin afirmar una proyeccion anatomica directa unica.",
+    evidencia: "modelo_funcional",
+    tiposEvidencia: ["neuroimagen_funcional"],
+    etiquetas: ["saliencia", "red_funcional"],
+    referencias: ["seeley_2007", "menon_2011"]
+  }),
+  connection("vlpfc_parietal_funcional", "corteza_prefrontal_ventrolateral", "corteza_parietal_posterior", "Acoplamiento funcional frontoparietal ventrolateral", {
+    direccion: "reciproca",
+    tipo: "conectividad_funcional",
+    claseEntidad: "relacion_funcional",
+    polaridad: "no_aplica",
+    neurotransmisorPrincipal: "no_aplica",
+    funcion: "Relacion funcional simplificada dentro de redes de control y recuperacion.",
+    importanciaAprendizaje: "Representa cooperacion de red, no un tracto ni una polaridad sinaptica.",
+    evidencia: "modelo_funcional",
+    tiposEvidencia: ["neuroimagen_funcional", "revision"],
+    etiquetas: ["frontoparietal", "ejecutivo", "red_funcional"],
+    referencias: ["seeley_2007", "desposito_postle_2015"]
+  }),
+  connection("angular_precuneo_funcional", "giro_angular", "precuneo", "Acoplamiento funcional parietal de modo predeterminado", {
+    direccion: "reciproca",
+    tipo: "conectividad_funcional",
+    claseEntidad: "relacion_funcional",
+    polaridad: "no_aplica",
+    neurotransmisorPrincipal: "no_aplica",
+    funcion: "Relacion funcional entre regiones parietales laterales y mediales asociadas con memoria y cognicion interna.",
+    importanciaAprendizaje: "Conserva la distincion entre membresia de red y conectividad anatomica.",
+    evidencia: "modelo_funcional",
+    tiposEvidencia: ["neuroimagen_funcional", "revision"],
+    etiquetas: ["default_mode", "memoria_episodica", "red_funcional"],
+    referencias: ["menon_2023", "rugg_king_2018"]
+  }),
+
+  // Microcircuitos amigdalinos y vias de salida.
+  connection("talamo_sensorial_nucleo_lateral", "talamo_sensorial", "nucleo_lateral_amigdala", "Entrada talamica al nucleo lateral", {
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Entrada sensorial talamica dependiente de modalidad hacia el nucleo lateral amigdalino.",
+    importanciaAprendizaje: "Aporta representaciones sensoriales a asociaciones aversivas en modelos experimentales.",
+    evidencia: "establecida",
+    especies: ["roedor", "primate"],
+    tiposEvidencia: ["trazado_anatomico", "electrofisiologia", "revision"],
+    etiquetas: ["condicionamiento", "memoria_emocional"],
+    referencias: ["sah_2003", "ledoux_2000"]
+  }),
+  connection("corteza_sensorial_nucleo_lateral", "cortezas_sensoriales_asociativas", "nucleo_lateral_amigdala", "Entrada cortical al nucleo lateral", {
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Entrada cortical sensorial elaborada hacia el nucleo lateral amigdalino.",
+    importanciaAprendizaje: "Permite asociaciones con estimulos perceptivamente complejos.",
+    evidencia: "establecida",
+    tiposEvidencia: ["trazado_anatomico", "electrofisiologia", "revision"],
+    etiquetas: ["condicionamiento", "memoria_emocional"],
+    referencias: ["sah_2003", "phelps_ledoux_2005"]
+  }),
+  connection("nucleo_lateral_basal_amigdala", "nucleo_lateral_amigdala", "nucleo_basal_amigdala", "Proyeccion lateral-basal amigdalina", {
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Proyecciones excitatorias entre nucleos del complejo basolateral dentro de microcircuitos heterogeneos.",
+    importanciaAprendizaje: "Distribuye asociaciones sensoriales hacia circuitos de contexto, valor y salida.",
+    evidencia: "establecida",
+    tiposEvidencia: ["trazado_anatomico", "electrofisiologia", "revision"],
+    etiquetas: ["condicionamiento", "memoria_emocional"],
+    referencias: ["sah_2003"]
+  }),
+  connection("nucleo_basal_central_amigdala", "nucleo_basal_amigdala", "amigdala_central", "Proyeccion basal-central amigdalina", {
+    funcion: "Componente agregado de proyecciones desde nucleo basal hacia circuitos del nucleo central.",
+    importanciaAprendizaje: "Vincula asociaciones y contexto con sistemas de expresion emocional; existen rutas directas e indirectas.",
+    evidencia: "probable",
+    tiposEvidencia: ["trazado_anatomico", "revision"],
+    etiquetas: ["condicionamiento", "memoria_emocional"],
+    referencias: ["sah_2003", "ledoux_2000"]
+  }),
+  connection("nucleo_basal_intercaladas", "nucleo_basal_amigdala", "masas_intercaladas_amigdala", "Entrada basolateral a masas intercaladas", {
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Entrada desde complejo basolateral a grupos celulares intercalados.",
+    importanciaAprendizaje: "Participa en microcircuitos de discriminacion y extincion sin constituir una unica via de borrado.",
+    evidencia: "modelo_funcional",
+    tiposEvidencia: ["electrofisiologia", "manipulacion_causal", "revision"],
+    etiquetas: ["extincion", "condicionamiento"],
+    referencias: ["sah_2003", "milad_quirk_2012"]
+  }),
+  connection("intercaladas_nucleo_central", "masas_intercaladas_amigdala", "amigdala_central", "Inhibicion intercalada-central", {
+    polaridad: "predominantemente_inhibitoria",
+    neurotransmisorPrincipal: "GABA",
+    funcion: "Control inhibitorio de poblaciones del nucleo central por masas intercaladas.",
+    importanciaAprendizaje: "Contribuye a expresion y supresion contextual de respuestas aprendidas.",
+    evidencia: "modelo_funcional",
+    tiposEvidencia: ["electrofisiologia", "manipulacion_causal", "revision"],
+    etiquetas: ["extincion", "condicionamiento", "GABA"],
+    referencias: ["sah_2003", "milad_quirk_2012"]
+  }),
+  connection("nucleo_medial_hipotalamo_estria_terminal", "nucleo_medial_amigdala", "hipotalamo", "Estria terminal", {
+    tipo: "via",
+    claseEntidad: "via",
+    tractoFasciculo: "Estria terminal",
+    funcion: "Via amigdalohipotalamica de trayecto dorsal representada desde el nucleo medial a hipotalamo agregado.",
+    importanciaAprendizaje: "Relaciona senales sociales y emocionales con respuestas neuroendocrinas y autonomicas.",
+    evidencia: "establecida",
+    tiposEvidencia: ["trazado_anatomico", "tractografia", "revision"],
+    etiquetas: ["emocion", "respuesta_autonomica", "tracto"],
+    referencias: ["sah_2003", "kamali_2016"]
+  }),
+  connection("amigdala_orbitofrontal_uncinado", "amigdala_basolateral", "corteza_orbitofrontal", "Conexion amigdalofrontal por uncinado", {
+    direccion: "reciproca",
+    tipo: "via",
+    claseEntidad: "via",
+    tractoFasciculo: "Fasciculo uncinado (componente amigdalofrontal)",
+    funcion: "Conectividad reciproca agregada entre complejo basolateral y corteza orbitofrontal por sistemas temporofrontales ventrales.",
+    importanciaAprendizaje: "Integra valor afectivo y resultados esperados; no toda la conectividad sigue una sola rama del uncinado.",
+    evidencia: "probable",
+    tiposEvidencia: ["trazado_anatomico", "tractografia", "revision"],
+    etiquetas: ["recompensa", "memoria_emocional", "tracto"],
+    referencias: ["von_der_heide_2013", "phelps_ledoux_2005"]
+  }),
+
+  // Via indirecta de ganglios basales y recompensa detallada.
+  connection("putamen_gpe", "putamen", "globo_palido_externo", "Proyeccion estriopalidal externa", {
+    polaridad: "predominantemente_inhibitoria",
+    neurotransmisorPrincipal: "GABA",
+    funcion: "Proyeccion inhibitoria desde putamen hacia GPe dentro de la via indirecta simplificada.",
+    importanciaAprendizaje: "Contribuye a seleccionar y suprimir acciones en interaccion con otras vias, no como freno aislado.",
+    evidencia: "establecida",
+    etiquetas: ["motor", "aprendizaje_procedimental", "seleccion_acciones"],
+    referencias: ["lanciego_2012"]
+  }),
+  connection("gpe_subtalamico", "globo_palido_externo", "nucleo_subtalamico", "Proyeccion palidosubtalamica", {
+    polaridad: "predominantemente_inhibitoria",
+    neurotransmisorPrincipal: "GABA",
+    funcion: "Proyeccion inhibitoria GPe-STN dentro de redes recurrentes de ganglios basales.",
+    importanciaAprendizaje: "Ajusta dinamica de seleccion de acciones; el circuito real no es una cadena lineal.",
+    evidencia: "establecida",
+    etiquetas: ["motor", "aprendizaje_procedimental", "seleccion_acciones"],
+    referencias: ["lanciego_2012"]
+  }),
+  connection("subtalamico_gpi", "nucleo_subtalamico", "globo_palido_interno", "Proyeccion subtalamopalidal interna", {
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Proyeccion excitatoria STN-GPi hacia un nucleo de salida de ganglios basales.",
+    importanciaAprendizaje: "Modula la salida palidal durante seleccion y detencion de acciones.",
+    evidencia: "establecida",
+    etiquetas: ["motor", "aprendizaje_procedimental", "seleccion_acciones"],
+    referencias: ["lanciego_2012"]
+  }),
+  connection("subtalamico_snr", "nucleo_subtalamico", "sustancia_negra_reticulata", "Proyeccion subtalamonigral", {
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Proyeccion excitatoria STN-SNr hacia un nucleo de salida nigral.",
+    importanciaAprendizaje: "Contribuye a control de acciones y respuestas orientadas.",
+    evidencia: "establecida",
+    etiquetas: ["motor", "aprendizaje_procedimental"],
+    referencias: ["lanciego_2012"]
+  }),
+  connection("vta_accumbens_core_dopamina", "vta", "nucleo_accumbens_core", "Modulacion dopaminergica de accumbens core", {
+    tipo: "senal_moduladora",
+    claseEntidad: "senal_moduladora",
+    polaridad: "moduladora",
+    neurotransmisorPrincipal: "dopamina",
+    funcion: "Proyeccion dopaminergica mesolimbica hacia el territorio core del accumbens.",
+    importanciaAprendizaje: "Modula plasticidad y aprendizaje de relaciones entre claves, acciones y resultados.",
+    evidencia: "establecida",
+    etiquetas: ["dopamina", "recompensa", "aprendizaje_refuerzo"],
+    referencias: ["haber_knutson_2010", "yetnikoff_2014"]
+  }),
+  connection("vta_accumbens_shell_dopamina", "vta", "nucleo_accumbens_shell", "Modulacion dopaminergica de accumbens shell", {
+    tipo: "senal_moduladora",
+    claseEntidad: "senal_moduladora",
+    polaridad: "moduladora",
+    neurotransmisorPrincipal: "dopamina",
+    funcion: "Proyeccion dopaminergica mesolimbica hacia el territorio shell del accumbens.",
+    importanciaAprendizaje: "Modula valor, contexto y estado motivacional segun receptores y poblaciones.",
+    evidencia: "establecida",
+    etiquetas: ["dopamina", "recompensa", "aprendizaje_refuerzo"],
+    referencias: ["haber_knutson_2010", "yetnikoff_2014"]
+  }),
+  connection("accumbens_core_palido_ventral", "nucleo_accumbens_core", "palido_ventral", "Salida accumbens core-palido ventral", {
+    polaridad: "predominantemente_inhibitoria",
+    neurotransmisorPrincipal: "GABA",
+    funcion: "Salida GABAergica desde core hacia territorios del palido ventral.",
+    importanciaAprendizaje: "Transforma integracion de claves y acciones en cambios de salida motivacional.",
+    evidencia: "establecida",
+    etiquetas: ["recompensa", "aprendizaje_refuerzo"],
+    referencias: ["haber_knutson_2010", "lanciego_2012"]
+  }),
+  connection("accumbens_shell_palido_ventral", "nucleo_accumbens_shell", "palido_ventral", "Salida accumbens shell-palido ventral", {
+    polaridad: "predominantemente_inhibitoria",
+    neurotransmisorPrincipal: "GABA",
+    funcion: "Salida GABAergica desde shell hacia territorios limbicos del palido ventral.",
+    importanciaAprendizaje: "Relaciona estado motivacional y contexto con salida del circuito limbico.",
+    evidencia: "establecida",
+    etiquetas: ["recompensa", "aprendizaje_refuerzo"],
+    referencias: ["haber_knutson_2010", "lanciego_2012"]
+  }),
+  connection("orbitofrontal_accumbens_core", "corteza_orbitofrontal", "nucleo_accumbens_core", "Proyeccion orbitofrontal-accumbens core", {
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Entrada orbitofrontal al estriado ventral dentro de territorios parcialmente solapados.",
+    importanciaAprendizaje: "Aporta informacion de valor y resultados esperados a seleccion de acciones.",
+    evidencia: "establecida",
+    etiquetas: ["recompensa", "valor", "aprendizaje_refuerzo"],
+    referencias: ["haber_knutson_2010"]
+  }),
+  connection("habenula_rmtg", "habenula_lateral", "nucleo_tegmental_rostromedial", "Proyeccion habenula-RMTg", {
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Proyeccion excitatoria desde habenula lateral hacia poblaciones GABAergicas de RMTg.",
+    importanciaAprendizaje: "Transmite informacion sobre resultados adversos u omision de recompensa en modelos animales.",
+    evidencia: "establecida",
+    especies: ["roedor", "primate"],
+    tiposEvidencia: ["trazado_anatomico", "electrofisiologia", "manipulacion_causal"],
+    etiquetas: ["aversion", "recompensa", "aprendizaje_refuerzo"],
+    referencias: ["hikosaka_2010", "jhou_2009"]
+  }),
+  connection("rmtg_vta", "nucleo_tegmental_rostromedial", "vta", "Inhibicion RMTg-VTA", {
+    polaridad: "predominantemente_inhibitoria",
+    neurotransmisorPrincipal: "GABA",
+    funcion: "Proyeccion inhibitoria desde RMTg hacia poblaciones dopaminergicas y no dopaminergicas de VTA.",
+    importanciaAprendizaje: "Modula respuestas a resultados adversos y omisiones sin constituir una senal computacional unica.",
+    evidencia: "establecida",
+    especies: ["roedor"],
+    tiposEvidencia: ["trazado_anatomico", "electrofisiologia", "manipulacion_causal"],
+    etiquetas: ["aversion", "dopamina", "aprendizaje_refuerzo"],
+    referencias: ["jhou_2009"]
+  }),
+  connection("palido_ventral_habenula", "palido_ventral", "habenula_lateral", "Proyeccion palido ventral-habenula", {
+    polaridad: "predominantemente_inhibitoria",
+    neurotransmisorPrincipal: "GABA",
+    funcion: "Componente palido-habenular de circuitos que relacionan valor y resultados.",
+    importanciaAprendizaje: "Contribuye a ajustar sistemas dopaminergicos en funcion de contingencias.",
+    evidencia: "probable",
+    especies: ["roedor", "primate"],
+    tiposEvidencia: ["trazado_anatomico", "electrofisiologia", "revision"],
+    etiquetas: ["recompensa", "aversion", "aprendizaje_refuerzo"],
+    referencias: ["hikosaka_2010", "haber_knutson_2010"]
+  }),
+
+  // Capas serotoninergica, noradrenergica e histaminergica.
+  connection("rafe_dorsal_prefrontal_serotonina", "nucleo_rafe_dorsal", "corteza_prefrontal", "Modulacion serotoninergica prefrontal", {
+    tipo: "senal_moduladora",
+    claseEntidad: "senal_moduladora",
+    polaridad: "moduladora",
+    neurotransmisorPrincipal: "serotonina",
+    funcion: "Proyecciones serotoninergicas ascendentes hacia regiones prefrontales desde subpoblaciones del rafe dorsal.",
+    importanciaAprendizaje: "Modulan flexibilidad, control y estado afectivo de manera dependiente de receptor y circuito.",
+    evidencia: "establecida",
+    etiquetas: ["serotonina", "ejecutivo", "emocion", "modulacion"],
+    referencias: ["hornung_2003", "kandel_2021"]
+  }),
+  connection("rafe_dorsal_amigdala_serotonina", "nucleo_rafe_dorsal", "amigdala_basolateral", "Modulacion serotoninergica amigdalina", {
+    tipo: "senal_moduladora",
+    claseEntidad: "senal_moduladora",
+    polaridad: "moduladora",
+    neurotransmisorPrincipal: "serotonina",
+    funcion: "Proyecciones serotoninergicas hacia complejo basolateral desde subpoblaciones del rafe dorsal.",
+    importanciaAprendizaje: "Modulan aprendizaje emocional segun receptor, estado y subpoblacion.",
+    evidencia: "establecida",
+    etiquetas: ["serotonina", "memoria_emocional", "modulacion"],
+    referencias: ["hornung_2003", "kandel_2021"]
+  }),
+  connection("rafe_mediano_hipocampo_serotonina", "nucleo_rafe_mediano", "hipocampo", "Modulacion serotoninergica hipocampal", {
+    tipo: "senal_moduladora",
+    claseEntidad: "senal_moduladora",
+    polaridad: "moduladora",
+    neurotransmisorPrincipal: "serotonina",
+    funcion: "Proyecciones del rafe mediano hacia formacion hipocampal y septum.",
+    importanciaAprendizaje: "Modulan excitabilidad, plasticidad y estados de red sin efecto uniforme.",
+    evidencia: "establecida",
+    etiquetas: ["serotonina", "memoria", "navegacion", "modulacion"],
+    referencias: ["hornung_2003", "kandel_2021"]
+  }),
+  connection("locus_coeruleus_hipocampo_noradrenalina", "locus_coeruleus", "hipocampo", "Modulacion noradrenergica hipocampal", {
+    tipo: "senal_moduladora",
+    claseEntidad: "senal_moduladora",
+    polaridad: "moduladora",
+    neurotransmisorPrincipal: "noradrenalina",
+    funcion: "Proyeccion noradrenergica desde locus coeruleus hacia formacion hipocampal.",
+    importanciaAprendizaje: "Modula saliencia, plasticidad y consolidacion segun tiempo, receptor y estado.",
+    evidencia: "establecida",
+    etiquetas: ["noradrenalina", "memoria", "plasticidad", "modulacion"],
+    referencias: ["poe_2020"]
+  }),
+  connection("locus_coeruleus_prefrontal_noradrenalina", "locus_coeruleus", "corteza_prefrontal", "Modulacion noradrenergica prefrontal", {
+    tipo: "senal_moduladora",
+    claseEntidad: "senal_moduladora",
+    polaridad: "moduladora",
+    neurotransmisorPrincipal: "noradrenalina",
+    funcion: "Proyeccion noradrenergica hacia redes prefrontales de control y atencion.",
+    importanciaAprendizaje: "Ajusta ganancia y seleccion de informacion de manera dependiente del nivel de activacion.",
+    evidencia: "establecida",
+    etiquetas: ["noradrenalina", "atencion", "ejecutivo", "modulacion"],
+    referencias: ["poe_2020"]
+  }),
+  connection("locus_coeruleus_amigdala_noradrenalina", "locus_coeruleus", "amigdala_basolateral", "Modulacion noradrenergica amigdalina", {
+    tipo: "senal_moduladora",
+    claseEntidad: "senal_moduladora",
+    polaridad: "moduladora",
+    neurotransmisorPrincipal: "noradrenalina",
+    funcion: "Proyeccion noradrenergica hacia complejo basolateral.",
+    importanciaAprendizaje: "Modula consolidacion de experiencias emocionalmente relevantes sin equivaler a una etiqueta de intensidad.",
+    evidencia: "establecida",
+    etiquetas: ["noradrenalina", "memoria_emocional", "modulacion"],
+    referencias: ["poe_2020", "phelps_ledoux_2005"]
+  }),
+  connection("tuberomamilar_corteza_histamina", "nucleo_tuberomamilar", "corteza_prefrontal", "Modulacion histaminergica cortical", {
+    tipo: "senal_moduladora",
+    claseEntidad: "senal_moduladora",
+    polaridad: "moduladora",
+    neurotransmisorPrincipal: "histamina",
+    funcion: "Proyecciones histaminergicas difusas hacia corteza, representadas por la diana prefrontal agregada.",
+    importanciaAprendizaje: "Relaciona vigilia y estado atencional con rendimiento cognitivo, sin afirmar una funcion mnemonica exclusiva.",
+    evidencia: "establecida",
+    etiquetas: ["histamina", "sueño_vigilia", "atencion", "modulacion"],
+    referencias: ["haas_2008"]
+  }),
+  connection("tuberomamilar_hipocampo_histamina", "nucleo_tuberomamilar", "hipocampo", "Modulacion histaminergica hipocampal", {
+    tipo: "senal_moduladora",
+    claseEntidad: "senal_moduladora",
+    polaridad: "moduladora",
+    neurotransmisorPrincipal: "histamina",
+    funcion: "Proyeccion histaminergica hacia formacion hipocampal.",
+    importanciaAprendizaje: "Modula estados de red asociados con vigilia y memoria segun receptor y contexto.",
+    evidencia: "establecida",
+    etiquetas: ["histamina", "memoria", "sueño_vigilia", "modulacion"],
+    referencias: ["haas_2008"]
+  }),
+
+  // Circuito corticopontocerebeloso y salidas de nucleos profundos.
+  connection("corteza_motora_puente", "corteza_motora", "puente", "Proyeccion corticopontina", {
+    tipo: "via",
+    claseEntidad: "via",
+    tractoFasciculo: "Fibras corticopontinas",
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Entrada cortical descendente hacia nucleos pontinos agregados.",
+    importanciaAprendizaje: "Transmite copias de planes y contexto motor hacia el cerebelo.",
+    evidencia: "establecida",
+    etiquetas: ["aprendizaje_motor", "motor", "tracto"],
+    referencias: ["apps_garwicz_2005", "kandel_2021"]
+  }),
+  connection("puente_corteza_cerebelosa", "puente", "corteza_cerebelosa", "Fibras pontocerebelosas", {
+    tipo: "via",
+    claseEntidad: "via",
+    tractoFasciculo: "Fibras pontocerebelosas",
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Proyeccion cruzada desde nucleos pontinos hacia corteza cerebelosa mediante fibras musgosas.",
+    importanciaAprendizaje: "Aporta informacion cortical a microcircuitos cerebelosos de prediccion y ajuste.",
+    evidencia: "establecida",
+    etiquetas: ["aprendizaje_motor", "fibras_musgosas_cerebelosas"],
+    referencias: ["apps_garwicz_2005"]
+  }),
+  connection("oliva_inferior_corteza_cerebelosa", "oliva_inferior", "corteza_cerebelosa", "Fibras trepadoras", {
+    tipo: "via",
+    claseEntidad: "via",
+    tractoFasciculo: "Via olivocerebelosa",
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Proyeccion olivocerebelosa que origina fibras trepadoras hacia celulas de Purkinje.",
+    importanciaAprendizaje: "Puede transportar senales instructivas y de error, una interpretacion funcional dependiente del paradigma.",
+    evidencia: "modelo_funcional",
+    etiquetas: ["aprendizaje_motor", "error_prediccion", "plasticidad"],
+    referencias: ["apps_garwicz_2005", "ebner_2015"]
+  }),
+  connection("corteza_cerebelosa_dentado", "corteza_cerebelosa", "nucleo_dentado_cerebelo", "Salida cortical cerebelosa al dentado", {
+    polaridad: "predominantemente_inhibitoria",
+    neurotransmisorPrincipal: "GABA",
+    funcion: "Salida inhibitoria de celulas de Purkinje hacia territorios del nucleo dentado.",
+    importanciaAprendizaje: "Transforma plasticidad cortical cerebelosa en cambios de salida de nucleos profundos.",
+    evidencia: "establecida",
+    etiquetas: ["aprendizaje_motor", "GABA"],
+    referencias: ["apps_garwicz_2005"]
+  }),
+  connection("corteza_cerebelosa_interpuestos", "corteza_cerebelosa", "nucleos_interpuestos_cerebelo", "Salida cortical cerebelosa a interpuestos", {
+    polaridad: "predominantemente_inhibitoria",
+    neurotransmisorPrincipal: "GABA",
+    funcion: "Salida inhibitoria de Purkinje hacia nucleos interpuestos.",
+    importanciaAprendizaje: "Ajusta salidas relacionadas con correccion de movimientos y aprendizaje.",
+    evidencia: "establecida",
+    etiquetas: ["aprendizaje_motor", "GABA"],
+    referencias: ["apps_garwicz_2005"]
+  }),
+  connection("corteza_cerebelosa_fastigial", "corteza_cerebelosa", "nucleo_fastigial_cerebelo", "Salida cortical cerebelosa al fastigial", {
+    polaridad: "predominantemente_inhibitoria",
+    neurotransmisorPrincipal: "GABA",
+    funcion: "Salida inhibitoria de Purkinje desde regiones vermianas hacia nucleo fastigial.",
+    importanciaAprendizaje: "Regula salidas posturales y oculomotoras dentro de circuitos adaptativos.",
+    evidencia: "establecida",
+    etiquetas: ["aprendizaje_motor", "GABA"],
+    referencias: ["apps_garwicz_2005"]
+  }),
+  connection("dentado_talamo", "nucleo_dentado_cerebelo", "talamo", "Proyeccion dentatotalamica", {
+    tipo: "via",
+    claseEntidad: "via",
+    tractoFasciculo: "Via dentatotalamica",
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Salida del dentado hacia nucleos talamicos motores y de asociacion representados de forma agregada.",
+    importanciaAprendizaje: "Devuelve ajustes cerebelosos a bucles corticales.",
+    evidencia: "establecida",
+    etiquetas: ["aprendizaje_motor", "motor", "tracto"],
+    referencias: ["apps_garwicz_2005", "kandel_2021"]
+  }),
+  connection("interpuestos_talamo", "nucleos_interpuestos_cerebelo", "talamo", "Proyeccion interpositotalamica", {
+    tipo: "via",
+    claseEntidad: "via",
+    polaridad: "predominantemente_excitatoria",
+    neurotransmisorPrincipal: "glutamato",
+    funcion: "Salida agregada de nucleos interpuestos hacia dianas talamicas motoras.",
+    importanciaAprendizaje: "Contribuye a actualizar comandos motores a partir de ajustes cerebelosos.",
+    evidencia: "establecida",
+    etiquetas: ["aprendizaje_motor", "motor"],
+    referencias: ["apps_garwicz_2005"]
+  }),
+  connection("fastigial_tronco_encefalico", "nucleo_fastigial_cerebelo", "tronco_encefalico", "Salida fastigial al tronco", {
+    polaridad: "mixta",
+    neurotransmisorPrincipal: "no_especificado",
+    funcion: "Salida agregada del nucleo fastigial hacia nucleos vestibulares y reticulares del tronco.",
+    importanciaAprendizaje: "Relaciona ajuste cerebeloso con postura, equilibrio y respuestas oculomotoras.",
+    evidencia: "establecida",
+    etiquetas: ["aprendizaje_motor", "postura", "equilibrio"],
+    referencias: ["apps_garwicz_2005"]
   })
 ]);
 

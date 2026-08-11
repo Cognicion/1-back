@@ -43,6 +43,9 @@ const DEFAULT_RENDERER_OPTIONS = Object.freeze({
   fitPadding: 64,
   showClusters: true,
   showEdgeLabels: "auto",
+  suspendLabelsWhileMoving: true,
+  cameraIdleDelay: 140,
+  avoidNodeIntersections: true,
   ariaLabel: "Mapa interactivo de circuitos cerebrales",
   nodeLabelMaxCharacters: 25,
   width: 1000,
@@ -151,10 +154,23 @@ export function calculateEdgeGeometry(connection, positions, nodes, options = {}
     const sign = stableHash(connection?.id || `${connection?.origen}-${connection?.destino}`) % 2 ? 1 : -1;
     curveOffset = finiteNumber(options.minimumCurve, 12) * sign;
   }
-  const control = point(
+  let control = point(
     (start.x + end.x) / 2 + normalX * curveOffset,
     (start.y + end.y) / 2 + normalY * curveOffset
   );
+  if (options.avoidNodes === true || options.avoidNodeIntersections === true) {
+    control = routeControlAroundNodes({
+      connection,
+      start,
+      end,
+      control,
+      normalX,
+      normalY,
+      positions,
+      nodeById,
+      options
+    });
+  }
   return Object.freeze({
     kind: "curve",
     start,
@@ -166,6 +182,44 @@ export function calculateEdgeGeometry(connection, positions, nodes, options = {}
 
 export function buildConnectionPath(connection, positions, nodes, options = {}) {
   return calculateEdgeGeometry(connection, positions, nodes, options)?.d || "";
+}
+
+function routeControlAroundNodes({ connection, start, end, control, normalX, normalY, positions, nodeById, options }) {
+  const obstaclePadding = Math.max(4, finiteNumber(options.obstaclePadding, 18));
+  const maximumAttempts = Math.max(1, Math.floor(finiteNumber(options.maxRoutingAttempts, 6)));
+  const midpoint = { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 };
+  const signedOffset = (control.x - midpoint.x) * normalX + (control.y - midpoint.y) * normalY;
+  const sign = signedOffset === 0
+    ? (stableHash(connection?.id || `${connection?.origen}-${connection?.destino}`) % 2 ? 1 : -1)
+    : Math.sign(signedOffset);
+  const obstacles = [...nodeById.values()].filter((node) => node?.id !== connection.origen && node?.id !== connection.destino);
+  if (!obstacles.length) return control;
+
+  let routed = control;
+  for (let attempt = 0; attempt < maximumAttempts; attempt += 1) {
+    const blocked = obstacles.some((node) => {
+      const position = readPosition(positions, node.id);
+      if (!position) return false;
+      const dimensions = getNodeDimensions(node, options.nodeDimensions || options);
+      return [0.2, 0.35, 0.5, 0.65, 0.8].some((t) => {
+        const sample = quadraticPointAt(start, routed, end, t);
+        return Math.abs(sample.x - position.x) <= dimensions.width / 2 + obstaclePadding
+          && Math.abs(sample.y - position.y) <= dimensions.height / 2 + obstaclePadding;
+      });
+    });
+    if (!blocked) return routed;
+    const step = Math.max(26, obstaclePadding * 1.8) * (attempt + 1);
+    routed = point(control.x + normalX * sign * step, control.y + normalY * sign * step);
+  }
+  return routed;
+}
+
+function quadraticPointAt(start, control, end, t) {
+  const inverse = 1 - t;
+  return {
+    x: inverse * inverse * start.x + 2 * inverse * t * control.x + t * t * end.x,
+    y: inverse * inverse * start.y + 2 * inverse * t * control.y + t * t * end.y
+  };
 }
 
 export const createEdgePath = buildConnectionPath;
@@ -221,6 +275,11 @@ export class ConnectomeRenderer {
     this._graphRenderSignature = null;
     this._renderEntityTokens = new WeakMap();
     this._renderEntitySequence = 0;
+    this._viewportSubscribers = new Set();
+    this._renderSubscribers = new Set();
+    this._viewportNotificationFrame = null;
+    this._cameraIdleTimer = null;
+    this._cameraMoving = false;
 
     if (host && options.autoMount !== false) this.mount(host);
   }
@@ -304,6 +363,17 @@ export class ConnectomeRenderer {
       || config.focusNodeId
       || firstId(this.highlights.selectedNodeIds)
       || null;
+    const generatedNodeSizes = Object.fromEntries(this.nodes.map((node) => {
+      const dimensions = getNodeDimensions(node, config.nodeDimensions || {});
+      return [node.id, { width: dimensions.width, height: dimensions.height }];
+    }));
+    const layoutOptions = {
+      ...(config.layoutOptions || {}),
+      nodeSizeById: {
+        ...generatedNodeSizes,
+        ...(config.layoutOptions?.nodeSizeById || {})
+      }
+    };
     this.layoutResult = this.layoutEngine.compute({
       nodes: this.nodes,
       edges: this.edges,
@@ -314,7 +384,7 @@ export class ConnectomeRenderer {
       selectedNodeId: focusNodeId,
       centerNodeId: focusNodeId,
       fixedPositions,
-      layoutOptions: config.layoutOptions || {}
+      layoutOptions
     });
     this.positions = new Map(this.layoutResult.positions);
     this._buildIncidentIndex();
@@ -339,13 +409,15 @@ export class ConnectomeRenderer {
     this._hasRendered = true;
     if (shouldFit) this.fit({ padding: config.fitPadding });
 
-    this._emit("onRender", {
+    const renderEvent = {
       renderer: this,
       layout: this.activeLayout,
       layoutResult: this.layoutResult,
       nodeCount: this.nodes.length,
       edgeCount: this.edges.length
-    });
+    };
+    this._emit("onRender", renderEvent);
+    this._notifyRenderSubscribers(renderEvent);
     return this;
   }
 
@@ -393,30 +465,30 @@ export class ConnectomeRenderer {
     }
     const scope = this._resolveFitScope(options);
     const bounds = this._contentBounds(scope);
-    const padding = Math.max(0, finiteNumber(options.padding, this.options.fitPadding));
-    const availableWidth = Math.max(1, this.viewportSize.width - padding * 2);
-    const availableHeight = Math.max(1, this.viewportSize.height - padding * 2);
+    const insets = resolveFitInsets(options, this.options.fitPadding);
+    const availableWidth = Math.max(1, this.viewportSize.width - insets.left - insets.right);
+    const availableHeight = Math.max(1, this.viewportSize.height - insets.top - insets.bottom);
     const naturalScale = Math.min(
       availableWidth / Math.max(bounds.width, 1),
       availableHeight / Math.max(bounds.height, 1)
     );
-    const readableMinimum = options.allowTinyScale === true
-      ? this.options.minZoom
-      : Math.max(
+    const readableMinimum = Math.max(
         this.options.minZoom,
         finiteNumber(
           options.minScale ?? options.minReadableScale ?? this.renderConfig?.minReadableFitScale,
           this.options.minReadableFitScale
         )
       );
+    const containmentFirst = options.allowTinyScale === true || normalizeToken(options.scope) === "all";
+    const minimumScale = containmentFirst ? this.options.minZoom : readableMinimum;
     const scale = clamp(
       naturalScale,
-      readableMinimum,
+      minimumScale,
       Math.min(this.options.maxZoom, finiteNumber(options.maxScale, 1.35))
     );
     this.setViewport({
-      x: this.viewportSize.width / 2 - ((bounds.minX + bounds.maxX) / 2) * scale,
-      y: this.viewportSize.height / 2 - ((bounds.minY + bounds.maxY) / 2) * scale,
+      x: insets.left + availableWidth / 2 - ((bounds.minX + bounds.maxX) / 2) * scale,
+      y: insets.top + availableHeight / 2 - ((bounds.minY + bounds.maxY) / 2) * scale,
       scale
     }, { source: "fit", animate: options.animate !== false });
     return Object.freeze({ ...this.viewport });
@@ -448,16 +520,78 @@ export class ConnectomeRenderer {
       }
     }
     this._applyViewport();
-    this._emit("onViewportChange", {
-      renderer: this,
-      viewport: Object.freeze({ ...this.viewport }),
-      source: metadata.source || "api"
-    });
+    this._notifyViewportChange(metadata.source || "api", metadata);
     return this;
   }
 
   getViewport() {
     return Object.freeze({ ...this.viewport });
+  }
+
+  getViewportSize() {
+    return Object.freeze({ ...this.viewportSize });
+  }
+
+  /** Public, read-only world bounds used by fit controls and minimaps. */
+  getContentBounds(options = {}) {
+    const scope = this._resolveFitScope(options);
+    return Object.freeze({ ...this._contentBounds(scope) });
+  }
+
+  /**
+   * Re-read the host dimensions after panel/fullscreen transitions. A caller may
+   * request a fit explicitly; ordinary ResizeObserver updates preserve camera.
+   */
+  refreshSize({ fit = false, fitOptions = {}, source = "refresh-size" } = {}) {
+    const previous = { ...this.viewportSize };
+    this._updateViewportSize();
+    const changed = previous.width !== this.viewportSize.width || previous.height !== this.viewportSize.height;
+    if (fit && this.positions.size) this.fit({ ...fitOptions, animate: fitOptions.animate ?? false });
+    else if (changed) this._notifyViewportChange(source, { resized: true, previousSize: previous });
+    return Object.freeze({ ...this.viewportSize });
+  }
+
+  /** Center the current camera on a world-space coordinate (minimap contract). */
+  panToWorld(x, y, options = {}) {
+    const scale = clamp(
+      finiteNumber(options.scale, this.viewport.scale),
+      this.options.minZoom,
+      this.options.maxZoom
+    );
+    this.setViewport({
+      x: this.viewportSize.width / 2 - finiteNumber(x, 0) * scale,
+      y: this.viewportSize.height / 2 - finiteNumber(y, 0) * scale,
+      scale
+    }, { source: options.source || "panToWorld", animate: options.animate !== false });
+    return Object.freeze({ ...this.viewport });
+  }
+
+  subscribeViewport(listener, { immediate = false } = {}) {
+    if (typeof listener !== "function") return () => {};
+    this._viewportSubscribers.add(listener);
+    if (immediate) listener(this._viewportEvent("subscribe", { immediate: true }));
+    return () => this._viewportSubscribers.delete(listener);
+  }
+
+  subscribeRender(listener, { immediate = false } = {}) {
+    if (typeof listener !== "function") return () => {};
+    this._renderSubscribers.add(listener);
+    if (immediate && this.layoutResult) listener({
+      renderer: this,
+      layout: this.activeLayout,
+      layoutResult: this.layoutResult,
+      nodeCount: this.nodes.length,
+      edgeCount: this.edges.length,
+      immediate: true
+    });
+    return () => this._renderSubscribers.delete(listener);
+  }
+
+  setLabelsSuspended(suspended = true) {
+    const value = Boolean(suspended);
+    this.svg?.classList.toggle("labels-suspended", value);
+    this.host?.classList?.toggle?.("connectome-labels-suspended", value);
+    return this;
   }
 
   getPosition(nodeId) {
@@ -485,6 +619,8 @@ export class ConnectomeRenderer {
     this.edgeElements.clear();
     this.incidentEdgeIds.clear();
     this.draggedPositionsByLayout.clear();
+    this._viewportSubscribers.clear();
+    this._renderSubscribers.clear();
     this.renderConfig = null;
     this.layoutResult = null;
     this._graphRenderSignature = null;
@@ -623,6 +759,8 @@ export class ConnectomeRenderer {
       clusters,
       labelsRendered,
       labelsVisible,
+      edgeRouting: this.renderConfig?.edgeRouting || this.renderConfig?.routing || this.activeLayout,
+      avoidNodeIntersections: this.renderConfig?.avoidNodeIntersections ?? this.options.avoidNodeIntersections,
       nodeLabelMaxCharacters: finiteNumber(this.options.nodeLabelMaxCharacters, 25)
     });
   }
@@ -670,11 +808,7 @@ export class ConnectomeRenderer {
   }
 
   _createEdgeElement(edge, parallel = { index: 0, count: 1 }) {
-    const geometry = calculateEdgeGeometry(edge, this.positions, this.nodeById, {
-      parallelIndex: parallel.index,
-      parallelCount: parallel.count,
-      nodeDimensions: this.renderConfig.nodeDimensions
-    });
+    const geometry = calculateEdgeGeometry(edge, this.positions, this.nodeById, this._edgeGeometryOptions(edge, parallel));
     if (!geometry) return null;
     const documentRef = this.svg.ownerDocument;
     const polarity = getConnectionPolarity(edge);
@@ -833,15 +967,33 @@ export class ConnectomeRenderer {
     for (const edgeId of this.incidentEdgeIds.get(nodeId) || []) {
       const record = this.edgeElements.get(edgeId);
       if (!record) continue;
-      const geometry = calculateEdgeGeometry(record.edge, this.positions, this.nodeById, {
-        parallelIndex: record.parallel.index,
-        parallelCount: record.parallel.count,
-        nodeDimensions: this.renderConfig.nodeDimensions
-      });
+      const geometry = calculateEdgeGeometry(
+        record.edge,
+        this.positions,
+        this.nodeById,
+        this._edgeGeometryOptions(record.edge, record.parallel)
+      );
       if (!geometry) continue;
       record.path.setAttribute("d", geometry.d);
       record.hitPath.setAttribute("d", geometry.d);
     }
+  }
+
+  _edgeGeometryOptions(edge, parallel = { index: 0, count: 1 }) {
+    const routing = this.renderConfig?.edgeRouting || this.renderConfig?.routing || this.activeLayout;
+    const layered = routing === "flujo" || routing === "jerarquico" || routing === "flow" || routing === "hierarchical";
+    return {
+      parallelIndex: parallel.index,
+      parallelCount: parallel.count,
+      parallelSpacing: layered ? 36 : 30,
+      minimumCurve: layered ? 18 : 12,
+      routing,
+      layout: this.activeLayout,
+      avoidNodeIntersections: this.renderConfig?.avoidNodeIntersections ?? this.options.avoidNodeIntersections,
+      obstaclePadding: this.renderConfig?.obstaclePadding,
+      nodeDimensions: this.renderConfig?.nodeDimensions,
+      edgeId: edge?.id
+    };
   }
 
   _consumeHighlightConfig(config) {
@@ -1097,6 +1249,7 @@ export class ConnectomeRenderer {
         moved: false
       };
       this.svg.classList.add("is-panning");
+      this._setCameraMoving(true, "pan");
     }
     try { this.svg.setPointerCapture?.(event.pointerId); } catch { /* synthetic pointer event */ }
     event.preventDefault();
@@ -1137,6 +1290,7 @@ export class ConnectomeRenderer {
       this.viewport.x = state.startViewport.x + current.x - state.startSvgPoint.x;
       this.viewport.y = state.startViewport.y + current.y - state.startSvgPoint.y;
       this._applyViewport();
+      this._scheduleViewportChange("pan");
     } else {
       const scaleFactor = this._clientToSvgScale();
       const dx = (event.clientX - state.startClientX) * scaleFactor.x / this.viewport.scale;
@@ -1157,11 +1311,8 @@ export class ConnectomeRenderer {
       try { this.svg.releasePointerCapture?.(event.pointerId); } catch { /* capture already released */ }
       this._pinchState = null;
       this._pointerState = null;
-      this._emit("onViewportChange", {
-        renderer: this,
-        viewport: Object.freeze({ ...this.viewport }),
-        source: "pinch"
-      });
+      this._setCameraMoving(false, "pinch");
+      this._notifyViewportChange("pinch");
       return;
     }
     const state = this._pointerState;
@@ -1174,17 +1325,23 @@ export class ConnectomeRenderer {
       this.nodeElements.get(state.nodeId)?.group.setAttribute("aria-grabbed", "false");
       if (position && state.moved) {
         this._getDraggedPositions(this.activeLayout).set(state.nodeId, Object.freeze({ ...position }));
+        this._notifyRenderSubscribers({
+          renderer: this,
+          layout: this.activeLayout,
+          layoutResult: this.layoutResult,
+          nodeCount: this.nodes.length,
+          edgeCount: this.edges.length,
+          source: "node-drag",
+          nodeId: state.nodeId
+        });
       }
       if (position) this._emitDrag(state.nodeId, position, "end", event);
       if (state.moved) this._suppressClickId = state.nodeId;
     } else {
       this.svg.classList.remove("is-panning");
+      this._setCameraMoving(false, "pan");
       if (state.moved) this._suppressClickId = null;
-      this._emit("onViewportChange", {
-        renderer: this,
-        viewport: Object.freeze({ ...this.viewport }),
-        source: "pan"
-      });
+      this._notifyViewportChange("pan");
     }
     if (state.moved) this._suppressClickUntil = performanceNow() + 350;
     try { this.svg.releasePointerCapture?.(event.pointerId); } catch { /* capture already released */ }
@@ -1197,6 +1354,7 @@ export class ConnectomeRenderer {
       this._touchPointers.delete(event.pointerId);
       this._pinchState = null;
       this._pointerState = null;
+      this._setCameraMoving(false, "pinch");
       try { this.svg.releasePointerCapture?.(event.pointerId); } catch { /* capture already released */ }
       return;
     }
@@ -1216,6 +1374,7 @@ export class ConnectomeRenderer {
       this.viewport = { ...state.startViewport };
       this._applyViewport();
       this.svg.classList.remove("is-panning");
+      this._setCameraMoving(false, "pan");
     }
     try { this.svg.releasePointerCapture?.(event.pointerId); } catch { /* capture already released */ }
     this._touchPointers.delete(event.pointerId);
@@ -1247,6 +1406,7 @@ export class ConnectomeRenderer {
       worldX: (midpoint.x - this.viewport.x) / this.viewport.scale,
       worldY: (midpoint.y - this.viewport.y) / this.viewport.scale
     };
+    this._setCameraMoving(true, "pinch");
     try { this.svg.setPointerCapture?.(event.pointerId); } catch { /* synthetic pointer event */ }
     event.preventDefault();
   }
@@ -1270,6 +1430,7 @@ export class ConnectomeRenderer {
       scale
     };
     this._applyViewport();
+    this._scheduleViewportChange("pinch");
     event.preventDefault();
   }
 
@@ -1281,6 +1442,7 @@ export class ConnectomeRenderer {
     const factor = Math.exp(-event.deltaY * this.options.zoomStep);
     const newScale = clamp(oldScale * factor, this.options.minZoom, this.options.maxZoom);
     if (Math.abs(newScale - oldScale) < 0.0001) return;
+    this._setCameraMoving(true, "wheel");
     const worldX = (cursor.x - this.viewport.x) / oldScale;
     const worldY = (cursor.y - this.viewport.y) / oldScale;
     this.setViewport({
@@ -1399,12 +1561,68 @@ export class ConnectomeRenderer {
     return undefined;
   }
 
+  _viewportEvent(source, extra = {}) {
+    return Object.freeze({
+      renderer: this,
+      viewport: Object.freeze({ ...this.viewport }),
+      viewportSize: Object.freeze({ ...this.viewportSize }),
+      source,
+      moving: this._cameraMoving,
+      ...extra
+    });
+  }
+
+  _notifyViewportChange(source = "api", extra = {}) {
+    const event = this._viewportEvent(source, extra);
+    this._emit("onViewportChange", event);
+    for (const listener of [...this._viewportSubscribers]) {
+      try { listener(event); } catch (error) { reportAsyncError(error); }
+    }
+    return event;
+  }
+
+  _scheduleViewportChange(source = "camera") {
+    if (this._viewportNotificationFrame != null) return;
+    const windowRef = this.svg?.ownerDocument?.defaultView;
+    const schedule = windowRef?.requestAnimationFrame?.bind(windowRef)
+      || ((callback) => setTimeout(callback, 16));
+    this._viewportNotificationFrame = schedule(() => {
+      this._viewportNotificationFrame = null;
+      this._notifyViewportChange(source, { live: true });
+    });
+  }
+
+  _notifyRenderSubscribers(event) {
+    for (const listener of [...this._renderSubscribers]) {
+      try { listener(event); } catch (error) { reportAsyncError(error); }
+    }
+  }
+
+  _setCameraMoving(moving, source = "camera") {
+    const value = Boolean(moving);
+    if (value) {
+      clearTimeout(this._cameraIdleTimer);
+      this._cameraIdleTimer = null;
+    }
+    if (this._cameraMoving !== value) {
+      this._cameraMoving = value;
+      this.svg?.classList.toggle("is-camera-moving", value);
+      this.host?.classList?.toggle?.("connectome-camera-moving", value);
+      if (this.options.suspendLabelsWhileMoving) this.setLabelsSuspended(value);
+      this._emit("onCameraMovement", Object.freeze({ renderer: this, moving: value, source }));
+    }
+    if (value && source === "wheel") {
+      this._cameraIdleTimer = setTimeout(() => this._setCameraMoving(false, source), Math.max(40, finiteNumber(this.options.cameraIdleDelay, 140)));
+    }
+  }
+
   _getDraggedPositions(layout) {
     if (!this.draggedPositionsByLayout.has(layout)) this.draggedPositionsByLayout.set(layout, new Map());
     return this.draggedPositionsByLayout.get(layout);
   }
 
   _resolveFitScope(options = {}) {
+    const requestedScope = normalizeToken(options.scope || options.fitScope || "relevant");
     const explicitNodeIds = normalizeIds(options.nodeIds ?? options.nodes);
     const explicitEdgeIds = normalizeIds(
       options.edgeIds ?? options.edges ?? options.connectionIds ?? options.connections
@@ -1412,7 +1630,10 @@ export class ConnectomeRenderer {
     let nodeIds = explicitNodeIds.length ? new Set(explicitNodeIds) : null;
     let edgeIds = explicitEdgeIds.length ? new Set(explicitEdgeIds) : null;
 
-    if (!nodeIds && options.activeCircuit !== false && this.activeCircuit) {
+    if (!nodeIds && requestedScope === "all") nodeIds = new Set(this.nodes.map((node) => node.id));
+    if (!edgeIds && requestedScope === "all") edgeIds = new Set(this.edges.map((edge) => edge.id));
+
+    if (!nodeIds && requestedScope !== "all" && options.activeCircuit !== false && this.activeCircuit) {
       const circuitNodeIds = normalizeIds(
         this.activeCircuit.nodos ?? this.activeCircuit.nodes ?? this.activeCircuit.secuencia
       );
@@ -1427,7 +1648,7 @@ export class ConnectomeRenderer {
       }
     }
 
-    if (!nodeIds && options.ignoreDimmed !== false
+    if (!nodeIds && requestedScope !== "all" && options.ignoreDimmed !== false
       && this.highlights.dimmedNodeIds.size > 0
       && this.highlights.dimmedNodeIds.size < this.nodes.length) {
       nodeIds = new Set(
@@ -1436,7 +1657,7 @@ export class ConnectomeRenderer {
           .filter((nodeId) => !this.highlights.dimmedNodeIds.has(nodeId))
       );
     }
-    if (!edgeIds && options.ignoreDimmed !== false
+    if (!edgeIds && requestedScope !== "all" && options.ignoreDimmed !== false
       && this.highlights.dimmedEdgeIds.size > 0
       && this.highlights.dimmedEdgeIds.size < this.edges.length) {
       edgeIds = new Set(
@@ -1445,7 +1666,7 @@ export class ConnectomeRenderer {
           .filter((edgeId) => !this.highlights.dimmedEdgeIds.has(edgeId))
       );
     }
-    return { nodeIds, edgeIds };
+    return { nodeIds, edgeIds, scope: requestedScope || "relevant" };
   }
 
   _contentBounds(scope = {}) {
@@ -1471,11 +1692,7 @@ export class ConnectomeRenderer {
       if (edgeIds && !edgeIds.has(edge.id)) continue;
       if (nodeIds && (!nodeIds.has(edge.origen) || !nodeIds.has(edge.destino))) continue;
       const parallel = parallelInfo.get(edge.id) || { index: 0, count: 1 };
-      const geometry = calculateEdgeGeometry(edge, this.positions, this.nodeById, {
-        parallelIndex: parallel.index,
-        parallelCount: parallel.count,
-        nodeDimensions: this.renderConfig?.nodeDimensions
-      });
+      const geometry = calculateEdgeGeometry(edge, this.positions, this.nodeById, this._edgeGeometryOptions(edge, parallel));
       if (!geometry) continue;
       const controlPoints = [
         geometry.start,
@@ -1528,9 +1745,12 @@ export class ConnectomeRenderer {
     this._resizeObserver = new Observer(() => {
       const previous = { ...this.viewportSize };
       this._updateViewportSize();
-      if (this._hasRendered && this.options.fitOnResize
-        && (previous.width !== this.viewportSize.width || previous.height !== this.viewportSize.height)) {
+      const changed = previous.width !== this.viewportSize.width || previous.height !== this.viewportSize.height;
+      if (!changed) return;
+      if (this._hasRendered && this.options.fitOnResize) {
         this.fit({ animate: false });
+      } else {
+        this._notifyViewportChange("resize", { resized: true, previousSize: previous });
       }
     });
     this._resizeObserver.observe(this.host);
@@ -1581,6 +1801,16 @@ export class ConnectomeRenderer {
     this._touchPointers.clear();
     this._pinchState = null;
     this._hovered = null;
+    clearTimeout(this._cameraIdleTimer);
+    this._cameraIdleTimer = null;
+    const windowRef = this.svg?.ownerDocument?.defaultView;
+    if (this._viewportNotificationFrame != null) {
+      if (windowRef?.cancelAnimationFrame) windowRef.cancelAnimationFrame(this._viewportNotificationFrame);
+      else clearTimeout(this._viewportNotificationFrame);
+      this._viewportNotificationFrame = null;
+    }
+    this._cameraMoving = false;
+    this.host?.classList?.remove?.("connectome-camera-moving", "connectome-labels-suspended");
     if (this.svg) {
       for (const [type, handler, options] of this._eventBindings) {
         this.svg.removeEventListener(type, handler, options);
@@ -1980,6 +2210,35 @@ function firstId(set) {
   return set?.values?.().next?.().value || null;
 }
 
+function resolveFitInsets(options = {}, fallbackPadding = 0) {
+  const paddingObject = options.padding && typeof options.padding === "object"
+    ? options.padding
+    : null;
+  const insetObject = options.insets && typeof options.insets === "object"
+    ? options.insets
+    : null;
+  const scalarPadding = typeof options.padding === "object"
+    ? fallbackPadding
+    : finiteNumber(options.padding, fallbackPadding);
+  const base = Math.max(0, finiteNumber(
+    typeof options.insets === "number" ? options.insets : scalarPadding,
+    fallbackPadding
+  ));
+  const source = insetObject || paddingObject || {};
+  const readSide = (side) => Math.max(0, finiteNumber(
+    options[`padding${side[0].toUpperCase()}${side.slice(1)}`]
+      ?? source[side]
+      ?? source[`padding${side[0].toUpperCase()}${side.slice(1)}`],
+    base
+  ));
+  return Object.freeze({
+    top: readSide("top"),
+    right: readSide("right"),
+    bottom: readSide("bottom"),
+    left: readSide("left")
+  });
+}
+
 function finiteNumber(value, fallback) {
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
@@ -2007,6 +2266,11 @@ function validId(value) {
 
 function hasOwn(value, key) {
   return Boolean(value) && Object.prototype.hasOwnProperty.call(value, key);
+}
+
+function reportAsyncError(error) {
+  const schedule = globalThis.queueMicrotask || ((callback) => Promise.resolve().then(callback));
+  schedule(() => { throw error; });
 }
 
 function performanceNow() {

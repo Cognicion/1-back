@@ -1845,10 +1845,10 @@ html[data-theme="biocelular"] .connectome-module :where(.connectome-header, .con
   .connectome-module .connectome-controls {
     z-index: 12;
     display: flex;
-    align-items: stretch;
+    align-items: flex-start;
     gap: 9px;
     width: 100%;
-    max-height: none;
+    max-height: min(40dvh, 320px);
     padding: 10px;
     overflow-x: auto;
     overflow-y: hidden;
@@ -1860,8 +1860,15 @@ html[data-theme="biocelular"] .connectome-module :where(.connectome-header, .con
   .connectome-module .connectome-controls > * {
     flex: 0 0 min(78vw, 290px);
     min-width: 0;
+    max-height: min(36dvh, 292px);
     margin: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     scroll-snap-align: start;
+  }
+
+  .connectome-module .connectome-controls > .connectome-panel-bar {
+    display: none;
   }
 
   .connectome-module .connectome-controls > :where(h2, h3, .connectome-panel-heading) {
@@ -2471,5 +2478,406 @@ html[data-theme="biocelular"] .connectome-module :where(.connectome-header, .con
 
   .connectome-module .connectome-mode-switch button {
     flex: 1 1 120px;
+  }
+}
+
+/* Fase 2: atlas ampliable, contexto siempre legible y chrome colapsable. */
+
+.connectome-module {
+  --connectome-left-width: 300px;
+  --connectome-right-width: 360px;
+}
+
+.connectome-module .connectome-header-actions,
+.connectome-module .connectome-view-actions,
+.connectome-module .connectome-panel-bar,
+.connectome-module .connectome-expansion-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.connectome-module .connectome-header-actions {
+  justify-content: flex-end;
+}
+
+.connectome-module .connectome-panel-bar {
+  position: sticky;
+  inset-block-start: -15px;
+  z-index: 8;
+  justify-content: space-between;
+  margin: -15px -15px 14px;
+  padding: 9px 12px;
+  background: color-mix(in srgb, var(--connectome-surface) 94%, transparent);
+  border-bottom: 1px solid var(--connectome-border-soft);
+  backdrop-filter: blur(12px);
+}
+
+.connectome-module .connectome-panel-bar button {
+  width: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+}
+
+.connectome-module .connectome-expansion-actions > button {
+  flex: 1 1 112px;
+}
+
+.connectome-module .connectome-panel-resizer {
+  position: absolute;
+  inset-block: 0;
+  z-index: 30;
+  width: 10px;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.connectome-module .connectome-panel-resizer::after {
+  position: absolute;
+  inset-block: 12px;
+  inset-inline-start: 4px;
+  width: 2px;
+  content: "";
+  background: transparent;
+  border-radius: 999px;
+}
+
+.connectome-module .connectome-panel-resizer:is(:hover, :focus-visible)::after,
+.connectome-module.is-resizing-panels .connectome-panel-resizer::after {
+  background: var(--connectome-focus);
+}
+
+.connectome-module .connectome-panel-resizer.is-left {
+  inset-inline-start: calc(var(--connectome-left-width) - 5px);
+}
+
+.connectome-module .connectome-panel-resizer.is-right {
+  inset-inline-end: calc(var(--connectome-right-width) - 5px);
+}
+
+.connectome-module.is-resizing-panels,
+.connectome-module.is-resizing-panels * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
+/* Atenuar nunca equivale a desaparecer: las etiquetas conservan contraste util. */
+.connectome-module .connectome-node.dimmed,
+.connectome-module .connectome-node.is-dimmed {
+  filter: saturate(.42);
+  opacity: .5;
+}
+
+.connectome-module .connectome-node.dimmed .connectome-node__shape,
+.connectome-module .connectome-node.is-dimmed .connectome-node__shape {
+  stroke-width: 1.2;
+}
+
+.connectome-module .connectome-node.dimmed .connectome-node__label,
+.connectome-module .connectome-node.is-dimmed .connectome-node__label {
+  fill: var(--connectome-node-text);
+  font-weight: 730;
+}
+
+.connectome-module .connectome-edge.dimmed,
+.connectome-module .connectome-edge.is-dimmed {
+  filter: saturate(.38);
+  opacity: .26;
+}
+
+.connectome-module .connectome-cluster__shape {
+  fill: color-mix(in srgb, var(--connectome-cluster-fill) 42%, transparent);
+  stroke-width: 1.4;
+}
+
+.connectome-module .connectome-minimap {
+  position: absolute;
+  inset-inline-end: 66px;
+  inset-block-end: 14px;
+  z-index: 15;
+  width: min(220px, 34%);
+  height: 144px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--connectome-surface) 92%, transparent);
+  border: 1px solid var(--connectome-border-strong);
+  border-radius: 13px;
+  box-shadow: 0 12px 34px rgb(0 0 0 / 32%);
+  backdrop-filter: blur(10px);
+}
+
+.connectome-module .connectome-minimap__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+.connectome-module .connectome-minimap__camera {
+  fill: color-mix(in srgb, var(--connectome-accent) 18%, transparent);
+  stroke: var(--connectome-focus);
+}
+
+.connectome-module .connectome-renderer.is-camera-moving .connectome-edge__label,
+.connectome-module .connectome-renderer.labels-suspended .connectome-edge__label,
+.connectome-module .connectome-renderer.is-camera-moving .connectome-node-secondary-label {
+  opacity: 0;
+}
+
+.connectome-module .connectome-renderer.is-camera-moving .connectome-node:not(.selected, .current) .connectome-node__label {
+  opacity: .45;
+}
+
+@media (min-width: 1181px) {
+  .connectome-module .connectome-workspace {
+    grid-template-columns: var(--connectome-left-width) minmax(0, 1fr) var(--connectome-right-width);
+  }
+
+  .connectome-module .connectome-controls { grid-column: 1; }
+  .connectome-module .connectome-viewport-panel { grid-column: 2; }
+  .connectome-module .connectome-detail { grid-column: 3; }
+
+  .connectome-module.is-left-collapsed .connectome-workspace {
+    grid-template-columns: 0 minmax(0, 1fr) var(--connectome-right-width);
+  }
+
+  .connectome-module.is-right-collapsed .connectome-workspace {
+    grid-template-columns: var(--connectome-left-width) minmax(0, 1fr) 0;
+  }
+
+  .connectome-module.is-left-collapsed.is-right-collapsed .connectome-workspace,
+  .connectome-module.is-map-only .connectome-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .connectome-module.is-left-collapsed.is-right-collapsed .connectome-viewport-panel,
+  .connectome-module.is-map-only .connectome-viewport-panel,
+  .connectome-module.is-fullscreen .connectome-viewport-panel,
+  .connectome-module:fullscreen .connectome-viewport-panel {
+    grid-column: 1;
+  }
+}
+
+.connectome-module.is-left-collapsed .connectome-controls,
+.connectome-module.is-right-collapsed .connectome-detail,
+.connectome-module.is-left-collapsed .connectome-panel-resizer.is-left,
+.connectome-module.is-right-collapsed .connectome-panel-resizer.is-right {
+  display: none;
+}
+
+.connectome-module.is-map-only .connectome-header,
+.connectome-module.is-map-only > .connectome-disclaimer,
+.connectome-module.is-map-only .connectome-breadcrumb,
+.connectome-module.is-map-only .connectome-controls,
+.connectome-module.is-map-only .connectome-detail,
+.connectome-module.is-map-only .connectome-panel-resizer,
+.connectome-module.is-map-only .connectome-tour,
+.connectome-module.is-map-only .connectome-text-alternative {
+  display: none !important;
+}
+
+.connectome-module.is-map-only .connectome-toolbar {
+  position: absolute;
+  inset-block-start: 12px;
+  inset-inline-start: 12px;
+  z-index: 35;
+  width: min(330px, calc(100% - 136px));
+  padding: 7px;
+  background: color-mix(in srgb, var(--connectome-surface) 94%, transparent);
+  border: 1px solid var(--connectome-border);
+  border-radius: 13px;
+  box-shadow: 0 10px 28px rgb(0 0 0 / 24%);
+  backdrop-filter: blur(10px);
+}
+
+.connectome-module.is-map-only .connectome-toolbar > :not(.connectome-search-wrap) {
+  display: none;
+}
+
+.connectome-module.is-map-only .connectome-workspace {
+  height: min(100dvh, 1040px);
+  min-height: 680px;
+}
+
+.connectome-module.is-fullscreen,
+.connectome-module:fullscreen,
+.connectome-module.is-maximized {
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--connectome-bg);
+}
+
+.connectome-module.is-maximized {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+}
+
+body.connectome-maximized-active {
+  overflow: hidden;
+}
+
+.connectome-panel-host:has(.connectome-module.is-maximized) {
+  position: static;
+  overflow: visible;
+}
+
+.connectome-module.is-fullscreen .connectome-header-copy,
+.connectome-module.is-fullscreen > .connectome-disclaimer,
+.connectome-module.is-fullscreen .connectome-breadcrumb,
+.connectome-module:fullscreen .connectome-header-copy,
+.connectome-module:fullscreen > .connectome-disclaimer,
+.connectome-module:fullscreen .connectome-breadcrumb {
+  display: none;
+}
+
+.connectome-module.is-fullscreen .connectome-header,
+.connectome-module:fullscreen .connectome-header {
+  min-height: 58px;
+  padding: 8px 12px;
+}
+
+.connectome-module.is-fullscreen .connectome-toolbar,
+.connectome-module:fullscreen .connectome-toolbar {
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  min-height: 74px;
+  padding: 7px 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: var(--connectome-surface);
+  border-bottom: 1px solid var(--connectome-border-soft);
+}
+
+.connectome-module.is-fullscreen .connectome-toolbar > *,
+.connectome-module:fullscreen .connectome-toolbar > * {
+  flex: 0 0 205px;
+}
+
+.connectome-module.is-fullscreen .connectome-workspace,
+.connectome-module:fullscreen .connectome-workspace {
+  grid-template-columns: minmax(0, 1fr) !important;
+  height: calc(100dvh - 132px);
+  min-height: 0;
+}
+
+.connectome-module.is-map-only.is-fullscreen .connectome-workspace,
+.connectome-module.is-map-only:fullscreen .connectome-workspace {
+  height: 100dvh;
+  min-height: 100dvh;
+}
+
+.connectome-module.is-fullscreen :where(.connectome-controls, .connectome-detail, .connectome-panel-resizer),
+.connectome-module:fullscreen :where(.connectome-controls, .connectome-detail, .connectome-panel-resizer) {
+  display: none !important;
+}
+
+.connectome-module.is-fullscreen .connectome-camera-toolbar :where([data-action="toggle-left-panel"], [data-action="toggle-right-panel"]),
+.connectome-module:fullscreen .connectome-camera-toolbar :where([data-action="toggle-left-panel"], [data-action="toggle-right-panel"]) {
+  display: none;
+}
+
+@media (min-width: 721px) and (max-width: 1180px) {
+  .connectome-module .connectome-workspace {
+    grid-template-columns: var(--connectome-left-width) minmax(0, 1fr);
+  }
+
+  .connectome-module .connectome-controls { grid-column: 1; }
+  .connectome-module .connectome-viewport-panel { grid-column: 2; }
+
+  .connectome-module.is-left-collapsed .connectome-workspace,
+  .connectome-module.is-map-only .connectome-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .connectome-module.is-left-collapsed .connectome-viewport-panel,
+  .connectome-module.is-map-only .connectome-viewport-panel,
+  .connectome-module.is-fullscreen .connectome-viewport-panel,
+  .connectome-module:fullscreen .connectome-viewport-panel {
+    grid-column: 1;
+  }
+
+  .connectome-module .connectome-panel-resizer.is-right {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .connectome-module .connectome-panel-resizer {
+    display: none;
+  }
+
+  .connectome-module.is-left-collapsed .connectome-controls {
+    display: none;
+  }
+
+  .connectome-module.is-left-collapsed:not(.is-map-only, .is-fullscreen) .connectome-workspace {
+    grid-template-rows: minmax(60vh, 1fr);
+  }
+
+  .connectome-module.is-left-collapsed:not(.is-map-only, .is-fullscreen) .connectome-viewport-panel {
+    grid-row: 1;
+  }
+
+  .connectome-module .connectome-minimap {
+    inset-inline-end: 62px;
+    width: min(164px, 44%);
+    height: 108px;
+  }
+
+  .connectome-module.is-fullscreen .connectome-header,
+  .connectome-module:fullscreen .connectome-header {
+    display: none;
+  }
+
+  .connectome-module.is-fullscreen .connectome-toolbar,
+  .connectome-module:fullscreen .connectome-toolbar {
+    position: absolute;
+    inset-block-start: 10px;
+    inset-inline-start: 10px;
+    z-index: 35;
+    width: min(286px, calc(100% - 126px));
+    min-height: 0;
+    padding: 6px;
+    background: color-mix(in srgb, var(--connectome-surface) 94%, transparent);
+    border: 1px solid var(--connectome-border);
+    border-radius: 13px;
+  }
+
+  .connectome-module.is-fullscreen .connectome-toolbar > :not(.connectome-search-wrap),
+  .connectome-module:fullscreen .connectome-toolbar > :not(.connectome-search-wrap) {
+    display: none;
+  }
+
+  .connectome-module.is-map-only .connectome-workspace,
+  .connectome-module.is-fullscreen .connectome-workspace,
+  .connectome-module:fullscreen .connectome-workspace {
+    display: block;
+    min-height: 100dvh;
+    height: 100dvh;
+  }
+
+  .connectome-module.is-map-only .connectome-viewport,
+  .connectome-module.is-fullscreen .connectome-viewport,
+  .connectome-module:fullscreen .connectome-viewport {
+    min-height: 100dvh;
+    height: 100dvh;
+  }
+}
+
+@media (forced-colors: active) {
+  .connectome-module .connectome-node.dimmed,
+  .connectome-module .connectome-node.is-dimmed {
+    opacity: .72;
+  }
+
+  .connectome-module .connectome-edge.dimmed,
+  .connectome-module .connectome-edge.is-dimmed {
+    opacity: .48;
   }
 }

@@ -88,14 +88,15 @@ export const BRAIN_CIRCUITS = Object.freeze([
     nodos: [
       "cortezas_sensoriales_asociativas", "corteza_perirrinal", "corteza_parahipocampal", "corteza_entorrinal",
       "giro_dentado", "ca3", "ca1", "subiculo", "corteza_retrosplenial", "corteza_cingulada_posterior",
-      "precuneo", "corteza_prefrontal_medial"
+      "precuneo", "corteza_prefrontal_medial", "corteza_entorrinal_lateral", "nucleo_reuniens_talamo", "giro_angular"
     ],
     conexiones: [
       "sensorial_perirrinal", "sensorial_parahipocampal", "perirrinal_entorrinal", "parahipocampal_entorrinal",
       "via_perforante_ec_dg", "fibras_musgosas_dg_ca3", "colaterales_schaffer_ca3_ca1",
       "proyeccion_ca1_subiculo", "subiculo_retrosplenial", "retrosplenial_cingulada_posterior",
       "cingulada_posterior_precuneo", "precuneo_prefrontal_medial", "prefrontal_medial_retrosplenial",
-      "subiculo_prefrontal_medial"
+      "subiculo_prefrontal_medial", "via_perforante_lec_dg", "via_temporoamonica_lec_ca1",
+      "prefrontal_medial_reuniens", "reuniens_ca1", "subiculo_reuniens", "angular_precuneo_funcional"
     ],
     secuencia: [
       "cortezas_sensoriales_asociativas", "corteza_parahipocampal", "corteza_entorrinal", "giro_dentado",
@@ -122,12 +123,16 @@ export const BRAIN_CIRCUITS = Object.freeze([
     nodos: [
       "cortezas_sensoriales_asociativas", "corteza_asociativa_multimodal", "corteza_temporal_lateral",
       "corteza_temporal_anterior", "corteza_prefrontal", "corteza_perirrinal", "corteza_entorrinal",
-      "giro_dentado", "ca3", "ca1", "subiculo"
+      "giro_dentado", "ca3", "ca1", "subiculo", "giro_fusiforme", "polo_temporal",
+      "corteza_prefrontal_ventrolateral", "corteza_orbitofrontal", "giro_angular",
+      "corteza_parietal_posterior", "precuneo"
     ],
     conexiones: [
       "sensorial_multimodal", "multimodal_temporal_lateral", "temporal_lateral_anterior",
       "temporal_anterior_prefrontal", "perirrinal_temporal_anterior", "perirrinal_entorrinal",
-      "via_perforante_ec_dg", "fibras_musgosas_dg_ca3", "colaterales_schaffer_ca3_ca1", "proyeccion_ca1_subiculo"
+      "via_perforante_ec_dg", "fibras_musgosas_dg_ca3", "colaterales_schaffer_ca3_ca1", "proyeccion_ca1_subiculo",
+      "fusiforme_perirrinal", "fusiforme_temporal_anterior_ilf", "polo_temporal_orbitofrontal_uncinado",
+      "temporal_lateral_vlpfc_arqueado", "vlpfc_parietal_funcional", "angular_precuneo_funcional"
     ],
     secuencia: ["cortezas_sensoriales_asociativas", "corteza_asociativa_multimodal", "corteza_temporal_lateral", "corteza_temporal_anterior", "corteza_prefrontal"],
     secuenciaConexiones: ["sensorial_multimodal", "multimodal_temporal_lateral", "temporal_lateral_anterior", "temporal_anterior_prefrontal"],
@@ -145,11 +150,13 @@ export const BRAIN_CIRCUITS = Object.freeze([
     funciones: ["Mantenimiento", "Actualizacion", "Control ejecutivo", "Gating de representaciones"],
     nodos: [
       "corteza_prefrontal_dorsolateral", "corteza_parietal_posterior", "nucleo_mediodorsal_talamo",
-      "talamo", "caudado", "globo_palido_interno", "vta"
+      "talamo", "caudado", "globo_palido_interno", "vta", "corteza_prefrontal_ventrolateral",
+      "giro_angular", "giro_supramarginal", "nucleo_reticular_talamo", "corteza_prefrontal"
     ],
     conexiones: [
       "dlpfc_parietal", "dlpfc_mediodorsal", "parietal_talamo", "dlpfc_caudado", "caudado_gpi",
-      "gpi_mediodorsal", "vta_dlpfc_dopamina"
+      "gpi_mediodorsal", "vta_dlpfc_dopamina", "dlpfc_parietal_slf", "vlpfc_parietal_funcional",
+      "reticular_mediodorsal_gaba", "prefrontal_reticular_talamo"
     ],
     secuencia: ["corteza_prefrontal_dorsolateral", "caudado", "globo_palido_interno", "nucleo_mediodorsal_talamo", "corteza_prefrontal_dorsolateral"],
     secuenciaConexiones: ["dlpfc_caudado", "caudado_gpi", "gpi_mediodorsal", "dlpfc_mediodorsal"],
@@ -168,11 +175,12 @@ export const BRAIN_CIRCUITS = Object.freeze([
     funciones: ["Aprendizaje de habilidades", "Formacion de habitos", "Seleccion de acciones", "Ajuste motor"],
     nodos: [
       "corteza_motora", "putamen", "globo_palido_interno", "sustancia_negra_reticulata",
-      "talamo", "sustancia_negra_compacta", "estriado"
+      "talamo", "sustancia_negra_compacta", "estriado", "globo_palido_externo", "nucleo_subtalamico"
     ],
     conexiones: [
       "motora_putamen", "putamen_gpi", "putamen_snr", "gpi_talamo_motor", "snr_talamo_motor",
-      "talamo_corteza_motora", "snc_estriado_dopamina"
+      "talamo_corteza_motora", "snc_estriado_dopamina", "putamen_gpe", "gpe_subtalamico",
+      "subtalamico_gpi", "subtalamico_snr"
     ],
     secuencia: ["corteza_motora", "putamen", "globo_palido_interno", "talamo", "corteza_motora"],
     secuenciaConexiones: ["motora_putamen", "putamen_gpi", "gpi_talamo_motor", "talamo_corteza_motora"],
@@ -189,11 +197,15 @@ export const BRAIN_CIRCUITS = Object.freeze([
     funciones: ["Condicionamiento aversivo", "Contexto", "Extincion", "Reconsolidacion", "Expresion de respuestas aprendidas"],
     nodos: [
       "talamo_sensorial", "cortezas_sensoriales_asociativas", "amigdala_basolateral", "amigdala_central",
-      "hipocampo", "corteza_prefrontal_ventromedial", "hipotalamo", "sustancia_gris_periacueductal", "vta"
+      "hipocampo", "corteza_prefrontal_ventromedial", "hipotalamo", "sustancia_gris_periacueductal", "vta",
+      "nucleo_lateral_amigdala", "nucleo_basal_amigdala", "nucleo_medial_amigdala", "masas_intercaladas_amigdala"
     ],
     conexiones: [
       "talamo_sensorial_bla", "talamo_sensorial_corteza", "corteza_sensorial_bla", "bla_amigdala_central",
-      "amigdala_central_hipotalamo", "amigdala_central_pag", "hipocampo_bla", "vmpfc_bla", "vta_amigdala_dopamina"
+      "amigdala_central_hipotalamo", "amigdala_central_pag", "hipocampo_bla", "vmpfc_bla", "vta_amigdala_dopamina",
+      "talamo_sensorial_nucleo_lateral", "corteza_sensorial_nucleo_lateral", "nucleo_lateral_basal_amigdala",
+      "nucleo_basal_central_amigdala", "nucleo_basal_intercaladas", "intercaladas_nucleo_central",
+      "nucleo_medial_hipotalamo_estria_terminal"
     ],
     secuencia: ["talamo_sensorial", "cortezas_sensoriales_asociativas", "amigdala_basolateral", "amigdala_central", "hipotalamo"],
     secuenciaConexiones: ["talamo_sensorial_corteza", "corteza_sensorial_bla", "bla_amigdala_central", "amigdala_central_hipotalamo"],
@@ -210,12 +222,15 @@ export const BRAIN_CIRCUITS = Object.freeze([
     funciones: ["Aprendizaje por refuerzo", "Prediccion y actualizacion de valor", "Motivacion", "Seleccion de acciones"],
     nodos: [
       "vta", "nucleo_accumbens", "palido_ventral", "nucleo_mediodorsal_talamo", "corteza_prefrontal_medial",
-      "amigdala_basolateral", "subiculo", "hipocampo"
+      "amigdala_basolateral", "subiculo", "hipocampo", "nucleo_accumbens_core", "nucleo_accumbens_shell",
+      "corteza_orbitofrontal", "habenula_lateral", "nucleo_tegmental_rostromedial"
     ],
     conexiones: [
       "vta_accumbens_dopamina", "vta_prefrontal_dopamina", "vta_hipocampo_dopamina", "vta_amigdala_dopamina",
       "prefrontal_accumbens", "bla_accumbens", "subiculo_accumbens", "accumbens_palido_ventral",
-      "palido_ventral_mediodorsal", "mediodorsal_prefrontal_medial"
+      "palido_ventral_mediodorsal", "mediodorsal_prefrontal_medial", "vta_accumbens_core_dopamina",
+      "vta_accumbens_shell_dopamina", "accumbens_core_palido_ventral", "accumbens_shell_palido_ventral",
+      "orbitofrontal_accumbens_core", "habenula_rmtg", "rmtg_vta", "palido_ventral_habenula"
     ],
     secuencia: ["vta", "nucleo_accumbens", "palido_ventral", "nucleo_mediodorsal_talamo", "corteza_prefrontal_medial", "nucleo_accumbens"],
     secuenciaConexiones: ["vta_accumbens_dopamina", "accumbens_palido_ventral", "palido_ventral_mediodorsal", "mediodorsal_prefrontal_medial", "prefrontal_accumbens"],
@@ -233,11 +248,12 @@ export const BRAIN_CIRCUITS = Object.freeze([
     funciones: ["Mapa espacial", "Orientacion", "Integracion de trayectoria", "Memoria contextual"],
     nodos: [
       "corteza_entorrinal_medial", "giro_dentado", "ca3", "ca1", "subiculo",
-      "corteza_retrosplenial", "nucleos_anteriores_talamo"
+      "corteza_retrosplenial", "nucleos_anteriores_talamo", "presubiculo", "parasubiculo"
     ],
     conexiones: [
       "mec_giro_dentado", "mec_ca1", "fibras_musgosas_dg_ca3", "colaterales_schaffer_ca3_ca1",
-      "proyeccion_ca1_subiculo", "subiculo_retrosplenial", "retrosplenial_mec", "talamo_anterior_retrosplenial"
+      "proyeccion_ca1_subiculo", "subiculo_retrosplenial", "retrosplenial_mec", "talamo_anterior_retrosplenial",
+      "presubiculo_mec", "parasubiculo_mec"
     ],
     secuencia: ["corteza_entorrinal_medial", "giro_dentado", "ca3", "ca1", "subiculo", "corteza_retrosplenial", "corteza_entorrinal_medial"],
     secuenciaConexiones: ["mec_giro_dentado", "fibras_musgosas_dg_ca3", "colaterales_schaffer_ca3_ca1", "proyeccion_ca1_subiculo", "subiculo_retrosplenial", "retrosplenial_mec"],
@@ -245,6 +261,63 @@ export const BRAIN_CIRCUITS = Object.freeze([
     etiquetas: ["navegacion", "memoria_espacial", "place_cells", "grid_cells", "head_direction_cells", "border_cells"],
     cautelas: ["Place, grid, head-direction y border cells son categorias funcionales de actividad celular, no nucleos anatomicos.", "El mapa no reproduce coordenadas anatomicas reales."],
     referencias: ["brandon_koenig_leutgeb_2014", "moser_2008", "ranganath_ritchey_2012"]
+  }),
+  defineCircuit({
+    id: "septohippocampal_modulation",
+    nombre: "Sistema septohipocampal modulador",
+    categoria: "modulacion_memoria",
+    descripcion: "Proyecciones colinergicas y GABAergicas del septum medial y banda diagonal hacia redes hipocampales y entorrinales.",
+    funciones: ["Modulacion de ritmos theta", "Estado de codificacion y recuperacion", "Plasticidad dependiente del estado"],
+    nodos: [
+      "septum_medial", "banda_diagonal_broca", "hipocampo", "corteza_entorrinal", "nucleos_septales_laterales"
+    ],
+    conexiones: [
+      "septum_hipocampo_acetilcolina", "septum_hipocampo_gaba", "banda_diagonal_hipocampo_acetilcolina",
+      "banda_diagonal_entorrinal_acetilcolina", "hipocampo_septales_laterales"
+    ],
+    secuencia: ["banda_diagonal_broca", "hipocampo", "nucleos_septales_laterales"],
+    secuenciaConexiones: ["banda_diagonal_hipocampo_acetilcolina", "hipocampo_septales_laterales"],
+    neurotransmisores: ["acetilcolina", "GABA", "glutamato"],
+    etiquetas: ["theta", "memoria", "navegacion", "modulacion"],
+    cautelas: ["Theta emerge de interacciones septohipocampales y no de un marcapasos unico.", "Las proyecciones septales contienen poblaciones neuroquimicamente distintas."],
+    referencias: ["nunez_buno_2021", "hasselmo_2006"]
+  }),
+  defineCircuit({
+    id: "prefrontal_reuniens_hippocampal",
+    nombre: "Circuito prefrontal-reuniens-hipocampal",
+    categoria: "memoria_episodica",
+    descripcion: "Bucle de linea media talamica que coordina corteza prefrontal medial, reuniens, CA1 y subiculo.",
+    funciones: ["Memoria espacial de trabajo", "Organizacion temporal", "Control contextual", "Coordinacion hipocampo-prefrontal"],
+    nodos: ["corteza_prefrontal_medial", "nucleo_reuniens_talamo", "ca1", "subiculo"],
+    conexiones: ["prefrontal_medial_reuniens", "reuniens_ca1", "proyeccion_ca1_subiculo", "subiculo_reuniens", "subiculo_prefrontal_medial"],
+    secuencia: ["corteza_prefrontal_medial", "nucleo_reuniens_talamo", "ca1", "subiculo", "corteza_prefrontal_medial"],
+    secuenciaConexiones: ["prefrontal_medial_reuniens", "reuniens_ca1", "proyeccion_ca1_subiculo", "subiculo_prefrontal_medial"],
+    neurotransmisores: ["glutamato", "GABA"],
+    etiquetas: ["memoria_episodica", "memoria_trabajo", "ejecutivo", "talamo"],
+    cautelas: ["La evidencia mecanistica procede principalmente de roedores.", "Reuniens coordina una red; no se presenta como relevo serial obligatorio para toda interaccion hipocampo-prefrontal."],
+    referencias: ["dolleman_reuniens_2019"]
+  }),
+  defineCircuit({
+    id: "cerebellar_learning",
+    nombre: "Circuito cerebeloso de aprendizaje motor",
+    categoria: "aprendizaje_motor",
+    descripcion: "Bucle corticopontocerebeloso con entrada olivar, procesamiento cortical cerebeloso y salida por nucleos profundos.",
+    funciones: ["Adaptacion motora", "Correccion de error", "Prediccion sensorial", "Automatizacion"],
+    nodos: [
+      "corteza_motora", "puente", "oliva_inferior", "corteza_cerebelosa", "nucleo_dentado_cerebelo",
+      "nucleos_interpuestos_cerebelo", "nucleo_fastigial_cerebelo", "talamo", "tronco_encefalico"
+    ],
+    conexiones: [
+      "corteza_motora_puente", "puente_corteza_cerebelosa", "oliva_inferior_corteza_cerebelosa",
+      "corteza_cerebelosa_dentado", "corteza_cerebelosa_interpuestos", "corteza_cerebelosa_fastigial",
+      "dentado_talamo", "interpuestos_talamo", "fastigial_tronco_encefalico", "talamo_corteza_motora"
+    ],
+    secuencia: ["corteza_motora", "puente", "corteza_cerebelosa", "nucleo_dentado_cerebelo", "talamo", "corteza_motora"],
+    secuenciaConexiones: ["corteza_motora_puente", "puente_corteza_cerebelosa", "corteza_cerebelosa_dentado", "dentado_talamo", "talamo_corteza_motora"],
+    neurotransmisores: ["glutamato", "GABA"],
+    etiquetas: ["aprendizaje_motor", "error_prediccion", "automatizacion", "plasticidad"],
+    cautelas: ["La animacion representa un flujo educativo, no una secuencia neuronal exclusiva.", "Las senales olivares no se reducen a un unico escalar de error."],
+    referencias: ["apps_garwicz_2005", "ebner_2015"]
   })
 ]);
 

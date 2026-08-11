@@ -364,7 +364,7 @@ export const BRAIN_REGIONS = Object.freeze([
     descripcion: "Conjunto medial prefrontal con conexiones limbicas y de asociacion; los limites cambian entre especies y atlas.",
     referencias: ["ranganath_ritchey_2012", "haber_knutson_2010"]
   }),
-  region("corteza_prefrontal_ventromedial", "Corteza prefrontal ventromedial", "corteza_prefrontal", "corteza", "area_cortical", {
+  region("corteza_prefrontal_ventromedial", "Corteza prefrontal ventromedial", "corteza_prefrontal_medial", "corteza", "area_cortical", {
     aliases: ["Ventromedial prefrontal cortex", "vmPFC"],
     sistemas: ["memoria_emocional", "extincion", "recompensa"],
     funciones: ["Regulacion contextual del aprendizaje emocional", "Valoracion"],
@@ -389,7 +389,7 @@ export const BRAIN_REGIONS = Object.freeze([
     referencias: ["desposito_postle_2015"]
   }),
   region("corteza_temporal_anterior", "Corteza temporal anterior", "telencefalo", "corteza", "region_cortical", {
-    aliases: ["Anterior temporal lobe", "ATL", "Polo temporal ampliado"],
+    aliases: ["Anterior temporal lobe", "ATL"],
     sistemas: ["memoria_semantica", "lenguaje", "social"],
     funciones: ["Integracion multimodal de conocimiento conceptual"],
     descripcion: "Conjunto temporal anterior propuesto como hub transmodal dentro de una red semantica distribuida.",
@@ -602,6 +602,355 @@ export const BRAIN_REGIONS = Object.freeze([
     neurotransmisoresRelevantes: ["acetilcolina"],
     patologiasRelacionadas: ["Degeneracion colinergica en enfermedades neurodegenerativas"],
     referencias: ["hasselmo_2006", "kandel_2021"]
+  }),
+
+  // Segunda capa anatomica: formacion hipocampal y lobulo temporal.
+  region("corteza_entorrinal_lateral", "Corteza entorrinal lateral", "corteza_entorrinal", "corteza", "subregion_cortical", {
+    aliases: ["LEC", "Lateral entorhinal cortex"],
+    sistemas: ["memoria_episodica", "reconocimiento", "memoria_contextual"],
+    funciones: ["Integra informacion sobre items, tiempo y contexto en redes entorrinales"],
+    descripcion: {
+      basico: "Subregion entorrinal que aporta informacion no espacial y contextual al hipocampo.",
+      intermedio: "Se diferencia de la corteza entorrinal medial por conectividad y perfiles funcionales relativos.",
+      avanzado: "Las etiquetas medial/lateral proceden sobre todo de modelos animales; la correspondencia con subdivisiones humanas anterolateral/posteromedial no es exacta."
+    },
+    conceptosFuncionales: ["codigos de items", "codigos temporales"],
+    evidencia: "modelo_funcional",
+    referencias: ["schultz_engelhardt_2014", "van_strien_2009"]
+  }),
+  region("hilus_giro_dentado", "Hilus del giro dentado", "giro_dentado", "subregion", "subcampo", {
+    aliases: ["Hilus", "Capa polimorfa del giro dentado", "Dentate hilus"],
+    sistemas: ["memoria_episodica", "plasticidad", "microcircuito_hipocampal"],
+    funciones: ["Integra celulas musgosas, interneuronas y colaterales locales"],
+    descripcion: "Region polimorfa interna del giro dentado. Se mantiene separada de CA4 porque su equivalencia terminologica no es universal.",
+    neurotransmisoresRelevantes: ["glutamato", "GABA"],
+    etiquetas: ["terminologia_variable"],
+    referencias: ["schultz_engelhardt_2014", "fipat_tna"]
+  }),
+  region("ca4", "CA4", "hilus_giro_dentado", "subcampo", "subcampo", {
+    aliases: ["Campo CA4", "Cornu Ammonis 4"],
+    sistemas: ["memoria_episodica", "microcircuito_hipocampal"],
+    funciones: ["Participa en el continuo hilar-hipocampal descrito en atlas humanos"],
+    descripcion: "Campo definido de manera variable dentro de la region hilar en nomenclaturas humanas; no se usa aqui como sinonimo exacto de todo el hilus.",
+    neurotransmisoresRelevantes: ["glutamato", "GABA"],
+    etiquetas: ["terminologia_variable"],
+    referencias: ["schultz_engelhardt_2014", "fipat_tna"]
+  }),
+  region("presubiculo", "Presubiculo", "formacion_hipocampal", "corteza", "subcampo", {
+    aliases: ["Presubiculum", "PrS"],
+    sistemas: ["navegacion", "memoria_espacial", "memoria_contextual"],
+    funciones: ["Integra orientacion y senales de direccion dentro de la region hipocampal"],
+    descripcion: "Componente perialocortical del complejo subicular, distinto del subiculo y del parasubiculo.",
+    conceptosFuncionales: ["head-direction cells"],
+    referencias: ["insausti_2017", "witter_canto_2014"]
+  }),
+  region("parasubiculo", "Parasubiculo", "formacion_hipocampal", "corteza", "subcampo", {
+    aliases: ["Parasubiculum", "PaS"],
+    sistemas: ["navegacion", "memoria_espacial", "memoria_contextual"],
+    funciones: ["Intercambia informacion espacial con corteza entorrinal medial y presubiculo"],
+    descripcion: "Componente perialocortical pequeno y diferenciado, incluido como entidad anatomica y no como tipo celular.",
+    conceptosFuncionales: ["grid cells", "head-direction cells", "border cells"],
+    referencias: ["insausti_2017", "witter_canto_2014"]
+  }),
+  region("giro_fusiforme", "Giro fusiforme", "telencefalo", "corteza", "giro", {
+    aliases: ["Fusiform gyrus", "Giro occipitotemporal"],
+    sistemas: ["reconocimiento", "memoria_semantica", "integracion_multimodal"],
+    funciones: ["Procesamiento visual complejo en redes de objetos, caras y conocimiento"],
+    descripcion: "Giro ventral temporo-occipital que participa en redes distribuidas; no constituye por si solo un almacen de memoria.",
+    atlasRefs: ["left-fusiform-gyrus"],
+    referencias: ["lambon_ralph_2017", "kandel_2021"]
+  }),
+  region("polo_temporal", "Polo temporal", "corteza_temporal_anterior", "corteza", "subregion_cortical", {
+    aliases: ["Temporal pole", "Polus temporalis"],
+    sistemas: ["memoria_semantica", "social", "emocion"],
+    funciones: ["Integracion semantica y socioemocional dentro de redes temporales anteriores"],
+    descripcion: "Extremo anterior del lobulo temporal. Es una subregion de la corteza temporal anterior, no un sinonimo de toda ella.",
+    atlasRefs: ["left-temporal-pole"],
+    referencias: ["lambon_ralph_2017", "von_der_heide_2013"]
+  }),
+
+  // Sistema septal y diencefalo relacionado con memoria.
+  region("banda_diagonal_broca", "Banda diagonal de Broca", "telencefalo", "nucleo", "nucleo", {
+    aliases: ["Diagonal band of Broca", "DBB", "Nucleo de la banda diagonal"],
+    sistemas: ["acetilcolina", "memoria", "navegacion", "theta"],
+    funciones: ["Modulacion septohipocampal y entorrinal", "Participacion en ritmos theta"],
+    descripcion: "Componente heterogeneo del prosencefalo basal con poblaciones colinergicas, GABAergicas y glutamatergicas.",
+    neurotransmisoresRelevantes: ["acetilcolina", "GABA", "glutamato"],
+    referencias: ["nunez_buno_2021", "hasselmo_2006"]
+  }),
+  region("nucleos_septales_laterales", "Nucleos septales laterales", "telencefalo", "complejo_nuclear", "grupo_nuclear", {
+    aliases: ["Lateral septal nuclei", "Septum lateral", "LS"],
+    sistemas: ["memoria_contextual", "emocion", "navegacion"],
+    funciones: ["Integra salidas hipocampales con circuitos hipotalamicos y motivacionales"],
+    descripcion: "Complejo septal lateral conectado de manera topografica con hipocampo e hipotalamo; no se reduce a una via colinergica.",
+    neurotransmisoresRelevantes: ["GABA"],
+    referencias: ["kandel_2021", "nunez_buno_2021"]
+  }),
+  region("nucleo_reuniens_talamo", "Nucleo reuniens del talamo", "talamo", "nucleo", "nucleo", {
+    aliases: ["Nucleus reuniens", "Reuniens", "RE"],
+    sistemas: ["memoria_episodica", "memoria_trabajo", "ejecutivo", "navegacion"],
+    funciones: ["Coordina comunicacion entre hipocampo y corteza prefrontal medial"],
+    descripcion: "Nucleo talamico de linea media dentro de un circuito prefrontal-reuniens-hipocampal; no es un simple relevo pasivo.",
+    neurotransmisoresRelevantes: ["glutamato", "GABA"],
+    referencias: ["dolleman_reuniens_2019"]
+  }),
+  region("nucleo_reticular_talamo", "Nucleo reticular del talamo", "talamo", "nucleo", "nucleo", {
+    aliases: ["Thalamic reticular nucleus", "TRN", "NRT"],
+    sistemas: ["atencion", "memoria_trabajo", "sueño_vigilia"],
+    funciones: ["Modula la actividad de nucleos talamicos mediante inhibicion"],
+    descripcion: "Lamina nuclear GABAergica que rodea lateralmente el talamo y recibe colaterales corticotalamicas y talamocorticales.",
+    neurotransmisoresRelevantes: ["GABA"],
+    referencias: ["pinault_2004", "kandel_2021"]
+  }),
+
+  // Corteza cingulada, prefrontal, parietal e insular.
+  region("corteza_cingulada_anterior", "Corteza cingulada anterior", "giro_cingulado", "corteza", "area_cortical", {
+    aliases: ["Anterior cingulate cortex", "ACC", "CCA"],
+    sistemas: ["saliencia", "emocion", "ejecutivo", "recompensa"],
+    funciones: ["Integra valor, estado interno y control adaptativo"],
+    descripcion: "Region cingulada anterior. Se usa un unico nodo compartido por redes cinguladas y prefrontales para evitar duplicar ACC.",
+    referencias: ["vogt_2016", "menon_2011"]
+  }),
+  region("corteza_cingulada_media", "Corteza cingulada media", "giro_cingulado", "corteza", "area_cortical", {
+    aliases: ["Midcingulate cortex", "MCC", "Corteza mediocingulada"],
+    sistemas: ["saliencia", "control", "motor", "dolor"],
+    funciones: ["Vincula seleccion de respuesta, control y senales motivacionales"],
+    descripcion: "Region cingulada distinta de ACC y PCC; la denominacion dorsal ACC no se usa como sinonimo automatico.",
+    referencias: ["vogt_2016"]
+  }),
+  region("corteza_prefrontal_ventrolateral", "Corteza prefrontal ventrolateral", "corteza_prefrontal", "corteza", "area_cortical", {
+    aliases: ["Ventrolateral prefrontal cortex", "VLPFC", "vlPFC"],
+    sistemas: ["ejecutivo", "memoria_trabajo", "recuperacion", "lenguaje"],
+    funciones: ["Seleccion, control de recuperacion e inhibicion dependiente de tarea"],
+    descripcion: "Subregion lateral prefrontal integrada en redes frontoparietales y semanticas; sus limites dependen del atlas.",
+    referencias: ["desposito_postle_2015", "lambon_ralph_2017"]
+  }),
+  region("corteza_prefrontal_dorsomedial", "Corteza prefrontal dorsomedial", "corteza_prefrontal_medial", "corteza", "area_cortical", {
+    aliases: ["Dorsomedial prefrontal cortex", "dmPFC"],
+    sistemas: ["ejecutivo", "social", "memoria_episodica", "saliencia"],
+    funciones: ["Control, inferencia y evaluacion en redes mediales"],
+    descripcion: "Subregion dorsomedial del agregado mPFC; no se equipara automaticamente con corteza cingulada media.",
+    evidencia: "modelo_funcional",
+    referencias: ["menon_2011", "ranganath_ritchey_2012"]
+  }),
+  region("corteza_orbitofrontal", "Corteza orbitofrontal", "corteza_prefrontal", "corteza", "region_cortical", {
+    aliases: ["Orbitofrontal cortex", "OFC", "COF"],
+    sistemas: ["recompensa", "valor", "memoria_semantica", "emocion"],
+    funciones: ["Representacion flexible de valor y resultados esperados"],
+    descripcion: "Region prefrontal orbital heterogenea conectada con temporal anterior, amigdala y estriado ventral.",
+    referencias: ["haber_knutson_2010", "von_der_heide_2013"]
+  }),
+  region("giro_angular", "Giro angular", "corteza_parietal_posterior", "corteza", "giro", {
+    aliases: ["Angular gyrus", "AG", "Giro angularis"],
+    sistemas: ["memoria_episodica", "memoria_semantica", "integracion_multimodal"],
+    funciones: ["Representacion multimodal de informacion recuperada"],
+    descripcion: "Componente parietal ventral asociado con recuperacion y representacion multimodal; no es un almacen episodico aislado.",
+    evidencia: "modelo_funcional",
+    referencias: ["rugg_king_2018"]
+  }),
+  region("giro_supramarginal", "Giro supramarginal", "corteza_parietal_posterior", "corteza", "giro", {
+    aliases: ["Supramarginal gyrus", "SMG", "Giro supramarginalis"],
+    sistemas: ["atencion", "memoria_trabajo", "integracion_multimodal", "lenguaje"],
+    funciones: ["Integra informacion fonologica, somatosensorial y atencional segun tarea"],
+    descripcion: "Componente del lobulo parietal inferior, distinto del giro angular aunque ambos participan en redes distribuidas.",
+    referencias: ["rugg_king_2018", "desposito_postle_2015"]
+  }),
+  region("insula_anterior", "Insula anterior", "telencefalo", "corteza", "area_cortical", {
+    aliases: ["Anterior insula", "AI"],
+    sistemas: ["saliencia", "interocepcion", "control"],
+    funciones: ["Detecta y prioriza senales relevantes dentro de redes funcionales"],
+    descripcion: "Region insular anterior incluida para representar la red de saliencia como overlay funcional, no como tracto.",
+    evidencia: "modelo_funcional",
+    referencias: ["seeley_2007", "menon_2011"]
+  }),
+
+  // Complejo amigdalino detallado.
+  region("nucleo_lateral_amigdala", "Nucleo lateral de la amigdala", "amigdala_basolateral", "nucleo", "subnucleo", {
+    aliases: ["Lateral amygdala", "LA"],
+    sistemas: ["condicionamiento", "memoria_emocional", "sensorial"],
+    funciones: ["Recibe entradas sensoriales y participa en asociaciones aprendidas"],
+    descripcion: "Subnucleo del complejo basolateral con entradas talamicas y corticales dependientes de modalidad.",
+    neurotransmisoresRelevantes: ["glutamato", "GABA"],
+    referencias: ["sah_2003", "ledoux_2000"]
+  }),
+  region("nucleo_basal_amigdala", "Nucleo basal de la amigdala", "amigdala_basolateral", "nucleo", "subnucleo", {
+    aliases: ["Basal amygdala", "BA", "Nucleo basolateral basal"],
+    sistemas: ["memoria_emocional", "recompensa", "extincion", "reconsolidacion"],
+    funciones: ["Integra contexto, valor y control prefrontal en microcircuitos amigdalinos"],
+    descripcion: "Subnucleo del complejo basolateral, separado del nucleo lateral y del nucleo central.",
+    neurotransmisoresRelevantes: ["glutamato", "GABA"],
+    referencias: ["sah_2003", "phelps_ledoux_2005"]
+  }),
+  region("nucleo_medial_amigdala", "Nucleo medial de la amigdala", "amigdala", "nucleo", "nucleo", {
+    aliases: ["Medial amygdala", "MeA"],
+    sistemas: ["social", "olfaccion", "respuesta_autonomica"],
+    funciones: ["Integra senales quimiosensoriales y sociales con respuestas hipotalamicas"],
+    descripcion: "Nucleo amigdalino medial con conectividad y funciones distintas del complejo basolateral.",
+    neurotransmisoresRelevantes: ["GABA", "peptidos"],
+    referencias: ["sah_2003", "kandel_2021"]
+  }),
+  region("masas_intercaladas_amigdala", "Masas intercaladas de la amigdala", "amigdala", "grupo_celular", "subcampo", {
+    aliases: ["Intercalated cell masses", "ITC", "Intercalated cells"],
+    sistemas: ["extincion", "condicionamiento", "memoria_emocional"],
+    funciones: ["Modulan de manera inhibitoria el flujo entre complejos amigdalinos"],
+    descripcion: "Grupos de neuronas GABAergicas; se muestran en nivel avanzado y no se presentan como un nucleo unico uniforme.",
+    neurotransmisoresRelevantes: ["GABA"],
+    evidencia: "modelo_funcional",
+    referencias: ["sah_2003", "milad_quirk_2012"]
+  }),
+
+  // Ganglios basales y aprendizaje por recompensa.
+  region("globo_palido_externo", "Globo palido externo", "globo_palido", "nucleo", "nucleo", {
+    aliases: ["GPe", "External globus pallidus"],
+    sistemas: ["motor", "aprendizaje_procedimental", "seleccion_acciones"],
+    funciones: ["Integra la via indirecta y circuitos recurrentes de ganglios basales"],
+    descripcion: "Segmento palidal externo GABAergico, distinto del GPi de salida.",
+    neurotransmisoresRelevantes: ["GABA"],
+    referencias: ["lanciego_2012", "alexander_delong_strick_1986"]
+  }),
+  region("nucleo_subtalamico", "Nucleo subtalamico", "diencefalo", "nucleo", "nucleo", {
+    aliases: ["Subthalamic nucleus", "STN", "NST"],
+    sistemas: ["ganglios_basales", "motor", "seleccion_acciones", "ejecutivo"],
+    funciones: ["Aporta una proyeccion excitatoria a nucleos de salida de ganglios basales"],
+    descripcion: "Nucleo diencefalico integrado funcionalmente en ganglios basales; su padre anatomico no se cambia a telencefalo.",
+    neurotransmisoresRelevantes: ["glutamato"],
+    referencias: ["lanciego_2012"]
+  }),
+  region("nucleo_accumbens_core", "Nucleo accumbens core", "nucleo_accumbens", "nucleo", "subnucleo", {
+    aliases: ["NAc core", "Accumbens core"],
+    sistemas: ["recompensa", "aprendizaje_refuerzo", "seleccion_acciones"],
+    funciones: ["Integra senales de claves, acciones y valor en el estriado ventral"],
+    descripcion: "Subterritorio core del nucleo accumbens; sus limites y funciones se solapan parcialmente con otros territorios estriatales.",
+    neurotransmisoresRelevantes: ["GABA", "dopamina", "glutamato"],
+    referencias: ["haber_knutson_2010", "lanciego_2012"]
+  }),
+  region("nucleo_accumbens_shell", "Nucleo accumbens shell", "nucleo_accumbens", "nucleo", "subnucleo", {
+    aliases: ["NAc shell", "Accumbens shell"],
+    sistemas: ["recompensa", "motivacion", "aprendizaje_refuerzo"],
+    funciones: ["Integra contexto, estado interno y valor en circuitos limbicos"],
+    descripcion: "Subterritorio shell del nucleo accumbens con conectividad limbica y palidal diferenciada, no absoluta.",
+    neurotransmisoresRelevantes: ["GABA", "dopamina", "glutamato"],
+    referencias: ["haber_knutson_2010", "lanciego_2012"]
+  }),
+  region("habenula_lateral", "Habenula lateral", "diencefalo", "nucleo", "nucleo", {
+    aliases: ["Lateral habenula", "LHb"],
+    sistemas: ["recompensa", "aversion", "aprendizaje_refuerzo"],
+    funciones: ["Integra resultados adversos y modula sistemas monoaminergicos"],
+    descripcion: "Nucleo epitalamico conectado con RMTg y sistemas dopaminergicos; no codifica de forma exclusiva la aversion.",
+    neurotransmisoresRelevantes: ["glutamato", "GABA"],
+    referencias: ["hikosaka_2010"]
+  }),
+  region("nucleo_tegmental_rostromedial", "Nucleo tegmental rostromedial", "mesencefalo", "nucleo", "nucleo", {
+    aliases: ["Rostromedial tegmental nucleus", "RMTg", "Cola de VTA"],
+    sistemas: ["recompensa", "aversion", "dopamina"],
+    funciones: ["Proporciona control GABAergico a poblaciones dopaminergicas mesencefalicas"],
+    descripcion: "Nucleo tegmental GABAergico incluido en nivel avanzado del circuito habenula-RMTg-VTA.",
+    neurotransmisoresRelevantes: ["GABA"],
+    referencias: ["jhou_2009", "hikosaka_2010"]
+  }),
+
+  // Sistemas moduladores ascendentes.
+  region("nucleo_rafe_dorsal", "Nucleo del rafe dorsal", "mesencefalo", "nucleo", "nucleo", {
+    aliases: ["Dorsal raphe nucleus", "DRN", "Rafe dorsal"],
+    sistemas: ["serotonina", "emocion", "aprendizaje", "sueño_vigilia"],
+    funciones: ["Modulacion serotoninergica heterogenea de corteza y regiones limbicas"],
+    descripcion: "Nucleo del rafe con subpoblaciones y proyecciones distintas; la capa no lo trata como una fuente homogenea.",
+    neurotransmisoresRelevantes: ["serotonina", "glutamato", "GABA"],
+    referencias: ["hornung_2003", "kandel_2021"]
+  }),
+  region("nucleo_rafe_mediano", "Nucleo del rafe mediano", "tronco_encefalico", "nucleo", "nucleo", {
+    aliases: ["Median raphe nucleus", "MRN", "Rafe medial", "Rafe mediano"],
+    sistemas: ["serotonina", "memoria", "navegacion", "sueño_vigilia"],
+    funciones: ["Modulacion serotoninergica de hipocampo, septum y regiones limbicas"],
+    descripcion: "Nucleo rostral del rafe con proyecciones que se solapan parcialmente, pero no son identicas, a las del rafe dorsal.",
+    neurotransmisoresRelevantes: ["serotonina"],
+    referencias: ["hornung_2003"]
+  }),
+  region("locus_coeruleus", "Locus coeruleus", "puente", "nucleo", "nucleo", {
+    aliases: ["Locus coeruleus", "LC", "Nucleo ceruleo"],
+    sistemas: ["noradrenalina", "atencion", "memoria", "sueño_vigilia"],
+    funciones: ["Modulacion noradrenergica de redes corticales, hipocampales y amigdalinas"],
+    descripcion: "Nucleo pontino pequeno con proyecciones extensas y organizadas; no produce una modulacion uniforme.",
+    neurotransmisoresRelevantes: ["noradrenalina"],
+    referencias: ["poe_2020"]
+  }),
+  region("nucleo_tuberomamilar", "Nucleo tuberomamilar", "hipotalamo", "nucleo", "nucleo", {
+    aliases: ["Tuberomammillary nucleus", "TMN", "Nucleo tuberomamilar histaminergico"],
+    sistemas: ["histamina", "sueño_vigilia", "atencion", "memoria"],
+    funciones: ["Modulacion histaminergica difusa del encefalo"],
+    descripcion: "Principal origen histaminergico del cerebro mamifero, situado en hipotalamo posterior.",
+    neurotransmisoresRelevantes: ["histamina"],
+    referencias: ["haas_2008"]
+  }),
+
+  // Tronco y cerebelo para aprendizaje motor.
+  fromAtlas("brainstem", {
+    id: "tronco_encefalico",
+    nombre: "Tronco encefalico",
+    nombreCompleto: "Tronco encefalico",
+    regionPadre: "brain",
+    tipo: "region",
+    nivelAnatomico: "division",
+    sistemas: ["motor", "modulacion", "integracion"],
+    referencias: ["kandel_2021"]
+  }),
+  fromAtlas("cerebellum", {
+    id: "cerebelo",
+    nombre: "Cerebelo",
+    nombreCompleto: "Cerebelo",
+    regionPadre: "brain",
+    tipo: "region",
+    nivelAnatomico: "organo",
+    sistemas: ["aprendizaje_motor", "motor", "prediccion"],
+    referencias: ["apps_garwicz_2005", "ebner_2015"]
+  }),
+  region("corteza_cerebelosa", "Corteza cerebelosa", "cerebelo", "corteza", "region_cortical", {
+    aliases: ["Cerebellar cortex"],
+    sistemas: ["aprendizaje_motor", "prediccion", "automatizacion"],
+    funciones: ["Integra fibras musgosas y trepadoras y ajusta la salida de nucleos profundos"],
+    descripcion: "Corteza laminada del cerebelo representada como agregado; sus microzonas no se subdividen aun.",
+    neurotransmisoresRelevantes: ["glutamato", "GABA"],
+    referencias: ["apps_garwicz_2005", "ebner_2015"]
+  }),
+  region("nucleo_dentado_cerebelo", "Nucleo dentado", "cerebelo", "nucleo", "nucleo", {
+    aliases: ["Dentate nucleus", "Nucleo dentado cerebeloso"],
+    sistemas: ["aprendizaje_motor", "planificacion", "cognicion"],
+    funciones: ["Salida cerebelosa lateral hacia talamo y otras dianas"],
+    descripcion: "Nucleo profundo lateral del cerebelo, distinto del giro dentado hipocampal.",
+    neurotransmisoresRelevantes: ["glutamato", "GABA"],
+    referencias: ["apps_garwicz_2005"]
+  }),
+  region("nucleos_interpuestos_cerebelo", "Nucleos interpuestos del cerebelo", "cerebelo", "grupo_nuclear", "grupo_nuclear", {
+    aliases: ["Interposed nuclei", "Nucleos globoso y emboliforme"],
+    sistemas: ["aprendizaje_motor", "correccion_error", "motor"],
+    funciones: ["Salida de regiones cerebelosas intermedias hacia circuitos motores"],
+    descripcion: "Agrupacion educativa de nucleos globoso y emboliforme; puede expandirse sin duplicarlos.",
+    neurotransmisoresRelevantes: ["glutamato", "GABA"],
+    referencias: ["apps_garwicz_2005"]
+  }),
+  region("nucleo_fastigial_cerebelo", "Nucleo fastigial", "cerebelo", "nucleo", "nucleo", {
+    aliases: ["Fastigial nucleus", "Nucleo del fastigio"],
+    sistemas: ["motor", "postura", "aprendizaje_motor"],
+    funciones: ["Salida vermiana hacia circuitos vestibulares y del tronco"],
+    descripcion: "Nucleo profundo medial del cerebelo, incluido a escala de circuito y no de microzona.",
+    neurotransmisoresRelevantes: ["glutamato", "GABA"],
+    referencias: ["apps_garwicz_2005"]
+  }),
+  region("puente", "Puente", "tronco_encefalico", "region", "division", {
+    aliases: ["Pons", "Protuberancia anular"],
+    sistemas: ["motor", "aprendizaje_motor", "integracion"],
+    funciones: ["Aloja nucleos pontinos que relevan informacion cortical al cerebelo"],
+    descripcion: "Division del tronco; las conexiones corticopontocerebelosas representan nucleos pontinos de forma agregada.",
+    referencias: ["apps_garwicz_2005", "kandel_2021"]
+  }),
+  region("oliva_inferior", "Oliva inferior", "tronco_encefalico", "complejo_nuclear", "nucleo", {
+    aliases: ["Inferior olive", "Complejo olivar inferior"],
+    sistemas: ["aprendizaje_motor", "correccion_error", "plasticidad"],
+    funciones: ["Origina fibras trepadoras hacia corteza cerebelosa"],
+    descripcion: "Complejo nuclear bulbar implicado en senales instructivas y sincronizacion; no equivale por si solo a un error computacional.",
+    neurotransmisoresRelevantes: ["glutamato"],
+    evidencia: "modelo_funcional",
+    referencias: ["ebner_2015", "apps_garwicz_2005"]
   })
 ]);
 

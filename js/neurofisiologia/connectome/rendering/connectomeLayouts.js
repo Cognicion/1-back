@@ -20,6 +20,11 @@ export const DEFAULT_LAYOUT_OPTIONS = Object.freeze({
   columnSpacing: 230,
   levelSpacing: 132,
   ringSpacing: 180,
+  collisionPadding: 24,
+  collisionPasses: 5,
+  maxFlowColumns: 8,
+  clusterGap: 60,
+  clusterPadding: 54,
   direction: "LR",
   clusterBy: "category"
 });
@@ -120,13 +125,22 @@ export function layoutHierarchical(nodes = [], edges = [], options = {}) {
   const positions = new Map();
   const orderedDepths = [...levels.keys()].sort((a, b) => a - b);
   const topToBottom = isTopToBottom(context.options.direction);
+  const metrics = measureNodes(context.nodes, context.options);
+  const horizontalSpacing = Math.max(
+    context.options.columnSpacing,
+    metrics.maxWidth + context.options.collisionPadding * 2
+  );
+  const verticalSpacing = Math.max(
+    context.options.levelSpacing,
+    metrics.maxHeight + context.options.collisionPadding * 2
+  );
   const naturalWidth = Math.max(
     context.options.width,
-    context.options.padding * 2 + (maximumLevelSize - 1) * context.options.columnSpacing
+    context.options.padding * 2 + (maximumLevelSize - 1) * horizontalSpacing
   );
   const naturalHeight = Math.max(
     context.options.height,
-    context.options.padding * 2 + (maximumLevelSize - 1) * context.options.levelSpacing
+    context.options.padding * 2 + (maximumLevelSize - 1) * verticalSpacing
   );
 
   for (const depth of orderedDepths) {
@@ -135,14 +149,14 @@ export function layoutHierarchical(nodes = [], edges = [], options = {}) {
       return pathOrder || compareNodes(a, b);
     });
     level.forEach((node, index) => {
-      const crossAxisSpacing = topToBottom ? context.options.columnSpacing : context.options.levelSpacing;
+      const crossAxisSpacing = topToBottom ? horizontalSpacing : verticalSpacing;
       const crossAxisExtent = (level.length - 1) * crossAxisSpacing;
       const crossAxisStart = ((topToBottom ? naturalWidth : naturalHeight) - crossAxisExtent) / 2;
       const x = topToBottom
         ? crossAxisStart + index * crossAxisSpacing
-        : context.options.padding + depth * context.options.columnSpacing;
+        : context.options.padding + depth * horizontalSpacing;
       const y = topToBottom
-        ? context.options.padding + depth * context.options.levelSpacing
+        ? context.options.padding + depth * verticalSpacing
         : crossAxisStart + index * crossAxisSpacing;
       positions.set(node.id, point(x, y));
     });
@@ -162,25 +176,62 @@ export function layoutFlow(nodes = [], edges = [], options = {}) {
   );
   const primary = sequence.length ? sequence : deriveDirectedOrder(context.nodes, context.edges);
   const primarySet = new Set(primary);
-  const secondary = context.nodes.filter((node) => !primarySet.has(node.id));
+  const adjacentCircuitIds = uniqueIds([
+    ...toArray(circuit?.nodos).map(readEntityId),
+    ...toArray(circuit?.nodes).map(readEntityId),
+    ...toArray(circuit?.secuencia ?? circuit?.sequence).map(readEntityId)
+  ]).filter((id) => context.nodeById.has(id) && !primarySet.has(id));
+  const adjacentCircuitSet = new Set(adjacentCircuitIds);
+  const adjacentCircuitNodes = adjacentCircuitIds.map((id) => context.nodeById.get(id)).filter(Boolean);
+  const secondary = context.nodes.filter((node) => !primarySet.has(node.id) && !adjacentCircuitSet.has(node.id));
   const positions = new Map();
   const padding = context.options.padding;
-  const mainY = padding + context.options.nodeHeight;
+  const metrics = measureNodes(context.nodes, context.options);
+  const columnSpacing = Math.max(
+    context.options.columnSpacing,
+    metrics.maxWidth + context.options.collisionPadding * 2
+  );
+  const rowSpacing = Math.max(
+    context.options.levelSpacing * 1.45,
+    metrics.maxHeight + context.options.collisionPadding * 2
+  );
+  const availableColumns = Math.max(1, Math.floor(
+    Math.max(columnSpacing, context.options.width - padding * 2) / columnSpacing
+  ) + 1);
+  const requestedMaximum = Math.max(1, Math.floor(context.options.maxFlowColumns));
+  const primaryColumns = Math.max(1, Math.min(primary.length || 1, requestedMaximum, availableColumns));
+  const primaryRows = Math.max(1, Math.ceil(primary.length / primaryColumns));
+  const mainY = padding + metrics.maxHeight / 2;
 
   primary.forEach((nodeId, index) => {
-    positions.set(nodeId, point(padding + index * context.options.columnSpacing, mainY));
+    positions.set(nodeId, point(
+      padding + metrics.maxWidth / 2 + (index % primaryColumns) * columnSpacing,
+      mainY + Math.floor(index / primaryColumns) * rowSpacing
+    ));
   });
+
+  let secondaryStartY = mainY + primaryRows * rowSpacing + context.options.collisionPadding;
+  if (adjacentCircuitNodes.length) {
+    const adjacentColumns = Math.max(1, Math.min(primaryColumns, adjacentCircuitNodes.length));
+    adjacentCircuitNodes.forEach((node, index) => {
+      positions.set(node.id, point(
+        padding + metrics.maxWidth / 2 + (index % adjacentColumns) * columnSpacing,
+        secondaryStartY + Math.floor(index / adjacentColumns) * rowSpacing
+      ));
+    });
+    const adjacentRows = Math.ceil(adjacentCircuitNodes.length / adjacentColumns);
+    secondaryStartY += adjacentRows * rowSpacing + context.options.clusterGap * 0.5;
+  }
 
   if (secondary.length) {
     const columns = Math.max(1, Math.min(
-      Math.max(primary.length, 1),
+      Math.max(primaryColumns, 1),
       Math.ceil(Math.sqrt(secondary.length * 1.6))
     ));
-    const secondaryStartY = mainY + context.options.levelSpacing * 1.45;
     secondary.forEach((node, index) => {
       positions.set(node.id, point(
-        padding + (index % columns) * context.options.columnSpacing,
-        secondaryStartY + Math.floor(index / columns) * context.options.levelSpacing
+        padding + metrics.maxWidth / 2 + (index % columns) * columnSpacing,
+        secondaryStartY + Math.floor(index / columns) * rowSpacing
       ));
     });
   }
@@ -190,7 +241,7 @@ export function layoutFlow(nodes = [], edges = [], options = {}) {
   return finalizeLayout(CONNECTOME_LAYOUT_TYPES.FLOW, context, oriented, [{
     id: circuit?.id || "flujo_principal",
     label: circuit?.nombre || "Flujo principal",
-    nodeIds: Object.freeze([...primary])
+    nodeIds: Object.freeze([...primary, ...adjacentCircuitIds])
   }]);
 }
 
@@ -215,11 +266,16 @@ export function layoutRadial(nodes = [], edges = [], options = {}) {
   const center = point(context.options.width / 2, context.options.height / 2);
   const positions = new Map([[focusId, center]]);
   let previousRadius = 0;
+  const metrics = measureNodes(context.nodes, context.options);
+  const safeNodeSpacing = Math.max(
+    context.options.nodeSpacing,
+    metrics.maxWidth + context.options.collisionPadding * 1.5
+  );
   const orderedRings = [...rings.keys()].filter((depth) => depth !== 0).sort((a, b) => a - b);
 
   for (const depth of orderedRings) {
     const ring = rings.get(depth).sort(compareNodes);
-    const circumferenceRadius = ring.length * context.options.nodeSpacing / (Math.PI * 2);
+    const circumferenceRadius = ring.length * safeNodeSpacing / (Math.PI * 2);
     const radius = Math.max(
       context.options.ringSpacing * depth,
       circumferenceRadius,
@@ -252,19 +308,14 @@ export function layoutNetwork(nodes = [], edges = [], options = {}) {
     return bFocused - aFocused || b.length - a.length || compareNodes(a[0], b[0]);
   });
 
-  const largestComponent = Math.max(1, ...components.map((component) => component.length));
-  const cellSize = Math.max(430, Math.ceil(Math.sqrt(largestComponent)) * context.options.nodeSpacing * 1.55);
-  const columns = Math.max(1, Math.ceil(Math.sqrt(components.length * 1.45)));
+  const metrics = measureNodes(context.nodes, context.options);
+  const safeNodeSpacing = Math.max(
+    context.options.nodeSpacing,
+    metrics.maxWidth + context.options.collisionPadding * 1.5
+  );
   const positions = new Map();
   const clusters = [];
-
-  components.forEach((component, componentIndex) => {
-    const col = componentIndex % columns;
-    const row = Math.floor(componentIndex / columns);
-    const center = point(
-      context.options.padding + cellSize / 2 + col * cellSize,
-      context.options.padding + cellSize / 2 + row * cellSize
-    );
+  const descriptors = components.map((component) => {
     const componentIds = new Set(component.map((node) => node.id));
     const hub = focusId && componentIds.has(focusId)
       ? context.nodeById.get(focusId)
@@ -272,15 +323,43 @@ export function layoutNetwork(nodes = [], edges = [], options = {}) {
     const distances = breadthFirstDistances(hub.id, adjacency, componentIds);
     const rings = new Map();
     for (const node of component) addToGroup(rings, distances.get(node.id) || 0, node);
-    positions.set(hub.id, center);
+    let previousRadius = 0;
+    for (const depth of [...rings.keys()].filter((value) => value > 0).sort((a, b) => a - b)) {
+      const ring = rings.get(depth).sort(compareNodes);
+      previousRadius = Math.max(
+        previousRadius + context.options.ringSpacing * 0.72,
+        context.options.ringSpacing * depth,
+        ring.length * safeNodeSpacing / (Math.PI * 2)
+      );
+    }
+    const diameter = Math.max(
+      300,
+      (previousRadius + metrics.maxWidth / 2 + context.options.collisionPadding * 2) * 2
+    );
+    return { component, hub, rings, diameter };
+  });
+  const totalArea = descriptors.reduce((sum, descriptor) => sum + descriptor.diameter ** 2, 0);
+  const targetWidth = Math.max(context.options.width, Math.sqrt(totalArea * 1.35));
+  const gap = Math.max(44, context.options.collisionPadding * 2);
+  let cursorX = context.options.padding;
+  let cursorY = context.options.padding;
+  let rowHeight = 0;
 
+  descriptors.forEach(({ component, hub, rings, diameter }, componentIndex) => {
+    if (cursorX > context.options.padding && cursorX + diameter > context.options.padding + targetWidth) {
+      cursorX = context.options.padding;
+      cursorY += rowHeight + gap;
+      rowHeight = 0;
+    }
+    const center = point(cursorX + diameter / 2, cursorY + diameter / 2);
+    positions.set(hub.id, center);
     let previousRadius = 0;
     for (const depth of [...rings.keys()].filter((value) => value > 0).sort((a, b) => a - b)) {
       const ring = rings.get(depth).sort(compareNodes);
       const radius = Math.max(
         previousRadius + context.options.ringSpacing * 0.72,
         context.options.ringSpacing * depth,
-        ring.length * context.options.nodeSpacing / (Math.PI * 2)
+        ring.length * safeNodeSpacing / (Math.PI * 2)
       );
       previousRadius = radius;
       placeRing(ring, center, radius, positions, context.options.startAngle);
@@ -292,6 +371,8 @@ export function layoutNetwork(nodes = [], edges = [], options = {}) {
       nodeIds: Object.freeze(component.map((node) => node.id)),
       centerNodeId: hub.id
     });
+    cursorX += diameter + gap;
+    rowHeight = Math.max(rowHeight, diameter);
   });
 
   return finalizeLayout(CONNECTOME_LAYOUT_TYPES.NETWORK, context, positions, clusters);
@@ -482,6 +563,12 @@ export function createLayoutCacheKey(configOrNodes = {}, maybeEdges = [], maybeO
       columnSpacing: finiteNumber(options.columnSpacing, DEFAULT_LAYOUT_OPTIONS.columnSpacing),
       levelSpacing: finiteNumber(options.levelSpacing, DEFAULT_LAYOUT_OPTIONS.levelSpacing),
       ringSpacing: finiteNumber(options.ringSpacing, DEFAULT_LAYOUT_OPTIONS.ringSpacing),
+      collisionPadding: finiteNumber(options.collisionPadding, DEFAULT_LAYOUT_OPTIONS.collisionPadding),
+      collisionPasses: finiteNumber(options.collisionPasses, DEFAULT_LAYOUT_OPTIONS.collisionPasses),
+      maxFlowColumns: finiteNumber(options.maxFlowColumns, DEFAULT_LAYOUT_OPTIONS.maxFlowColumns),
+      clusterGap: finiteNumber(options.clusterGap, DEFAULT_LAYOUT_OPTIONS.clusterGap),
+      clusterPadding: finiteNumber(options.clusterPadding, DEFAULT_LAYOUT_OPTIONS.clusterPadding),
+      nodeSizeById: normalizeNodeSizeEntries(options.nodeSizeById),
       direction: options.direction || "LR",
       clusterBy: options.clusterBy || "category",
       startAngle: finiteNumber(options.startAngle, -Math.PI / 2),
@@ -539,7 +626,13 @@ function createContext(nodes, edges, options) {
     nodeSpacing: Math.max(60, finiteNumber(options?.nodeSpacing, DEFAULT_LAYOUT_OPTIONS.nodeSpacing)),
     columnSpacing: Math.max(100, finiteNumber(options?.columnSpacing, DEFAULT_LAYOUT_OPTIONS.columnSpacing)),
     levelSpacing: Math.max(80, finiteNumber(options?.levelSpacing, DEFAULT_LAYOUT_OPTIONS.levelSpacing)),
-    ringSpacing: Math.max(100, finiteNumber(options?.ringSpacing, DEFAULT_LAYOUT_OPTIONS.ringSpacing))
+    ringSpacing: Math.max(100, finiteNumber(options?.ringSpacing, DEFAULT_LAYOUT_OPTIONS.ringSpacing)),
+    collisionPadding: Math.max(8, finiteNumber(options?.collisionPadding, DEFAULT_LAYOUT_OPTIONS.collisionPadding)),
+    collisionPasses: Math.max(0, Math.floor(finiteNumber(options?.collisionPasses, DEFAULT_LAYOUT_OPTIONS.collisionPasses))),
+    maxFlowColumns: Math.max(1, Math.floor(finiteNumber(options?.maxFlowColumns, DEFAULT_LAYOUT_OPTIONS.maxFlowColumns))),
+    clusterGap: Math.max(20, finiteNumber(options?.clusterGap, DEFAULT_LAYOUT_OPTIONS.clusterGap)),
+    clusterPadding: Math.max(20, finiteNumber(options?.clusterPadding, DEFAULT_LAYOUT_OPTIONS.clusterPadding)),
+    nodeSizeById: normalizeNodeSizeById(options?.nodeSizeById)
   };
   const normalizedNodes = uniqueEntities(normalizeEntities(nodes)).sort(compareNodes);
   const nodeById = new Map(normalizedNodes.map((node) => [node.id, node]));
@@ -571,11 +664,15 @@ function finalizeLayout(layout, context, positions, clusters = []) {
     }
   }
 
+  const fixedIds = new Set();
   for (const [id, value] of normalizePositionEntries(context.options.fixedPositions)) {
     if (completed.has(id) && Number.isFinite(Number(value?.x)) && Number.isFinite(Number(value?.y))) {
       completed.set(id, point(Number(value.x), Number(value.y)));
+      fixedIds.add(id);
     }
   }
+
+  resolveNodeCollisions(completed, context.nodes, context.options, fixedIds);
 
   const bounds = calculateLayoutBounds(completed, context.options);
   const finalizedClusters = clusters.map((cluster) => {
@@ -615,11 +712,12 @@ export function calculateLayoutBounds(positions, options = {}) {
   let minY = Infinity;
   let maxX = -Infinity;
   let maxY = -Infinity;
-  for (const [, value] of entries) {
-    minX = Math.min(minX, value.x - nodeWidth / 2 - padding);
-    minY = Math.min(minY, value.y - nodeHeight / 2 - padding);
-    maxX = Math.max(maxX, value.x + nodeWidth / 2 + padding);
-    maxY = Math.max(maxY, value.y + nodeHeight / 2 + padding);
+  for (const [id, value] of entries) {
+    const dimensions = readNodeSize(id, options, nodeWidth, nodeHeight);
+    minX = Math.min(minX, value.x - dimensions.width / 2 - padding);
+    minY = Math.min(minY, value.y - dimensions.height / 2 - padding);
+    maxX = Math.max(maxX, value.x + dimensions.width / 2 + padding);
+    maxY = Math.max(maxY, value.y + dimensions.height / 2 + padding);
   }
   return {
     minX: round(minX),
@@ -633,7 +731,83 @@ export function calculateLayoutBounds(positions, options = {}) {
 
 function calculateClusterBounds(nodeIds, positions, options) {
   const subset = new Map(nodeIds.map((id) => [id, positions.get(id)]).filter(([, value]) => value));
-  return Object.freeze(calculateLayoutBounds(subset, { ...options, boundsPadding: 54 }));
+  return Object.freeze(calculateLayoutBounds(subset, { ...options, boundsPadding: options.clusterPadding }));
+}
+
+function measureNodes(nodes, options) {
+  let maxWidth = finiteNumber(options?.nodeWidth, DEFAULT_LAYOUT_OPTIONS.nodeWidth);
+  let maxHeight = finiteNumber(options?.nodeHeight, DEFAULT_LAYOUT_OPTIONS.nodeHeight);
+  for (const node of nodes || []) {
+    const dimensions = readNodeSize(node.id, options, maxWidth, maxHeight);
+    maxWidth = Math.max(maxWidth, dimensions.width);
+    maxHeight = Math.max(maxHeight, dimensions.height);
+  }
+  return { maxWidth, maxHeight };
+}
+
+function readNodeSize(id, options, fallbackWidth = DEFAULT_LAYOUT_OPTIONS.nodeWidth, fallbackHeight = DEFAULT_LAYOUT_OPTIONS.nodeHeight) {
+  const collection = options?.nodeSizeById;
+  const value = collection instanceof Map ? collection.get(id) : collection?.[id];
+  return {
+    width: Math.max(20, finiteNumber(value?.width, fallbackWidth)),
+    height: Math.max(20, finiteNumber(value?.height, fallbackHeight))
+  };
+}
+
+/** Deterministic, bounded collision pass. Fixed/dragged nodes are never moved. */
+function resolveNodeCollisions(positions, nodes, options, fixedIds = new Set()) {
+  const ordered = [...(nodes || [])].sort(compareNodes);
+  const passes = Math.max(0, Math.floor(finiteNumber(options?.collisionPasses, 0)));
+  const padding = Math.max(0, finiteNumber(options?.collisionPadding, 0));
+  if (ordered.length < 2 || passes === 0) return positions;
+
+  for (let pass = 0; pass < passes; pass += 1) {
+    let moved = false;
+    for (let leftIndex = 0; leftIndex < ordered.length; leftIndex += 1) {
+      const leftNode = ordered[leftIndex];
+      let leftPosition = positions.get(leftNode.id);
+      if (!leftPosition) continue;
+      for (let rightIndex = leftIndex + 1; rightIndex < ordered.length; rightIndex += 1) {
+        const rightNode = ordered[rightIndex];
+        const rightPosition = positions.get(rightNode.id);
+        if (!rightPosition) continue;
+        const leftSize = readNodeSize(leftNode.id, options);
+        const rightSize = readNodeSize(rightNode.id, options);
+        const dx = rightPosition.x - leftPosition.x;
+        const dy = rightPosition.y - leftPosition.y;
+        const overlapX = (leftSize.width + rightSize.width) / 2 + padding - Math.abs(dx);
+        const overlapY = (leftSize.height + rightSize.height) / 2 + padding - Math.abs(dy);
+        if (overlapX <= 0 || overlapY <= 0) continue;
+        const leftFixed = fixedIds.has(leftNode.id);
+        const rightFixed = fixedIds.has(rightNode.id);
+        if (leftFixed && rightFixed) continue;
+        const moveOnX = overlapX < overlapY;
+        const stableDirection = stableNumericHash(`${leftNode.id}:${rightNode.id}`) % 2 ? 1 : -1;
+        const direction = moveOnX
+          ? (dx === 0 ? stableDirection : Math.sign(dx))
+          : (dy === 0 ? stableDirection : Math.sign(dy));
+        const distance = (moveOnX ? overlapX : overlapY) + 0.5;
+        const leftShare = leftFixed ? 0 : rightFixed ? 1 : 0.5;
+        const rightShare = rightFixed ? 0 : leftFixed ? 1 : 0.5;
+        if (!leftFixed) {
+          positions.set(leftNode.id, point(
+            leftPosition.x - (moveOnX ? direction * distance * leftShare : 0),
+            leftPosition.y - (!moveOnX ? direction * distance * leftShare : 0)
+          ));
+          leftPosition = positions.get(leftNode.id);
+        }
+        if (!rightFixed) {
+          positions.set(rightNode.id, point(
+            rightPosition.x + (moveOnX ? direction * distance * rightShare : 0),
+            rightPosition.y + (!moveOnX ? direction * distance * rightShare : 0)
+          ));
+        }
+        moved = true;
+      }
+    }
+    if (!moved) break;
+  }
+  return positions;
 }
 
 function packGroups(groups, options, { labels = new Map(), preferredGroupId = null } = {}) {
@@ -649,13 +823,19 @@ function packGroups(groups, options, { labels = new Map(), preferredGroupId = nu
   const descriptors = entries.map(([groupId, groupNodes]) => {
     const columns = Math.max(1, Math.ceil(Math.sqrt(groupNodes.length * 1.35)));
     const rows = Math.max(1, Math.ceil(groupNodes.length / columns));
+    const metrics = measureNodes(groupNodes, options);
+    const columnSpacing = Math.max(options.columnSpacing, metrics.maxWidth + options.collisionPadding * 2);
+    const rowSpacing = Math.max(options.levelSpacing, metrics.maxHeight + options.collisionPadding * 2);
     return {
       groupId,
       groupNodes,
       columns,
       rows,
-      width: Math.max(330, (columns - 1) * options.columnSpacing + options.nodeWidth + 112),
-      height: Math.max(230, (rows - 1) * options.levelSpacing + options.nodeHeight + 112)
+      columnSpacing,
+      rowSpacing,
+      metrics,
+      width: Math.max(330, (columns - 1) * columnSpacing + metrics.maxWidth + options.clusterPadding * 2 + 20),
+      height: Math.max(230, (rows - 1) * rowSpacing + metrics.maxHeight + options.clusterPadding * 2 + 20)
     };
   });
   const totalArea = descriptors.reduce((sum, descriptor) => sum + descriptor.width * descriptor.height, 0);
@@ -663,28 +843,28 @@ function packGroups(groups, options, { labels = new Map(), preferredGroupId = nu
     options.width,
     Math.sqrt(Math.max(1, totalArea) * (options.width / options.height)) * 1.35
   );
-  const clusterGap = Math.max(34, options.padding * 0.46);
+  const clusterGap = Math.max(options.clusterGap, options.padding * 0.5);
   const positions = new Map();
   const clusters = [];
   let cursorX = options.padding;
   let cursorY = options.padding;
   let rowHeight = 0;
 
-  descriptors.forEach(({ groupId, groupNodes, columns, width, height }) => {
+  descriptors.forEach(({ groupId, groupNodes, columns, columnSpacing, rowSpacing, width, height }) => {
     if (cursorX > options.padding && cursorX + width > options.padding + targetWidth) {
       cursorX = options.padding;
       cursorY += rowHeight + clusterGap;
       rowHeight = 0;
     }
-    const contentWidth = (columns - 1) * options.columnSpacing;
+    const contentWidth = (columns - 1) * columnSpacing;
     const rows = Math.max(1, Math.ceil(groupNodes.length / columns));
-    const contentHeight = (rows - 1) * options.levelSpacing;
+    const contentHeight = (rows - 1) * rowSpacing;
     const startX = cursorX + (width - contentWidth) / 2;
     const startY = cursorY + (height - contentHeight) / 2;
     groupNodes.forEach((node, index) => {
       positions.set(node.id, point(
-        startX + (index % columns) * options.columnSpacing,
-        startY + Math.floor(index / columns) * options.levelSpacing
+        startX + (index % columns) * columnSpacing,
+        startY + Math.floor(index / columns) * rowSpacing
       ));
     });
     clusters.push({
@@ -832,7 +1012,8 @@ function normalizeComputeArguments(configOrNodes, maybeEdges, maybeOptions) {
 function pickLayoutOptions(config) {
   const keys = [
     "width", "height", "padding", "nodeWidth", "nodeHeight", "nodeSpacing",
-    "columnSpacing", "levelSpacing", "ringSpacing", "direction", "clusterBy", "startAngle", "sequence"
+    "columnSpacing", "levelSpacing", "ringSpacing", "collisionPadding", "collisionPasses",
+    "maxFlowColumns", "clusterGap", "clusterPadding", "nodeSizeById", "direction", "clusterBy", "startAngle", "sequence"
   ];
   return Object.fromEntries(keys.filter((key) => config[key] !== undefined).map((key) => [key, config[key]]));
 }
@@ -874,6 +1055,26 @@ function normalizePositionEntries(value) {
   }
   if (typeof value === "object") return Object.entries(value);
   return [];
+}
+
+function normalizeNodeSizeById(value) {
+  const result = {};
+  const entries = value instanceof Map ? [...value.entries()] : Object.entries(value || {});
+  for (const [id, dimensions] of entries) {
+    if (!validId(id)) continue;
+    const width = Number(dimensions?.width);
+    const height = Number(dimensions?.height);
+    if (!Number.isFinite(width) || !Number.isFinite(height)) continue;
+    result[id] = Object.freeze({ width: Math.max(20, width), height: Math.max(20, height) });
+  }
+  return Object.freeze(result);
+}
+
+function normalizeNodeSizeEntries(value) {
+  const normalized = normalizeNodeSizeById(value);
+  return Object.entries(normalized)
+    .sort(([left], [right]) => compareText(left, right))
+    .map(([id, dimensions]) => [id, dimensions.width, dimensions.height]);
 }
 
 function isEntityCollection(value) {
@@ -936,6 +1137,15 @@ function compareText(a, b) {
   const left = String(a ?? "");
   const right = String(b ?? "");
   return left < right ? -1 : left > right ? 1 : 0;
+}
+
+function stableNumericHash(value) {
+  let hash = 2166136261;
+  for (const character of String(value ?? "")) {
+    hash ^= character.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
 }
 
 function normalizeKey(value) {

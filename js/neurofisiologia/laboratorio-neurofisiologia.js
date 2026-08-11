@@ -11,7 +11,7 @@ import { dibujarGraficaIntegrada, poblarSelectorEcuaciones, poblarSelectorGrafic
 import { identificarZonaNeuroCanvas } from "./curvedMembraneRenderer.js";
 import { inicializarAtlasCerebral3D } from "./atlasCerebral3d.js";
 
-const CONNECTOME_BUILD = "20260811-memory-connectome-v2";
+const CONNECTOME_BUILD = "20260811-memory-connectome-v3";
 const PARAMS_INICIALES = new URLSearchParams(window.location.search);
 const TAB_INICIAL_SOLICITADA = PARAMS_INICIALES.get("tab")
   || (PARAMS_INICIALES.has("estructura") || PARAMS_INICIALES.has("structure") || PARAMS_INICIALES.has("circuito") || PARAMS_INICIALES.has("circuit") ? "mapa-circuitos" : "integrada");
