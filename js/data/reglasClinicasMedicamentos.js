@@ -1,3 +1,4 @@
+// Metadata de reglas clínicas por id canónico; no es un catálogo de búsqueda.
 export const INGREDIENTES_MEDICAMENTOS = [
   {
     id: "paracetamol",

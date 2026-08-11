@@ -3,7 +3,7 @@ import {
   buscarMedicamentosParaConsulta,
   crearSeleccionMedicamento,
   resumirAnalisisPublico
-} from "../services/interaccionesPublicas.js";
+} from "../services/interaccionesPublicas.js?v=20260811-pharmacology-ssot-v1";
 import { registrarUsoConsultaInteracciones } from "../services/analyticsInteraccionesFarmacologicas.js";
 
 const SEVERIDAD_ORDEN = ["contraindicada", "alta", "moderada", "baja", "informativa"];

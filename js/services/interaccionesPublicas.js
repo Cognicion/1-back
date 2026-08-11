@@ -1,8 +1,8 @@
-import { buscarMedicamentos, normalizarNombreMedicamento } from "../data/medicamentos.js";
+import { buscarMedicamentos, normalizarNombreMedicamento } from "../data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-ssot-v1";
 import {
   evaluarInteraccionesClinicas,
   normalizarMedicamentoClinico
-} from "./motorClinicoMedicamentos.js";
+} from "./motorClinicoMedicamentos.js?v=20260811-pharmacology-ssot-v1";
 
 const SEVERIDAD_PUBLICA = {
   critica: "contraindicada",
@@ -41,11 +41,16 @@ export function buscarMedicamentosParaConsulta(query = "", limit = 12) {
 export function crearSeleccionMedicamento(medicamento, presentacion = null) {
   return {
     clinicalMedicationId: medicamento.id,
+    medicationId: medicamento.id,
     nombre: medicamento.nombre,
     genericName: medicamento.genericName || medicamento.nombre,
+    principioActivo: medicamento.principioActivo || medicamento.principioActivoNormalizado || medicamento.id,
+    selectedPresentationId: presentacion?.id || presentacion?.presentationId || null,
+    selectedPresentationText: presentacion?.texto || "",
     presentacion: presentacion?.texto || "",
     via: presentacion?.via || "",
-    medicamento: medicamento.nombre
+    medicamento: medicamento.nombre,
+    originalText: [medicamento.nombre, presentacion?.texto].filter(Boolean).join(" ")
   };
 }
 

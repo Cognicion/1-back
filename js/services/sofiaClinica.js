@@ -1,28 +1,23 @@
 import { db } from "../firebase.js";
 import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
 import { normalizarTextoFrecuencia } from "../utils/frecuencias.js";
+import { CATALOGO_FARMACOLOGICO_OFICIAL } from "../data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-ssot-v1";
+import { evaluarMedicamentosPaciente } from "./motorClinicoMedicamentos.js?v=20260811-pharmacology-ssot-v1";
 import { collection, doc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const CAMPOS_FECHA = ["fechaAplicacion", "fecha", "createdAt", "updatedAt", "fechaNota", "fechaCreacion", "fechaInicio", "fechaSuspension"];
 
-export const BASE_FARMACOLOGICA_SOFIA = [
-  { clave: "sertralina", nombre: "Sertralina", clase: "ISRS", mecanismo: "Inhibe SERT y aumenta serotonina sinaptica.", metabolismo: "CYP2B6, CYP2C19, CYP2D6.", monitorizacion: ["Sindrome serotoninergico", "Sodio si riesgo"], riesgos: ["Hiponatremia", "Sangrado con AINE/anticoagulantes"] },
-  { clave: "fluoxetina", nombre: "Fluoxetina", clase: "ISRS", mecanismo: "Inhibe SERT; vida media prolongada.", metabolismo: "Inhibidor CYP2D6.", monitorizacion: ["Activacion", "Interacciones CYP2D6"], riesgos: ["Sindrome serotoninergico", "Interacciones por vida media prolongada"] },
-  { clave: "venlafaxina", nombre: "Venlafaxina", clase: "IRSN", mecanismo: "Inhibe recaptura de serotonina y noradrenalina.", metabolismo: "CYP2D6.", monitorizacion: ["Presion arterial", "Discontinuacion"], riesgos: ["Hipertension", "Sindrome serotoninergico"] },
-  { clave: "duloxetina", nombre: "Duloxetina", clase: "IRSN", mecanismo: "Inhibe recaptura de serotonina y noradrenalina.", metabolismo: "CYP1A2 y CYP2D6.", monitorizacion: ["Funcion hepatica si riesgo", "Presion arterial"], riesgos: ["Hepatotoxicidad rara", "Sindrome serotoninergico"] },
-  { clave: "risperidona", nombre: "Risperidona", clase: "Antipsicotico atipico", mecanismo: "Antagonismo D2 y 5-HT2A.", metabolismo: "CYP2D6.", monitorizacion: ["Peso", "Glucosa/HbA1c", "Lipidos", "Prolactina", "EPS"], riesgos: ["Hiperprolactinemia", "EPS", "QT"] },
-  { clave: "olanzapina", nombre: "Olanzapina", clase: "Antipsicotico atipico", mecanismo: "Antagonismo multirreceptor D2/5-HT2A.", metabolismo: "CYP1A2.", monitorizacion: ["Peso", "Cintura", "Glucosa/HbA1c", "Lipidos"], riesgos: ["Aumento ponderal", "Riesgo metabolico", "Sedacion"] },
-  { clave: "quetiapina", nombre: "Quetiapina", clase: "Antipsicotico atipico", mecanismo: "Antagonismo 5-HT2A/D2.", metabolismo: "CYP3A4.", monitorizacion: ["Somnolencia", "Presion arterial", "Perfil metabolico"], riesgos: ["Sedacion", "Hipotension", "Riesgo metabolico"] },
-  { clave: "haloperidol", nombre: "Haloperidol", clase: "Antipsicotico tipico", mecanismo: "Antagonismo D2 potente.", metabolismo: "CYP3A4/CYP2D6.", monitorizacion: ["ECG si riesgo", "EPS", "CPK si sospecha SNM"], riesgos: ["QT", "EPS", "SNM"] },
-  { clave: "lorazepam", nombre: "Lorazepam", clase: "Benzodiacepina", mecanismo: "Modulador alosterico positivo de GABA-A.", metabolismo: "Glucuronidacion.", monitorizacion: ["Sedacion", "Caidas", "Respiracion si depresores"], riesgos: ["Dependencia", "Caidas", "Depresion respiratoria"] },
-  { clave: "clonazepam", nombre: "Clonazepam", clase: "Benzodiacepina", mecanismo: "Modulador alosterico positivo de GABA-A.", metabolismo: "Hepatico.", monitorizacion: ["Sedacion", "Tolerancia", "Caidas"], riesgos: ["Dependencia", "Sedacion"] },
-  { clave: "diazepam", nombre: "Diazepam", clase: "Benzodiacepina", mecanismo: "Modulador GABA-A con vida media prolongada.", metabolismo: "CYP2C19/CYP3A4.", monitorizacion: ["Acumulacion", "Caidas", "Sedacion"], riesgos: ["Acumulacion", "Dependencia"] },
-  { clave: "litio", nombre: "Litio", clase: "Estabilizador del animo", mecanismo: "Modula senalizacion intracelular; ventana estrecha.", metabolismo: "Eliminacion renal.", monitorizacion: ["Litio serico", "Funcion renal", "TSH", "Electrolitos"], riesgos: ["Toxicidad", "Hipotiroidismo", "Dano renal"] },
-  { clave: "valproato", nombre: "Valproato", clase: "Anticonvulsivo/estabilizador", mecanismo: "Aumenta tono GABAergico y modula canales.", metabolismo: "Hepatico.", monitorizacion: ["Funcion hepatica", "BH", "Peso", "Amonio si encefalopatia"], riesgos: ["Hepatotoxicidad", "Trombocitopenia", "Teratogenicidad"] },
-  { clave: "carbamazepina", nombre: "Carbamazepina", clase: "Anticonvulsivo/estabilizador", mecanismo: "Bloqueo uso-dependiente de Nav.", metabolismo: "Inductor CYP3A4.", monitorizacion: ["BH", "Funcion hepatica", "Sodio", "Interacciones"], riesgos: ["Hiponatremia", "Citopenias", "Interacciones"] },
-  { clave: "lamotrigina", nombre: "Lamotrigina", clase: "Anticonvulsivo/estabilizador", mecanismo: "Modula Nav y liberacion glutamatergica.", metabolismo: "Glucuronidacion.", monitorizacion: ["Exantema", "Titulacion lenta"], riesgos: ["SJS raro", "Interaccion con valproato"] },
-  { clave: "pregabalina", nombre: "Pregabalina", clase: "Gabapentinoide", mecanismo: "Union a subunidad alfa2-delta de canales Cav.", metabolismo: "Eliminacion renal.", monitorizacion: ["Somnolencia", "Edema", "Ajuste renal"], riesgos: ["Sedacion", "Caidas"] }
-];
+export const BASE_FARMACOLOGICA_SOFIA = CATALOGO_FARMACOLOGICO_OFICIAL.map((medicamento) => ({
+  clave: medicamento.id,
+  clinicalMedicationId: medicamento.id,
+  nombre: medicamento.nombre,
+  clase: medicamento.clasePrincipal,
+  mecanismo: medicamento.mecanismoAccion || medicamento.notas || "",
+  metabolismo: medicamento.metabolismo || "",
+  monitorizacion: medicamento.monitoring || medicamento.datosClinicos?.precauciones || [],
+  riesgos: medicamento.categoriasInteraccion || [],
+  medicamento
+}));
 
 export function obtenerBaseFarmacologicaInicial() { return BASE_FARMACOLOGICA_SOFIA; }
 
@@ -271,21 +266,25 @@ export function generarRecomendacionesLaboratorio(expediente) {
 
 export function analizarInteraccionesMedicamentos(tratamientos = []) {
   const activos = tratamientos.filter((t) => estaActivo(t));
-  const nombres = activos.map((t) => String(t.medicamento || t.nombre || "").toLowerCase()).filter(Boolean);
-  const interacciones = [];
-  const tiene = (regex) => nombres.some((n) => regex.test(n));
-  const meds = (regex) => activos.filter((t) => regex.test(String(t.medicamento || t.nombre || "").toLowerCase())).map((t) => t.medicamento || t.nombre);
-  const serotonergicos = meds(/sertralina|fluoxetina|paroxetina|citalopram|escitalopram|venlafaxina|duloxetina|tramadol|linezolid|litio/);
-  if (serotonergicos.length >= 2) interacciones.push({ severidad: "moderada", medicamentos: serotonergicos, mecanismo: "Combinacion de farmacos con aumento de tono serotoninergico.", consecuencia: "Puede incrementar riesgo de sindrome serotoninergico, especialmente con dosis altas o cambios recientes.", conducta: "Vigilar fiebre, rigidez, hiperreflexia, confusion, diarrea y temblor; revisar necesidad de combinacion." });
-  const sedantes = meds(/lorazepam|clonazepam|diazepam|alprazolam|zolpidem|quetiapina|olanzapina|pregabalina|gabapentina|opioide|morfina|tramadol/);
-  if (sedantes.length >= 2) interacciones.push({ severidad: "moderada", medicamentos: sedantes, mecanismo: "Efectos depresores del sistema nervioso central se suman.", consecuencia: "Mayor sedacion, caidas, deterioro psicomotor y depresion respiratoria si hay otros depresores.", conducta: "Ajustar dosis y vigilar alerta, respiracion y riesgo de caida." });
-  if (tiene(/valproato/) && tiene(/lamotrigina/)) interacciones.push({ severidad: "importante", medicamentos: meds(/valproato|lamotrigina/), mecanismo: "Valproato inhibe metabolismo de lamotrigina.", consecuencia: "Mayor riesgo de exantema grave y reacciones cutaneas severas.", conducta: "Titular lamotrigina lentamente y vigilar exantema; revisar dosis." });
-  if (tiene(/carbamazepina/)) {
-    const afectados = meds(/quetiapina|haloperidol|risperidona|sertralina|lamotrigina|valproato|anticonceptivo/);
-    if (afectados.length) interacciones.push({ severidad: "importante", medicamentos: ["Carbamazepina", ...afectados], mecanismo: "Carbamazepina induce enzimas hepaticas, especialmente CYP3A4.", consecuencia: "Puede reducir concentraciones de multiples farmacos y comprometer respuesta clinica.", conducta: "Revisar eficacia, niveles cuando aplique y alternativas con menos interacciones." });
-  }
-  if (tiene(/litio/) && tiene(/ibuprofeno|naproxeno|diclofenaco|enalapril|losartan|hidroclorotiazida|furosemida/)) interacciones.push({ severidad: "importante", medicamentos: meds(/litio|ibuprofeno|naproxeno|diclofenaco|enalapril|losartan|hidroclorotiazida|furosemida/), mecanismo: "Cambios en perfusion renal o manejo tubular pueden elevar litio.", consecuencia: "Riesgo de toxicidad por litio.", conducta: "Vigilar niveles, funcion renal y sintomas neurologicos/gastrointestinales." });
-  return interacciones;
+  const resultado = evaluarMedicamentosPaciente({ medicamentos: activos });
+  const severidadSofia = {
+    critica: "contraindicada",
+    alta: "importante",
+    moderada: "moderada",
+    baja: "baja",
+    informativa: "informativa"
+  };
+  return resultado.alertas
+    .filter((alerta) => alerta.medicamentos?.length)
+    .map((alerta) => ({
+      id: alerta.id,
+      severidad: severidadSofia[alerta.severidad] || alerta.severidad,
+      medicamentos: alerta.medicamentos,
+      mecanismo: alerta.mecanismo,
+      consecuencia: alerta.efectoClinico || alerta.efecto,
+      conducta: alerta.recomendacion,
+      categoria: alerta.categoria || alerta.tipoInteraccion || alerta.tipo
+    }));
 }
 
 function pacienteVinculadoConUsuario(datos, uid) {

@@ -1,8 +1,12 @@
 import {
+  evaluarInteraccionesClinicas,
   evaluarMedicamentosPaciente,
+  normalizarMedicamentoClinico,
   obtenerIndicadorSeguridadMedicamento
-} from "../services/motorClinicoMedicamentos.js";
+} from "../services/motorClinicoMedicamentos.js?v=20260811-pharmacology-ssot-v1";
 
+// Metadata legacy conservada por compatibilidad documental. La detección
+// ejecutable usa el motor clínico común y el catálogo oficial.
 const CATEGORIAS_MEDICAMENTOS = [
   { id: "isrs", nombre: "ISRS", patrones: ["sertralina", "fluoxetina", "paroxetina", "escitalopram", "citalopram", "fluvoxamina"] },
   { id: "irsn", nombre: "IRSN", patrones: ["venlafaxina", "desvenlafaxina", "duloxetina", "milnacipran"] },
@@ -164,41 +168,27 @@ function claveInteraccion(medA, medB, titulo) {
 }
 
 export function detectarInteraccionesFarmacologicas(medicamentos = []) {
-  const lista = medicamentos
-    .map((med, index) => ({
-      id: med.id || `med-${index}`,
-      nombre: med.medicamento || med.nombre || med.texto || String(med || ""),
-      indicacion: med.indicacion || "",
-      categorias: categoriasDeMedicamento(med.medicamento || med.nombre || med.texto || String(med || ""))
-    }))
-    .filter((med) => med.nombre.trim());
-
-  const detectadas = [];
-  const vistas = new Set();
-
-  for (let i = 0; i < lista.length; i += 1) {
-    for (let j = i + 1; j < lista.length; j += 1) {
-      const medA = lista[i];
-      const medB = lista[j];
-      if (!medA.categorias.length || !medB.categorias.length) continue;
-
-      REGLAS_INTERACCIONES.forEach((regla) => {
-        if (!coincideRegla(medA.categorias, medB.categorias, regla)) return;
-        const clave = claveInteraccion(medA.nombre, medB.nombre, regla.titulo);
-        if (vistas.has(clave)) return;
-        vistas.add(clave);
-        detectadas.push({
-          medicamentos: [medA.nombre, medB.nombre],
-          severidad: regla.severidad,
-          titulo: regla.titulo,
-          efecto: regla.efecto,
-          recomendacion: regla.recomendacion
-        });
-      });
-    }
-  }
-
-  return detectadas;
+  const severidadLegacy = {
+    critica: "Contraindicada",
+    alta: "Alta",
+    moderada: "Relevante",
+    baja: "Precaucion",
+    informativa: "Informativa"
+  };
+  const unicos = new Map();
+  medicamentos.map(normalizarMedicamentoClinico).forEach((medicamento) => {
+    const clave = medicamento.ingredienteIds.slice().sort().join("+") || medicamento.textoNormalizado;
+    if (clave && !unicos.has(clave)) unicos.set(clave, medicamento);
+  });
+  return evaluarInteraccionesClinicas([...unicos.values()]).map((alerta) => ({
+    id: alerta.id,
+    medicamentos: alerta.medicamentos,
+    severidad: severidadLegacy[alerta.severidad] || alerta.severidad,
+    titulo: String(alerta.titulo || "").replace(/^Litio\b/, "litio"),
+    efecto: alerta.efectoClinico || alerta.efecto,
+    recomendacion: alerta.recomendacion,
+    categoria: alerta.categoria || alerta.tipoInteraccion
+  }));
 }
 
 export function detectarAlertasClinicasMedicamentos(medicamentos = [], paciente = {}) {

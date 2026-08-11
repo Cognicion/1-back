@@ -6,6 +6,7 @@ import {
   normalizeSearchText,
   searchPediatricMedication
 } from "../pediatria/prescripcionPediatrica.js";
+import { CATALOGO_FARMACOLOGICO_OFICIAL } from "../data/catalogoFarmacologicoUnificado.js";
 
 const pediatriaPath = fileURLToPath(new URL("../pediatria/pediatria.js", import.meta.url));
 const cssPath = fileURLToPath(new URL("../../css/pediatria.css", import.meta.url));
@@ -15,7 +16,7 @@ const css = readFileSync(cssPath, "utf8");
 const prescripcionSource = readFileSync(prescripcionPath, "utf8");
 
 // Catálogo y filtro real.
-assert.equal(CATALOGO_FARMACOLOGICO_PEDIATRIA.length, 201);
+assert.equal(CATALOGO_FARMACOLOGICO_PEDIATRIA.length, CATALOGO_FARMACOLOGICO_OFICIAL.length);
 assert.equal(searchPediatricMedication("").length, CATALOGO_FARMACOLOGICO_PEDIATRIA.length);
 assert.equal(searchPediatricMedication("").slice(0, 20).length, 20);
 assert.ok(searchPediatricMedication("risp").some((med) => med.medicationId === "risperidona"));

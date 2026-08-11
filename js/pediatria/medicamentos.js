@@ -1,6 +1,7 @@
 import { normalizarConcentracionMgMl, normalizarPesoKg } from "./formulas.js";
+import { normalizarMedicamento } from "../data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-ssot-v1";
 
-export const MEDICAMENTOS_PEDIATRICOS = [
+const MEDICAMENTOS_PEDIATRICOS_LEGACY = [
   {
     id: "paracetamol",
     nombre: "Paracetamol / acetaminofen",
@@ -340,8 +341,17 @@ export const MEDICAMENTOS_PEDIATRICOS = [
   }
 ];
 
+export const MEDICAMENTOS_PEDIATRICOS = MEDICAMENTOS_PEDIATRICOS_LEGACY.map((medicamento) => ({
+  ...medicamento,
+  clinicalMedicationId: normalizarMedicamento(medicamento.id || medicamento.nombre) || medicamento.id,
+  medicationId: normalizarMedicamento(medicamento.id || medicamento.nombre) || medicamento.id
+}));
+
 export function calcularDosisMedicamento({ medicamentoId, opcionIndice = 0, pesoKg, concentracionMgMl, pesoConfirmado = false }) {
-  const medicamento = MEDICAMENTOS_PEDIATRICOS.find((item) => item.id === medicamentoId);
+  const clinicalMedicationId = normalizarMedicamento(medicamentoId);
+  const medicamento = MEDICAMENTOS_PEDIATRICOS.find((item) =>
+    item.id === medicamentoId || item.clinicalMedicationId === clinicalMedicationId
+  );
   const peso = normalizarPesoKg(pesoKg);
   if (!medicamento) return { error: "Selecciona un medicamento." };
   if (!peso || peso <= 0) return { error: "Registra un peso actual en kg." };

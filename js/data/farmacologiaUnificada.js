@@ -1,3 +1,5 @@
+// Overlay de monografías y evidencia farmacológica. La identidad oficial de
+// medicamentos se publica desde catalogoFarmacologicoUnificado.js.
 export const DATO_NO_ENCONTRADO = "dato no encontrado en fuente local";
 export const FUENTE_PENDIENTE = "fuente pendiente";
 
