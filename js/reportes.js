@@ -27,7 +27,10 @@ const STORAGE_REPORTE_CONTRAIDO = "cognicion.reporteGlobal.contraido";
 let usuarioActual = null;
 let tipoSeleccionado = TIPOS_REPORTE[0].valor;
 
-ejecutarCuandoEsteLibre(sincronizarUsuarioReporte);
+const ES_PAGINA_PUBLICA = document.body?.classList.contains("public-lab-page")
+  || ["index.html", "login.html", "registro.html", "recuperar.html", ""].includes(window.location.pathname.split("/").pop() || "");
+
+if (!ES_PAGINA_PUBLICA) ejecutarCuandoEsteLibre(sincronizarUsuarioReporte);
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", inicializarReporteGlobal, { once: true });
@@ -98,7 +101,7 @@ function inicializarReporteGlobal() {
     raiz.classList.add("reporte-widget-contraido");
   }
   raiz.innerHTML = `
-    <button class="reporte-float-btn" type="button" aria-haspopup="dialog" aria-controls="reporteGlobalModal">
+    <button class="reporte-float-btn" type="button" aria-label="Reportar problema o sugerencia" aria-haspopup="dialog" aria-controls="reporteGlobalModal">
       <span>Reportar</span>
       <small>problema o sugerencia</small>
     </button>
