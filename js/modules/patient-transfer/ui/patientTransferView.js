@@ -10,6 +10,74 @@ import {
 
 let root = null;
 
+export const MEDICATION_COLUMN_WIDTHS_STORAGE_KEY = "patientTransferMedicationColumnWidths";
+export const MEDICATION_COLUMN_WIDTHS = Object.freeze({
+  include: { index: 0, min: 40, max: 70, default: 48 },
+  medication: { index: 1, min: 120, max: 320, default: 180 },
+  presentation: { index: 3, min: 80, max: 180, default: 105 },
+  strength: { index: 4, min: 70, max: 160, default: 118 },
+  route: { index: 6, min: 55, max: 120, default: 76 },
+  frequency: { index: 7, min: 90, max: 220, default: 135 },
+  schedule: { index: 8, min: 220, max: 500, default: 285 },
+  action: { index: 9, min: 90, max: 180, default: 118 },
+  date: { index: 10, min: 90, max: 140, default: 104 },
+  source: { index: 11, min: 80, max: 160, default: 92 }
+});
+
+export function clampMedicationColumnWidth(columnKey = "", width = 0) {
+  const config = MEDICATION_COLUMN_WIDTHS[columnKey];
+  if (!config) return Number(width) || 0;
+  const numericWidth = Number(width);
+  const safeWidth = Number.isFinite(numericWidth) ? numericWidth : config.default;
+  return Math.min(config.max, Math.max(config.min, safeWidth));
+}
+
+export function normalizeMedicationColumnWidths(widths = {}) {
+  return Object.fromEntries(Object.entries(MEDICATION_COLUMN_WIDTHS).map(([key, config]) => [
+    key,
+    clampMedicationColumnWidth(key, widths?.[key] ?? config.default)
+  ]));
+}
+
+export function medicationColumnWidthFromDrag(columnKey, startWidth, startX, currentX) {
+  return clampMedicationColumnWidth(columnKey, Number(startWidth) + Number(currentX) - Number(startX));
+}
+
+export function medicationCatalogCompactState(value = "", open = false) {
+  const linked = Boolean(value);
+  return {
+    linked,
+    label: `Catálogo: ${linked ? "Sí" : "No"}`,
+    action: open ? "Cancelar" : (linked ? "Cambiar" : "Vincular"),
+    expanded: Boolean(open)
+  };
+}
+
+export function normalizeMedicationUnitForDisplay(value = "") {
+  const normalized = String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+  const singular = normalized.replace(/\s+/g, " ").replace(/(?:tabletas|tableta)$/i, "tableta")
+    .replace(/(?:capsulas|capsula)$/i, "capsula")
+    .replace(/(?:comprimidos|comprimido)$/i, "comprimido")
+    .replace(/(?:ampolletas|ampolleta)$/i, "ampolleta")
+    .replace(/(?:gotas|gota)$/i, "gota")
+    .replace(/(?:mililitros|mililitro|ml)$/i, "ml");
+  return singular;
+}
+
+export function shouldShowMedicationAdministrationUnit(presentation = "", administrationUnit = "") {
+  const normalizedPresentation = normalizeMedicationUnitForDisplay(presentation);
+  const normalizedUnit = normalizeMedicationUnitForDisplay(administrationUnit);
+  if (!normalizedUnit) return !normalizedPresentation;
+  if (!normalizedPresentation) return true;
+  return normalizedPresentation !== normalizedUnit;
+}
+
+export function isMeaningfulMedicationAdministration(administration = {}) {
+  const time = String(administration.time || "").trim();
+  const quantity = administration.quantity;
+  return Boolean(time || (quantity !== null && quantity !== undefined && quantity !== ""));
+}
+
 export function reviewedDiagnosisSelection(candidate = {}, includeControl = null) {
   return includeControl
     ? includeControl.checked === true
@@ -74,12 +142,30 @@ function renderMedicationScheduleRows(candidate, key) {
     quantity: candidate.administrationQuantity ?? "",
     administrationUnit: candidate.administrationUnit || ""
   }];
-  return rows.map((item, index) => `<div class="patient-transfer-medication-pauta-row" data-transfer-tx-administration-row>
-    <input type="time" aria-label="Hora de administracion" data-transfer-tx-schedule-time="${key}:${index}" value="${escapeHtml(item.time || "")}">
-    <input inputmode="decimal" aria-label="Dosis de administracion" data-transfer-tx-schedule-dose="${key}:${index}" value="${escapeHtml(item.quantity ?? "")}" placeholder="dosis">
-    <input aria-label="Unidad de administracion" data-transfer-tx-schedule-unit="${key}:${index}" value="${escapeHtml(item.administrationUnit || "")}" placeholder="unidad">
-    <button type="button" class="patient-transfer-medication-pauta-remove" data-transfer-tx-schedule-remove="${key}:${index}" aria-label="Eliminar toma">×</button>
-  </div>`).join("");
+  return rows.map((item, index) => {
+    const showUnit = shouldShowMedicationAdministrationUnit(candidate.presentation, item.administrationUnit);
+    return `<div class="patient-transfer-medication-pauta-row ${showUnit ? "" : "patient-transfer-medication-pauta-unit-hidden"}" data-transfer-tx-administration-row>
+      <input type="time" aria-label="Hora de administracion" data-transfer-tx-schedule-time="${key}:${index}" value="${escapeHtml(item.time || "")}">
+      <input inputmode="decimal" aria-label="Dosis de administracion" data-transfer-tx-schedule-dose="${key}:${index}" value="${escapeHtml(item.quantity ?? "")}" placeholder="dosis">
+      <input aria-label="Unidad de administracion" data-transfer-tx-schedule-unit="${key}:${index}" value="${escapeHtml(item.administrationUnit || "")}" placeholder="unidad" ${showUnit ? "" : "hidden"}>
+      <button type="button" class="patient-transfer-medication-pauta-remove" data-transfer-tx-schedule-remove="${key}:${index}" aria-label="Eliminar toma">×</button>
+    </div>`;
+  }).join("");
+}
+
+export function updateMedicationScheduleUnitVisibility(modal, changedControl = null) {
+  const selectedTable = changedControl?.closest?.(".patient-transfer-medication-table");
+  const tables = selectedTable ? [selectedTable] : [...modal.querySelectorAll(".patient-transfer-medication-table")];
+  tables.forEach((table) => table.querySelectorAll("tbody tr").forEach((medicationRow) => {
+    const presentation = medicationRow.querySelector("[data-transfer-tx-presentation]")?.value || "";
+    medicationRow.querySelectorAll("[data-transfer-tx-administration-row]").forEach((administrationRow) => {
+      const unitControl = administrationRow.querySelector("[data-transfer-tx-schedule-unit]");
+      if (!unitControl) return;
+      const showUnit = shouldShowMedicationAdministrationUnit(presentation, unitControl.value);
+      unitControl.hidden = !showUnit;
+      administrationRow.classList.toggle("patient-transfer-medication-pauta-unit-hidden", !showUnit);
+    });
+  }));
 }
 
 function readMedicationAdministrations(modal, key, candidate = {}) {
@@ -92,7 +178,7 @@ function readMedicationAdministrations(modal, key, candidate = {}) {
     const quantity = Number.isFinite(numericQuantity) ? numericQuantity : rawQuantity;
     const administrationUnit = row.querySelector("[data-transfer-tx-schedule-unit]")?.value?.trim() || "";
     return { time, quantity, administrationUnit };
-  }).filter((item) => item.time || item.quantity !== null || item.administrationUnit);
+  }).filter(isMeaningfulMedicationAdministration);
 }
 
 function medicationScheduleText(administrations = [], candidate = {}) {
@@ -866,6 +952,126 @@ export function countTransferNotes(groups = []) {
   }, 0), 0);
 }
 
+export function defaultMedicationColumnWidths() {
+  return normalizeMedicationColumnWidths();
+}
+
+function medicationColumnStorage(storage) {
+  if (storage) return storage;
+  return typeof localStorage === "undefined" ? null : localStorage;
+}
+
+export function loadMedicationColumnWidths(storage = null) {
+  const defaults = defaultMedicationColumnWidths();
+  const target = medicationColumnStorage(storage);
+  if (!target) return defaults;
+  try {
+    const stored = JSON.parse(target.getItem(MEDICATION_COLUMN_WIDTHS_STORAGE_KEY) || "{}");
+    return normalizeMedicationColumnWidths(stored);
+  } catch {
+    return defaults;
+  }
+}
+
+export function saveMedicationColumnWidths(widths = {}, storage = null) {
+  const target = medicationColumnStorage(storage);
+  if (!target) return false;
+  try {
+    target.setItem(MEDICATION_COLUMN_WIDTHS_STORAGE_KEY, JSON.stringify(normalizeMedicationColumnWidths(widths)));
+    return true;
+  } catch {
+    // La revisión sigue funcionando aunque el almacenamiento local no esté disponible.
+    return false;
+  }
+}
+
+function applyMedicationColumnWidths(modal, widths = loadMedicationColumnWidths()) {
+  modal.querySelectorAll(".patient-transfer-medication-table").forEach((table) => {
+    const headers = [...table.querySelectorAll("thead th")];
+    let tableWidth = 0;
+    Object.entries(MEDICATION_COLUMN_WIDTHS).forEach(([key, config]) => {
+      const width = clampMedicationColumnWidth(key, widths[key]);
+      const header = headers[config.index];
+      if (!header || header.hidden) return;
+      header.style.width = `${width}px`;
+      header.style.minWidth = `${width}px`;
+      header.style.maxWidth = `${width}px`;
+      table.querySelectorAll("tbody tr").forEach((row) => {
+        const cell = row.cells[config.index];
+        if (!cell || cell.hidden) return;
+        cell.style.width = `${width}px`;
+        cell.style.minWidth = `${width}px`;
+        cell.style.maxWidth = `${width}px`;
+      });
+      tableWidth += width;
+    });
+    table.style.width = `${tableWidth}px`;
+    table.style.minWidth = `${tableWidth}px`;
+  });
+}
+
+function initializeMedicationColumnResize(modal) {
+  const widths = loadMedicationColumnWidths();
+  modal.querySelectorAll(".patient-transfer-medication-table").forEach((table) => {
+    const headers = [...table.querySelectorAll("thead th")];
+    Object.entries(MEDICATION_COLUMN_WIDTHS).forEach(([key, config]) => {
+      const header = headers[config.index];
+      if (!header || header.hidden || header.querySelector("[data-transfer-medication-column-resize]")) return;
+      const labelText = header.textContent || "";
+      header.textContent = "";
+      const label = document.createElement("span");
+      label.className = "patient-transfer-medication-column-label";
+      label.textContent = labelText;
+      const handle = document.createElement("span");
+      handle.className = "patient-transfer-medication-column-resizer";
+      handle.dataset.transferMedicationColumnResize = key;
+      handle.title = `Redimensionar columna ${labelText}`;
+      handle.setAttribute("role", "separator");
+      handle.setAttribute("aria-label", `Redimensionar columna ${labelText}`);
+      handle.addEventListener("mousedown", (event) => {
+        if (event.button !== 0) return;
+        event.preventDefault();
+        const startX = event.clientX;
+        const startWidth = widths[key];
+        document.body.classList.add("patient-transfer-column-resizing");
+        const onMove = (moveEvent) => {
+          widths[key] = medicationColumnWidthFromDrag(key, startWidth, startX, moveEvent.clientX);
+          applyMedicationColumnWidths(modal, widths);
+        };
+        const onEnd = () => {
+          document.removeEventListener("mousemove", onMove);
+          document.removeEventListener("mouseup", onEnd);
+          document.body.classList.remove("patient-transfer-column-resizing");
+          saveMedicationColumnWidths(widths);
+        };
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup", onEnd);
+      });
+      handle.addEventListener("dblclick", () => {
+        widths[key] = config.default;
+        applyMedicationColumnWidths(modal, widths);
+        saveMedicationColumnWidths(widths);
+      });
+      header.append(label, handle);
+    });
+    const candidatesHeader = table.closest(".patient-transfer-candidates")?.querySelector(".patient-transfer-candidates-header");
+    if (candidatesHeader && !candidatesHeader.querySelector("[data-transfer-medication-columns-reset]")) {
+      const reset = document.createElement("button");
+      reset.type = "button";
+      reset.className = "patient-transfer-medication-columns-reset";
+      reset.dataset.transferMedicationColumnsReset = "true";
+      reset.textContent = "Restablecer columnas";
+      reset.addEventListener("click", () => {
+        Object.assign(widths, defaultMedicationColumnWidths());
+        saveMedicationColumnWidths(widths);
+        applyMedicationColumnWidths(modal, widths);
+      });
+      candidatesHeader.append(reset);
+    }
+  });
+  applyMedicationColumnWidths(modal, widths);
+}
+
 function enhanceMedicationPautaTables(modal) {
   modal.querySelectorAll(".patient-transfer-data-table").forEach((table) => {
     const headers = [...table.querySelectorAll("thead th")];
@@ -891,22 +1097,34 @@ function enhanceMedicationPautaTables(modal) {
         medicationCell.classList.add("patient-transfer-medication-identity");
         medicationCell.innerHTML = "";
         medicationCell.append(nameInput);
-        const catalogMeta = document.createElement("div");
+        const catalogLine = document.createElement("div");
+        catalogLine.className = "patient-transfer-medication-catalog-line";
+        const catalogMeta = document.createElement("span");
         catalogMeta.className = "patient-transfer-medication-catalog-meta";
-        catalogMeta.title = catalogSelect?.value ? "Medicamento resuelto contra el catálogo" : "Medicamento pendiente de vincular al catálogo";
-        catalogMeta.textContent = `Catálogo: ${catalogSelect?.value ? "Sí" : "No"}`;
-        medicationCell.append(catalogMeta);
+        const catalogState = medicationCatalogCompactState(catalogSelect?.value);
+        const catalogDetails = [...catalogCell.querySelectorAll("small")]
+          .map((detail) => detail.textContent?.trim())
+          .filter(Boolean)
+          .join(" · ");
+        catalogMeta.title = catalogDetails || (catalogSelect?.value
+          ? "Medicamento resuelto contra el catálogo"
+          : "Medicamento pendiente de vincular al catálogo");
+        catalogMeta.textContent = catalogState.label;
+        catalogLine.append(catalogMeta);
         if (catalogSelect) {
           catalogSelect.hidden = true;
           catalogSelect.dataset.transferTxCatalogCompact = "true";
-          medicationCell.append(catalogSelect);
           const changeButton = document.createElement("button");
           changeButton.type = "button";
           changeButton.className = "patient-transfer-medication-catalog-change";
           changeButton.dataset.transferTxCatalogToggle = catalogSelect.dataset.transferTxCatalog;
-          changeButton.textContent = "Cambiar";
+          changeButton.textContent = catalogState.action;
           changeButton.title = "Cambiar medicamento vinculado al catálogo";
-          medicationCell.append(changeButton);
+          changeButton.setAttribute("aria-expanded", "false");
+          catalogLine.append(changeButton);
+          medicationCell.append(catalogLine, catalogSelect);
+        } else {
+          medicationCell.append(catalogLine);
         }
       });
     }
@@ -919,6 +1137,7 @@ function enhanceMedicationPautaTables(modal) {
       const candidate = {
         schedule: parseMedicationSchedules(scheduleInput.value),
         scheduleText: scheduleInput.value,
+        presentation: row.querySelector("[data-transfer-tx-presentation]")?.value || "",
         frequencyRaw: row.querySelector("[data-transfer-tx-frequency]")?.value || "",
         administrationQuantity: row.querySelector("[data-transfer-tx-admin-quantity]")?.value || "",
         administrationUnit: row.querySelector("[data-transfer-tx-admin-unit]")?.value || ""
@@ -926,6 +1145,8 @@ function enhanceMedicationPautaTables(modal) {
       scheduleCell.innerHTML = `<div class="patient-transfer-medication-pauta" data-transfer-tx-schedule-list="${key}">${renderMedicationScheduleRows(candidate, key)}</div><button type="button" class="patient-transfer-medication-pauta-add" data-transfer-tx-schedule-add="${key}" aria-label="Agregar toma">+</button>`;
     });
   });
+  updateMedicationScheduleUnitVisibility(modal);
+  initializeMedicationColumnResize(modal);
 }
 
 export function renderDetectedGroups(groups = []) {
@@ -991,13 +1212,21 @@ export function collectRenderedSubjectiveMetrics(groups = []) {
 
 export function readTransferReview(groups = []) {
   const modal = ensureRoot();
-  const reviewedCatalogMedicationId = (key, candidate, medicationName) => {
+  const reviewedCatalogSelection = (key, candidate, medicationName) => {
     const control = modal.querySelector(`[data-transfer-tx-catalog="${key}"]`);
-    if (!control) return candidate.catalogMedicationId || null;
+    if (!control) return {
+      id: candidate.catalogMedicationId || null,
+      manuallyCleared: candidate.catalogMatchMethod === "manual-none" && !candidate.catalogMedicationId
+    };
     const selectionChanged = control.value !== (control.dataset.initialValue || "");
-    return selectionChanged || medicationName === (control.dataset.catalogOriginalName || "")
+    const id = selectionChanged || medicationName === (control.dataset.catalogOriginalName || "")
       ? (control.value || null)
       : null;
+    return {
+      id,
+      manuallyCleared: (selectionChanged && !control.value)
+        || (candidate.catalogMatchMethod === "manual-none" && !control.value)
+    };
   };
   return groups.map((group) => {
     const duplicateControl = modal.querySelector(`[data-transfer-duplicate-resolution="${group.id}"]:checked`);
@@ -1057,12 +1286,16 @@ export function readTransferReview(groups = []) {
         const selected = includeControl ? includeControl.checked : candidate.include === true || candidate.selectedForImport === true;
         const medicationName = modal.querySelector(`[data-transfer-tx-name="${key}"]`)?.value?.trim() || "";
         const administrations = readMedicationAdministrations(modal, key, candidate);
+        const catalogSelection = reviewedCatalogSelection(key, candidate, medicationName);
         return {
         ...candidate,
         include: selected,
         selectedForImport: selected,
         medicationName: medicationName || candidate.medicationName || "",
-        catalogMedicationId: reviewedCatalogMedicationId(key, candidate, medicationName),
+        catalogMedicationId: catalogSelection.id,
+        catalogMatchMethod: catalogSelection.manuallyCleared ? "manual-none" : candidate.catalogMatchMethod,
+        catalogMatchStatus: catalogSelection.manuallyCleared ? "none" : candidate.catalogMatchStatus,
+        catalogMatchScore: catalogSelection.manuallyCleared ? 0 : candidate.catalogMatchScore,
         presentation: modal.querySelector(`[data-transfer-tx-presentation="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.presentation || "",
         strengthValue: modal.querySelector(`[data-transfer-tx-strength="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.strengthValue || "",
         strengthUnit: modal.querySelector(`[data-transfer-tx-strength-unit="${doc.id}:${candidate.id}"]`)?.value?.trim() || candidate.strengthUnit || candidate.doseUnit || "",
@@ -1134,12 +1367,16 @@ export function readTransferReview(groups = []) {
           const checked = includeControl ? includeControl.checked : candidate.include === true || candidate.selectedForImport === true;
           const medicationName = modal.querySelector(`[data-transfer-tx-name="${key}"]`)?.value?.trim() || candidate.medicationName || "";
           const administrations = readMedicationAdministrations(modal, key, candidate);
+          const catalogSelection = reviewedCatalogSelection(key, candidate, medicationName);
           return {
             ...candidate,
             include: checked,
             selectedForImport: checked,
             medicationName: medicationName || candidate.medicationName || "",
-            catalogMedicationId: reviewedCatalogMedicationId(key, candidate, medicationName),
+            catalogMedicationId: catalogSelection.id,
+            catalogMatchMethod: catalogSelection.manuallyCleared ? "manual-none" : candidate.catalogMatchMethod,
+            catalogMatchStatus: catalogSelection.manuallyCleared ? "none" : candidate.catalogMatchStatus,
+            catalogMatchScore: catalogSelection.manuallyCleared ? 0 : candidate.catalogMatchScore,
             presentation: modal.querySelector(`[data-transfer-tx-presentation="${key}"]`)?.value?.trim() || candidate.presentation || "",
             strengthValue: modal.querySelector(`[data-transfer-tx-strength="${key}"]`)?.value?.trim() || candidate.strengthValue || "",
             strengthUnit: modal.querySelector(`[data-transfer-tx-strength-unit="${key}"]`)?.value?.trim() || candidate.strengthUnit || candidate.doseUnit || "",

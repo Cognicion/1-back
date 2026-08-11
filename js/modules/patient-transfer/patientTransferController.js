@@ -39,10 +39,12 @@ import {
   setTransferSavingState,
   showPatientTransferError,
   isTransferSaving,
+  medicationCatalogCompactState,
   resizeTransferIndicationTextarea,
   syncBulkSelectionControls,
-  syncPatientNameInputs
-} from "./ui/patientTransferView.js?v=v167-compact-medication-columns-v1";
+  syncPatientNameInputs,
+  updateMedicationScheduleUnitVisibility
+} from "./ui/patientTransferView.js?v=v168-resizable-medication-columns-v1";
 
 let initialized = false;
 let selectedFiles = [];
@@ -61,18 +63,21 @@ function vitalSignsPresence(candidates = []) {
 }
 
 function resolveReviewedMedicationCandidates(groups = []) {
+  const resolveCandidate = (candidate) => candidate.catalogMatchMethod === "manual-none" && !candidate.catalogMedicationId
+    ? candidate
+    : resolveMedicationCandidatesAgainstCatalog([candidate])[0];
   return groups.map((group) => ({
     ...group,
     documents: (group.documents || []).map((document) => {
       const noteSegments = (document.noteSegments || []).map((segment) => ({
         ...segment,
-        treatmentCandidates: resolveMedicationCandidatesAgainstCatalog(segment.treatmentCandidates || [])
+        treatmentCandidates: (segment.treatmentCandidates || []).map(resolveCandidate)
       }));
       const primary = noteSegments[0];
       return {
         ...document,
         noteSegments,
-        treatmentCandidates: primary?.treatmentCandidates || resolveMedicationCandidatesAgainstCatalog(document.treatmentCandidates || [])
+        treatmentCandidates: primary?.treatmentCandidates || (document.treatmentCandidates || []).map(resolveCandidate)
       };
     })
   }));
@@ -1163,13 +1168,22 @@ export function initializePatientTransfer() {
         const row = first.cloneNode(true);
         const index = list.querySelectorAll("[data-transfer-tx-administration-row]").length;
         row.querySelectorAll("[data-transfer-tx-schedule-time],[data-transfer-tx-schedule-dose],[data-transfer-tx-schedule-unit]").forEach((control) => {
-          control.value = "";
+          const preserveEquivalentUnit = control.matches("[data-transfer-tx-schedule-unit]")
+            && control.hidden
+            && control.value.trim();
+          if (!preserveEquivalentUnit) control.value = "";
           const attribute = control.getAttributeNames().find((name) => name.startsWith("data-transfer-tx-schedule-"));
           if (attribute) control.setAttribute(attribute, `${addAdministration.dataset.transferTxScheduleAdd}:${index}`);
         });
+        const unitControl = row.querySelector("[data-transfer-tx-schedule-unit]");
+        if (unitControl && !unitControl.value.trim()) {
+          unitControl.hidden = false;
+          row.classList.remove("patient-transfer-medication-pauta-unit-hidden");
+        }
         const remove = row.querySelector("[data-transfer-tx-schedule-remove]");
         if (remove) remove.setAttribute("data-transfer-tx-schedule-remove", `${addAdministration.dataset.transferTxScheduleAdd}:${index}`);
         list.appendChild(row);
+        syncReviewedGroupsFromView();
       }
       return;
     }
@@ -1178,16 +1192,25 @@ export function initializePatientTransfer() {
       const row = removeAdministration.closest("[data-transfer-tx-administration-row]");
       const list = removeAdministration.closest("[data-transfer-tx-schedule-list]");
       if (row && list && list.querySelectorAll("[data-transfer-tx-administration-row]").length > 1) row.remove();
-      else row?.querySelectorAll("input").forEach((control) => { control.value = ""; });
+      else {
+        row?.querySelectorAll("input").forEach((control) => { control.value = ""; });
+        const unitControl = row?.querySelector("[data-transfer-tx-schedule-unit]");
+        if (unitControl) unitControl.hidden = false;
+        row?.classList.remove("patient-transfer-medication-pauta-unit-hidden");
+      }
+      syncReviewedGroupsFromView();
       return;
     }
     const toggleCatalog = event.target.closest("[data-transfer-tx-catalog-toggle]");
     if (toggleCatalog) {
       const select = root.querySelector(`[data-transfer-tx-catalog="${toggleCatalog.dataset.transferTxCatalogToggle}"]`);
       if (select) {
-        select.hidden = !select.hidden;
-        toggleCatalog.textContent = select.hidden ? "Cambiar" : "Ocultar";
-        if (!select.hidden) select.focus();
+        const shouldOpen = select.hidden;
+        const catalogState = medicationCatalogCompactState(select.value, shouldOpen);
+        select.hidden = !shouldOpen;
+        toggleCatalog.textContent = catalogState.action;
+        toggleCatalog.setAttribute("aria-expanded", String(catalogState.expanded));
+        if (shouldOpen) select.focus();
       }
       return;
     }
@@ -1215,6 +1238,29 @@ export function initializePatientTransfer() {
       });
       toggleAllCandidates(selectAll);
       return;
+    }
+    const catalogSelect = event.target.closest("[data-transfer-tx-catalog-compact]");
+    if (catalogSelect) {
+      const identity = catalogSelect.closest(".patient-transfer-medication-identity");
+      const catalogMeta = identity?.querySelector(".patient-transfer-medication-catalog-meta");
+      const toggle = identity?.querySelector("[data-transfer-tx-catalog-toggle]");
+      const catalogState = medicationCatalogCompactState(catalogSelect.value);
+      catalogSelect.hidden = true;
+      if (catalogMeta) {
+        catalogMeta.textContent = catalogState.label;
+        catalogMeta.title = catalogState.linked
+          ? `Medicamento vinculado: ${catalogSelect.selectedOptions?.[0]?.textContent?.trim() || "catálogo"}`
+          : "Medicamento pendiente de vincular al catálogo";
+      }
+      if (toggle) {
+        toggle.textContent = catalogState.action;
+        toggle.setAttribute("aria-expanded", String(catalogState.expanded));
+      }
+      syncReviewedGroupsFromView();
+      return;
+    }
+    if (event.target.matches("[data-transfer-tx-presentation], [data-transfer-tx-schedule-unit]")) {
+      updateMedicationScheduleUnitVisibility(root, event.target);
     }
     const fileMode = event.target.closest("[data-transfer-file-multiple-mode]");
     if (fileMode) {

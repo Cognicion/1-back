@@ -699,7 +699,8 @@
 .patient-transfer-medication-pauta {
   display: grid;
   gap: 3px;
-  width: min(280px, 26vw);
+  width: 100%;
+  box-sizing: border-box;
   max-height: 132px;
   overflow-y: auto;
   padding: 2px;
@@ -709,10 +710,18 @@
 
 .patient-transfer-medication-pauta-row {
   display: grid;
-  grid-template-columns: 74px 50px minmax(60px, 1fr) 20px;
+  grid-template-columns: minmax(72px, .9fr) minmax(50px, .6fr) minmax(58px, 1fr) 20px;
   align-items: center;
   gap: 3px;
   min-height: 28px;
+}
+
+.patient-transfer-medication-pauta-row.patient-transfer-medication-pauta-unit-hidden {
+  grid-template-columns: minmax(72px, .9fr) minmax(50px, .6fr) 20px;
+}
+
+.patient-transfer-medication-pauta-row [data-transfer-tx-schedule-unit][hidden] {
+  display: none !important;
 }
 
 .patient-transfer-medication-pauta-row input {
@@ -743,28 +752,62 @@
 }
 
 @media (max-width: 720px) {
-  .patient-transfer-medication-pauta { width: min(100%, 260px); }
+  .patient-transfer-medication-pauta { width: 100%; }
   .patient-transfer-medication-pauta-row { grid-template-columns: 70px 48px minmax(55px, 1fr) 20px; }
+  .patient-transfer-medication-pauta-row.patient-transfer-medication-pauta-unit-hidden { grid-template-columns: 70px 48px 20px; }
 }
 
 .patient-transfer-medication-table {
-  width: max-content;
-  min-width: 0;
-  table-layout: auto;
+  table-layout: fixed;
 }
 
 .patient-transfer-medication-table .patient-transfer-vertical-header {
   height: 92px;
-  min-width: 28px;
   padding: 7px 5px;
   text-align: center;
   vertical-align: middle;
+  position: sticky;
 }
 
-.patient-transfer-medication-table .patient-transfer-vertical-header {
+.patient-transfer-medication-column-label {
+  display: inline-block;
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   white-space: nowrap;
+}
+
+.patient-transfer-medication-column-resizer {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  right: -3px;
+  bottom: 0;
+  width: 7px;
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+}
+
+.patient-transfer-medication-column-resizer::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  right: 3px;
+  bottom: 8px;
+  width: 1px;
+  background: transparent;
+  transition: background-color .15s ease;
+}
+
+.patient-transfer-medication-column-resizer:hover::after,
+.patient-transfer-medication-column-resizer:focus-visible::after {
+  background: #38bdf8;
+}
+
+.patient-transfer-column-resizing,
+.patient-transfer-column-resizing * {
+  cursor: col-resize !important;
+  user-select: none !important;
 }
 
 .patient-transfer-medication-table th[hidden],
@@ -777,44 +820,57 @@
   white-space: nowrap;
 }
 
+.patient-transfer-medication-table details small {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .patient-transfer-medication-table input:not([type="checkbox"]),
 .patient-transfer-medication-table select {
-  field-sizing: content;
-  width: fit-content;
+  width: 100%;
   min-width: 0;
-  max-width: 180px;
+  max-width: none;
+  box-sizing: border-box;
   padding: 4px 5px;
   font-size: 11px;
 }
 
 .patient-transfer-medication-table [data-transfer-tx-name] {
-  min-width: 90px;
-  max-width: 180px;
+  min-width: 0;
+  max-width: none;
 }
 
-.patient-transfer-medication-table [data-transfer-tx-presentation] { max-width: 92px; }
-.patient-transfer-medication-table [data-transfer-tx-strength] { max-width: 56px; }
-.patient-transfer-medication-table [data-transfer-tx-strength-unit] { max-width: 56px; }
-.patient-transfer-medication-table [data-transfer-tx-route] { max-width: 64px; }
-.patient-transfer-medication-table [data-transfer-tx-frequency] { max-width: 108px; }
-.patient-transfer-medication-table [data-transfer-tx-status] { max-width: 104px; }
+.patient-transfer-medication-table [data-transfer-tx-strength],
+.patient-transfer-medication-table [data-transfer-tx-strength-unit] {
+  display: inline-block;
+  width: calc(50% - 2px);
+}
 
 .patient-transfer-medication-identity {
-  min-width: 120px;
-  max-width: 190px;
+  min-width: 0;
+  max-width: none;
   white-space: normal !important;
 }
 
 .patient-transfer-medication-catalog-meta {
-  margin-top: 2px;
   color: #93a4ba;
   font-size: 10px;
   line-height: 1.15;
 }
 
+.patient-transfer-medication-catalog-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px 4px;
+  margin-top: 3px;
+  white-space: normal;
+}
+
 .patient-transfer-medication-catalog-change {
   display: inline-block;
-  margin-top: 2px;
+  margin: 0;
   padding: 1px 4px;
   border: 0;
   background: transparent;
@@ -823,13 +879,37 @@
   cursor: pointer;
 }
 
-.patient-transfer-medication-identity [data-transfer-tx-catalog] {
+.patient-transfer-medication-identity [data-transfer-tx-catalog]:not([hidden]) {
   display: block;
-  max-width: 180px;
+  width: 100%;
+  max-width: none;
   margin-top: 3px;
+}
+
+.patient-transfer-medication-identity [data-transfer-tx-catalog][hidden] {
+  display: none !important;
+}
+
+.patient-transfer-medication-columns-reset {
+  margin-left: auto;
+  padding: 2px 6px;
+  border: 0;
+  background: transparent;
+  color: #7dd3fc;
+  font-size: 10px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.patient-transfer-medication-columns-reset:hover,
+.patient-transfer-medication-columns-reset:focus-visible {
+  text-decoration: underline;
 }
 
 @media (max-width: 720px) {
   .patient-transfer-medication-table .patient-transfer-vertical-header { height: 82px; }
-  .patient-transfer-medication-table [data-transfer-tx-name] { max-width: 150px; }
+}
+
+@media (pointer: coarse) {
+  .patient-transfer-medication-column-resizer { display: none; }
 }
