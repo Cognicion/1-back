@@ -42,7 +42,7 @@ import {
   resizeTransferIndicationTextarea,
   syncBulkSelectionControls,
   syncPatientNameInputs
-} from "./ui/patientTransferView.js?v=v164-compact-indications-v1";
+} from "./ui/patientTransferView.js?v=v165-plan-hierarchy-dedup-v1";
 
 let initialized = false;
 let selectedFiles = [];

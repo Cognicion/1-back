@@ -36,6 +36,21 @@ function actionFromText(text = "") {
   return "Continúa";
 }
 
+export function medicationCandidateCompleteness(candidate = {}) {
+  const fields = [
+    candidate.medicationName,
+    candidate.presentation,
+    candidate.strength,
+    candidate.strengthUnit,
+    candidate.administrationQuantity,
+    candidate.administrationUnit,
+    candidate.route,
+    candidate.frequency,
+    Array.isArray(candidate.schedule) && candidate.schedule.length ? candidate.schedule : null
+  ];
+  return fields.filter((value) => value !== null && value !== undefined && value !== "").length;
+}
+
 function administrationFromText(text = "", schedule = []) {
   const match = normalizeClinicalComparisonText(text).match(/(?:tomar|administrar|aplicar)\s+(\d+(?:[.,]\d+)?|una|un|uno|dos|tres|½|¼|¾|\d+\/\d+)\s*(?:de\s+)?(tabletas?|capsulas?|comprimidos?|ml|mililitros|cucharadas?|cucharaditas?|gotas?)/i);
   if (match) return { quantity: parseClinicalQuantity(match[1]), unit: match[2].toLowerCase() };
@@ -68,7 +83,7 @@ function createCandidate({ item, itemIndex, section, documentId, noteId, date, c
     requiresReview: requiresReviewForConfidence(confidence),
     warnings: [],
     evidence: [new ClinicalEvidence({ documentId, block: null, heading: section, rawText: item, confidence })],
-    metadata: { noteId, sourceSection: section, parser: PARSER, parserVersion: VERSION, frequencyRaw: frequency.text }
+    metadata: { noteId, sourceSection: section, parser: PARSER, parserVersion: VERSION, frequencyRaw: frequency.text, sourceSpan: { start: null, end: null, itemIndex } }
   });
   Object.assign(candidate, {
     candidateType: "medication",
@@ -90,7 +105,7 @@ function createCandidate({ item, itemIndex, section, documentId, noteId, date, c
     date,
     parserVersion: VERSION,
     evidence: candidate.evidence,
-    metadata: { ...candidate.metadata, rawMedicationText: item }
+    metadata: { ...candidate.metadata, rawMedicationText: item, sourceSpan: { ...candidate.metadata.sourceSpan, rawText: item } }
   });
   return candidate;
 }
@@ -113,7 +128,12 @@ export function parseMedicationCandidates({ text = "", section = "tratamiento", 
   }).filter(Boolean);
   catalogNames(medicationCatalog).forEach((name) => {
     if (!new RegExp(`\\b${name.replace(/[.*+?^${}()|[\\]\\]/g, "\\\\$&")}\\b`, "i").test(text)) return;
-    if (candidates.some((candidate) => normalizeClinicalComparisonText(candidate.medicationName) === normalizeClinicalComparisonText(name))) return;
+    const normalizedName = normalizeClinicalComparisonText(name);
+    if (candidates.some((candidate) => {
+      const existing = normalizeClinicalComparisonText(candidate.medicationName);
+      const sameResolvedEntity = existing === normalizedName || existing.split(/\s+/).includes(normalizedName) || existing.startsWith(`${normalizedName} `);
+      return sameResolvedEntity && medicationCandidateCompleteness(candidate) >= 1;
+    })) return;
     if (new RegExp(`\\b(?:niega|sin\\s+uso\\s+de|no\\s+usa|no\\s+toma)\\b[^.]{0,80}\\b${name.replace(/[.*+?^${}()|[\\]\\]/g, "\\\\$&")}\\b`, "i").test(text)) return;
     const fallback = createCandidate({ item: name, itemIndex: candidates.length, section, documentId, noteId, date, catalog: medicationCatalog });
     if (fallback) {

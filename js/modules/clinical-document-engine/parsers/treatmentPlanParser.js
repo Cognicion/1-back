@@ -29,6 +29,52 @@ export function splitTreatmentPlanItems(text = "") {
   return starts.map((start, index) => source.slice(start, starts[index + 1] ?? source.length).replace(/^\s*(?:(?:\d+|[a-z])[.)-]|•|\*|-)+\s*/i, "").trim()).filter(Boolean);
 }
 
+function splitTreatmentPlanItemsDetailed(text = "") {
+  const source = String(text || "").replace(/\r/g, "");
+  const lines = source.split("\n");
+  const items = [];
+  let current = null;
+  const flush = () => { if (current?.text.trim()) items.push(current); current = null; };
+  lines.forEach((line, lineIndex) => {
+    const raw = line.trim();
+    if (!raw) return;
+    const marker = raw.match(/^(?:(\d+)[.)-]|([a-z])[.)-]|[•*-])\s*(.*)$/i);
+    if (marker) {
+      flush();
+      const level = marker[1] ? 0 : 1;
+      current = { text: marker[3].trim(), level, lineIndex };
+      return;
+    }
+    if (current) current.text = `${current.text}\n${raw}`;
+    else current = { text: raw, level: 0, lineIndex };
+  });
+  flush();
+  return items.length ? items : String(text || "").split(/\n+/).map((item, lineIndex) => ({ text: item.trim(), level: 0, lineIndex })).filter((item) => item.text);
+}
+
+export function isMeaningfulClinicalInstruction(text = "") {
+  const normalized = String(text || "").replace(/\s+/g, " ").trim().replace(/^[\s\p{P}\p{S}]+|[\s\p{P}\p{S}]+$/gu, "").trim();
+  if (!normalized) return false;
+  if (/^(?:[a-z]|\d+)[.)-]?$|^[()\[\]{}:;,.\-–—]+$/i.test(normalized)) return false;
+  return /[\p{L}\p{N}]/u.test(normalized);
+}
+
+function groupHierarchicalPlanItems(items = []) {
+  const grouped = [];
+  items.forEach((item) => {
+    if (!isMeaningfulClinicalInstruction(item.text)) return;
+    const parent = grouped.at(-1);
+    if (item.level > 0 && parent && (parent.children || /:\s*$/.test(parent.text))) {
+      parent.children ||= [];
+      parent.children.push({ text: item.text, lineIndex: item.lineIndex });
+      parent.text = `${parent.text}\n• ${item.text}`;
+      return;
+    }
+    grouped.push({ ...item });
+  });
+  return grouped;
+}
+
 function truncateAtNextPrimaryPlanItem(value = "") {
   const source = String(value || "");
   const nextPrimary = NEXT_PRIMARY_PLAN_ITEM.exec(source);
@@ -115,12 +161,12 @@ function normalizedValue(type, text) {
   return normalizeClinicalComparisonText(text);
 }
 
-function createInstruction({ text, order, documentId, noteId, date, time, sourceHeading, block = null, startOffset = null, endOffset = null, explicit = true }) {
-  const instructionType = classify(text);
+function createInstruction({ text, order, documentId, noteId, date, time, sourceHeading, block = null, startOffset = null, endOffset = null, explicit = true, children = [] }) {
+  const instructionType = classify(children.length ? String(text).split(/\n/, 1)[0] : text);
   const confidence = evaluateConfidence({ table: false, explicitHeading: explicit, inferred: !explicit, freeText: !explicit });
   const evidence = new ClinicalEvidence({ documentId, block, offsetStart: startOffset, offsetEnd: endOffset, heading: sourceHeading || "PLAN TERAPÉUTICO", rawText: text, confidence });
-  const candidate = new ClinicalCandidate({ id: `${documentId || "doc"}-plan-${noteId || "note"}-${order}`, type: "treatmentPlanInstruction", value: text, confidence, requiresReview: requiresReviewForConfidence(confidence), evidence: [evidence], metadata: { noteId, order, sourceHeading, parser: "midc.treatmentPlanParser", parserVersion: VERSION } });
-  Object.assign(candidate, { candidateType: "treatmentPlanInstruction", instructionType, text, value: text, normalizedValue: normalizedValue(instructionType, text), status: "detected", priority: priority(text), order, date, time, parserVersion: VERSION, evidence: [evidence], metadata: { ...candidate.metadata, sourceSection: "plan" } });
+  const candidate = new ClinicalCandidate({ id: `${documentId || "doc"}-plan-${noteId || "note"}-${order}`, type: "treatmentPlanInstruction", value: text, confidence, requiresReview: requiresReviewForConfidence(confidence), evidence: [evidence], metadata: { noteId, order, sourceHeading, parser: "midc.treatmentPlanParser", parserVersion: VERSION, sourceSpan: { start: startOffset, end: endOffset } } });
+  Object.assign(candidate, { candidateType: "treatmentPlanInstruction", instructionType, text, value: text, children, normalizedValue: normalizedValue(instructionType, text), status: "detected", priority: priority(text), order, date, time, parserVersion: VERSION, evidence: [evidence], metadata: { ...candidate.metadata, sourceSection: "plan" } });
   return candidate;
 }
 
@@ -128,9 +174,9 @@ export function parseTreatmentPlan({ text = "", documentId = "", noteId = "", da
   clinicalImportLogger.info("treatmentPlanParser:start", JSON.stringify({ documentId, noteId, sourceLength: String(text || "").length }));
   const bounded = extractBoundedSection({ text, startAliases: TREATMENT_PLAN_ALIASES, boundaryAliases: TREATMENT_PLAN_BOUNDARIES });
   const source = bounded.start ? bounded.value : String(text || "").trim();
-  const items = mergeMedicationPlanItems(splitTreatmentPlanItems(source));
+  const items = groupHierarchicalPlanItems(splitTreatmentPlanItemsDetailed(source));
   clinicalImportLogger.info("treatmentPlanParser:block", JSON.stringify({ documentId, noteId, bounded: Boolean(bounded.start), itemCount: items.length, boundary: bounded.boundary?.alias || "" }));
-  const candidates = items.map((item, index) => createInstruction({ text: item, order: index + 1, documentId, noteId, date, time, sourceHeading, block: blockIndex, startOffset: null, endOffset: null, explicit: Boolean(bounded.start) })).filter(Boolean);
+  const candidates = items.map((item, index) => createInstruction({ text: item.text, children: item.children || [], order: index + 1, documentId, noteId, date, time, sourceHeading, block: blockIndex, startOffset: item.lineIndex, endOffset: item.lineIndex + 1, explicit: Boolean(bounded.start) })).filter((candidate) => candidate && isMeaningfulClinicalInstruction(candidate.text));
   const medicationSubsections = extractMedicationSubsections(source);
   medicationSubsections.forEach((item) => clinicalImportLogger.info("treatmentPlanParser:medication-heading", JSON.stringify({ documentId, noteId, found: true, recovered: Boolean(item.recovered), heading: item.heading.slice(0, 80) })));
   const medicationText = medicationSubsections.map((item) => item.value).join("\n");
@@ -139,8 +185,10 @@ export function parseTreatmentPlan({ text = "", documentId = "", noteId = "", da
     : [];
   clinicalImportLogger.info("treatmentPlanParser:medication-block", JSON.stringify({ documentId, noteId, subsectionCount: medicationSubsections.length, sourceLength: medicationText.length }));
   const medicationCandidates = delegatedItems.length ? parseMedicationCandidates({ text: delegatedItems.join("\n"), section: "plan", documentId, noteId, date }) : [];
+  const claimedMedicationNames = medicationCandidates.map((candidate) => normalizeClinicalComparisonText(candidate.medicationName)).filter(Boolean);
+  const filteredCandidates = candidates.filter((candidate) => !claimedMedicationNames.some((name) => new RegExp(`\\b${name.replace(/[.*+?^${}()|[\\]\\]/g, "\\\\$&")}\\b`, "i").test(normalizeClinicalComparisonText(candidate.text))));
   clinicalImportLogger.info("treatmentPlanParser:delegated-medications", JSON.stringify({ documentId, noteId, inputCount: delegatedItems.length, count: medicationCandidates.length }));
-  candidates.forEach((candidate) => clinicalImportLogger.info("treatmentPlanParser:item", JSON.stringify({ documentId, noteId, id: candidate.id, instructionType: candidate.instructionType, order: candidate.order })));
-  clinicalImportLogger.info("treatmentPlanParser:finished", JSON.stringify({ documentId, noteId, count: candidates.length, medicationCount: medicationCandidates.length }));
-  return { candidates, medicationCandidates, bounded };
+  filteredCandidates.forEach((candidate) => clinicalImportLogger.info("treatmentPlanParser:item", JSON.stringify({ documentId, noteId, id: candidate.id, instructionType: candidate.instructionType, order: candidate.order })));
+  clinicalImportLogger.info("treatmentPlanParser:finished", JSON.stringify({ documentId, noteId, count: filteredCandidates.length, medicationCount: medicationCandidates.length }));
+  return { candidates: filteredCandidates, medicationCandidates, bounded };
 }

@@ -88,6 +88,25 @@ assert.deepEqual(brianConsumedHeadingResult.medicationCandidates.map((item) => i
 assert.deepEqual(brianConsumedHeadingResult.medicationCandidates.map((item) => item.schedule.length), [1, 1, 3]);
 assert.ok(brianConsumedHeadingResult.medicationCandidates.every((item) => !/reportar eventualidades/i.test(item.metadata.rawMedicationText)));
 
+const hierarchy = parseTreatmentPlan({
+  text: "3. Vigilancia estrecha por:\n   a. Riesgo suicida\n   b. Alucinaciones auditivas imperativas\n4. Precauciones especiales:\n   a. CaÃ­das\n   b. BroncoaspiraciÃ³n\n5. Alergias: NEGADAS\n6. )"
+});
+assert.equal(hierarchy.candidates.length, 3);
+assert.equal(hierarchy.candidates[0].instructionType, "monitoring");
+assert.equal(hierarchy.candidates[0].children.length, 2);
+assert.match(hierarchy.candidates[0].text, /Riesgo suicida/);
+assert.equal(hierarchy.candidates.filter((item) => /Alucinaciones|Riesgo suicida/.test(item.text)).length, 1);
+assert.ok(hierarchy.candidates.some((item) => item.instructionType === "allergies" && /NEGADAS/i.test(item.text)));
+assert.ok(hierarchy.candidates.every((item) => item.text !== ")"));
+
+const valproate = parseTreatmentPlan({
+  text: "1. Valproato de magnesio tabletas 200 mg, tomar 2 tabletas via oral una vez al dia 22:00"
+});
+assert.equal(valproate.medicationCandidates.length, 1);
+assert.equal(valproate.medicationCandidates[0].medicationName, "Valproato de magnesio");
+assert.equal(typeof valproate.medicationCandidates[0].metadata.sourceSpan.itemIndex, "number");
+assert.equal(valproate.candidates.filter((item) => /valproato/i.test(item.text)).length, 0);
+
 const iterations = 100;
 const started = performance.now();
 for (let i = 0; i < iterations; i += 1) parseTreatmentPlan({ text: source, documentId: "perf", noteId: String(i), sourceHeading: "PLAN TERAPÉUTICO" });
