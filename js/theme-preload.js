@@ -38,7 +38,7 @@
     try { localStorage.setItem(VISUAL_THEME_KEY, "laboratorio"); } catch (_) { /* almacenamiento no disponible */ }
     root.style.colorScheme = appliedTheme === "light" ? "light" : "dark";
     root.style.backgroundColor = appliedTheme === "light"
-      ? "#ffffff"
+      ? "#e9ede6"
       : appliedTheme === "biocelular" ? "#120609" : "#050505";
     root.dataset.themeReady = "true";
     if (appliedTheme === "biocelular" && !document.getElementById("cognicion-biocellular-theme-css")) {

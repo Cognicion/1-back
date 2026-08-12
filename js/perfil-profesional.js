@@ -67,7 +67,13 @@ archivoFotoPerfil.addEventListener("change", async () => {
   archivoFotoPerfil.disabled = true;
   estadoFotoPerfil.textContent = "Subiendo fotografía...";
   try {
-    const resultado = await subirFotoPerfil(medicoUid, file);
+    const resultado = await subirFotoPerfil(medicoUid, file, {
+      onProgress: (porcentaje) => {
+        estadoFotoPerfil.textContent = porcentaje > 0
+          ? `Subiendo fotografía... ${porcentaje}%`
+          : "Preparando fotografía...";
+      }
+    });
     campos.foto.value = resultado.url;
     renderPreview();
     estadoFotoPerfil.textContent = "Fotografía actualizada.";

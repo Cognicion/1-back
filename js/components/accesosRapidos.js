@@ -87,7 +87,9 @@ function paginaActual() {
 }
 
 function debeOmitirAccesosRapidos() {
-  return PAGINAS_SIN_ACCESOS_RAPIDOS.has(paginaActual());
+  const bibliotecaPublica = paginaActual() === "biblioteca.html"
+    && new URLSearchParams(window.location.search).get("modo") === "publico";
+  return bibliotecaPublica || PAGINAS_SIN_ACCESOS_RAPIDOS.has(paginaActual());
 }
 
 function obtenerUidFirebaseLocal() {

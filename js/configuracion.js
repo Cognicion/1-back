@@ -258,7 +258,13 @@ async function inicializarFotoPerfilConfiguracion(user) {
     input.disabled = true;
     status.textContent = "Subiendo fotografía...";
     try {
-      const resultado = await subirFotoPerfil(user.uid, file);
+      const resultado = await subirFotoPerfil(user.uid, file, {
+        onProgress: (porcentaje) => {
+          status.textContent = porcentaje > 0
+            ? `Subiendo fotografía... ${porcentaje}%`
+            : "Preparando fotografía...";
+        }
+      });
       fotoUrl = resultado.url;
       renderizarFotoPerfil(preview, { url: fotoUrl, nombre, alt: "Foto de perfil profesional" });
       status.textContent = "Fotografía actualizada. Ya está disponible en tu perfil profesional.";

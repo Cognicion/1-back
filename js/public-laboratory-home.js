@@ -18,7 +18,7 @@
       button.setAttribute("aria-pressed", String(active));
     });
     if (themeColor) {
-      themeColor.content = theme === "light" ? "#edf6fb" : theme === "biocelular" ? "#120609" : "#02060b";
+      themeColor.content = theme === "light" ? "#e7ece4" : theme === "biocelular" ? "#120609" : "#02060b";
     }
   }
 
@@ -35,7 +35,7 @@
     const previousTheme = currentTheme();
     root.dataset.theme = theme;
     root.style.colorScheme = theme === "light" ? "light" : "dark";
-    root.style.backgroundColor = theme === "light" ? "#edf6fb" : theme === "biocelular" ? "#120609" : "#02060b";
+    root.style.backgroundColor = theme === "light" ? "#e7ece4" : theme === "biocelular" ? "#120609" : "#02060b";
     storeTheme(theme);
     updateThemeControls(theme);
 

@@ -886,7 +886,7 @@ html[data-theme="light"] .modo-interfaz-opcion small {
 }
 
 html[data-theme="light"] body.pagina-configuracion {
-  background: #ffffff !important;
+  background: var(--paleta-clara-fondo, #e9ede6) !important;
 }
 
 html[data-theme="light"] .config-header,
@@ -895,14 +895,14 @@ html[data-theme="light"] .config-card,
 html[data-theme="light"] .paleta-clara-settings,
 html[data-theme="light"] .tema-opcion,
 html[data-theme="light"] .modo-interfaz-opcion {
-  background: var(--paleta-clara-superficie, #e8f6ed) !important;
-  border-color: var(--paleta-clara-borde, #b8d9c4) !important;
+  background: var(--paleta-clara-superficie, #dfeadf) !important;
+  border-color: var(--paleta-clara-borde, #abc8b1) !important;
 }
 
 html[data-theme="light"] .tema-opcion.activo,
 html[data-theme="light"] .modo-interfaz-opcion.activo {
-  background: var(--paleta-clara-superficie-fuerte, #d9efe1) !important;
-  border-color: var(--paleta-clara-acento, #3f8f63) !important;
+  background: var(--paleta-clara-superficie-fuerte, #d2e2d3) !important;
+  border-color: var(--paleta-clara-acento, #3f7654) !important;
   color: var(--config-text) !important;
 }
 

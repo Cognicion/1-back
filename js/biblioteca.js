@@ -11,6 +11,7 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+const modoBibliotecaPublica = new URLSearchParams(window.location.search).get("modo") === "publico";
 let tabActual = "diagnosticos";
 let filtro = "";
 let grupoCie10Actual = "todos";
@@ -188,10 +189,18 @@ const datosBibliotecaListos = libraryRoot
   })
   : Promise.resolve();
 
-iniciarMonitoreoSesion("Biblioteca clínica");
+if (!modoBibliotecaPublica) iniciarMonitoreoSesion("Biblioteca clínica");
 
 onAuthStateChanged(auth, async (user) => {
   await datosBibliotecaListos;
+  if (modoBibliotecaPublica) {
+    document.body.classList.add("modo-publico");
+    document.body.classList.remove("bloqueado");
+    document.getElementById("navegacionBibliotecaPrivada")?.setAttribute("hidden", "");
+    document.getElementById("navegacionBibliotecaPublica")?.removeAttribute("hidden");
+    render();
+    return;
+  }
   if (!user) {
     window.location.href = "login.html";
     return;
@@ -341,6 +350,7 @@ function renderizarCitocromo(citocromo) {
 }
 
 function convertirDiagnosticosManuales() {
+  if (modoBibliotecaPublica) return [];
   return cargarCatalogoManualDiagnosticos().map((diagnostico, index) => ({
     id: diagnostico.id || `manual-${index}-${normalizarNombreDiagnostico(diagnostico.nombre).replace(/ /g, "-")}`,
     nombre: diagnostico.nombre,

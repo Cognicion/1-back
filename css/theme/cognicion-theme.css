@@ -130,12 +130,12 @@ html[data-theme="light"] :where(.selected, .active, .seleccionada, .activa) {
 
 /* Paletas pastel del tema claro. El lienzo permanece blanco y las superficies usan la paleta elegida. */
 html[data-theme="light"] {
-  --paleta-clara-fondo: #ffffff;
-  --paleta-clara-superficie: #e8f6ed;
-  --paleta-clara-superficie-fuerte: #d9efe1;
-  --paleta-clara-hover: #d2eadb;
-  --paleta-clara-borde: #b8d9c4;
-  --paleta-clara-acento: #3f8f63;
+  --paleta-clara-fondo: #e9ede6;
+  --paleta-clara-superficie: #dfeadf;
+  --paleta-clara-superficie-fuerte: #d2e2d3;
+  --paleta-clara-hover: #c9dccb;
+  --paleta-clara-borde: #abc8b1;
+  --paleta-clara-acento: #3f7654;
   --page-bg: var(--paleta-clara-fondo);
   --surface-primary: var(--paleta-clara-superficie);
   --surface-secondary: var(--paleta-clara-superficie-fuerte);
@@ -150,27 +150,27 @@ html[data-theme="light"] {
 }
 
 html[data-theme="light"][data-paleta-clara="cielo"] {
-  --paleta-clara-superficie: #e8f4fb;
-  --paleta-clara-superficie-fuerte: #d8ecf8;
-  --paleta-clara-hover: #cfe7f4;
-  --paleta-clara-borde: #b5d5e7;
-  --paleta-clara-acento: #3f82a6;
+  --paleta-clara-superficie: #dfe9eb;
+  --paleta-clara-superficie-fuerte: #d3e1e4;
+  --paleta-clara-hover: #c8dadd;
+  --paleta-clara-borde: #adc8cd;
+  --paleta-clara-acento: #477985;
 }
 
 html[data-theme="light"][data-paleta-clara="lavanda"] {
-  --paleta-clara-superficie: #f0ebfa;
-  --paleta-clara-superficie-fuerte: #e4dcf5;
-  --paleta-clara-hover: #dcd1f0;
-  --paleta-clara-borde: #cbbce7;
-  --paleta-clara-acento: #7660a8;
+  --paleta-clara-superficie: #e7e3ec;
+  --paleta-clara-superficie-fuerte: #ddd7e5;
+  --paleta-clara-hover: #d4ccdf;
+  --paleta-clara-borde: #c1b6cf;
+  --paleta-clara-acento: #716681;
 }
 
 html[data-theme="light"][data-paleta-clara="durazno"] {
-  --paleta-clara-superficie: #fff0e7;
-  --paleta-clara-superficie-fuerte: #f9e1d2;
-  --paleta-clara-hover: #f5d8c6;
-  --paleta-clara-borde: #e8c6b1;
-  --paleta-clara-acento: #a96d4d;
+  --paleta-clara-superficie: #eee4dc;
+  --paleta-clara-superficie-fuerte: #e6d8cd;
+  --paleta-clara-hover: #ddcdbf;
+  --paleta-clara-borde: #ceb9a8;
+  --paleta-clara-acento: #8a654f;
 }
 
 html[data-theme="light"] body {
@@ -232,9 +232,9 @@ html[data-theme="dark"] {
 
 html[data-theme="light"] {
   --ventana-flotante-velo: linear-gradient(rgb(27 62 40 / 28%), rgb(27 62 40 / 38%));
-  --ventana-flotante-superficie: linear-gradient(180deg, #ffffff, var(--paleta-clara-superficie));
+  --ventana-flotante-superficie: linear-gradient(180deg, #f4f6f0, var(--paleta-clara-superficie));
   --ventana-flotante-cabecera: var(--paleta-clara-superficie-fuerte);
-  --ventana-flotante-interior: rgb(255 255 255 / 76%);
+  --ventana-flotante-interior: rgb(244 247 240 / 80%);
   --ventana-flotante-borde: var(--paleta-clara-borde);
   --ventana-flotante-texto: #183025;
   --ventana-flotante-texto-suave: #4f665a;

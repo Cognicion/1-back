@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Biblioteca clínica | Cognición</title>
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-<link rel="stylesheet" href="css/biblioteca.css">
+<link rel="stylesheet" href="css/biblioteca.css?v=1.882-biblioteca-publica-v1">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -19,9 +19,14 @@
       <p>Vademécum, diagnósticos CIE, criterios orientativos y psicoeducación.</p>
     </div>
   </div>
-  <nav>
+  <nav id="navegacionBibliotecaPrivada">
     <button onclick="window.location.href='medico.html'">Panel medico</button>
     <button onclick="window.location.href='dashboard.html'">Inicio</button>
+  </nav>
+  <nav id="navegacionBibliotecaPublica" class="navegacion-biblioteca-publica" hidden>
+    <span class="insignia-consulta-publica">Consulta pública</span>
+    <button type="button" onclick="window.location.href='index.html'">Volver al inicio</button>
+    <button type="button" onclick="window.location.href='login.html'">Iniciar sesión</button>
   </nav>
 </header>
 
@@ -55,7 +60,7 @@
   <section id="panelBiblioteca" class="grid"></section>
 </main>
 
-<script type="module" src="js/biblioteca.js?v=20260811-typical-antipsychotics-v1"></script>
+<script type="module" src="js/biblioteca.js?v=1.882-biblioteca-publica-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>

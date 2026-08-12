@@ -133,14 +133,14 @@
 /* Tema claro de trabajo: neutro, legible y sin transparencias decorativas. */
 [data-theme="light"] {
   color-scheme: light;
-  --page-bg: #f3f3f1;
-  --page-bg-alt: #ececea;
-  --surface-primary: #ffffff;
-  --surface-secondary: #ececea;
-  --surface-tertiary: #e2e2df;
-  --surface-elevated: #ffffff;
-  --surface-hover: #e8e8e5;
-  --surface-selected: #dce7df;
+  --page-bg: #e9ede6;
+  --page-bg-alt: #e1e7de;
+  --surface-primary: #f3f5ef;
+  --surface-secondary: #e3e9e0;
+  --surface-tertiary: #d9e1d7;
+  --surface-elevated: #f6f7f2;
+  --surface-hover: #dce5da;
+  --surface-selected: #d2dfd2;
   --surface-inverse: #171a18;
   --text-primary: #1b1d1b;
   --text-secondary: #4d514e;
@@ -158,11 +158,11 @@
   --action-primary-bg: #315f40;
   --action-primary-text: #ffffff;
   --action-primary-hover: #254b32;
-  --action-secondary-bg: #ffffff;
+  --action-secondary-bg: #f3f5ef;
   --action-secondary-text: #1b1d1b;
   --action-secondary-border: #bfc3bf;
-  --action-secondary-hover: #e8e8e5;
-  --input-bg: #ffffff;
+  --action-secondary-hover: #dce5da;
+  --input-bg: #f7f8f4;
   --input-text: #1b1d1b;
   --input-placeholder: #747a75;
   --input-border: #bfc3bf;
@@ -185,7 +185,7 @@
   --light-text-muted: #7b887f;
   --light-danger: #c94f4f;
   --light-danger-soft: #fff2f2;
-  --scrollbar-track: #ececea;
+  --scrollbar-track: #dfe5dc;
   --scrollbar-thumb: #747974;
   --scrollbar-thumb-hover: #315f40;
   --hero-visual-bg: transparent;

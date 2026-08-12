@@ -66,7 +66,7 @@ export function applyTheme(theme) {
   root.dataset.theme = normalizedTheme;
   root.style.colorScheme = normalizedTheme === "light" ? "light" : "dark";
   root.style.backgroundColor = normalizedTheme === "light"
-    ? "#ffffff"
+    ? "#e9ede6"
     : normalizedTheme === "biocelular" ? "#120609" : "#050505";
   if (normalizedTheme === "biocelular") {
     void import("../themes/biocellularThemeController.js")

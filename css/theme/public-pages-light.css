@@ -152,7 +152,7 @@ html[data-theme="light"] .enlaces-login p {
 
 html[data-theme="light"] .campo input {
   color: var(--light-text);
-  background: #fff;
+  background: var(--surface-elevated);
   border-color: var(--light-border);
 }
 
@@ -247,7 +247,7 @@ html[data-theme="light"] .tipo-cuenta-registro button.activo {
 
 html[data-theme="light"] .auth-card input {
   color: var(--light-text);
-  background: #fff;
+  background: var(--surface-elevated);
   border-color: var(--light-border);
 }
 

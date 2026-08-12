@@ -3,6 +3,53 @@ import { actualizarUsuario } from "./usuarios.js";
 
 export const PROFILE_PHOTO_MAX_BYTES = 5 * 1024 * 1024;
 export const PROFILE_PHOTO_ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+export const PROFILE_PHOTO_UPLOAD_TIMEOUT_MS = 25 * 1000;
+
+function errorAlmacenamientoNoDisponible() {
+  const error = new Error(
+    "El almacenamiento de fotografías no está disponible. Intenta nuevamente más tarde."
+  );
+  error.code = "profile-photo/storage-unavailable";
+  return error;
+}
+
+function mensajeErrorFotoPerfil(error) {
+  if (error?.code === "profile-photo/storage-unavailable") return error.message;
+  if (error?.code === "storage/unauthorized") {
+    return "No tienes permiso para subir esta fotografía.";
+  }
+  if (["storage/bucket-not-found", "storage/retry-limit-exceeded", "storage/unknown"].includes(error?.code)) {
+    return errorAlmacenamientoNoDisponible().message;
+  }
+  return error?.message || "No se pudo subir la fotografía. Intenta nuevamente.";
+}
+
+function esperarSubida(uploadTask, { onProgress, timeoutMs = PROFILE_PHOTO_UPLOAD_TIMEOUT_MS } = {}) {
+  return new Promise((resolve, reject) => {
+    let finalizada = false;
+    const terminar = (callback, value) => {
+      if (finalizada) return;
+      finalizada = true;
+      globalThis.clearTimeout?.(temporizador);
+      callback(value);
+    };
+    const temporizador = globalThis.setTimeout?.(() => {
+      uploadTask.cancel();
+      terminar(reject, errorAlmacenamientoNoDisponible());
+    }, timeoutMs);
+
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const total = snapshot.totalBytes || 0;
+        const porcentaje = total ? Math.round((snapshot.bytesTransferred / total) * 100) : 0;
+        onProgress?.(porcentaje);
+      },
+      (error) => terminar(reject, new Error(mensajeErrorFotoPerfil(error), { cause: error })),
+      () => terminar(resolve, uploadTask.snapshot)
+    );
+  });
+}
 
 export function validarArchivoFotoPerfil(file) {
   if (!file) throw new Error("Selecciona una imagen.");
@@ -49,7 +96,7 @@ export function renderizarFotoPerfil(contenedor, { url = "", nombre = "", alt = 
   contenedor.appendChild(imagen);
 }
 
-export async function subirFotoPerfil(uid, file) {
+export async function subirFotoPerfil(uid, file, opciones = {}) {
   const usuarioActual = auth.currentUser;
   if (!uid || !usuarioActual || usuarioActual.uid !== uid) {
     throw new Error("La sesión no permite actualizar esta foto de perfil.");
@@ -57,15 +104,16 @@ export async function subirFotoPerfil(uid, file) {
 
   validarArchivoFotoPerfil(file);
   const storage = await obtenerStorage();
-  const { getDownloadURL, ref, uploadBytes } = await import(
+  const { getDownloadURL, ref, uploadBytesResumable } = await import(
     "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js"
   );
   const storagePath = `usuarios/${uid}/perfil/foto-perfil`;
   const storageRef = ref(storage, storagePath);
-  const snapshot = await uploadBytes(storageRef, file, {
+  const uploadTask = uploadBytesResumable(storageRef, file, {
     contentType: file.type,
     cacheControl: "public,max-age=3600"
   });
+  const snapshot = await esperarSubida(uploadTask, opciones);
   const actualizadaEn = new Date().toISOString();
   const downloadUrl = await getDownloadURL(snapshot.ref);
   const separador = downloadUrl.includes("?") ? "&" : "?";

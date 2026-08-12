@@ -16,6 +16,34 @@ body {
 
 body.bloqueado main { display: none; }
 
+[hidden] { display: none !important; }
+
+.navegacion-biblioteca-publica {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.insignia-consulta-publica {
+  padding: 7px 11px;
+  border: 1px solid var(--border-normal, rgba(126,182,138,.3));
+  border-radius: 999px;
+  color: var(--text-secondary, #cbd5e1);
+  background: var(--surface-secondary, rgba(15,18,25,.88));
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+body.modo-publico .header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
 .header {
   padding: 22px 7%;
   display: flex;
@@ -382,6 +410,10 @@ ul {
 @media (max-width: 800px) {
   .header {
     display: grid;
+  }
+
+  .navegacion-biblioteca-publica {
+    justify-content: flex-start;
   }
 }
 
