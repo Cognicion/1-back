@@ -40,7 +40,7 @@ import {
   savePediatricPrescription,
   searchPediatricMedication,
   synchronizeFrequencyAndInterval
-} from "./prescripcionPediatrica.js?v=20260811-typical-antipsychotics-v1";
+} from "./prescripcionPediatrica.js?v=20260811-catalog-presentations-v1";
 import { MEDICAMENTOS_PEDIATRICOS } from "./medicamentos.js";
 import { FUENTES_PEDIATRIA } from "./fuentes.js";
 

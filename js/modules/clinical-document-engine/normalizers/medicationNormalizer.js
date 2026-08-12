@@ -63,7 +63,13 @@ export function parseMedicationSchedules(value = "") {
 
 export function splitMedicationItems(text = "", medicationCatalog = []) {
   const source = String(text || "");
-  const names = [...new Set(medicationCatalog.flatMap((item) => [item.nombre, item.nombreGenerico]).concat(["Sertralina", "Pregabalina", "Espironolactona", "Colchicina", "Yasmin", "Lactobacilos", "Lamotrigina"]).filter(Boolean))].sort((a, b) => String(b).length - String(a).length);
+  const names = [...new Set(medicationCatalog.flatMap((item) => [
+    item.nombre,
+    item.genericName,
+    item.nombreGenerico,
+    ...(item.sinonimos || item.synonyms || []),
+    ...(item.marcas || item.brandNames || [])
+  ]).concat(["Sertralina", "Pregabalina", "Espironolactona", "Colchicina", "Yasmin", "Lactobacilos", "Lamotrigina"]).filter(Boolean))].sort((a, b) => String(b).length - String(a).length);
   const starts = [];
   const markers = /(?:^|\s)(?:[a-z]|\d+)[.)](?:-|\s)*(?=[A-Za-zÁÉÍÓÚáéíóúÑñ])/g;
   let match;

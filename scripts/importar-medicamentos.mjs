@@ -5,7 +5,7 @@ const args = new Set(process.argv.slice(2));
 const dryRun = args.has("--dry-run") || !args.has("--commit");
 const salida = process.argv.includes("--out")
   ? process.argv[process.argv.indexOf("--out") + 1]
-  : "medicamentos-import-preview.json";
+  : "catalogo-farmacologico-audit.json";
 
 const nombres = MEDICAMENTOS_MAESTROS.map((medicamento) => normalizarNombreMedicamento(medicamento.nombre));
 const duplicados = nombres.filter((nombre, index) => nombres.indexOf(nombre) !== index);
@@ -17,15 +17,14 @@ const reporte = {
   totalMedicamentos: MEDICAMENTOS_MAESTROS.length,
   totalPresentacionesTratamiento: MEDICAMENTOS_PRESENTACIONES.length,
   duplicados,
-  sinPresentaciones: sinPresentaciones.map((medicamento) => medicamento.nombre),
-  medicamentos: MEDICAMENTOS_MAESTROS
+  sinPresentaciones: sinPresentaciones.map((medicamento) => medicamento.nombre)
 };
 
 await writeFile(salida, JSON.stringify(reporte, null, 2), "utf8");
 
 if (!dryRun) {
   console.warn("Importación real no ejecutada: este proyecto no incluye credenciales de administrador de Firebase en el repositorio.");
-  console.warn("Usa este reporte como fuente revisada para un importador con credenciales seguras fuera del cliente web.");
+  console.warn("Este archivo es solo un reporte de auditoria; el catalogo maestro permanece como unica fuente de datos.");
 }
 
 console.log(`Reporte generado en ${salida}`);

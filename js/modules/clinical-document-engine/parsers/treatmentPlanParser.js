@@ -7,7 +7,7 @@ import { normalizeClinicalComparisonText } from "../normalizers/textNormalizer.j
 import { splitMedicationItems } from "../normalizers/medicationNormalizer.js";
 import { parseMedicationCandidates } from "./medicationParser.js";
 import { clinicalImportLogger } from "../utils/logger.js";
-import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260811-typical-antipsychotics-v1";
+import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260811-catalog-presentations-v1";
 
 const VERSION = "1.0";
 const MEDICATION_SUBSECTION_HEADING = /(?:^|\n)\s*(?:(?:\d+)\s*[.)-]\s*)?(?:medicamentos|medicaci[oó]n|tratamiento farmacol[oó]gico|f[aá]rmacos)\b[^\n]*/gi;

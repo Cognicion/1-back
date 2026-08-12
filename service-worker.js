@@ -1,12 +1,12 @@
-const CACHE_VERSION = "20260802-biocellular-pixels-v1";
+const CACHE_VERSION = "20260811-catalog-presentations-v1";
 const STATIC_CACHE = `cognicion-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `cognicion-runtime-${CACHE_VERSION}`;
 
 const PRECACHE_ASSETS = [
-  "./css/theme.css?v=20260718-cache-v1",
-  "./css/apariencia.css?v=20260718-cache-v1",
+  "./css/theme.css?v=20260811-catalog-presentations-v1",
+  "./css/apariencia.css?v=20260811-catalog-presentations-v1",
   "./assets/favicon-cognicion.png",
-  "./manifest.json?v=20260718-cache-v1"
+  "./manifest.json?v=20260811-catalog-presentations-v1"
 ];
 
 function esRespuestaCacheable(response) {

@@ -1,8 +1,8 @@
 import { db } from "../firebase.js";
 import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
 import { normalizarTextoFrecuencia } from "../utils/frecuencias.js";
-import { CATALOGO_FARMACOLOGICO_OFICIAL } from "../data/catalogoFarmacologicoUnificado.js?v=20260811-typical-antipsychotics-v1";
-import { evaluarMedicamentosPaciente } from "./motorClinicoMedicamentos.js?v=20260811-typical-antipsychotics-v1";
+import { CATALOGO_FARMACOLOGICO_OFICIAL } from "../data/catalogoFarmacologicoUnificado.js?v=20260811-catalog-presentations-v1";
+import { evaluarMedicamentosPaciente } from "./motorClinicoMedicamentos.js?v=20260811-catalog-presentations-v1";
 import { collection, doc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const CAMPOS_FECHA = ["fechaAplicacion", "fecha", "createdAt", "updatedAt", "fechaNota", "fechaCreacion", "fechaInicio", "fechaSuspension"];

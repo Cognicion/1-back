@@ -1,4 +1,4 @@
-import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260811-typical-antipsychotics-v1";
+import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260811-catalog-presentations-v1";
 import { ClinicalCandidate } from "../core/ClinicalCandidate.js";
 import { ClinicalEvidence } from "../core/ClinicalEvidence.js";
 import { evaluateConfidence, requiresReviewForConfidence } from "../confidence/confidenceEngine.js";
@@ -11,7 +11,13 @@ const PARSER = "midc.medicationParser";
 const MANUAL_NAMES = ["Yasmin", "Lactobacilos"];
 
 function catalogNames(catalog = MEDICAMENTOS_MAESTROS) {
-  return [...new Set([...catalog, ...MEDICAMENTOS_MAESTROS].flatMap((item) => [item.nombre, item.nombreGenerico]).concat(MANUAL_NAMES).filter(Boolean))].sort((a, b) => String(b).length - String(a).length);
+  return [...new Set([...catalog, ...MEDICAMENTOS_MAESTROS].flatMap((item) => [
+    item.nombre,
+    item.genericName,
+    item.nombreGenerico,
+    ...(item.sinonimos || item.synonyms || []),
+    ...(item.marcas || item.brandNames || [])
+  ]).concat(MANUAL_NAMES).filter(Boolean))].sort((a, b) => String(b).length - String(a).length);
 }
 
 function findMedicationName(item = "", catalog = MEDICAMENTOS_MAESTROS) {

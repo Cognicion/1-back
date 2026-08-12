@@ -1,5 +1,5 @@
 import { normalizarComparacion, normalizarTextoClinicoConservador } from "./clinicalTextNormalizer.js";
-import { MEDICAMENTOS_MAESTROS } from "../data/catalogoFarmacologicoUnificado.js?v=20260811-typical-antipsychotics-v1";
+import { MEDICAMENTOS_MAESTROS } from "../data/catalogoFarmacologicoUnificado.js?v=20260811-catalog-presentations-v1";
 
 export const ESTADOS_AFIRMACION = Object.freeze({
   AFIRMADO: "afirmado", NEGADO: "negado", NO_EXPLORADO: "no_explorado", INCIERTO: "incierto",

@@ -4,9 +4,9 @@ import {
   REGLAS_INTERACCIONES_CLINICAS as INTERACCIONES_BASE,
   REGLAS_MEDICAMENTO_DIAGNOSTICO as MED_DX_BASE,
   UMBRALES_RIESGO_ACUMULATIVO as UMBRALES_BASE
-} from "./reglasClinicasMedicamentos.js?v=20260811-typical-antipsychotics-v1";
-import { REGLAS_INTERACCIONES_ISRS } from "./interaccionesISRS.js?v=20260811-typical-antipsychotics-v1";
-import { REGLAS_INTERACCIONES_ANTIPSICOTICOS_TIPICOS } from "./interaccionesAntipsicoticosTipicos.js?v=20260811-typical-antipsychotics-v1";
+} from "./reglasClinicasMedicamentos.js?v=20260811-catalog-presentations-v1";
+import { REGLAS_INTERACCIONES_ISRS } from "./interaccionesISRS.js?v=20260811-catalog-presentations-v1";
+import { REGLAS_INTERACCIONES_ANTIPSICOTICOS_TIPICOS } from "./interaccionesAntipsicoticosTipicos.js?v=20260811-catalog-presentations-v1";
 
 const FUENTES_BASE = [
   "Motor local educativo de Cognición. Verificar con ficha técnica, guías clínicas y juicio clínico antes de prescribir."
