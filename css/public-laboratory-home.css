@@ -410,10 +410,10 @@ body.public-lab-page .laboratory-button-secondary:hover {
 
 .laboratory-orbit-track--medical {
   display: var(--visibilidad-boton-index-panel-medico, block);
-  --orbit-start-angle: 180deg;
-  --orbit-end-angle: 540deg;
-  --orbit-counter-start-angle: -180deg;
-  --orbit-counter-end-angle: -540deg;
+  --orbit-start-angle: 72deg;
+  --orbit-end-angle: 432deg;
+  --orbit-counter-start-angle: -72deg;
+  --orbit-counter-end-angle: -432deg;
 }
 
 .laboratory-orbit-track--interactions {
@@ -422,10 +422,26 @@ body.public-lab-page .laboratory-button-secondary:hover {
 
 .laboratory-orbit-track--login {
   display: var(--visibilidad-boton-index-iniciar-sesion, block);
-  --orbit-start-angle: 270deg;
-  --orbit-end-angle: 630deg;
-  --orbit-counter-start-angle: -270deg;
-  --orbit-counter-end-angle: -630deg;
+  --orbit-start-angle: 144deg;
+  --orbit-end-angle: 504deg;
+  --orbit-counter-start-angle: -144deg;
+  --orbit-counter-end-angle: -504deg;
+}
+
+.laboratory-orbit-track--calculators {
+  display: var(--visibilidad-boton-index-calculadoras, block);
+  --orbit-start-angle: 216deg;
+  --orbit-end-angle: 576deg;
+  --orbit-counter-start-angle: -216deg;
+  --orbit-counter-end-angle: -576deg;
+}
+
+.laboratory-orbit-track--scales {
+  display: var(--visibilidad-boton-index-escalas, block);
+  --orbit-start-angle: 288deg;
+  --orbit-end-angle: 648deg;
+  --orbit-counter-start-angle: -288deg;
+  --orbit-counter-end-angle: -648deg;
 }
 
 .laboratory-orbit-radius {
