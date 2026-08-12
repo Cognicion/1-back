@@ -3,7 +3,7 @@ import {
   evaluarMedicamentosPaciente,
   resolverDiagnosticosClinicos
 } from "../services/motorClinicoMedicamentos.js";
-import { CRITERIOS_DIAGNOSTICOS_EXTENDIDOS } from "../data/diagnosticosClinicosExtendidos.js";
+import { CIE10 } from "../data/catalogoDiagnosticos.js";
 
 function titulos(resultado) {
   return resultado.alertas.map((alerta) => alerta.titulo);
@@ -55,11 +55,16 @@ const diagnosticos = resolverDiagnosticosClinicos(["Paciente con demencia y adul
 assert.ok(diagnosticos.categorias.includes("demencia"));
 assert.ok(diagnosticos.categorias.includes("adulto_mayor"));
 
-assert.ok(CRITERIOS_DIAGNOSTICOS_EXTENDIDOS.length >= 100, "Debe existir catálogo extendido de al menos 100 diagnósticos.");
-assert.ok(CRITERIOS_DIAGNOSTICOS_EXTENDIDOS.some((dx) => dx.codigo === "E11"));
-assert.ok(CRITERIOS_DIAGNOSTICOS_EXTENDIDOS.some((dx) => dx.codigo === "I10"));
-assert.ok(CRITERIOS_DIAGNOSTICOS_EXTENDIDOS.some((dx) => dx.codigo === "L20"));
-assert.ok(CRITERIOS_DIAGNOSTICOS_EXTENDIDOS.some((dx) => dx.codigo === "Z63"));
+assert.equal(CIE10.length, 1738, "Debe usarse el catálogo CIE-10 consolidado.");
+assert.ok(CIE10.some((dx) => dx.codigo === "E11"));
+assert.ok(CIE10.some((dx) => dx.codigo === "I10"));
+assert.ok(CIE10.some((dx) => dx.codigo === "L20"));
+assert.ok(CIE10.some((dx) => dx.codigo === "Z63"));
+
+resultado = evaluarMedicamentosPaciente({
+  paciente: { diagnosticos: [{ codigo: "6C70", diagnostico: "Piromanía", estado: "confirmado" }] },
+  medicamentos: [{ medicamento: "Pramipexol" }]
+});
+assert.ok(tiene(resultado, "control de los impulsos"));
 
 console.log("Motor clínico extendido validado.");
-

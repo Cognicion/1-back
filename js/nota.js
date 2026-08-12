@@ -4,8 +4,7 @@ import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { guardarSolicitudEliminacion } from "./services/reportes.js?v=20260716-1";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
-import { CIE10 } from "./data/cie10.js";
-import { CIE11 } from "./data/cie11.js";
+import { CIE10, CIE11 } from "./data/catalogoDiagnosticos.js?v=20260811-diagnosticos-unificados-v1";
 import { ESCALAS_PSIQUIATRICAS, interpretarEscala } from "./data/escalasPsiquiatricas.js";
 import {
   ESCALAS_MEDICINA_GENERAL,
@@ -1028,20 +1027,37 @@ function catalogoDiagnosticosCombinado() {
   ];
 }
 
+function textoBusquedaCatalogoDiagnostico(diagnostico = {}) {
+  return [diagnostico.codigo, diagnostico.nombre, ...(diagnostico.aliases || [])]
+    .filter(Boolean)
+    .join(" ")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function prioridadCoincidenciaDiagnostico(diagnostico = {}, consulta = "") {
+  const codigo = String(diagnostico.codigo || "").toLowerCase();
+  const nombre = String(diagnostico.nombre || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  if (codigo === consulta) return 0;
+  if (codigo.startsWith(consulta)) return 1;
+  if (nombre.startsWith(consulta)) return 2;
+  return 3;
+}
+
 function configurarBuscadorCatalogo(input, contenedor, catalogo, nombreCatalogo) {
   if (!input || !contenedor) return;
 
   input.addEventListener("input", () => {
-    const texto = input.value.toLowerCase().trim();
+    const texto = input.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
     contenedor.innerHTML = "";
 
-    if (texto.length < 2) return;
+    if (!texto) return;
 
     [...catalogo, ...catalogoManualPorTipo(nombreCatalogo)]
-      .filter((dx) =>
-        dx.codigo.toLowerCase().includes(texto) ||
-        dx.nombre.toLowerCase().includes(texto)
-      )
+      .filter((dx) => textoBusquedaCatalogoDiagnostico(dx).includes(texto))
+      .sort((a, b) => prioridadCoincidenciaDiagnostico(a, texto) - prioridadCoincidenciaDiagnostico(b, texto)
+        || String(a.codigo || "").localeCompare(String(b.codigo || ""), "es", { numeric: true }))
       .slice(0, 10)
       .forEach((dx) => {
         const item = document.createElement("div");
@@ -1065,18 +1081,17 @@ configurarBuscadorCatalogo(buscadorCIE11, resultadosCIE11Lista, CIE11, "CIE-11")
 
 if (buscadorDiagnostico && resultadosCIE10 && cie10Codigo && cie10Nombre) {
   buscadorDiagnostico.addEventListener("input", () => {
-    const texto = buscadorDiagnostico.value.toLowerCase().trim();
+    const texto = buscadorDiagnostico.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
     resultadosCIE10.innerHTML = "";
 
-    if (texto.length < 2) return;
+    if (!texto) return;
 
-    const resultados = catalogoDiagnosticosCombinado().filter((dx) => {
-      return (
-        dx.codigo.toLowerCase().includes(texto) ||
-        dx.nombre.toLowerCase().includes(texto)
-      );
-    }).slice(0, 10);
+    const resultados = catalogoDiagnosticosCombinado()
+      .filter((dx) => textoBusquedaCatalogoDiagnostico(dx).includes(texto))
+      .sort((a, b) => prioridadCoincidenciaDiagnostico(a, texto) - prioridadCoincidenciaDiagnostico(b, texto)
+        || String(a.codigo || "").localeCompare(String(b.codigo || ""), "es", { numeric: true }))
+      .slice(0, 10);
 
     resultados.forEach((dx) => {
       const item = document.createElement("div");

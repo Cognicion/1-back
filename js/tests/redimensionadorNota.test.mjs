@@ -32,6 +32,6 @@ test("reiniciar libera la marca manual y el observador distingue cambios program
 
 test("HTML invalida la caché de CSS y JS que contenía la regresión", () => {
   assert.match(html, /css\/nota\.css\?v=20260729-native-resize-v2/);
-  assert.match(html, /js\/nota\.js\?v=20260729-native-resize-v2/);
+  assert.match(html, /js\/nota\.js\?v=20260811-diagnosticos-unificados-v1/);
   assert.match(notaJs, /redimensionadorCampos\.js\?v=20260729-native-resize-v2/);
 });

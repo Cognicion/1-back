@@ -9,32 +9,9 @@ import {
 } from "./clinicalValidationService.js";
 import { ejecutarPipelineClinico, segmentarConversacionClinica } from "./clinicalPipeline.js";
 import { isEvolutionDocumentType, isEvolutionNarrativeStyle } from "./voiceNoteStyleTemplates.js";
+import { CIE10 } from "../data/catalogoDiagnosticos.js?v=20260811-diagnosticos-unificados-v1";
 
-const CIE10_BASE = {
-  "F32.1": "Episodio depresivo moderado",
-  "F32.2": "Episodio depresivo grave sin sintomas psicoticos",
-  "F32.3": "Episodio depresivo grave con sintomas psicoticos",
-  "F33.1": "Trastorno depresivo recurrente, episodio actual moderado",
-  "F33.2": "Trastorno depresivo recurrente, episodio actual grave sin sintomas psicoticos",
-  "F33.3": "Trastorno depresivo recurrente, episodio actual grave con sintomas psicoticos",
-  "F41.1": "Trastorno de ansiedad generalizada",
-  "F41.0": "Trastorno de panico",
-  "F29": "Psicosis no organica no especificada",
-  "F20.0": "Esquizofrenia paranoide",
-  "F22.0": "Trastorno de ideas delirantes",
-  "F23.0": "Trastorno psicotico agudo polimorfo sin sintomas de esquizofrenia",
-  "F25.0": "Trastorno esquizoafectivo tipo maniaco",
-  "F25.1": "Trastorno esquizoafectivo tipo depresivo",
-  "F31.1": "Trastorno afectivo bipolar, episodio maniaco sin sintomas psicoticos",
-  "F31.2": "Trastorno afectivo bipolar, episodio maniaco con sintomas psicoticos",
-  "F31.5": "Trastorno afectivo bipolar, episodio actual depresivo grave con sintomas psicoticos",
-  "F60.3": "Trastorno de inestabilidad emocional de la personalidad",
-  "F43.1": "Trastorno de estres postraumatico",
-  "F10.1": "Uso perjudicial de alcohol",
-  "F12.1": "Uso perjudicial de cannabinoides",
-  "F15.1": "Uso perjudicial de otros estimulantes",
-  "F19.1": "Uso perjudicial de multiples sustancias"
-};
+const CIE10_BASE = Object.fromEntries(CIE10.map(({ codigo, nombre }) => [codigo, nombre]));
 
 const REGLAS_SINTOMAS = {
   depresion: ["tristeza", "anhedonia", "culpa", "desesperanza", "llanto", "apatia", "hiporexia", "insomnio", "hipersomnia", "ideas de muerte", "ideacion suicida", "suicida", "animo bajo", "abatimiento", "aislamiento"],

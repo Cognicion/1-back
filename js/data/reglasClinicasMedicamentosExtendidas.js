@@ -131,12 +131,29 @@ const DX_EXTRA = [
   { id: "adulto_mayor_fragil", nombre: "Adulto mayor / fragilidad", categoria: "adulto_mayor", sinonimos: ["adulto mayor", "anciano", "fragilidad", "alto riesgo de caidas", "riesgo de caídas"] },
   { id: "demencia", nombre: "Deterioro cognitivo mayor / demencia", categoria: "demencia", sinonimos: ["demencia", "deterioro cognitivo mayor", "alzheimer", "delirium previo"] },
   { id: "trastorno_bipolar", nombre: "Trastorno bipolar", categoria: "bipolaridad", sinonimos: ["trastorno bipolar", "bipolaridad", "episodio maniaco", "episodio maníaco", "hipomania"] },
+  { id: "control_impulsos", nombre: "Trastorno del control de los impulsos", categoria: "control_impulsos", sinonimos: ["trastorno del control de los impulsos", "control de impulsos", "piromania", "piromanía", "cleptomania", "cleptomanía", "comportamiento sexual compulsivo", "trastorno explosivo intermitente"] },
   { id: "hiponatremia", nombre: "Hiponatremia", categoria: "sodio", sinonimos: ["hiponatremia", "sodio bajo", "na bajo"] },
   { id: "obesidad", nombre: "Obesidad / síndrome metabólico", categoria: "metabolico", sinonimos: ["obesidad", "síndrome metabólico", "sindrome metabolico", "dislipidemia"] },
   { id: "suicidio", nombre: "Riesgo suicida", categoria: "riesgo_suicida", sinonimos: ["riesgo suicida", "ideacion suicida", "ideación suicida", "intento suicida", "plan suicida"] }
 ];
 
 const MED_DX_EXTRA = [
+  {
+    id: "bupropion_anorexia_bulimia",
+    ingrediente: "bupropion",
+    diagnosticoCategoria: "trastorno_conducta_alimentaria",
+    severidad: "critica",
+    titulo: "Bupropión contraindicado en anorexia o bulimia nerviosa",
+    mecanismo: "En pacientes con diagnóstico actual o previo de anorexia o bulimia nerviosa se ha observado mayor incidencia de convulsiones con bupropión.",
+    efecto: "Aumento clínicamente relevante del riesgo convulsivo.",
+    recomendacion: "No usar bupropión; confirmar antecedente y seleccionar una alternativa terapéutica.",
+    parametrosVigilancia: ["Antecedente actual o previo de anorexia nerviosa", "Antecedente actual o previo de bulimia nerviosa"],
+    permiteOverride: false,
+    requiereJustificacionSi: ["critica"],
+    evidencia: "etiquetado_oficial",
+    confianza: "alta",
+    fuentes: ["DailyMed, Bupropion Hydrochloride: Contraindications (current or prior diagnosis of bulimia or anorexia nervosa), https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=7ded4fa6-e637-4d59-a1b1-286854d4fe3a"]
+  },
   {
     id: "sraa_funcion_renal_i13",
     clases: ["ieca", "ara2", "inhibidor_renina"],
@@ -236,6 +253,22 @@ const MED_DX_EXTRA = [
     fuentes: [
       `${STAHL_LOCAL}, atomoxetina PDF 95-99 (impresas 77-81).`,
       `${STAHL_LOCAL}, metilfenidato PDF 471-479 (impresas 453-461).`
+    ]
+  },
+  {
+    id: "agonista_dopaminergico_control_impulsos",
+    clase: "agonista_dopaminergico",
+    diagnosticoCategoria: "control_impulsos",
+    severidad: "alta",
+    titulo: "Agonista dopaminérgico en trastorno del control de los impulsos",
+    mecanismo: "Los agonistas dopaminérgicos pueden desencadenar o agravar conductas impulsivas y compulsivas por su acción sobre circuitos dopaminérgicos de recompensa.",
+    efecto: "Puede aparecer o empeorar juego, compras, conducta sexual, ingesta u otras conductas repetitivas con pérdida de control y consecuencias personales, familiares o económicas.",
+    recomendacion: "Revisar la indicación y la relación temporal con el fármaco, preguntar activamente al paciente y a su red de apoyo, y valorar reducción, sustitución o retiro gradual con el prescriptor responsable. No suspender bruscamente sin evaluación clínica.",
+    parametrosVigilancia: ["Cambio en control de impulsos", "Juego o compras", "Conducta sexual", "Consecuencias familiares/económicas", "Relación temporal con dosis"],
+    evidencia: "oms_cie11_cddr",
+    confianza: "alta",
+    fuentes: [
+      "OMS, Clinical Descriptions and Diagnostic Requirements for ICD-11 Mental, Behavioural or Neurodevelopmental Disorders, 2024, sección de trastornos del control de los impulsos."
     ]
   }
 ];

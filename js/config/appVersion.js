@@ -1,5 +1,5 @@
 /** Fuente única de verdad para versiones visibles de documentos Cognición. */
-// A partir de 1.861, incrementar exactamente 0.001 por cada cambio funcional o visual.
+// Convención general: incrementos de 0.001. Esta entrega aplica el +0.010 solicitado expresamente (1.888 → 1.898).
 // deployment marker: 2026-08-11-memory-connectome-v3
 // deployment marker: 2026-08-11-public-interactions-v1
 // deployment marker: 2026-08-11-public-interactions-class-rules-v1
@@ -9,5 +9,6 @@
 // deployment marker: 2026-08-11-typical-antipsychotics-v1
 // deployment marker: 2026-08-11-catalog-presentations-v1
 // deployment marker: 2026-08-11-pharmacology-files-consolidated-v1
-export const APP_VERSION = "1.888";
+// deployment marker: 2026-08-11-diagnosticos-unificados-v1
+export const APP_VERSION = "1.898";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

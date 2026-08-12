@@ -2,8 +2,6 @@ import { auth } from "./firebase.js";
 import { obtenerUsuario } from "./services/usuarios.js";
 import { MEDICAMENTOS_MAESTROS, textoMedicamentoParaBusqueda } from "./data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-files-consolidated-v1";
 import { CITOCROMOS_FARMACOLOGICOS } from "./data/citocromosFarmacologicos.js?v=20260811-pharmacology-files-consolidated-v1";
-import { GRUPOS_CIE10_BIBLIOTECA } from "./data/vinculosClinicos.js";
-import { obtenerGrupoCie10 } from "./data/vinculosClinicos.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { ROL_ENFERMERIA_SALUD_MENTAL } from "./utils/roles.js";
 
@@ -19,10 +17,27 @@ let categoriaActual = "todas";
 const CLAVE_SISTEMAS_VISIBLES = "biblioteca-sistemas-visibles";
 const SYSTEM_ORDER = ["cie10", "cie11", "dsm5"];
 const SISTEMA_LABEL = { cie10: "CIE-10", cie11: "CIE-11", dsm5: "DSM-5-TR" };
+const GRUPOS_CIE10_BIBLIOTECA = [
+  { id: "todos", etiqueta: "Todos los CIE-10" },
+  { id: "A", etiqueta: "A00-A99 · Ciertas enfermedades infecciosas y parasitarias" },
+  { id: "B", etiqueta: "B00-B99 · Ciertas enfermedades infecciosas y parasitarias" },
+  { id: "F", etiqueta: "F00-F99 · Trastornos mentales y del comportamiento" },
+  { id: "E", etiqueta: "E00-E90 · Endocrino, nutrición y metabolismo" },
+  { id: "G", etiqueta: "G00-G99 · Enfermedades del sistema nervioso" },
+  { id: "I", etiqueta: "I00-I99 · Sistema circulatorio" },
+  { id: "J", etiqueta: "J00-J99 · Sistema respiratorio" },
+  { id: "L", etiqueta: "L00-L99 · Piel y tejido subcutáneo" },
+  { id: "S", etiqueta: "S00-S99 · Traumatismos" },
+  { id: "Z", etiqueta: "Z00-Z99 · Factores que influyen en la salud" }
+];
 let sistemasVisibles = cargarPreferencia(CLAVE_SISTEMAS_VISIBLES, { cie10: true, cie11: true, dsm5: true });
 let DIAGNOSTICOS_VALIDOS = [];
 let PSICOEDUCACION = [];
 let diagnosticosPorId = new Map();
+const TAMANO_LOTE_DIAGNOSTICOS = 120;
+let diagnosticosFiltradosActuales = [];
+let diagnosticosRenderizados = 0;
+let observadorCargaDiagnosticos = null;
 try {
   localStorage.removeItem("biblioteca-sistemas-orden");
 } catch (error) {
@@ -179,11 +194,11 @@ function usuarioPuedeUsarBiblioteca(user, usuario = {}) {
 const libraryRoot = document.querySelector("[data-library-root]");
 const datosBibliotecaListos = libraryRoot
   ? Promise.all([
-    import("./data/diagnosticosBiblioteca.js"),
-    import("./data/bibliotecaClinica.js")
-  ]).then(([diagnosticosModule, clinicaModule]) => {
-    DIAGNOSTICOS_VALIDOS = validarDiagnosticosBiblioteca(diagnosticosModule.DIAGNOSTICOS_BIBLIOTECA);
-    PSICOEDUCACION = clinicaModule.PSICOEDUCACION || [];
+    import("./data/catalogoDiagnosticos.js?v=20260811-diagnosticos-unificados-v1"),
+    import("./data/psicoeducacionBiblioteca.js?v=20260811-diagnosticos-unificados-v1")
+  ]).then(([diagnosticosModule, psicoeducacionModule]) => {
+    DIAGNOSTICOS_VALIDOS = validarDiagnosticosBiblioteca(diagnosticosModule.CATALOGO_DIAGNOSTICOS);
+    PSICOEDUCACION = psicoeducacionModule.PSICOEDUCACION || [];
     diagnosticosPorId = new Map(DIAGNOSTICOS_VALIDOS.map((diagnostico) => [diagnostico.id, diagnostico]));
     poblarCategoriasBiblioteca();
   })
@@ -276,7 +291,7 @@ function coincide(texto) {
 
 function coincideGrupoCie10(codigo = "") {
   if (grupoCie10Actual === "todos") return true;
-  return obtenerGrupoCie10(codigo).id === grupoCie10Actual;
+  return String(codigo || "").trim().toUpperCase().startsWith(grupoCie10Actual);
 }
 
 function coincideGrupoCie10Diagnostico(diagnostico) {
@@ -472,11 +487,26 @@ function renderizarSistemaAcordeon(diagnostico, sistema) {
     </section>`;
 }
 
+function renderizarFarmacologiaDiagnostico(diagnostico) {
+  const farmacologia = diagnostico.farmacologia;
+  if (!farmacologia) return "";
+  const reglas = farmacologia.reglas || [];
+  const recomendacionesPrevias = farmacologia.recomendacionesCatalogoPrevio;
+  const listaReglas = reglas.length
+    ? `<ul>${reglas.map((regla) => `<li><strong>${escaparHTML(regla.titulo || "Advertencia")}</strong>: ${escaparHTML(regla.efecto || regla.recomendacion || "Revisar la regla clínica asociada.")}</li>`).join("")}</ul>`
+    : `<p>${escaparHTML(farmacologia.notaCobertura || "Sin regla medicamento-diagnóstico específica cargada.")}</p>`;
+  return `<details class="grupo-criterios contenido-diagnostico">
+    <summary>Seguridad farmacológica</summary>
+    ${listaReglas}
+    ${recomendacionesPrevias ? `<p>${escaparHTML(typeof recomendacionesPrevias === "string" ? recomendacionesPrevias : JSON.stringify(recomendacionesPrevias))}</p>` : ""}
+  </details>`;
+}
+
 function renderizarDetallesDiagnostico(diagnostico, detalles) {
   const sistemas = SYSTEM_ORDER.map((sistema) => renderizarSistemaAcordeon(diagnostico, sistema)).join("");
   const psico = diagnostico.psicoeducacion ? `<section class="contenido-diagnostico"><h4>Psicoeducación</h4><p>${escaparHTML(diagnostico.psicoeducacion)}</p></section>` : "";
   const diferencial = diagnostico.diagnosticoDiferencial?.length ? listaResumen("Diagnóstico diferencial", diagnostico.diagnosticoDiferencial) : "";
-  detalles.innerHTML = `${sistemas || `<p class="criterios-vacios">Activa al menos un sistema diagnóstico para visualizar sus códigos y criterios.</p>`}${psico}${diferencial}<p class="aviso-clinico-biblioteca">Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.</p>`;
+  detalles.innerHTML = `${sistemas || `<p class="criterios-vacios">Activa al menos un sistema diagnóstico para visualizar sus códigos y criterios.</p>`}${renderizarFarmacologiaDiagnostico(diagnostico)}${psico}${diferencial}<p class="aviso-clinico-biblioteca">Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.</p>`;
   detalles.dataset.rendered = "true";
   detalles.querySelectorAll("[data-sistema-toggle]").forEach((boton) => boton.addEventListener("click", () => {
     const sistema = boton.dataset.sistemaToggle;
@@ -511,20 +541,62 @@ function renderizarDiagnostico(diagnostico) {
 }
 
 function conectarAcordeonesDiagnosticos(panel) {
-  panel.querySelectorAll("[data-diagnostico-toggle]").forEach((boton) => boton.addEventListener("click", () => {
-    const fila = boton.closest("[data-diagnostico-id]");
-    const detalles = fila.querySelector("[data-diagnostico-details]");
-    const diagnostico = diagnosticosPorId.get(fila.dataset.diagnosticoId) || convertirDiagnosticosManuales().find((item) => item.id === fila.dataset.diagnosticoId);
-    const abierto = boton.getAttribute("aria-expanded") === "true";
-    boton.setAttribute("aria-expanded", String(!abierto));
-    boton.textContent = abierto ? "Ver criterios" : "Ocultar criterios";
-    detalles.hidden = abierto;
-    if (!abierto && !detalles.dataset.rendered && diagnostico) renderizarDetallesDiagnostico(diagnostico, detalles);
-  }));
+  panel.querySelectorAll("[data-diagnostico-toggle]").forEach((boton) => {
+    if (boton.dataset.listenerDiagnostico === "true") return;
+    boton.dataset.listenerDiagnostico = "true";
+    boton.addEventListener("click", () => {
+      const fila = boton.closest("[data-diagnostico-id]");
+      const detalles = fila.querySelector("[data-diagnostico-details]");
+      const diagnostico = diagnosticosPorId.get(fila.dataset.diagnosticoId) || convertirDiagnosticosManuales().find((item) => item.id === fila.dataset.diagnosticoId);
+      const abierto = boton.getAttribute("aria-expanded") === "true";
+      boton.setAttribute("aria-expanded", String(!abierto));
+      boton.textContent = abierto ? "Ver criterios" : "Ocultar criterios";
+      detalles.hidden = abierto;
+      if (!abierto && !detalles.dataset.rendered && diagnostico) renderizarDetallesDiagnostico(diagnostico, detalles);
+    });
+  });
+}
+
+function anexarSiguienteLoteDiagnosticos(panel) {
+  observadorCargaDiagnosticos?.disconnect();
+  panel.querySelector("[data-diagnosticos-sentinel]")?.remove();
+  const inicio = diagnosticosRenderizados;
+  const fin = Math.min(inicio + TAMANO_LOTE_DIAGNOSTICOS, diagnosticosFiltradosActuales.length);
+  if (fin <= inicio) return;
+
+  const plantilla = document.createElement("template");
+  plantilla.innerHTML = diagnosticosFiltradosActuales.slice(inicio, fin).map(renderizarDiagnostico).join("");
+  panel.appendChild(plantilla.content);
+  diagnosticosRenderizados = fin;
+  conectarAcordeonesDiagnosticos(panel);
+
+  if (diagnosticosRenderizados >= diagnosticosFiltradosActuales.length) return;
+  const sentinel = document.createElement("div");
+  sentinel.dataset.diagnosticosSentinel = "true";
+  sentinel.setAttribute("aria-hidden", "true");
+  sentinel.style.height = "1px";
+  panel.appendChild(sentinel);
+
+  if ("IntersectionObserver" in window) {
+    observadorCargaDiagnosticos = new IntersectionObserver((entradas) => {
+      if (entradas.some((entrada) => entrada.isIntersecting)) anexarSiguienteLoteDiagnosticos(panel);
+    }, { rootMargin: "500px 0px" });
+    observadorCargaDiagnosticos.observe(sentinel);
+    return;
+  }
+
+  const boton = document.createElement("button");
+  boton.type = "button";
+  boton.className = "boton-secundario";
+  boton.dataset.diagnosticosSentinel = "true";
+  boton.textContent = "Mostrar más diagnósticos";
+  boton.addEventListener("click", () => anexarSiguienteLoteDiagnosticos(panel));
+  sentinel.replaceWith(boton);
 }
 
 function render() {
   const panel = document.getElementById("panelBiblioteca");
+  observadorCargaDiagnosticos?.disconnect();
   panel.className = tabActual === "diagnosticos" ? "diagnosticos-lista" : "grid";
   document.querySelector(".filtro-cie10")?.classList.toggle("oculto", tabActual !== "diagnosticos");
   document.querySelector(".filtro-categoria-biblioteca")?.classList.toggle("oculto", tabActual !== "diagnosticos");
@@ -579,8 +651,10 @@ function render() {
   const filtradas = catalogo
     .filter((diagnostico) => diagnostico.categoria === categoriaActual || categoriaActual === "todas")
     .filter(coincideGrupoCie10Diagnostico)
-    .filter((diagnostico) => coincide(textoBusquedaDiagnostico(diagnostico)));
+    .filter((diagnostico) => !filtro || coincide(textoBusquedaDiagnostico(diagnostico)));
 
-  panel.innerHTML = filtradas.map(renderizarDiagnostico).join("") || "<p>No hay resultados.</p>";
-  if (filtradas.length) conectarAcordeonesDiagnosticos(panel);
+  diagnosticosFiltradosActuales = filtradas;
+  diagnosticosRenderizados = 0;
+  panel.innerHTML = filtradas.length ? "" : "<p>No hay resultados.</p>";
+  if (filtradas.length) anexarSiguienteLoteDiagnosticos(panel);
 }

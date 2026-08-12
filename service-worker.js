@@ -1,4 +1,4 @@
-const CACHE_VERSION = "20260811-pharmacology-files-consolidated-v1";
+const CACHE_VERSION = "20260811-diagnosticos-unificados-v1";
 const STATIC_CACHE = `cognicion-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `cognicion-runtime-${CACHE_VERSION}`;
 

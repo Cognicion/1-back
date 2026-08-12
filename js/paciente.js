@@ -5,8 +5,7 @@ import {
   buscarMedicamentos,
   medicamentoPorTexto
 } from "./data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-files-consolidated-v1";
-import { CIE10 } from "./data/cie10.js";
-import { CIE11 } from "./data/cie11.js";
+import { CIE10, CIE11 } from "./data/catalogoDiagnosticos.js?v=20260811-diagnosticos-unificados-v1";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import {
@@ -434,6 +433,24 @@ function catalogoDiagnosticosCombinado() {
     ...CIE11.map((dx) => ({ ...dx, catalogo: "CIE-11" })),
     ...catalogoManualDiagnosticos
   ];
+}
+
+function textoBusquedaCatalogoDiagnostico(diagnostico = {}) {
+  return [diagnostico.codigo, diagnostico.nombre, ...(diagnostico.aliases || [])]
+    .filter(Boolean)
+    .join(" ")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function prioridadCoincidenciaDiagnostico(diagnostico = {}, consulta = "") {
+  const codigo = String(diagnostico.codigo || "").toLowerCase();
+  const nombre = String(diagnostico.nombre || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  if (codigo === consulta) return 0;
+  if (codigo.startsWith(consulta)) return 1;
+  if (nombre.startsWith(consulta)) return 2;
+  return 3;
 }
 
 function cargarCatalogoManualMedicamentos() {
@@ -2520,7 +2537,7 @@ function renderizarResultadosBusquedaDiagnosticos() {
 
   if (!contenedor || !buscador) return;
 
-  const texto = buscador.value.trim().toLowerCase();
+  const texto = buscador.value.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
   if (!texto) {
     contenedor.textContent = diagnosticoReemplazoIndex === null
@@ -2530,7 +2547,9 @@ function renderizarResultadosBusquedaDiagnosticos() {
   }
 
   diagnosticosCatalogoActual = obtenerCatalogoDiagnostico()
-    .filter((dx) => `${dx.codigo} ${dx.nombre}`.toLowerCase().includes(texto))
+    .filter((dx) => textoBusquedaCatalogoDiagnostico(dx).includes(texto))
+    .sort((a, b) => prioridadCoincidenciaDiagnostico(a, texto) - prioridadCoincidenciaDiagnostico(b, texto)
+      || String(a.codigo || "").localeCompare(String(b.codigo || ""), "es", { numeric: true }))
     .slice(0, 18)
     .map((dx) => normalizarDiagnostico(dx, catalogoSeleccionado));
 

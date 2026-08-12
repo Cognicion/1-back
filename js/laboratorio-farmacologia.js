@@ -1,5 +1,5 @@
 import { COBERTURA_FARMACOLOGICA, MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES, medicamentoPorTexto } from "./data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-files-consolidated-v1";
-import { CIE10 } from "./data/cie10.js";
+import { CIE10 } from "./data/catalogoDiagnosticos.js?v=20260811-diagnosticos-unificados-v1";
 import {
   evaluarMedicamentosPaciente,
   normalizarMedicamentoClinico,
@@ -48,7 +48,7 @@ function opcionesCie10() {
     .filter((dx) => dx.codigo && dx.nombre)
     .map((dx) => ({
       valor: textoVisible(`${dx.codigo} - ${dx.nombre}`),
-      busqueda: textoNormalizado(`${dx.codigo} ${dx.nombre}`)
+      busqueda: textoNormalizado(`${dx.codigo} ${dx.nombre} ${(dx.aliases || []).join(" ")}`)
     }))
     .sort((a, b) => a.valor.localeCompare(b.valor, "es"));
 }

@@ -34,6 +34,6 @@ assert.match(estilos, /\.pdf-firma\s*\{[\s\S]*?break-inside:\s*avoid !important;
 assert.doesNotMatch(estilos, /@media print\s*\{\s*body\s*\{/);
 
 assert.match(html, /css\/nota\.css\?v=20260729-signos-vitales-export-v1/);
-assert.match(html, /js\/nota\.js\?v=20260729-signos-vitales-export-v1/);
+assert.match(html, /js\/nota\.js\?v=20260811-diagnosticos-unificados-v1/);
 
 console.log("cognicionPdf: ok");
