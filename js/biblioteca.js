@@ -1,7 +1,7 @@
 import { auth } from "./firebase.js";
 import { obtenerUsuario } from "./services/usuarios.js";
-import { MEDICAMENTOS_MAESTROS, textoMedicamentoParaBusqueda } from "./data/catalogoFarmacologicoUnificado.js?v=20260811-catalog-presentations-v1";
-import { CITOCROMOS_FARMACOLOGICOS } from "./data/citocromosFarmacologicos.js?v=20260811-catalog-presentations-v1";
+import { MEDICAMENTOS_MAESTROS, textoMedicamentoParaBusqueda } from "./data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-files-consolidated-v1";
+import { CITOCROMOS_FARMACOLOGICOS } from "./data/citocromosFarmacologicos.js?v=20260811-pharmacology-files-consolidated-v1";
 import { GRUPOS_CIE10_BIBLIOTECA } from "./data/vinculosClinicos.js";
 import { obtenerGrupoCie10 } from "./data/vinculosClinicos.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";

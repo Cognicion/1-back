@@ -10,7 +10,7 @@ function read(relativePath) {
 }
 
 const serviceWorker = read("service-worker.js");
-assert.match(serviceWorker, /const CACHE_VERSION = "20260811-catalog-presentations-v1"/);
+assert.match(serviceWorker, /const CACHE_VERSION = "20260811-pharmacology-files-consolidated-v1"/);
 assert.match(serviceWorker, /cognicion-static-\$\{CACHE_VERSION\}/);
 assert.match(serviceWorker, /cognicion-runtime-\$\{CACHE_VERSION\}/);
 assert.match(serviceWorker, /esFirebaseODatoPrivado/);

@@ -3,7 +3,7 @@ import {
   evaluarMedicamentosPaciente,
   normalizarMedicamentoClinico,
   obtenerIndicadorSeguridadMedicamento
-} from "../services/motorClinicoMedicamentos.js?v=20260811-catalog-presentations-v1";
+} from "../services/motorClinicoMedicamentos.js?v=20260811-pharmacology-files-consolidated-v1";
 
 // Metadata legacy conservada por compatibilidad documental. La detección
 // ejecutable usa el motor clínico común y el catálogo oficial.

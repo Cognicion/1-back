@@ -1,8 +1,6 @@
 import { writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { CATALOGO_FARMACOLOGICO_OFICIAL as CATALOGO_ACTUAL } from "../js/data/catalogoFarmacologicoUnificado.js";
-import { CATALOGO_MEDICAMENTOS_PEDIATRICOS } from "../js/pediatria/catalogoMedicamentosPediatricos.js";
-import { MEDICAMENTOS_PEDIATRICOS } from "../js/pediatria/medicamentos.js";
 
 const RXNORM_VERSION = "03-Aug-2026";
 const RXNORM_API_VERSION = "3.1.354";
@@ -25,11 +23,6 @@ const RENOMBRES_CANONICOS = Object.freeze({
     principioActivo: "betametasona",
     principiosActivos: ["Betametasona"]
   }
-});
-
-const IDS_PEDIATRICOS_CANONICOS = Object.freeze({
-  acido_valproico: "valproato",
-  hidroxizina: "hidroxicina"
 });
 
 const TERMINOS_RXNORM = {
@@ -162,6 +155,41 @@ function slug(valor = "") {
 
 function listaUnica(...listas) {
   return [...new Set(listas.flatMap((lista) => Array.isArray(lista) ? lista : [lista]).filter((valor) => valor !== undefined && valor !== null && valor !== ""))];
+}
+
+function listaObjetosUnicos(...listas) {
+  const indice = new Map();
+  listas.flatMap((lista) => Array.isArray(lista) ? lista : [lista]).filter(Boolean).forEach((valor) => {
+    const clave = JSON.stringify(valor);
+    if (!indice.has(clave)) indice.set(clave, valor);
+  });
+  return [...indice.values()];
+}
+
+function deduplicarFrases(texto = "") {
+  const frases = String(texto || "").match(/[^.!?]+[.!?]?/g) || [];
+  const vistas = new Set();
+  return frases.map((frase) => frase.trim()).filter((frase) => {
+    if (!frase) return false;
+    const clave = sinAcentos(frase).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    if (!clave || vistas.has(clave)) return false;
+    vistas.add(clave);
+    return true;
+  }).join(" ");
+}
+
+function consolidarRelacionesInteraccion(interacciones = []) {
+  const indice = new Map();
+  interacciones.forEach((interaccion) => {
+    const idRegla = interaccion.idRegla || interaccion.id;
+    if (!idRegla) return;
+    if (!indice.has(idRegla)) indice.set(idRegla, new Set());
+    (interaccion.contraparteIds || []).forEach((id) => indice.get(idRegla).add(id));
+  });
+  return [...indice.entries()].map(([idRegla, contraparteIds]) => ({
+    idRegla,
+    contraparteIds: [...contraparteIds].sort()
+  }));
 }
 
 function tieneConcentracion(texto = "") {
@@ -308,10 +336,7 @@ async function resolverRxNorm(medicamento) {
 function unirObjetos(medicamento, presentaciones) {
   const datos = medicamento.datosClinicos || {};
   const farmacocinetica = medicamento.farmacocinetica || {};
-  const relaciones = (medicamento.interaccionesEstructuradas || []).map((interaccion) => ({
-    idRegla: interaccion.idRegla || interaccion.id,
-    contraparteIds: [...new Set(interaccion.contraparteIds || [])].sort()
-  }));
+  const relaciones = consolidarRelacionesInteraccion(medicamento.interaccionesEstructuradas || []);
   return {
     id: medicamento.id,
     legacyIds: listaUnica(medicamento.legacyIds),
@@ -335,8 +360,8 @@ function unirObjetos(medicamento, presentaciones) {
       precauciones: listaUnica(datos.precauciones, medicamento.precautions, medicamento.precauciones),
       advertencias: listaUnica(medicamento.warnings, medicamento.advertencias),
       monitorizacion: listaUnica(medicamento.monitoring, medicamento.monitorizacion),
-      dosisAdulto: datos.dosisAdulto || medicamento.adultDosing || [],
-      dosisPediatrica: datos.dosisPediatrica || medicamento.pediatricDosing || [],
+      dosisAdulto: listaObjetosUnicos(datos.dosisAdulto, medicamento.adultDosing),
+      dosisPediatrica: listaObjetosUnicos(datos.dosisPediatrica, medicamento.pediatricDosing),
       embarazo: datos.embarazo ?? medicamento.embarazo ?? null,
       lactancia: datos.lactancia ?? medicamento.lactancia ?? null
     },
@@ -355,7 +380,7 @@ function unirObjetos(medicamento, presentaciones) {
     interacciones: listaUnica(medicamento.interactions),
     interaccionesRelacionadas: relaciones,
     relacionDiagnosticos: listaUnica(medicamento.relacionDiagnosticos, medicamento.interaccionesDiagnostico),
-    notas: medicamento.notas || "",
+    notas: deduplicarFrases(medicamento.notas || ""),
     referencias: listaUnica(medicamento.referencias, medicamento.references, presentaciones.map((item) => item.fuente)),
     fuenteClinica: {
       estado: medicamento.estadoFuente || "fuente_pendiente",
@@ -446,151 +471,8 @@ function consolidarIdentidades(catalogo) {
   }).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
 }
 
-function idPediatricoCanonico(id = "") {
-  return IDS_PEDIATRICOS_CANONICOS[id] || id;
-}
-
-function crearMedicamentoDesdeRegistroPediatrico(registro, idCanonico) {
-  const nombre = registro.nombre || registro.genericName || idCanonico.replace(/[_-]+/g, " ");
-  return {
-    id: idCanonico,
-    legacyIds: registro.id && registro.id !== idCanonico ? [registro.id] : [],
-    nombre,
-    genericName: nombre,
-    principioActivo: idCanonico,
-    principiosActivos: [nombre],
-    clasePrincipal: registro.categoria || registro.drugClass || "Medicamento pediatrico",
-    clases: listaUnica(registro.categoria, registro.drugClass, "pediatria"),
-    categoriasInteraccion: [],
-    sinonimos: listaUnica(registro.id),
-    marcas: listaUnica(registro.nombresComerciales),
-    especialidades: ["Pediatria"],
-    presentaciones: [],
-    dosisHabitual: registro.opciones?.[0]?.etiqueta || "",
-    dosisHabituales: listaUnica((registro.opciones || []).map((opcion) => opcion.etiqueta)),
-    frecuenciasSugeridas: [],
-    datosClinicos: {
-      indicaciones: [],
-      contraindicaciones: listaUnica(registro.contraindicaciones),
-      precauciones: listaUnica(registro.advertencia),
-      advertencias: listaUnica(registro.advertencia),
-      monitorizacion: [],
-      dosisAdulto: [],
-      dosisPediatrica: registro.opciones || [],
-      embarazo: null,
-      lactancia: null
-    },
-    farmacocinetica: {
-      mecanismoAccion: registro.mechanism || "",
-      vidaMedia: "",
-      tiempoConcentracionMaxima: "",
-      duracionAccion: "",
-      metabolismo: "",
-      eliminacion: "",
-      cyp: [],
-      metabolitosActivos: []
-    },
-    efectosAdversos: listaUnica(registro.adverseEffects),
-    riesgos: {},
-    interactions: listaUnica(registro.interacciones, registro.interactions),
-    relacionDiagnosticos: [],
-    notas: registro.advertencia || "",
-    referencias: listaUnica(registro.fuente, registro.sources),
-    origenesCatalogo: ["catalogo_pediatrico_legacy"],
-    active: true,
-    contentStatus: "revision_inicial",
-    updatedAt: registro.updatedAt || FECHA_CORTE
-  };
-}
-
-function integrarDatosPediatricos(catalogo) {
-  const salida = catalogo.map((medicamento) => ({ ...medicamento }));
-  const indice = new Map(salida.map((medicamento, index) => [medicamento.id, index]));
-
-  MEDICAMENTOS_PEDIATRICOS.forEach((registro, orden) => {
-    const idCanonico = idPediatricoCanonico(registro.id || registro.medicationId);
-    if (!indice.has(idCanonico)) {
-      indice.set(idCanonico, salida.length);
-      salida.push(crearMedicamentoDesdeRegistroPediatrico(registro, idCanonico));
-    }
-    const posicion = indice.get(idCanonico);
-    const medicamento = salida[posicion];
-    const datos = medicamento.datosClinicos || {};
-    const registroCanonico = {
-      ...registro,
-      clinicalMedicationId: idCanonico,
-      medicationId: idCanonico
-    };
-    salida[posicion] = {
-      ...medicamento,
-      legacyIds: listaUnica(medicamento.legacyIds, registro.id !== idCanonico ? registro.id : []),
-      sinonimos: listaUnica(medicamento.sinonimos, medicamento.synonyms, registro.id, registro.nombre),
-      synonyms: listaUnica(medicamento.synonyms, medicamento.sinonimos, registro.id, registro.nombre),
-      marcas: listaUnica(medicamento.marcas, medicamento.brandNames, registro.nombresComerciales),
-      brandNames: listaUnica(medicamento.brandNames, medicamento.marcas, registro.nombresComerciales),
-      clases: listaUnica(medicamento.clases, medicamento.therapeuticClasses, registro.categoria, "pediatria"),
-      therapeuticClasses: listaUnica(medicamento.therapeuticClasses, medicamento.clases, registro.categoria, "pediatria"),
-      especialidades: listaUnica(medicamento.especialidades, medicamento.specialties, "Pediatria"),
-      specialties: listaUnica(medicamento.specialties, medicamento.especialidades, "Pediatria"),
-      datosClinicos: {
-        ...datos,
-        contraindicaciones: listaUnica(datos.contraindicaciones, medicamento.contraindications, registro.contraindicaciones),
-        precauciones: listaUnica(datos.precauciones, medicamento.precautions, registro.advertencia),
-        advertencias: listaUnica(datos.advertencias, medicamento.warnings, registro.advertencia),
-        dosisPediatrica: listaUnica(datos.dosisPediatrica, medicamento.pediatricDosing, registro.opciones)
-      },
-      interactions: listaUnica(medicamento.interactions, medicamento.interacciones, registro.interacciones),
-      notas: listaUnica(medicamento.notas, registro.advertencia).join(" "),
-      referencias: listaUnica(medicamento.referencias, medicamento.references, registro.fuente),
-      origenesCatalogo: listaUnica(medicamento.origenesCatalogo, "catalogo_pediatrico_legacy"),
-      pediatria: {
-        ...(medicamento.pediatria || {}),
-        legacyOrder: orden,
-        legacy: registroCanonico
-      }
-    };
-  });
-
-  CATALOGO_MEDICAMENTOS_PEDIATRICOS.forEach((ficha, orden) => {
-    const idCanonico = idPediatricoCanonico(ficha.medicationId);
-    const posicion = indice.get(idCanonico);
-    if (posicion === undefined) return;
-    const medicamento = salida[posicion];
-    const datos = medicamento.datosClinicos || {};
-    const cinetica = medicamento.farmacocinetica || {};
-    const marcas = (ficha.presentations || []).flatMap((presentacion) => [presentacion.brandName, ...(presentacion.brands || [])]);
-    salida[posicion] = {
-      ...medicamento,
-      sinonimos: listaUnica(medicamento.sinonimos, medicamento.synonyms, ficha.synonyms),
-      synonyms: listaUnica(medicamento.synonyms, medicamento.sinonimos, ficha.synonyms),
-      marcas: listaUnica(medicamento.marcas, medicamento.brandNames, marcas),
-      brandNames: listaUnica(medicamento.brandNames, medicamento.marcas, marcas),
-      datosClinicos: {
-        ...datos,
-        contraindicaciones: listaUnica(datos.contraindicaciones, ficha.contraindications),
-        precauciones: listaUnica(datos.precauciones, ficha.precautions)
-      },
-      farmacocinetica: {
-        ...cinetica,
-        mecanismoAccion: cinetica.mecanismoAccion || ficha.mechanism || ""
-      },
-      efectosAdversos: listaUnica(medicamento.efectosAdversos, medicamento.adverseEffects, ficha.adverseEffects),
-      interactions: listaUnica(medicamento.interactions, medicamento.interacciones, ficha.interactions),
-      referencias: listaUnica(medicamento.referencias, medicamento.references, ficha.sources),
-      origenesCatalogo: listaUnica(medicamento.origenesCatalogo, "catalogo_pediatrico_verificado"),
-      pediatria: {
-        ...(medicamento.pediatria || {}),
-        catalogOrder: orden,
-        ficha: { ...ficha, medicationId: idCanonico }
-      }
-    };
-  });
-
-  return salida;
-}
-
 async function construirCatalogo() {
-  const catalogoEntrada = consolidarIdentidades(integrarDatosPediatricos(CATALOGO_ACTUAL));
+  const catalogoEntrada = consolidarIdentidades(CATALOGO_ACTUAL);
   const salida = new Array(catalogoEntrada.length);
   let cursor = 0;
   const errores = [];
@@ -632,15 +514,15 @@ function codigoRuntime(datos) {
   return `/**
  * CATÁLOGO FARMACOLÓGICO MAESTRO DE COGNICIÓN.
  *
- * Única fuente de verdad de medicamentos y presentaciones. Los archivos
- * medicamentos.js, medicamentosSuplementarios.js y farmacologiaUnificada.js
- * son adaptadores de compatibilidad y no contienen catálogos paralelos.
+ * Única fuente de verdad de medicamentos, presentaciones y propiedades.
+ * Los contratos públicos históricos se derivan y exportan desde este mismo
+ * archivo; las reglas y protocolos clínicos permanecen en módulos separados.
  * Presentaciones enriquecidas con RxNorm ${RXNORM_VERSION} (API ${RXNORM_API_VERSION})
  * y fuentes regulatorias explícitas para conceptos sin producto RxNorm.
  * Corte de datos: ${FECHA_CORTE}.
  */
 
-import { REGLAS_INTERACCIONES_CLINICAS } from "./reglasClinicasMedicamentosExtendidas.js?v=20260811-catalog-presentations-v1";
+import { REGLAS_INTERACCIONES_CLINICAS } from "./reglasClinicasMedicamentosExtendidas.js?v=20260811-pharmacology-files-consolidated-v1";
 
 export const CATALOGO_FARMACOLOGICO_METADATA = Object.freeze({
   esquema: "cognicion.catalogo-farmacologico.v2",
@@ -761,11 +643,18 @@ function adaptarRegistroMaestro(medicamento) {
 const CATALOGO_BASE = CATALOGO_FARMACOLOGICO_MAESTRO.map(adaptarRegistroMaestro);
 
 function construirIndiceInteraccionesReciprocas() {
-  const indice = new Map(CATALOGO_BASE.map((medicamento) => [medicamento.id, []]));
+  const indice = new Map(CATALOGO_BASE.map((medicamento) => [medicamento.id, new Map()]));
   const registrar = (medicamento, regla, contrapartes) => {
     const contraparteIds = [...new Set(contrapartes.filter((item) => item.id !== medicamento.id).map((item) => item.id))].sort();
     if (!contraparteIds.length) return;
-    indice.get(medicamento.id).push({
+    const reglasMedicamento = indice.get(medicamento.id);
+    const existente = reglasMedicamento.get(regla.id);
+    if (existente) {
+      existente.contraparteIds = [...new Set([...existente.contraparteIds, ...contraparteIds])].sort();
+      existente.medicamentos = [medicamento.id, ...existente.contraparteIds];
+      return;
+    }
+    reglasMedicamento.set(regla.id, {
       id: regla.id,
       idRegla: regla.id,
       severidad: regla.severidad,
@@ -787,7 +676,7 @@ function construirIndiceInteraccionesReciprocas() {
     ladoA.forEach((medicamento) => registrar(medicamento, regla, ladoB));
     ladoB.forEach((medicamento) => registrar(medicamento, regla, ladoA));
   });
-  return indice;
+  return new Map([...indice].map(([medicamentoId, reglas]) => [medicamentoId, [...reglas.values()]]));
 }
 
 const INDICE_INTERACCIONES = construirIndiceInteraccionesReciprocas();
@@ -971,6 +860,395 @@ export function medicamentoPorTexto(texto = "") {
   const porPresentacion = MEDICAMENTOS_PRESENTACIONES.find((item) => normalizado.includes(normalizarNombreMedicamento(item.nombre)) && normalizado.includes(normalizarNombreMedicamento(item.selectedPresentationText)));
   if (porPresentacion) return POR_ID.get(porPresentacion.clinicalMedicationId) || null;
   return buscarMedicamentos(texto, { limit: 1, strict: true })[0] || null;
+}
+
+// Vistas y contratos históricos derivados del catálogo maestro. Ninguno de
+// estos exports materializa una segunda fuente farmacológica.
+export const MEDICAMENTOS_SUPLEMENTARIOS = Object.freeze(
+  CATALOGO_FARMACOLOGICO_OFICIAL.filter((medicamento) =>
+    (medicamento.origenesCatalogo || []).includes("catalogo_suplementario")
+  )
+);
+
+export const CATALOGO_MEDICAMENTOS_PEDIATRICOS = Object.freeze(
+  CATALOGO_FARMACOLOGICO_OFICIAL
+    .filter((medicamento) => medicamento.pediatria?.ficha)
+    .sort((a, b) => (a.pediatria.catalogOrder ?? 999) - (b.pediatria.catalogOrder ?? 999))
+    .map((medicamento) => Object.freeze({
+      ...medicamento.pediatria.ficha,
+      medicationId: medicamento.id
+    }))
+);
+
+export const MEDICAMENTOS_PEDIATRICOS = Object.freeze(
+  CATALOGO_FARMACOLOGICO_OFICIAL
+    .filter((medicamento) => medicamento.pediatria?.legacy)
+    .sort((a, b) => (a.pediatria.legacyOrder ?? 999) - (b.pediatria.legacyOrder ?? 999))
+    .map((medicamento) => Object.freeze({
+      ...medicamento.pediatria.legacy,
+      clinicalMedicationId: medicamento.id,
+      medicationId: medicamento.id
+    }))
+);
+
+export const DATO_NO_ENCONTRADO = "dato no encontrado en fuente local";
+export const FUENTE_PENDIENTE = "fuente pendiente";
+export const FUENTE_STAHL = Object.freeze({
+  id: "stahl_prescribers_guide_6e_2017",
+  titulo: "Stahl's Essential Psychopharmacology: Prescriber's Guide, 6th ed.",
+  autores: "Stephen M. Stahl",
+  editorial: "Cambridge University Press",
+  anio: 2017,
+  rutaLocal: "fuentes_farmacologicas/stahl_prescribers_guide.pdf"
+});
+
+function fichaDesdeMedicamento(medicamento = {}) {
+  const datos = medicamento.datosClinicos || {};
+  const cinetica = medicamento.farmacocinetica || {};
+  if (medicamento.farmacologia && medicamento.farmacologia.estadoFuente === "verificada_local") {
+    return medicamento.farmacologia;
+  }
+  return {
+    esquema: "cognicion.farmacologia.v1",
+    id: medicamento.id,
+    nombreGenerico: medicamento.genericName || medicamento.nombre,
+    grupoFarmacologico: medicamento.clasePrincipal,
+    claseFarmacologica: medicamento.clasePrincipal,
+    subclase: medicamento.clases?.[1] || "",
+    nombresComerciales: medicamento.marcas || [],
+    sinonimos: medicamento.sinonimos || [],
+    presentaciones: (medicamento.presentaciones || []).map((presentacion) => ({
+      id: presentacion.id,
+      formaFarmaceutica: presentacion.forma,
+      concentracion: presentacion.concentracion,
+      unidad: "",
+      via: presentacion.via,
+      fuente: presentacion.fuente
+    })),
+    mecanismoAccion: cinetica.mecanismoAccion || DATO_NO_ENCONTRADO,
+    indicaciones: datos.indicaciones || [],
+    dosisHabitual: medicamento.dosisHabitual || DATO_NO_ENCONTRADO,
+    vidaMedia: cinetica.vidaMedia || DATO_NO_ENCONTRADO,
+    metabolismo: cinetica.metabolismo || DATO_NO_ENCONTRADO,
+    cyp: cinetica.cyp || [],
+    viaEliminacion: cinetica.eliminacion || DATO_NO_ENCONTRADO,
+    metabolitosActivos: cinetica.metabolitosActivos || [],
+    contraindicacionesAbsolutas: datos.contraindicaciones || [],
+    precauciones: datos.precauciones || [],
+    interaccionesMedicamento: medicamento.interacciones || [],
+    interaccionesDiagnostico: medicamento.relacionDiagnosticos || [],
+    efectosAdversos: medicamento.efectosAdversos || [],
+    vigilancia: datos.monitorizacion || [],
+    fuentes: medicamento.referencias || [],
+    estadoFuente: medicamento.estadoFuente || FUENTE_PENDIENTE,
+    confianza: medicamento.confianza || "no evaluada"
+  };
+}
+
+export const FARMACOLOGIA_VERIFICADA = Object.freeze(Object.fromEntries(
+  CATALOGO_FARMACOLOGICO_OFICIAL
+    .filter((medicamento) => medicamento.estadoFuente === "verificada_local")
+    .map((medicamento) => [medicamento.id, fichaDesdeMedicamento(medicamento)])
+));
+
+export function enriquecerFarmacologiaUnificada(medicamento = {}) {
+  const canonico = obtenerMedicamentoPorId(medicamento.id)
+    || medicamentoPorTexto(medicamento.genericName || medicamento.nombre || "");
+  return canonico ? { ...medicamento, ...canonico } : medicamento;
+}
+
+export function construirCapaFarmacologicaUnificada(medicamentos = []) {
+  return medicamentos.map(enriquecerFarmacologiaUnificada);
+}
+
+export function resumirCoberturaFarmacologica(medicamentos = []) {
+  const totalNormalizados = medicamentos.length;
+  const verificados = medicamentos.filter((medicamento) => medicamento.estadoFuente === "verificada_local");
+  return {
+    totalNormalizados,
+    conFuenteVerificada: verificados.length,
+    datosCompletos: verificados.filter((medicamento) => medicamento.presentaciones?.length).length,
+    fuentePendiente: totalNormalizados - verificados.length,
+    idsVerificados: verificados.map((medicamento) => medicamento.id)
+  };
+}
+
+function normalizarTextoCompat(valor = "") {
+  return normalizarNombreMedicamento(valor)
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\\s+/g, " ")
+    .trim();
+}
+
+function slugMedicamentoCompat(valor = "") {
+  return normalizarTextoCompat(valor).replace(/\\s+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+function textoPresentacionCompat(presentacion) {
+  if (typeof presentacion === "string") return presentacion;
+  return presentacion?.texto || presentacion?.presentationDescription || "";
+}
+
+function clavePresentacionCompat(presentacion = {}) {
+  return [
+    normalizarTextoCompat(textoPresentacionCompat(presentacion)),
+    normalizarTextoCompat(presentacion.via || presentacion.route || "")
+  ].join("|");
+}
+
+function elegirValorCompat(...valores) {
+  return valores.find((valor) => {
+    if (Array.isArray(valor)) return valor.length;
+    return valor !== undefined && valor !== null && String(valor).trim() !== "";
+  });
+}
+
+function normalizarPresentacionesCompat(medicamento = {}) {
+  return (medicamento.presentaciones || medicamento.formulations || [])
+    .map((presentacion) => {
+      const texto = textoPresentacionCompat(presentacion);
+      if (!texto) return null;
+      if (typeof presentacion === "string") return { texto, via: "oral", activo: true };
+      return {
+        ...presentacion,
+        texto,
+        via: presentacion.via || presentacion.route || "oral",
+        activo: presentacion.activo !== false && presentacion.active !== false
+      };
+    })
+    .filter(Boolean);
+}
+
+function separarPrincipiosActivosCompat(medicamento = {}) {
+  const declarados = medicamento.principiosActivos || medicamento.activeIngredients;
+  if (Array.isArray(declarados) && declarados.length) return listaUnica(declarados);
+  const nombre = medicamento.genericName || medicamento.nombreGenerico || medicamento.nombre || "";
+  return listaUnica(String(nombre).split(/\\s*(?:\\/|\\+|\\by\\b|\\be\\b)\\s*/i));
+}
+
+function dosisDesdePresentacionesCompat(presentaciones = []) {
+  return listaUnica(presentaciones.flatMap((presentacion) =>
+    [...String(presentacion.texto || "").matchAll(/(\\d+(?:[.,]\\d+)?)\\s*(mg|mcg|µg|g|ml|ui|u)\\b/gi)]
+      .map((coincidencia) => coincidencia[1].replace(",", ".") + " " + coincidencia[2].replace("µg", "mcg"))
+  ));
+}
+
+function normalizarMedicamentoBaseCompat(medicamento, origen = "catalogo") {
+  const nombre = medicamento.nombre || medicamento.genericName || medicamento.nombreGenerico || medicamento.id || "";
+  const id = medicamento.id || slugMedicamentoCompat(nombre);
+  const presentaciones = normalizarPresentacionesCompat(medicamento);
+  const frecuenciaDosis = typeof medicamento.dosisHabitual === "string"
+    ? medicamento.dosisHabitual.match(/cada\\s+\\d+\\s+horas?/gi)
+    : [];
+  return {
+    ...medicamento,
+    id,
+    nombre,
+    genericName: medicamento.genericName || medicamento.nombreGenerico || nombre,
+    grupoFarmacologico: medicamento.grupoFarmacologico || medicamento.clase || medicamento.claseFarmacologica || medicamento.therapeuticClasses?.[0] || "Medicamento",
+    clase: medicamento.clase || medicamento.claseFarmacologica || medicamento.grupoFarmacologico || medicamento.therapeuticClasses?.[0] || "Medicamento",
+    therapeuticClasses: listaUnica(medicamento.therapeuticClasses, medicamento.grupoFarmacologico, medicamento.clase, medicamento.claseFarmacologica),
+    especialidades: listaUnica(medicamento.especialidades, medicamento.specialties),
+    specialties: listaUnica(medicamento.specialties, medicamento.especialidades),
+    brandNames: listaUnica(medicamento.brandNames, medicamento.marcas, medicamento.nombresComerciales),
+    synonyms: listaUnica(medicamento.synonyms, medicamento.sinonimos),
+    principiosActivos: separarPrincipiosActivosCompat(medicamento),
+    presentaciones,
+    formulations: medicamento.formulations || presentaciones.map((presentacion, index) => ({
+      id: id + "-p" + (index + 1),
+      presentationDescription: presentacion.texto,
+      route: presentacion.via || "oral",
+      active: presentacion.activo !== false
+    })),
+    dosisHabitual: medicamento.dosisHabitual || medicamento.adultDosing?.[0]?.usualDose?.text || "",
+    dosisHabituales: listaUnica(medicamento.dosisHabituales, medicamento.doses, dosisDesdePresentacionesCompat(presentaciones)),
+    frecuenciasSugeridas: listaUnica(medicamento.frecuenciasSugeridas, medicamento.frecuencias, frecuenciaDosis),
+    adultDosing: medicamento.adultDosing || (medicamento.dosisHabitual ? [{
+      indicationId: "uso_habitual",
+      population: "adult",
+      usualDose: { text: medicamento.dosisHabitual },
+      administrationNotes: []
+    }] : []),
+    pediatricDosing: medicamento.pediatricDosing || [],
+    indications: listaUnica(medicamento.indications, medicamento.indicaciones),
+    contraindications: listaUnica(medicamento.contraindications, medicamento.contraindicaciones, medicamento.contraindicacionesAbsolutas),
+    precautions: listaUnica(medicamento.precautions, medicamento.precauciones, medicamento.warnings),
+    warnings: listaUnica(medicamento.warnings, medicamento.precautions, medicamento.precauciones),
+    monitoring: listaUnica(medicamento.monitoring, medicamento.monitorizacion, medicamento.vigilancia),
+    interactions: listaUnica(medicamento.interactions, medicamento.interaccionesMedicamento),
+    references: listaUnica(medicamento.references, medicamento.fuentes),
+    active: medicamento.active !== false,
+    origenesCatalogo: listaUnica(medicamento.origenesCatalogo, origen),
+    origen
+  };
+}
+
+function clavesMedicamentoCompat(medicamento = {}) {
+  return listaUnica(
+    medicamento.id,
+    normalizarPrincipioActivo(medicamento.nombre),
+    normalizarPrincipioActivo(medicamento.genericName),
+    medicamento.synonyms?.map(normalizarPrincipioActivo),
+    medicamento.brandNames?.map(normalizarPrincipioActivo)
+  ).filter(Boolean);
+}
+
+function fusionarPresentacionesCompat(idClinico, ...listas) {
+  const indice = new Map();
+  listas.flatMap((lista) => Array.isArray(lista) ? lista : [lista]).filter(Boolean).forEach((presentacion) => {
+    const texto = textoPresentacionCompat(presentacion);
+    if (!texto) return;
+    const normalizada = typeof presentacion === "string"
+      ? { texto, via: "oral", activo: true }
+      : { ...presentacion, texto, via: presentacion.via || presentacion.route || "oral", activo: presentacion.activo !== false && presentacion.active !== false };
+    const clave = clavePresentacionCompat(normalizada);
+    if (!indice.has(clave)) indice.set(clave, normalizada);
+  });
+  const presentaciones = [...indice.values()];
+  const formulations = presentaciones.map((presentacion, index) => ({
+    id: idClinico + "-p" + (index + 1),
+    presentationDescription: presentacion.texto,
+    route: presentacion.via || "oral",
+    active: presentacion.activo !== false
+  }));
+  return { presentaciones, formulations };
+}
+
+function fusionarMedicamentosCompat(existente, entrante) {
+  const idClinico = existente.id || entrante.id;
+  const fusion = fusionarPresentacionesCompat(idClinico, existente.presentaciones, entrante.presentaciones);
+  const clase = elegirValorCompat(existente.clase, entrante.clase, existente.grupoFarmacologico, entrante.grupoFarmacologico, "Medicamento");
+  return {
+    ...entrante,
+    ...existente,
+    id: idClinico,
+    nombre: elegirValorCompat(existente.nombre, entrante.nombre),
+    genericName: elegirValorCompat(existente.genericName, entrante.genericName, existente.nombre, entrante.nombre),
+    grupoFarmacologico: elegirValorCompat(existente.grupoFarmacologico, entrante.grupoFarmacologico, clase),
+    clase,
+    therapeuticClasses: listaUnica(existente.therapeuticClasses, entrante.therapeuticClasses, clase),
+    presentaciones: fusion.presentaciones,
+    formulations: fusion.formulations,
+    brandNames: listaUnica(existente.brandNames, entrante.brandNames),
+    synonyms: listaUnica(existente.synonyms, entrante.synonyms),
+    principiosActivos: listaUnica(existente.principiosActivos, entrante.principiosActivos),
+    dosisHabituales: listaUnica(existente.dosisHabituales, entrante.dosisHabituales),
+    frecuenciasSugeridas: listaUnica(existente.frecuenciasSugeridas, entrante.frecuenciasSugeridas),
+    especialidades: listaUnica(existente.especialidades, entrante.especialidades),
+    specialties: listaUnica(existente.specialties, entrante.specialties),
+    indications: listaUnica(existente.indications, entrante.indications),
+    contraindications: listaUnica(existente.contraindications, entrante.contraindications),
+    precautions: listaUnica(existente.precautions, entrante.precautions),
+    warnings: listaUnica(existente.warnings, entrante.warnings),
+    monitoring: listaUnica(existente.monitoring, entrante.monitoring),
+    interactions: listaUnica(existente.interactions, entrante.interactions),
+    references: listaUnica(existente.references, entrante.references),
+    origenesCatalogo: listaUnica(existente.origenesCatalogo, entrante.origenesCatalogo, existente.origen, entrante.origen),
+    active: existente.active !== false || entrante.active !== false
+  };
+}
+
+function crearMedicamentoDesdeFarmacologiaCompat(id, ficha = {}) {
+  return normalizarMedicamentoBaseCompat({
+    id,
+    nombre: ficha.nombreGenerico || id,
+    genericName: ficha.nombreGenerico || id,
+    grupoFarmacologico: ficha.grupoFarmacologico || ficha.claseFarmacologica,
+    clase: ficha.claseFarmacologica || ficha.grupoFarmacologico,
+    therapeuticClasses: [ficha.claseFarmacologica, ficha.subclase].filter(Boolean),
+    brandNames: ficha.nombresComerciales || [],
+    synonyms: ficha.sinonimos || [],
+    presentaciones: ficha.presentaciones || [],
+    dosisHabitual: ficha.dosisHabitual,
+    indications: ficha.indicaciones || [],
+    contraindications: ficha.contraindicacionesAbsolutas || [],
+    precautions: ficha.precauciones || [],
+    monitoring: ficha.vigilancia || [],
+    interactions: ficha.interaccionesMedicamento || [],
+    references: ficha.fuentes || []
+  }, "farmacologia_verificada");
+}
+
+export function construirCatalogoFarmacologicoNormalizado({
+  medicamentos = [],
+  suplementarios = [],
+  farmacologiaVerificada = {}
+} = {}) {
+  const indice = new Map();
+  const alias = new Map();
+  const conflictos = [];
+  const agregar = (medicamento, origen) => {
+    const normalizado = normalizarMedicamentoBaseCompat({ ...medicamento, origen }, origen);
+    if (!normalizado.nombre || normalizado.active === false) return;
+    const claves = clavesMedicamentoCompat(normalizado);
+    const claveExistente = claves.map((clave) => alias.get(clave)).find(Boolean);
+    const clavePrincipal = claveExistente || claves[0] || normalizado.id;
+    indice.set(clavePrincipal, indice.has(clavePrincipal)
+      ? fusionarMedicamentosCompat(indice.get(clavePrincipal), normalizado)
+      : normalizado);
+    claves.forEach((clave) => {
+      const previa = alias.get(clave);
+      if (previa && previa !== clavePrincipal) conflictos.push({ clave, previa, actual: clavePrincipal });
+      alias.set(clave, clavePrincipal);
+    });
+  };
+  medicamentos.forEach((medicamento) => agregar(medicamento, medicamento.origen || "catalogo_legacy"));
+  suplementarios.forEach((medicamento) => agregar(medicamento, medicamento.origen || "catalogo_suplementario"));
+  Object.entries(farmacologiaVerificada).forEach(([id, ficha]) => {
+    const fichaId = normalizarPrincipioActivo(ficha.nombreGenerico || id);
+    const yaExiste = [...indice.values()].some((medicamento) => medicamento.id === id || clavesMedicamentoCompat(medicamento).includes(fichaId));
+    if (!yaExiste) agregar(crearMedicamentoDesdeFarmacologiaCompat(id, ficha), "farmacologia_verificada");
+  });
+  const medicamentosNormalizados = [...indice.values()].map((medicamento) => {
+    const fusion = fusionarPresentacionesCompat(medicamento.id, medicamento.presentaciones);
+    return {
+      ...medicamento,
+      clinicalMedicationId: medicamento.id,
+      principioActivoNormalizado: normalizarPrincipioActivo(medicamento.genericName || medicamento.nombre || medicamento.id),
+      presentaciones: fusion.presentaciones,
+      formulations: fusion.formulations
+    };
+  }).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+  return {
+    medicamentos: medicamentosNormalizados,
+    conflictos,
+    estadisticas: {
+      registrosEntrada: medicamentos.length + suplementarios.length,
+      medicamentosUnicos: medicamentosNormalizados.length,
+      presentaciones: medicamentosNormalizados.reduce((total, medicamento) => total + (medicamento.presentaciones || []).length, 0),
+      conflictos: conflictos.length
+    }
+  };
+}
+
+export function crearPresentacionesPlanas(medicamentos = []) {
+  return medicamentos.flatMap((medicamento) => {
+    const presentaciones = medicamento.presentaciones?.length
+      ? medicamento.presentaciones
+      : [{ texto: "presentacion no especificada", via: "" }];
+    return presentaciones.map((presentacion, index) => ({
+      ...medicamento,
+      clinicalMedicationId: medicamento.id,
+      selectedPresentationId: medicamento.formulations?.[index]?.id || medicamento.id + "-p" + (index + 1),
+      selectedPresentationText: presentacion.texto,
+      presentationText: presentacion.texto,
+      presentacion: presentacion.texto,
+      via: presentacion.via || "",
+      texto: medicamento.nombre + ", " + presentacion.texto + "."
+    }));
+  });
+}
+
+export function agruparMedicamentosPorClase(medicamentos = []) {
+  const grupos = new Map();
+  medicamentos.forEach((medicamento) => {
+    const clase = medicamento.grupoFarmacologico || medicamento.clase || medicamento.therapeuticClasses?.[0] || "Medicamento";
+    if (!grupos.has(clase)) grupos.set(clase, []);
+    grupos.get(clase).push(medicamento);
+  });
+  return [...grupos.entries()]
+    .map(([grupo, items]) => ({ grupo, medicamentos: items.sort((a, b) => a.nombre.localeCompare(b.nombre, "es")) }))
+    .sort((a, b) => a.grupo.localeCompare(b.grupo, "es"));
 }
 `;
 }

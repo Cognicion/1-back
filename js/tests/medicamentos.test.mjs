@@ -2,10 +2,10 @@ import assert from "node:assert/strict";
 import {
   MEDICAMENTOS_MAESTROS,
   MEDICAMENTOS_PRESENTACIONES,
+  MEDICAMENTOS_SUPLEMENTARIOS,
   buscarMedicamentos,
   normalizarNombreMedicamento
-} from "../data/medicamentos.js";
-import { MEDICAMENTOS_SUPLEMENTARIOS } from "../data/medicamentosSuplementarios.js";
+} from "../data/catalogoFarmacologicoUnificado.js";
 import { detectarInteraccionesFarmacologicas } from "../data/interaccionesFarmacologicas.js";
 
 assert.ok(MEDICAMENTOS_SUPLEMENTARIOS.length >= 100, "El suplemento debe contener al menos 100 medicamentos nuevos.");
