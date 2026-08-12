@@ -135,18 +135,9 @@ async function listarPacientesSinCache(uidMedico = ""){
         query(usuariosRef, where(descriptor.field, descriptor.operator, descriptor.value))
     );
 
-    const resultadosPendientes = Promise.allSettled(
+    const resultados = await Promise.allSettled(
         consultas.map((consulta) => getDocs(consulta))
     );
-    const permisosPendientes = getDocs(query(
-        collectionGroup(db, "permisosMedicos"),
-        where(documentId(), "==", uidMedico),
-        where("lectura", "==", true)
-    )).then(
-        (snapshot) => ({ snapshot, error: null }),
-        (error) => ({ snapshot: null, error })
-    );
-    const resultados = await resultadosPendientes;
     const pacientes = new Map();
     let primerError = null;
 
@@ -169,9 +160,11 @@ async function listarPacientesSinCache(uidMedico = ""){
     }
 
     try {
-        const resultadoPermisos = await permisosPendientes;
-        if (resultadoPermisos.error) throw resultadoPermisos.error;
-        const permisosSnap = resultadoPermisos.snapshot;
+        const permisosSnap = await getDocs(query(
+            collectionGroup(db, "permisosMedicos"),
+            where(documentId(), "==", uidMedico),
+            where("lectura", "==", true)
+        ));
 
         const pacientesPorPermiso = await Promise.all(permisosSnap.docs.map(async (permisoDoc) => {
             const pacienteRef = permisoDoc.ref.parent.parent;

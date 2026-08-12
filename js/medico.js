@@ -1,4 +1,4 @@
-import { listarPacientes } from "./services/usuarios.js?v=20260811-medical-panel-recovery-v1";
+import { listarPacientes } from "./services/usuarios.js?v=20260811-patient-list-recovery-v2";
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
