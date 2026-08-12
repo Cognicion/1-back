@@ -3,5 +3,5 @@
   --duracion-traslacion-orbita-index: 80s;
 
   /* Duración de una vuelta completa en el Dashboard. */
-  --duracion-traslacion-orbita-dashboard: 200s;
+  --duracion-traslacion-orbita-dashboard: 2000s;
 }
