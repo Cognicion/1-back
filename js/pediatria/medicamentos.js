@@ -1,5 +1,5 @@
 import { normalizarConcentracionMgMl, normalizarPesoKg } from "./formulas.js";
-import { normalizarMedicamento } from "../data/catalogoFarmacologicoUnificado.js?v=20260811-cytochrome-bridge-v1";
+import { normalizarMedicamento } from "../data/catalogoFarmacologicoUnificado.js?v=20260811-typical-antipsychotics-v1";
 
 const MEDICAMENTOS_PEDIATRICOS_LEGACY = [
   {

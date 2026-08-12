@@ -4,6 +4,9 @@ const HOY_CATALOGO = "2026-08-11";
 const FUENTES_INTERACCIONES_ISRS = [
   "DailyMed: fichas tecnicas vigentes de sertralina, fluoxetina, paroxetina, citalopram, escitalopram y fluvoxamina; seccion Drug Interactions, consultadas el 2026-08-11."
 ];
+const FUENTES_ANTIPSICOTICOS_TIPICOS = [
+  "DailyMed: fichas tecnicas vigentes de haloperidol, clorpromazina, perfenazina, flufenazina, tioridazina y pimozida; secciones Contraindications, Warnings y Drug Interactions, consultadas el 2026-08-11."
+];
 
 function presentacion(texto, via = "oral") {
   return {
@@ -101,6 +104,32 @@ function medInteraccionISRS({
     notas,
     riesgos,
     referencias: FUENTES_INTERACCIONES_ISRS
+  });
+}
+
+function medAntipsicoticoTipico({
+  id,
+  nombre,
+  familia,
+  sinonimos = [],
+  via = "oral",
+  presentacionTexto = "tabletas segun disponibilidad",
+  clases = [],
+  riesgos = {},
+  notas = "Antipsicotico de primera generacion; revisar disponibilidad y ficha tecnica local."
+}) {
+  return med({
+    id,
+    nombre,
+    clase: `Antipsicotico tipico ${familia}`,
+    clases: ["antipsicotico", "antipsicotico_tipico", "antagonista_dopaminergico", familia, ...clases],
+    sinonimos,
+    especialidades: ["Psiquiatria", "Urgencias", "Farmacologia clinica"],
+    presentaciones: [{ texto: presentacionTexto, via }],
+    dosisHabitual: "Individualizar segun indicacion, via, edad y ficha tecnica",
+    notas,
+    riesgos,
+    referencias: FUENTES_ANTIPSICOTICOS_TIPICOS
   });
 }
 
@@ -276,8 +305,8 @@ export const MEDICAMENTOS_SUPLEMENTARIOS = [
   medInteraccionISRS({ id: "fenelzina", nombre: "Fenelzina", clase: "IMAO", clases: ["imao"], sinonimos: ["phenelzine"], notas: "IMAO irreversible; combinacion contraindicada con ISRS." }),
   medInteraccionISRS({ id: "linezolid", nombre: "Linezolid", clase: "Antibiotico oxazolidinona", clases: ["antibiotico", "imao_reversible"], notas: "Actividad IMAO reversible; riesgo serotoninergico con ISRS." }),
   medInteraccionISRS({ id: "azul_metileno", nombre: "Azul de metileno", clase: "Antidoto", clases: ["imao_reversible"], via: "intravenosa", presentacionTexto: "solucion inyectable", notas: "La via intravenosa puede precipitar sindrome serotoninergico con ISRS." }),
-  medInteraccionISRS({ id: "pimozida", nombre: "Pimozida", clase: "Antipsicotico", clases: ["antipsicotico", "qt", "sustrato_cyp2d6"], sinonimos: ["pimozide"], riesgos: { qt: 3 }, notas: "Margen estrecho y riesgo QT; contraindicada con ISRS." }),
-  medInteraccionISRS({ id: "tioridazina", nombre: "Tioridazina", clase: "Antipsicotico fenotiazinico", clases: ["antipsicotico", "qt", "sustrato_cyp2d6"], sinonimos: ["thioridazine"], riesgos: { qt: 3 }, notas: "Riesgo alto de prolongacion QT y arritmia." }),
+  medInteraccionISRS({ id: "pimozida", nombre: "Pimozida", clase: "Antipsicotico tipico", clases: ["antipsicotico", "antipsicotico_tipico", "difenilbutilpiperidina", "antagonista_dopaminergico", "qt", "sustrato_cyp2d6", "sustrato_cyp3a4"], sinonimos: ["pimozide"], riesgos: { qt: 3 }, notas: "Margen estrecho y riesgo QT; numerosas combinaciones estan contraindicadas." }),
+  medInteraccionISRS({ id: "tioridazina", nombre: "Tioridazina", clase: "Antipsicotico fenotiazinico", clases: ["antipsicotico", "antipsicotico_tipico", "fenotiazina", "antagonista_dopaminergico", "qt", "sustrato_cyp2d6"], sinonimos: ["thioridazine"], riesgos: { qt: 3 }, notas: "Riesgo alto de prolongacion QT y arritmia." }),
   medInteraccionISRS({ id: "desipramina", nombre: "Desipramina", clase: "Antidepresivo triciclico", clases: ["triciclico", "serotoninergico", "sustrato_cyp2d6", "qt"], riesgos: { qt: 2 }, notas: "Margen terapeutico estrecho; vigilar niveles y ECG en interacciones." }),
   medInteraccionISRS({ id: "fentanilo", nombre: "Fentanilo", clase: "Opioide", clases: ["opioide", "depresor_snc", "serotoninergico", "sustrato_cyp3a4"], sinonimos: ["fentanyl"], via: "intravenosa", presentacionTexto: "solucion inyectable o parche transdermico", riesgos: { respiratorio: 3 }, notas: "Riesgo de depresion respiratoria y toxicidad serotoninergica." }),
   medInteraccionISRS({ id: "metadona", nombre: "Metadona", clase: "Opioide", clases: ["opioide", "depresor_snc", "serotoninergico", "qt"], sinonimos: ["methadone"], riesgos: { qt: 3, respiratorio: 3 }, notas: "Riesgo de acumulacion, depresion respiratoria, QT y toxicidad serotoninergica." }),
@@ -286,15 +315,15 @@ export const MEDICAMENTOS_SUPLEMENTARIOS = [
   medInteraccionISRS({ id: "hierba_san_juan", nombre: "Hierba de San Juan", clase: "Producto herbolario", clases: ["suplemento", "serotoninergico", "inductor_cyp3a4"], sinonimos: ["hiperico", "St. John's wort"], notas: "Puede causar toxicidad serotoninergica y multiples interacciones metabolicas." }),
   medInteraccionISRS({ id: "flecainida", nombre: "Flecainida", clase: "Antiarritmico clase IC", clases: ["antiarritmico", "sustrato_cyp2d6"], notas: "Margen terapeutico estrecho; inhibidores CYP2D6 pueden aumentar toxicidad." }),
   medInteraccionISRS({ id: "nebivolol", nombre: "Nebivolol", clase: "Betabloqueador", clases: ["betabloqueador", "sustrato_cyp2d6"], notas: "Vigilar bradicardia e hipotension con inhibidores CYP2D6." }),
-  medInteraccionISRS({ id: "perfenazina", nombre: "Perfenazina", clase: "Antipsicotico fenotiazinico", clases: ["antipsicotico", "sustrato_cyp2d6", "qt"], riesgos: { qt: 2 }, notas: "Vigilar efectos extrapiramidales y QT." }),
+  medInteraccionISRS({ id: "perfenazina", nombre: "Perfenazina", clase: "Antipsicotico fenotiazinico", clases: ["antipsicotico", "antipsicotico_tipico", "fenotiazina", "antagonista_dopaminergico", "sustrato_cyp2d6", "qt"], riesgos: { qt: 2 }, notas: "Vigilar efectos extrapiramidales y QT." }),
   medInteraccionISRS({ id: "tolterodina", nombre: "Tolterodina", clase: "Antimuscarinico urinario", clases: ["anticolinergico", "sustrato_cyp2d6", "qt"], riesgos: { qt: 1 }, notas: "La inhibicion CYP2D6 puede elevar exposicion y carga anticolinergica." }),
   medInteraccionISRS({ id: "tamoxifeno", nombre: "Tamoxifeno", clase: "Modulador selectivo del receptor de estrogeno", clases: ["oncologico", "profarmaco_cyp2d6"], notas: "Requiere CYP2D6 para formar endoxifeno." }),
   medInteraccionISRS({ id: "fosamprenavir", nombre: "Fosamprenavir", clase: "Antirretroviral inhibidor de proteasa", clases: ["antirretroviral", "sustrato_cyp3a4"], notas: "Con ritonavir puede disminuir la exposicion a paroxetina." }),
   medInteraccionISRS({ id: "ritonavir", nombre: "Ritonavir", clase: "Antirretroviral y potenciador farmacocinetico", clases: ["antirretroviral", "inhibidor_cyp3a4", "inhibidor_pgp"], notas: "Potente modificador metabolico con numerosas interacciones." }),
   medInteraccionISRS({ id: "fosfenitoina", nombre: "Fosfenitoina", clase: "Anticonvulsivo", clases: ["antiepileptico"], via: "intravenosa", presentacionTexto: "solucion inyectable", notas: "Profarmaco de fenitoina; monitorizar niveles y toxicidad." }),
   medInteraccionISRS({ id: "iloperidona", nombre: "Iloperidona", clase: "Antipsicotico atipico", clases: ["antipsicotico", "qt", "sustrato_cyp2d6", "sustrato_cyp3a4"], riesgos: { qt: 3 }, notas: "Riesgo de QT e hipotension; revisar inhibidores metabolicos." }),
-  medInteraccionISRS({ id: "mesoridazina", nombre: "Mesoridazina", clase: "Antipsicotico fenotiazinico", clases: ["antipsicotico", "qt"], riesgos: { qt: 3 }, notas: "Uso historico/restringido por riesgo alto de QT." }),
-  medInteraccionISRS({ id: "droperidol", nombre: "Droperidol", clase: "Antipsicotico y antiemetico", clases: ["antipsicotico", "antiemetico", "qt"], via: "intravenosa", presentacionTexto: "solucion inyectable", riesgos: { qt: 3 }, notas: "Riesgo de prolongacion QT; valorar ECG y factores concomitantes." }),
+  medInteraccionISRS({ id: "mesoridazina", nombre: "Mesoridazina", clase: "Antipsicotico fenotiazinico", clases: ["antipsicotico", "antipsicotico_tipico", "fenotiazina", "antagonista_dopaminergico", "qt"], riesgos: { qt: 3 }, notas: "Uso historico/restringido por riesgo alto de QT." }),
+  medInteraccionISRS({ id: "droperidol", nombre: "Droperidol", clase: "Antipsicotico tipico y antiemetico", clases: ["antipsicotico", "antipsicotico_tipico", "butirofenona", "antagonista_dopaminergico", "antiemetico", "qt"], via: "intravenosa", presentacionTexto: "solucion inyectable", riesgos: { qt: 3 }, notas: "Riesgo de prolongacion QT; valorar ECG y factores concomitantes." }),
   medInteraccionISRS({ id: "eritromicina", nombre: "Eritromicina", clase: "Antibiotico macrolido", clases: ["macrolido", "qt", "inhibidor_cyp3a4"], riesgos: { qt: 2 }, notas: "Puede prolongar QT e inhibir CYP3A4." }),
   medInteraccionISRS({ id: "gatifloxacino", nombre: "Gatifloxacino", clase: "Antibiotico fluoroquinolona", clases: ["fluoroquinolona", "qt"], riesgos: { qt: 2 }, notas: "Riesgo QT; disponibilidad sistemica restringida en diversos mercados." }),
   medInteraccionISRS({ id: "moxifloxacino", nombre: "Moxifloxacino", clase: "Antibiotico fluoroquinolona", clases: ["fluoroquinolona", "qt"], riesgos: { qt: 3 }, notas: "Prolonga QT; evitar combinaciones de riesgo cuando sea posible." }),
@@ -316,6 +345,34 @@ export const MEDICAMENTOS_SUPLEMENTARIOS = [
   medInteraccionISRS({ id: "mexiletina", nombre: "Mexiletina", clase: "Antiarritmico clase IB", clases: ["antiarritmico", "sustrato_cyp1a2"], notas: "Margen estrecho; fluvoxamina reduce su depuracion." }),
   medInteraccionISRS({ id: "teofilina", nombre: "Teofilina", clase: "Metilxantina broncodilatadora", clases: ["broncodilatador", "sustrato_cyp1a2"], notas: "Margen estrecho; fluvoxamina puede reducir aproximadamente tres veces su depuracion." }),
   medInteraccionISRS({ id: "tacrina", nombre: "Tacrina", clase: "Inhibidor de acetilcolinesterasa", clases: ["inhibidor_acetilcolinesterasa", "sustrato_cyp1a2"], notas: "Fluvoxamina puede aumentar marcadamente su exposicion y toxicidad colinergica." }),
+  medAntipsicoticoTipico({ id: "flufenazina", nombre: "Flufenazina", familia: "fenotiazina", clases: ["sustrato_cyp2d6", "qt"], riesgos: { qt: 2, eps: 3 }, presentacionTexto: "tabletas o decanoato inyectable segun disponibilidad", notas: "Alta potencia; vigilar efectos extrapiramidales, discinesia tardia y QT." }),
+  medAntipsicoticoTipico({ id: "proclorperazina", nombre: "Proclorperazina", familia: "fenotiazina", clases: ["antiemetico", "qt"], riesgos: { qt: 2, eps: 3 }, presentacionTexto: "tabletas o solucion inyectable segun disponibilidad", notas: "Usada tambien como antiemetico; suma bloqueo dopaminergico y riesgo extrapiramidal." }),
+  medAntipsicoticoTipico({ id: "tiotixeno", nombre: "Tiotixeno", familia: "tioxanteno", clases: ["qt"], sinonimos: ["thiothixene"], riesgos: { qt: 2, eps: 3 } }),
+  medAntipsicoticoTipico({ id: "clorprotixeno", nombre: "Clorprotixeno", familia: "tioxanteno", clases: ["depresor_snc", "anticolinergico", "qt"], sinonimos: ["chlorprothixene"], riesgos: { qt: 2, sedacion: 3, anticolinergico: 2, hipotension: 2 } }),
+  medAntipsicoticoTipico({ id: "flupentixol", nombre: "Flupentixol", familia: "tioxanteno", clases: ["qt"], sinonimos: ["flupenthixol"], riesgos: { qt: 2, eps: 3 }, presentacionTexto: "tabletas o decanoato inyectable segun disponibilidad" }),
+  medAntipsicoticoTipico({ id: "zuclopentixol", nombre: "Zuclopentixol", familia: "tioxanteno", clases: ["depresor_snc", "qt"], riesgos: { qt: 2, sedacion: 2, eps: 3 }, presentacionTexto: "tabletas, acetato o decanoato inyectable segun disponibilidad" }),
+  medAntipsicoticoTipico({ id: "pipotiazina", nombre: "Pipotiazina", familia: "fenotiazina", clases: ["qt"], riesgos: { qt: 2, eps: 3 }, presentacionTexto: "palmitato inyectable de deposito segun disponibilidad", via: "intramuscular" }),
+  medAntipsicoticoTipico({ id: "loxapina", nombre: "Loxapina", familia: "dibenzoxazepina", clases: ["depresor_snc", "anticolinergico"], sinonimos: ["loxapine"], riesgos: { sedacion: 2, anticolinergico: 2, eps: 2 }, presentacionTexto: "capsulas o formulacion inhalada segun disponibilidad" }),
+  medAntipsicoticoTipico({ id: "molindona", nombre: "Molindona", familia: "dihidroindolona", sinonimos: ["molindone"], riesgos: { eps: 2 } }),
+  medAntipsicoticoTipico({ id: "promazina", nombre: "Promazina", familia: "fenotiazina", clases: ["depresor_snc", "anticolinergico", "qt"], sinonimos: ["promazine"], riesgos: { qt: 2, sedacion: 3, anticolinergico: 2, hipotension: 2 } }),
+  medAntipsicoticoTipico({ id: "periciazina", nombre: "Periciazina", familia: "fenotiazina", clases: ["depresor_snc", "anticolinergico", "qt"], sinonimos: ["pericyazine", "periciazine"], riesgos: { qt: 2, sedacion: 2, anticolinergico: 2, hipotension: 2 } }),
+
+  med({ id: "levodopa", nombre: "Levodopa", clase: "Precursor dopaminergico", clases: ["dopaminergico"], especialidades: ["Neurologia"], presentaciones: ["tabletas en combinacion con carbidopa o benserazida"], dosisHabitual: "Individualizar segun formulacion y respuesta", notas: "Los antagonistas dopaminergicos pueden reducir su efecto antiparkinsoniano." }),
+  med({ id: "apomorfina", nombre: "Apomorfina", clase: "Agonista dopaminergico", clases: ["dopaminergico", "agonista_dopaminergico", "depresor_snc"], especialidades: ["Neurologia"], presentaciones: [{ texto: "solucion inyectable", via: "subcutanea" }], dosisHabitual: "Segun protocolo de enfermedad de Parkinson", notas: "Puede causar hipotension y somnolencia; antagonistas D2 reducen su eficacia." }),
+  med({ id: "bromocriptina", nombre: "Bromocriptina", clase: "Agonista dopaminergico", clases: ["dopaminergico", "agonista_dopaminergico"], especialidades: ["Endocrinologia", "Neurologia"], presentaciones: ["tabletas o capsulas"], dosisHabitual: "Individualizar segun indicacion", notas: "Los antagonistas dopaminergicos pueden disminuir su efecto." }),
+  med({ id: "epinefrina", nombre: "Epinefrina", clase: "Agonista adrenergico", clases: ["simpaticomimetico", "vasopresor"], especialidades: ["Urgencias", "Anestesiologia"], presentaciones: [{ texto: "solucion inyectable", via: "intramuscular/intravenosa" }], dosisHabitual: "Segun indicacion y protocolo de urgencias", notas: "Con fenotiazinas puede ocurrir inversion de la respuesta vasopresora e hipotension paradojica." }),
+  med({ id: "atropina", nombre: "Atropina", clase: "Antimuscarinico", clases: ["anticolinergico"], especialidades: ["Urgencias", "Anestesiologia"], presentaciones: [{ texto: "solucion inyectable", via: "intravenosa/intramuscular" }], dosisHabitual: "Segun indicacion y protocolo", notas: "Puede sumar carga anticolinergica, taquicardia, retencion urinaria e hipertermia." }),
+  med({ id: "benztropina", nombre: "Benztropina", clase: "Anticolinergico antiparkinsoniano", clases: ["anticolinergico", "antiparkinsoniano"], especialidades: ["Neurologia", "Psiquiatria"], presentaciones: ["tabletas o solucion inyectable segun disponibilidad"], dosisHabitual: "Individualizar para sintomas extrapiramidales", notas: "Puede aumentar carga anticolinergica y no previene discinesia tardia." }),
+  med({ id: "difenhidramina", nombre: "Difenhidramina", clase: "Antihistaminico H1 sedante", clases: ["antihistaminico", "depresor_snc", "anticolinergico"], especialidades: ["Alergologia", "Urgencias"], presentaciones: ["tabletas, solucion oral o inyectable"], dosisHabitual: "Segun indicacion y edad", notas: "Suma sedacion y carga anticolinergica." }),
+  med({ id: "prometazina", nombre: "Prometazina", clase: "Antihistaminico fenotiazinico", clases: ["antihistaminico", "fenotiazina", "depresor_snc", "anticolinergico", "inhibidor_cyp2d6"], especialidades: ["Alergologia", "Urgencias"], presentaciones: ["tabletas, jarabe o solucion inyectable"], dosisHabitual: "Segun indicacion y edad", notas: "Puede sumar sedacion, hipotension, anticolinergia e inhibicion CYP2D6." }),
+  med({ id: "pindolol", nombre: "Pindolol", clase: "Betabloqueador no selectivo", clases: ["betabloqueador", "betabloqueador_no_selectivo"], especialidades: ["Cardiologia"], presentaciones: ["tabletas segun disponibilidad"], dosisHabitual: "Individualizar segun indicacion", notas: "Puede aumentar exposicion a tioridazina y sumar bradicardia o hipotension." }),
+  med({ id: "indinavir", nombre: "Indinavir", clase: "Inhibidor de proteasa antirretroviral", clases: ["antirretroviral", "inhibidor_cyp3a4"], especialidades: ["Infectologia"], presentaciones: ["capsulas segun disponibilidad"], dosisHabitual: "Segun esquema antirretroviral", notas: "Inhibidor CYP3A4 con numerosas interacciones." }),
+  med({ id: "saquinavir", nombre: "Saquinavir", clase: "Inhibidor de proteasa antirretroviral", clases: ["antirretroviral", "inhibidor_cyp3a4", "qt"], especialidades: ["Infectologia"], presentaciones: ["tabletas segun disponibilidad"], dosisHabitual: "Segun esquema antirretroviral", notas: "Inhibidor CYP3A4; revisar QT e interacciones." }),
+  med({ id: "nelfinavir", nombre: "Nelfinavir", clase: "Inhibidor de proteasa antirretroviral", clases: ["antirretroviral", "inhibidor_cyp3a4"], especialidades: ["Infectologia"], presentaciones: ["tabletas segun disponibilidad"], dosisHabitual: "Segun esquema antirretroviral", notas: "Inhibidor CYP3A4 con interacciones relevantes." }),
+  med({ id: "nefazodona", nombre: "Nefazodona", clase: "Antidepresivo SARI", clases: ["antidepresivo", "serotoninergico", "inhibidor_cyp3a4", "depresor_snc"], especialidades: ["Psiquiatria"], presentaciones: ["tabletas segun disponibilidad"], dosisHabitual: "Individualizar; disponibilidad restringida", notas: "Inhibidor fuerte CYP3A4; riesgo hepatotoxico e interacciones." }),
+  med({ id: "zileuton", nombre: "Zileuton", clase: "Inhibidor de 5-lipooxigenasa", clases: ["antiasmatico", "inhibidor_cyp3a4"], especialidades: ["Neumologia", "Alergologia"], presentaciones: ["tabletas segun disponibilidad"], dosisHabitual: "Segun formulacion", notas: "Puede inhibir metabolismo de pimozida; vigilar funcion hepatica." }),
+  med({ id: "aprepitant", nombre: "Aprepitant", clase: "Antagonista NK1 antiemetico", clases: ["antiemetico", "inhibidor_cyp3a4", "sustrato_cyp3a4"], especialidades: ["Oncologia"], presentaciones: ["capsulas o formulacion intravenosa segun producto"], dosisHabitual: "Segun protocolo antiemetico", notas: "Modulador CYP3A4 con interacciones dependientes de dosis y duracion." }),
+  med({ id: "disopiramida", nombre: "Disopiramida", clase: "Antiarritmico clase IA", clases: ["antiarritmico", "qt", "anticolinergico"], especialidades: ["Cardiologia"], presentaciones: ["capsulas segun disponibilidad"], dosisHabitual: "Individualizar con control cardiologico", notas: "Prolonga QT y posee efectos anticolinergicos; riesgo de torsades." }),
   med({ id: "cafeina", nombre: "Cafeína", clase: "Metilxantina estimulante", especialidades: ["Farmacología clínica", "Medicina interna"], presentaciones: ["tabletas o solución según producto"], dosisHabitual: "Individualizar según indicación y exposición dietética", notas: "Sustrato sensible de CYP1A2; considerar café, té, energizantes y otros aportes." }),
   med({ id: "paclitaxel", nombre: "Paclitaxel", clase: "Antineoplásico taxano", especialidades: ["Oncología"], presentaciones: [{ texto: "solución para infusión", via: "intravenosa" }], dosisHabitual: "Según protocolo oncológico", notas: "Metabolismo por CYP2C8 y CYP3A; requiere supervisión oncológica." }),
   med({ id: "nicotina", nombre: "Nicotina", clase: "Agonista nicotínico", especialidades: ["Adicciones", "Medicina general"], presentaciones: [{ texto: "parche transdérmico", via: "transdérmica" }, { texto: "goma o pastilla", via: "bucal" }], dosisHabitual: "Según dependencia y producto de sustitución", notas: "CYP2A6 es una vía principal de metabolismo; el humo del tabaco puede inducir CYP1A2 por hidrocarburos, no por nicotina." }),

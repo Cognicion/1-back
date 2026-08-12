@@ -1,10 +1,10 @@
-import { COBERTURA_FARMACOLOGICA, MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES, medicamentoPorTexto } from "./data/catalogoFarmacologicoUnificado.js?v=20260811-cytochrome-bridge-v1";
+import { COBERTURA_FARMACOLOGICA, MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES, medicamentoPorTexto } from "./data/catalogoFarmacologicoUnificado.js?v=20260811-typical-antipsychotics-v1";
 import { CIE10 } from "./data/cie10.js";
 import {
   evaluarMedicamentosPaciente,
   normalizarMedicamentoClinico,
   obtenerIndicadorSeguridadMedicamento
-} from "./services/motorClinicoMedicamentos.js?v=20260811-cytochrome-bridge-v1";
+} from "./services/motorClinicoMedicamentos.js?v=20260811-typical-antipsychotics-v1";
 
 const seleccionados = [];
 const MENUS_ACTIVOS = [];

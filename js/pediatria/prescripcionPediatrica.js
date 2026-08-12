@@ -1,5 +1,5 @@
 import { CATALOGO_MEDICAMENTOS_PEDIATRICOS } from "./catalogoMedicamentosPediatricos.js";
-import { MEDICAMENTOS_MAESTROS, normalizarNombreMedicamento, textoMedicamentoParaBusqueda } from "../data/catalogoFarmacologicoUnificado.js?v=20260811-cytochrome-bridge-v1";
+import { MEDICAMENTOS_MAESTROS, normalizarNombreMedicamento, textoMedicamentoParaBusqueda } from "../data/catalogoFarmacologicoUnificado.js?v=20260811-typical-antipsychotics-v1";
 import { numero, superficieCorporal } from "./formulas.js";
 
 export const MODOS_DOSIFICACION_PEDIATRICA = [

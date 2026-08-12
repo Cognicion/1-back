@@ -3,7 +3,7 @@ import {
   evaluarMedicamentosPaciente,
   normalizarMedicamentoClinico,
   obtenerIndicadorSeguridadMedicamento
-} from "../services/motorClinicoMedicamentos.js?v=20260811-cytochrome-bridge-v1";
+} from "../services/motorClinicoMedicamentos.js?v=20260811-typical-antipsychotics-v1";
 
 // Metadata legacy conservada por compatibilidad documental. La detección
 // ejecutable usa el motor clínico común y el catálogo oficial.

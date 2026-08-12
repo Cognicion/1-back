@@ -153,13 +153,15 @@ export const CITOCROMOS_FARMACOLOGICOS = Object.freeze([
       relacion("nebivolol", "sustrato", "sensible"), relacion("atomoxetina", "sustrato", "sensible"),
       relacion("metoprolol", "sustrato"), relacion("flecainida", "sustrato", "margen_estrecho"),
       relacion("aripiprazol", "sustrato"), relacion("risperidona", "sustrato"), relacion("iloperidona", "sustrato"),
-      relacion("perfenazina", "sustrato"), relacion("tioridazina", "sustrato", "margen_estrecho"),
+      relacion("haloperidol", "sustrato"), relacion("pimozida", "sustrato", "margen_estrecho"),
+      relacion("perfenazina", "sustrato"), relacion("flufenazina", "sustrato"), relacion("tioridazina", "sustrato", "margen_estrecho"),
       relacion("tolterodina", "sustrato"), relacion("tramadol", "profarmaco", "principal"),
       relacion("codeina", "profarmaco", "principal"), relacion("tamoxifeno", "profarmaco", "principal"),
       relacion("fluoxetina", "inhibidor", "fuerte"), relacion("paroxetina", "inhibidor", "fuerte"),
       relacion("quinidina", "inhibidor", "fuerte"), relacion("bupropion", "inhibidor", "fuerte"),
       relacion("duloxetina", "inhibidor", "moderado"), relacion("mirabegron", "inhibidor", "moderado"),
-      relacion("sertralina", "inhibidor", "debil"), relacion("fluvoxamina", "inhibidor", "debil")
+      relacion("sertralina", "inhibidor", "debil"), relacion("fluvoxamina", "inhibidor", "debil"),
+      relacion("prometazina", "inhibidor", "no_clasificada")
     ]
   }),
   cyp({
@@ -191,7 +193,8 @@ export const CITOCROMOS_FARMACOLOGICOS = Object.freeze([
     relaciones: [
       relacion("midazolam", "sustrato", "sensible"), relacion("triazolam", "sustrato", "sensible"),
       relacion("alprazolam", "sustrato"), relacion("quetiapina", "sustrato"), relacion("aripiprazol", "sustrato"),
-      relacion("iloperidona", "sustrato"), relacion("fentanilo", "sustrato"), relacion("oxicodona", "sustrato"),
+      relacion("iloperidona", "sustrato"), relacion("haloperidol", "sustrato"), relacion("pimozida", "sustrato", "margen_estrecho"),
+      relacion("fentanilo", "sustrato"), relacion("oxicodona", "sustrato"),
       relacion("atorvastatina", "sustrato"), relacion("tacrolimus", "sustrato", "margen_estrecho"),
       relacion("apixaban", "sustrato"), relacion("rivaroxaban", "sustrato"), relacion("amiodarona", "sustrato"),
       relacion("claritromicina", "inhibidor", "fuerte"), relacion("itraconazol", "inhibidor", "fuerte"),
@@ -199,6 +202,9 @@ export const CITOCROMOS_FARMACOLOGICOS = Object.freeze([
       relacion("eritromicina", "inhibidor", "moderado"), relacion("fluconazol", "inhibidor", "moderado"),
       relacion("verapamilo", "inhibidor", "moderado"), relacion("diltiazem", "inhibidor", "moderado"),
       relacion("fluvoxamina", "inhibidor", "moderado"), relacion("amiodarona", "inhibidor", "moderado"),
+      relacion("indinavir", "inhibidor", "fuerte"), relacion("saquinavir", "inhibidor", "fuerte"),
+      relacion("nelfinavir", "inhibidor", "fuerte"), relacion("nefazodona", "inhibidor", "fuerte"),
+      relacion("zileuton", "inhibidor", "no_clasificada"), relacion("aprepitant", "inhibidor", "moderado"),
       relacion("carbamazepina", "inductor", "fuerte"), relacion("fenitoina", "inductor", "fuerte"),
       relacion("rifampicina", "inductor", "fuerte"), relacion("fenobarbital", "inductor", "fuerte"),
       relacion("hierba_san_juan", "inductor", "fuerte")

@@ -4,7 +4,7 @@ import {
   MEDICAMENTOS_MAESTROS,
   buscarMedicamentos,
   medicamentoPorTexto
-} from "./data/catalogoFarmacologicoUnificado.js?v=20260811-cytochrome-bridge-v1";
+} from "./data/catalogoFarmacologicoUnificado.js?v=20260811-typical-antipsychotics-v1";
 import { CIE10 } from "./data/cie10.js";
 import { CIE11 } from "./data/cie11.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";

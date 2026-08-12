@@ -1,6 +1,6 @@
 // LEGACY/ADAPTADOR: conserva exports históricos. Los módulos consumidores
 // deben importar catalogoFarmacologicoUnificado.js como fuente oficial.
-import { MEDICAMENTOS_SUPLEMENTARIOS } from "./medicamentosSuplementarios.js?v=20260811-cytochrome-bridge-v1";
+import { MEDICAMENTOS_SUPLEMENTARIOS } from "./medicamentosSuplementarios.js?v=20260811-typical-antipsychotics-v1";
 import { enriquecerMedicamentoClinico } from "./vinculosClinicos.js";
 import {
   FARMACOLOGIA_VERIFICADA,
@@ -209,6 +209,7 @@ export const MEDICAMENTOS = [
   {
     nombre: "Haloperidol",
     clase: "Antipsicotico tipico",
+    clases: ["antipsicotico", "antipsicotico_tipico", "butirofenona", "qt", "antagonista_dopaminergico"],
     dosisHabitual: "1-10 mg/dia",
     notas: "Vigilar EPS y QT.",
     presentaciones: ["tabletas de 5 mg", "gotas 2 mg/ml", "ampolletas de 5 mg/ml", "decanoato 50 mg/ml", "decanoato 100 mg/ml"]
@@ -216,6 +217,7 @@ export const MEDICAMENTOS = [
   {
     nombre: "Levomepromazina",
     clase: "Antipsicotico fenotiazinico",
+    clases: ["antipsicotico", "antipsicotico_tipico", "fenotiazina", "depresor_snc", "anticolinergico", "qt", "antagonista_dopaminergico"],
     dosisHabitual: "25-300 mg/dia",
     notas: "Sedacion e hipotension.",
     presentaciones: ["tabletas de 25 mg", "tabletas de 100 mg", "gotas 40 mg/ml", "ampolletas de 25 mg/ml"]
@@ -223,6 +225,7 @@ export const MEDICAMENTOS = [
   {
     nombre: "Clorpromazina",
     clase: "Antipsicotico fenotiazinico",
+    clases: ["antipsicotico", "antipsicotico_tipico", "fenotiazina", "depresor_snc", "anticolinergico", "qt", "antagonista_dopaminergico"],
     dosisHabitual: "25-800 mg/dia",
     notas: "Sedacion, hipotension y efectos anticolinergicos.",
     presentaciones: ["tabletas de 25 mg", "tabletas de 100 mg", "ampolletas de 25 mg/ml"]
@@ -230,6 +233,7 @@ export const MEDICAMENTOS = [
   {
     nombre: "Trifluoperazina",
     clase: "Antipsicotico tipico",
+    clases: ["antipsicotico", "antipsicotico_tipico", "fenotiazina", "antagonista_dopaminergico"],
     dosisHabitual: "2-20 mg/dia",
     notas: "Vigilar sintomas extrapiramidales.",
     presentaciones: ["tabletas de 1 mg", "tabletas de 5 mg"]
@@ -541,7 +545,11 @@ function normalizarMedicamentoBase(medicamento, origen = "catalogo_legacy") {
     nombre: medicamento.nombre || medicamento.genericName || "",
     genericName: medicamento.genericName || medicamento.nombre || "",
     clase: medicamento.clase || medicamento.therapeuticClasses?.[0] || "Medicamento",
-    therapeuticClasses: medicamento.therapeuticClasses || [medicamento.clase || "Medicamento"],
+    therapeuticClasses: [...new Set([
+      ...(medicamento.therapeuticClasses || []),
+      medicamento.clase || "Medicamento",
+      ...(medicamento.clases || [])
+    ].filter(Boolean))],
     especialidades: medicamento.especialidades || medicamento.specialties || [],
     specialties: medicamento.specialties || medicamento.especialidades || [],
     brandNames: medicamento.brandNames || medicamento.marcas || [],
