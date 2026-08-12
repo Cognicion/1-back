@@ -114,7 +114,7 @@ async function inicializarPanelMedico() {
     return;
   }
 
-  const perfilUsuario = await getUserProfileOnce(user.uid);
+  const perfilUsuario = await obtenerPerfilMedicoConReintento(user.uid);
   const accesoPermitido = await cargarPerfilMedico(user, perfilUsuario);
 
   if (!accesoPermitido) return;
@@ -186,8 +186,21 @@ async function inicializarPanelMedico() {
 
 inicializarPanelMedico().catch((error) => {
   console.error("No se pudo inicializar el panel medico:", error);
-  window.location.href = "login.html";
+  mostrarBloqueoPanelMedico(
+    "No se pudo cargar el Panel Médico. Tu sesión continúa activa; vuelve a intentarlo en unos momentos."
+  );
 });
+
+async function obtenerPerfilMedicoConReintento(uid) {
+  try {
+    const perfilEnCache = await getUserProfileOnce(uid);
+    if (perfilEnCache) return perfilEnCache;
+  } catch (error) {
+    console.warn("No se pudo cargar el perfil médico en el primer intento.", error);
+  }
+
+  return getUserProfileOnce(uid, { force: true });
+}
 
 function inicializarBusquedaGlobalMedico(buscadorPrincipal) {
   const buscadorGlobal = document.getElementById("buscadorPacientesGlobal");
@@ -305,12 +318,12 @@ async function cargarPerfilMedico(user, datosIniciales = null) {
 
   document.getElementById("correoMedico").textContent = correo || "";
 
-  const datos = datosIniciales || await getUserProfileOnce(user.uid);
+  const datos = datosIniciales || await getUserProfileOnce(user.uid, { force: true });
 
   if (!datos) {
-    alert("Tu cuenta no está registrada en Cognición.");
-    await auth.signOut();
-    window.location.href = "login.html";
+    mostrarBloqueoPanelMedico(
+      "No se pudo cargar tu perfil médico. Tu sesión continúa activa; vuelve a intentarlo en unos momentos."
+    );
     return false;
   }
 
