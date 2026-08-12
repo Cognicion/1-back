@@ -4,31 +4,54 @@
 <script src="js/theme-preload.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Configuracion | Cognicion</title>
+  <title>Configuración | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
   <link rel="stylesheet" href="css/theme.css">
-<link rel="stylesheet" href="css/theme/cognicion-theme.css">
-<link rel="stylesheet" href="css/legal.css">
-<script type="module" src="js/services/themeBootstrap.js"></script>
+  <link rel="stylesheet" href="css/theme/cognicion-theme.css">
+  <link rel="stylesheet" href="css/legal.css">
+  <link rel="stylesheet" href="css/configuracion.css?v=1.865">
+  <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
-<body>
+<body class="pagina-configuracion">
   <main class="config-shell">
     <header class="config-header">
       <div class="config-brand">
-        <img src="assets/favicon-cognicion.png" alt="Cognicion">
+        <img src="assets/favicon-cognicion.png" alt="Cognición">
         <div>
-          <span class="config-kicker">Configuracion</span>
-          <h1>Apariencia</h1>
-          <p>Personaliza la forma en que se presenta Cognicion sin cambiar tus datos ni flujos de trabajo.</p>
+          <span class="config-kicker">Preferencias</span>
+          <h1>Configuración</h1>
+          <p>Personaliza COGNICIÓN y consulta tus preferencias de cuenta.</p>
         </div>
       </div>
-      <button class="btn-secundario" type="button" onclick="window.location.href='dashboard.html'">Volver al dashboard</button>
+      <button class="btn-secundario config-back" type="button" onclick="window.location.href='dashboard.html'" aria-label="Volver al Dashboard">
+        <span aria-hidden="true">←</span> Volver al Dashboard
+      </button>
     </header>
 
-    <section class="config-card">
+    <div class="config-layout">
+      <aside class="config-nav" aria-label="Secciones de configuración">
+        <div class="config-nav-title">Configuración</div>
+        <a class="config-nav-link activo" href="#apariencia">
+          <span class="config-nav-icon" aria-hidden="true">◐</span>
+          <span><strong>Apariencia</strong><small>Temas y animación</small></span>
+        </a>
+        <a class="config-nav-link" href="#legal">
+          <span class="config-nav-icon" aria-hidden="true">✓</span>
+          <span><strong>Legal</strong><small>Documentos y permisos</small></span>
+        </a>
+        <p class="config-nav-help">Los cambios visuales no modifican información clínica ni flujos de trabajo.</p>
+      </aside>
+
+      <div class="config-content">
+    <section id="apariencia" class="config-card">
+      <div class="config-section-heading">
+        <span class="config-section-icon" aria-hidden="true">✦</span>
+        <div>
       <span class="config-kicker">Interfaz</span>
       <h2>Estilo visual</h2>
-      <p>Elige la capa visual general: Clasica conserva el estilo base y Laboratorio agrega una apariencia mas futurista. Abajo puedes elegir entre Biocelular, Oscuro y Claro.</p>
+          <p>Elige la presentación general y después selecciona su combinación de color.</p>
+        </div>
+      </div>
 
       <div id="temasApariencia" class="temas-grid" aria-live="polite"></div>
 
@@ -78,10 +101,15 @@
       <p id="estadoApariencia" class="config-status">Cargando preferencia...</p>
     </section>
 
-    <section class="config-card legal-settings" aria-labelledby="tituloLegal">
+    <section id="legal" class="config-card legal-settings" aria-labelledby="tituloLegal">
+      <div class="config-section-heading">
+        <span class="config-section-icon" aria-hidden="true">✓</span>
+        <div>
       <span class="config-kicker">Legal</span>
       <h2 id="tituloLegal">Documentos y consentimientos</h2>
       <p>Consulta los documentos aceptados y la evidencia registrada para tu cuenta.</p>
+        </div>
+      </div>
       <div id="estadoLegal" class="config-status">Cargando consentimientos...</div>
       <div class="legal-settings-actions">
         <button id="verAvisoPrivacidad" class="btn-secundario" type="button">Aviso de Privacidad</button>
@@ -94,6 +122,8 @@
       <p id="estadoComunicaciones" class="config-status" role="status"></p>
       <p>Para retirar un consentimiento, ejercer derechos ARCO o solicitar eliminación: <a href="mailto:aldo.sandokan@gmail.com">aldo.sandokan@gmail.com</a></p>
     </section>
+      </div>
+    </div>
   </main>
 
   <script type="module" src="js/configuracion.js"></script>
