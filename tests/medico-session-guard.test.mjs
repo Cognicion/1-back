@@ -25,6 +25,11 @@ test("el panel médico no cierra una sesión válida por errores de carga", () =
     /window\.location\.href\s*=\s*["']login\.html["']/,
     "un error de inicialización no debe enviar al login"
   );
+  assert.match(
+    manejadorErrorInicializacion,
+    /mostrarErrorCargaPanelMedico/,
+    "un error operativo no debe mostrarse como falta de autorización"
+  );
   assert.doesNotMatch(
     bloquePerfilAusente,
     /auth\.signOut\(\)/,
@@ -46,6 +51,22 @@ test("el panel reintenta la lectura del perfil sin usar caché", () => {
 });
 
 test("medico.html invalida la versión anterior del script", () => {
-  assert.match(medicoHtml, /js\/medico\.js\?v=20260811-session-guard-v1/);
-  assert.doesNotMatch(medicoHtml, /js\/medico\.js\?v=1\.866/);
+  assert.match(medicoHtml, /js\/medico\.js\?v=20260811-medical-panel-recovery-v1/);
+  assert.doesNotMatch(medicoHtml, /js\/medico\.js\?v=(?:1\.866|20260811-session-guard-v1)/);
+});
+
+test("la carga inicial aísla los errores de carpetas y pacientes", () => {
+  const cargaInicial = medicoSource.match(
+    /async function cargarDatosInicialesPanelMedico\(uid\) \{[\s\S]*?\n\}/
+  )?.[0] || "";
+
+  assert.match(cargaInicial, /await cargarCarpetasMedico\(uid\)/);
+  assert.match(cargaInicial, /await cargarPacientes\(uid\)/);
+  assert.ok((cargaInicial.match(/catch \(error\)/g) || []).length >= 2);
+  assert.doesNotMatch(cargaInicial, /Promise\.all/);
+  assert.match(
+    medicoSource,
+    /services\/usuarios\.js\?v=20260811-medical-panel-recovery-v1/,
+    "el servicio de pacientes también debe invalidar su caché anterior"
+  );
 });

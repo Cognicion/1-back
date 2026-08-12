@@ -1,4 +1,4 @@
-import { listarPacientes } from "./services/usuarios.js?v=1.866";
+import { listarPacientes } from "./services/usuarios.js?v=20260811-medical-panel-recovery-v1";
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
@@ -178,18 +178,34 @@ async function inicializarPanelMedico() {
   inicializarImportacionDocxLazy();
   inicializarRevisionDuplicadosLazy();
 
-  await Promise.all([
-    cargarCarpetasMedico(user.uid),
-    cargarPacientes(user.uid)
-  ]);
+  await cargarDatosInicialesPanelMedico(user.uid);
 }
 
 inicializarPanelMedico().catch((error) => {
   console.error("No se pudo inicializar el panel medico:", error);
-  mostrarBloqueoPanelMedico(
+  mostrarErrorCargaPanelMedico(
     "No se pudo cargar el Panel Médico. Tu sesión continúa activa; vuelve a intentarlo en unos momentos."
   );
 });
+
+async function cargarDatosInicialesPanelMedico(uid) {
+  try {
+    await cargarCarpetasMedico(uid);
+  } catch (error) {
+    console.error("No se pudieron cargar las carpetas del Panel Médico:", error);
+    carpetasMedico = [];
+    renderizarSelectorFiltroCarpetas();
+    renderizarListaCarpetasMedico();
+    renderizarOpcionesCarpetasVisibles();
+    renderizarCarpetasInlineMedico();
+  }
+
+  try {
+    await cargarPacientes(uid);
+  } catch (error) {
+    console.error("No se pudo completar la carga inicial de pacientes:", error);
+  }
+}
 
 async function obtenerPerfilMedicoConReintento(uid) {
   try {
@@ -390,6 +406,19 @@ function mostrarBloqueoPanelMedico(mensaje) {
       </div>
     `;
   }
+}
+
+function mostrarErrorCargaPanelMedico(mensaje) {
+  document.body.classList.remove("bloqueado");
+  const listaPacientes = document.getElementById("listaPacientes");
+  if (!listaPacientes) return;
+
+  listaPacientes.innerHTML = `
+    <div class="estado-vacio">
+      <strong>${escaparHTML(mensaje)}</strong>
+      <p>Usa Actualizar para volver a intentarlo o regresa al panel principal.</p>
+    </div>
+  `;
 }
 
 function debounceMedico(fn, espera = 300) {
