@@ -16,6 +16,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import { registrarEventoAuditoria } from "./services/auditoria.js";
+import { registrarVisita } from "./services/visitas.js";
 import { vincularCuentaConCodigoMedico } from "./services/vinculacion.js";
 import {
   ETIQUETA_ROL_ENFERMERIA_SALUD_MENTAL,
@@ -317,6 +318,15 @@ btnCrearCuenta.addEventListener("click", async () => {
       versionAvisoPrivacidad: VERSION_AVISO_PRIVACIDAD,
       fechaCreacion: fechaActual
     });
+
+    try {
+      await registrarVisita({
+        usuario: credencial.user,
+        perfil: { nombre, email, rol: "paciente" }
+      });
+    } catch (errorVisita) {
+      console.warn("No se pudo asociar la visita con la cuenta creada:", errorVisita);
+    }
 
     console.log("[LEGAL][SIGNUP] Cuenta creada");
     try {

@@ -11,6 +11,7 @@
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
 <script type="module" src="js/services/themeBootstrap.js"></script>
+<script type="module" src="js/services/visitasBootstrap.js"></script>
 <script>
   console.log("[ADMIN INLINE] HTML ejecutado");
   window.addEventListener("error", (event) => console.error("[ADMIN WINDOW ERROR]", event.error || event.message));
@@ -82,6 +83,21 @@
     <div class="card">
       <h3>Sesiones inactivas</h3>
       <p id="totalInactividad">-</p>
+    </div>
+
+    <div class="card">
+      <h3>Visitas únicas</h3>
+      <p id="totalVisitas">-</p>
+    </div>
+
+    <div class="card">
+      <h3>Visitas invitadas</h3>
+      <p id="totalVisitasInvitados">-</p>
+    </div>
+
+    <div class="card">
+      <h3>Visitas registradas</h3>
+      <p id="totalVisitasRegistrados">-</p>
     </div>
   </section>
 
@@ -365,6 +381,18 @@
         <input id="filtroUsuariosOcultosAuditoria" placeholder="Buscar usuario por nombre, correo o palabra clave">
         <div id="listaUsuariosOcultosAuditoria" class="lista-usuarios-ocultos-auditoria">
           <p>Cargando usuarios...</p>
+        </div>
+      </section>
+
+      <section class="auditoria-presencia-admin">
+        <div class="auditoria-panel-header">
+          <div>
+            <h3>Visitantes únicos</h3>
+            <p>Un invitado conserva su identidad al registrarse; aquí se muestra el nombre de la cuenta cuando existe.</p>
+          </div>
+        </div>
+        <div id="listaVisitasAdmin" class="lista-sesiones-auditoria">
+          <p>Cargando visitas...</p>
         </div>
       </section>
     </div>

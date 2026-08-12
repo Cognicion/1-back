@@ -14,6 +14,7 @@ import {
 
 import { obtenerUsuario } from "./services/usuarios.js";
 import { registrarEventoAuditoria, resumenError } from "./services/auditoria.js";
+import { registrarVisita } from "./services/visitas.js";
 
 function conTiempoLimiteAuth(promesa, ms = 12000) {
   let temporizador = null;
@@ -37,6 +38,14 @@ window.registrarUsuario = async function() {
       rol: "paciente",
       fechaRegistro: new Date().toISOString()
     });
+    try {
+      await registrarVisita({
+        usuario: cred.user,
+        perfil: { nombre, email, rol: "paciente" }
+      });
+    } catch (errorVisita) {
+      console.warn("No se pudo asociar la visita con la cuenta creada:", errorVisita);
+    }
 
     alert("Usuario creado correctamente");
     window.location.href = "dashboard.html";
@@ -58,6 +67,12 @@ try {
     datos = await conTiempoLimiteAuth(obtenerUsuario(cred.user.uid));
   } catch (errorUsuario) {
     console.warn("No se pudo cargar el perfil despues del inicio de sesion; se continuara al dashboard.", errorUsuario);
+  }
+
+  try {
+    await registrarVisita({ usuario: cred.user, perfil: datos });
+  } catch (errorVisita) {
+    console.warn("No se pudo asociar la visita con la cuenta:", errorVisita);
   }
 
   try {

@@ -730,6 +730,7 @@ function renderizarCodigosMedicoAdmin() {
 async function cargarResumen() {
   const snapUsuarios = await getDocs(collection(db, "usuarios"));
   const snapAuditoria = await getDocs(collection(db, "auditoria"));
+  const snapVisitas = await getDocs(collection(db, "visitas"));
 
   let totalUsuarios = 0;
   let totalPacientes = 0;
@@ -738,6 +739,7 @@ async function cargarResumen() {
   let totalPsicologos = 0;
   let totalInactividad = 0;
   let totalAuditoriaVisible = 0;
+  const visitas = consolidarVisitasAdmin(snapVisitas.docs.map((docVisita) => docVisita.data()));
 
   snapUsuarios.forEach((docUsuario) => {
     totalUsuarios++;
@@ -762,6 +764,60 @@ async function cargarResumen() {
   ponerTexto("totalPsicologos", totalPsicologos);
   ponerTexto("totalAuditoria", totalAuditoriaVisible);
   ponerTexto("totalInactividad", totalInactividad);
+  ponerTexto("totalVisitas", visitas.total);
+  ponerTexto("totalVisitasInvitados", visitas.invitados);
+  ponerTexto("totalVisitasRegistrados", visitas.registrados);
+  renderizarVisitasAdmin(visitas.items);
+}
+
+function consolidarVisitasAdmin(registros = []) {
+  const unicas = new Map();
+  registros.forEach((visita) => {
+    const clave = visita.usuarioUid
+      ? `usuario:${visita.usuarioUid}`
+      : `invitado:${visita.visitanteId || visita.id || `${visita.nombre || "invitado"}:${visita.ultimaRuta || ""}`}`;
+    const actual = unicas.get(clave);
+    if (!actual || String(visita.ultimaVisitaTexto || "") > String(actual.ultimaVisitaTexto || "")) {
+      unicas.set(clave, visita);
+    }
+  });
+
+  const items = [...unicas.values()].map((visita) => {
+    const usuario = visita.usuarioUid ? usuariosAdmin.find((item) => item.id === visita.usuarioUid) : null;
+    return {
+      ...visita,
+      tipo: visita.usuarioUid ? "registrado" : "invitado",
+      nombre: usuario?.nombre || visita.nombre || (visita.usuarioUid ? visita.email : "Invitado")
+    };
+  }).sort((a, b) => String(b.ultimaVisitaTexto || "").localeCompare(String(a.ultimaVisitaTexto || "")));
+
+  return {
+    items,
+    total: items.length,
+    invitados: items.filter((visita) => visita.tipo === "invitado").length,
+    registrados: items.filter((visita) => visita.tipo === "registrado").length
+  };
+}
+
+function renderizarVisitasAdmin(visitas = []) {
+  const contenedor = document.getElementById("listaVisitasAdmin");
+  if (!contenedor) return;
+  if (!visitas.length) {
+    contenedor.innerHTML = "<p>No hay visitas registradas todavía.</p>";
+    return;
+  }
+  contenedor.innerHTML = visitas.slice(0, 30).map((visita) => `
+    <article class="sesion-usuario-card">
+      <div>
+        <strong>${escaparHTML(visita.nombre)}</strong>
+        <small>${visita.tipo === "registrado" ? "Usuario registrado" : "Invitado"}${visita.rol ? ` · ${escaparHTML(visita.rol)}` : ""}</small>
+      </div>
+      <div class="sesion-usuario-meta">
+        <span>Última visita: ${escaparHTML(formatearFechaAdmin(visita.ultimaVisitaTexto))}</span>
+        <span>${escaparHTML(visita.ultimaRuta || "Ruta no disponible")}</span>
+      </div>
+    </article>
+  `).join("");
 }
 
 async function cargarUsuariosAdmin() {
