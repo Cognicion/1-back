@@ -130,7 +130,7 @@ export const INGREDIENTES_MEDICAMENTOS = [
     id: "haloperidol",
     nombre: "Haloperidol",
     sinonimos: ["haloperidol", "haldol"],
-    clases: ["antipsicotico"],
+    clases: ["antipsicotico", "antipsicotico_tipico", "butirofenona", "antagonista_dopaminergico", "qt"],
     riesgos: { qt: 3, sedacion: 1 }
   },
   {

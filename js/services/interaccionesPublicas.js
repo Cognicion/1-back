@@ -1,8 +1,8 @@
-import { buscarMedicamentos, normalizarNombreMedicamento } from "../data/catalogoFarmacologicoUnificado.js?v=20260811-cytochrome-bridge-v1";
+import { buscarMedicamentos, normalizarNombreMedicamento } from "../data/catalogoFarmacologicoUnificado.js?v=20260811-typical-antipsychotics-v1";
 import {
   evaluarInteraccionesClinicas,
   normalizarMedicamentoClinico
-} from "./motorClinicoMedicamentos.js?v=20260811-cytochrome-bridge-v1";
+} from "./motorClinicoMedicamentos.js?v=20260811-typical-antipsychotics-v1";
 
 const SEVERIDAD_PUBLICA = {
   critica: "contraindicada",

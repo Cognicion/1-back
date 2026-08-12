@@ -4,8 +4,9 @@ import {
   REGLAS_INTERACCIONES_CLINICAS as INTERACCIONES_BASE,
   REGLAS_MEDICAMENTO_DIAGNOSTICO as MED_DX_BASE,
   UMBRALES_RIESGO_ACUMULATIVO as UMBRALES_BASE
-} from "./reglasClinicasMedicamentos.js?v=20260811-cytochrome-bridge-v1";
-import { REGLAS_INTERACCIONES_ISRS } from "./interaccionesISRS.js?v=20260811-cytochrome-bridge-v1";
+} from "./reglasClinicasMedicamentos.js?v=20260811-typical-antipsychotics-v1";
+import { REGLAS_INTERACCIONES_ISRS } from "./interaccionesISRS.js?v=20260811-typical-antipsychotics-v1";
+import { REGLAS_INTERACCIONES_ANTIPSICOTICOS_TIPICOS } from "./interaccionesAntipsicoticosTipicos.js?v=20260811-typical-antipsychotics-v1";
 
 const FUENTES_BASE = [
   "Motor local educativo de Cognición. Verificar con ficha técnica, guías clínicas y juicio clínico antes de prescribir."
@@ -72,8 +73,9 @@ const INGREDIENTES_EXTRA = [
   { id: "quetiapina", nombre: "Quetiapina", sinonimos: ["quetiapina", "seroquel"], clases: ["antipsicotico", "sustrato_cyp3a4"], riesgos: { qt: 2, sedacion: 2, anticolinergico: 1, peso: 2, glucosa: 1 } },
   { id: "paliperidona", nombre: "Paliperidona", sinonimos: ["paliperidona", "invega"], clases: ["antipsicotico"], riesgos: { sedacion: 1, hiperprolactina: 2, peso: 1, glucosa: 1, renal: 1 } },
   { id: "clozapina", nombre: "Clozapina", sinonimos: ["clozapina", "leponex", "clozaril"], clases: ["antipsicotico", "depresor_snc", "anticolinergico", "sustrato_cyp1a2"], riesgos: { sedacion: 3, anticolinergico: 2, peso: 3, glucosa: 3, convulsivo: 2 } },
-  { id: "clorpromazina", nombre: "Clorpromazina", sinonimos: ["clorpromazina", "largactil"], clases: ["antipsicotico", "depresor_snc", "anticolinergico"], riesgos: { qt: 2, sedacion: 3, anticolinergico: 2, hipotension: 2 } },
-  { id: "levomepromazina", nombre: "Levomepromazina", sinonimos: ["levomepromazina", "sinogan"], clases: ["antipsicotico", "depresor_snc", "anticolinergico"], riesgos: { qt: 2, sedacion: 3, anticolinergico: 2, hipotension: 2 } },
+  { id: "clorpromazina", nombre: "Clorpromazina", sinonimos: ["clorpromazina", "largactil"], clases: ["antipsicotico", "antipsicotico_tipico", "fenotiazina", "antagonista_dopaminergico", "depresor_snc", "anticolinergico", "qt"], riesgos: { qt: 2, sedacion: 3, anticolinergico: 2, hipotension: 2 } },
+  { id: "levomepromazina", nombre: "Levomepromazina", sinonimos: ["levomepromazina", "sinogan"], clases: ["antipsicotico", "antipsicotico_tipico", "fenotiazina", "antagonista_dopaminergico", "depresor_snc", "anticolinergico", "qt"], riesgos: { qt: 2, sedacion: 3, anticolinergico: 2, hipotension: 2 } },
+  { id: "trifluoperazina", nombre: "Trifluoperazina", sinonimos: ["trifluoperazina", "stelazine"], clases: ["antipsicotico", "antipsicotico_tipico", "fenotiazina", "antagonista_dopaminergico"], riesgos: { eps: 3 } },
   { id: "linezolid", nombre: "Linezolid", sinonimos: ["linezolid"], clases: ["antibiotico", "imao_reversible"], riesgos: { serotoninergico: 3 } },
   { id: "selegilina", nombre: "Selegilina", sinonimos: ["selegilina"], clases: ["imao"], riesgos: { serotoninergico: 3, presion: 2 } },
   { id: "fenelzina", nombre: "Fenelzina", sinonimos: ["fenelzina", "phenelzine"], clases: ["imao"], riesgos: { serotoninergico: 3, presion: 2 } },
@@ -517,7 +519,7 @@ export const REGLAS_MEDICAMENTO_DIAGNOSTICO = [...MED_DX_BASE, ...MED_DX_EXTRA].
   fuentes: regla.fuentes || FUENTES_BASE,
   ...regla
 }));
-export const REGLAS_INTERACCIONES_CLINICAS = [...INTERACCIONES_BASE, ...INTERACCIONES_EXTRA, ...REGLAS_INTERACCIONES_ISRS].map((regla) => ({
+export const REGLAS_INTERACCIONES_CLINICAS = [...INTERACCIONES_BASE, ...INTERACCIONES_EXTRA, ...REGLAS_INTERACCIONES_ISRS, ...REGLAS_INTERACCIONES_ANTIPSICOTICOS_TIPICOS].map((regla) => ({
   evidencia: regla.evidencia || "regla_local",
   fuentes: regla.fuentes || FUENTES_BASE,
   ...regla

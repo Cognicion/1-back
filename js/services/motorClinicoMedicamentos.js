@@ -8,8 +8,8 @@ import {
 import {
   obtenerMedicamentoPorId,
   resolverMedicamentoCanonico
-} from "../data/catalogoFarmacologicoUnificado.js?v=20260811-cytochrome-bridge-v1";
-import { detectarInteraccionesPorCitocromos } from "../data/citocromosFarmacologicos.js?v=20260811-cytochrome-bridge-v1";
+} from "../data/catalogoFarmacologicoUnificado.js?v=20260811-typical-antipsychotics-v1";
+import { detectarInteraccionesPorCitocromos } from "../data/citocromosFarmacologicos.js?v=20260811-typical-antipsychotics-v1";
 
 const SEVERIDAD_ORDEN = {
   informativa: 1,
