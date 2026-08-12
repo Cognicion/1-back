@@ -1,6 +1,56 @@
 const CLAVE_VISTA_MODULOS = "cognicion:dashboard:vista-modulos";
 const VISTA_PREDETERMINADA = "orbita";
 const VISTAS_DISPONIBLES = new Set(["orbita", "tarjetas"]);
+const RUTAS_PRECARGADAS = new Set();
+const MODULOS_PRINCIPALES_POR_RUTA = new Map([
+  ["medico.html", "js/medico.js?v=1.866"],
+  ["mi-salud.html", "js/mi-salud.js?v=20260731-admin-access"],
+  ["sofia.html", "js/sofia.js?v=20260811-cytochrome-bridge-v1"],
+  ["rehabilitacion-cognitiva.html", "js/rehabilitacion-cognitiva.js"],
+  ["estadistica.html", "js/estadistica.js?v=20260718-patient-access"],
+  ["escalas.html", "js/escalas.js?v=20260716-expediente-fix-2"],
+  ["calculadoras-medicas.html", "js/calculadoras-medicas.js"],
+  ["foro.html", "js/foro.js"],
+  ["admin.html", "js/admin.js?v=20260804-patterns-v7"],
+  ["pediatria.html", "js/pediatria/pediatria.js?v=20260811-cytochrome-bridge-v1"],
+  ["laboratorio-neurofisiologia.html", "js/neurofisiologia/laboratorio-neurofisiologia.js?v=20260811-memory-connectome-v3"],
+  ["laboratorio-farmacologia.html", "js/laboratorio-farmacologia.js?v=20260811-cytochrome-bridge-v1"],
+  ["biblioteca.html", "js/biblioteca.js?v=20260811-cytochrome-bridge-v1"]
+]);
+
+function obtenerRutaDesdeAccion(accion) {
+  const rutaEnlace = accion?.getAttribute?.("href")?.trim();
+  if (rutaEnlace) return rutaEnlace;
+  const codigo = accion?.getAttribute?.("onclick") || "";
+  return codigo.match(/(?:window\.)?location\.href\s*=\s*['\"]([^'\"]+)['\"]/)?.[1] || "";
+}
+
+function precargarDestino(ruta = "") {
+  const rutaSegura = String(ruta).trim();
+  if (!rutaSegura || RUTAS_PRECARGADAS.has(rutaSegura) || !rutaSegura.endsWith(".html")) return;
+  RUTAS_PRECARGADAS.add(rutaSegura);
+  const enlace = document.createElement("link");
+  enlace.rel = "prefetch";
+  enlace.href = rutaSegura;
+  enlace.fetchPriority = "low";
+  document.head.append(enlace);
+
+  const moduloPrincipal = MODULOS_PRINCIPALES_POR_RUTA.get(rutaSegura);
+  if (moduloPrincipal) {
+    const modulo = document.createElement("link");
+    modulo.rel = "modulepreload";
+    modulo.href = moduloPrincipal;
+    modulo.fetchPriority = "low";
+    document.head.append(modulo);
+  }
+}
+
+function conectarPrecargaPorIntencion(elemento, ruta) {
+  if (!elemento || !ruta) return;
+  const precargar = () => precargarDestino(ruta);
+  elemento.addEventListener("pointerenter", precargar, { once: true, passive: true });
+  elemento.addEventListener("focus", precargar, { once: true });
+}
 
 function normalizarVistaModulos(valor = "") {
   return VISTAS_DISPONIBLES.has(valor) ? valor : VISTA_PREDETERMINADA;
@@ -70,6 +120,7 @@ function extraerAccesosDesdeTarjetas(contenedorTarjetas) {
       accesos.push({
         etiqueta: abreviarEtiquetaOrbital(acciones.length > 1 ? (etiquetaAccion || titulo) : titulo),
         descripcion,
+        ruta: obtenerRutaDesdeAccion(accion),
         accionOriginal: accion
       });
     });
@@ -102,6 +153,7 @@ function crearTrayectoriaOrbital(acceso, indice, total) {
   boton.title = acceso.descripcion || acceso.etiqueta;
   boton.setAttribute("aria-label", `${acceso.etiqueta}. ${acceso.descripcion}`.trim());
   boton.addEventListener("click", () => acceso.accionOriginal.click());
+  conectarPrecargaPorIntencion(boton, acceso.ruta);
 
   flotacion.append(boton);
   orientacion.append(flotacion);
@@ -347,6 +399,10 @@ function inicializarVistaModulosDashboard() {
   const orbita = document.querySelector("orbita-panel-principal");
   const botonesVista = [...document.querySelectorAll("[data-seleccionar-vista]")];
   if (!seccion || !contenedorTarjetas || !orbita || !botonesVista.length) return;
+
+  contenedorTarjetas.querySelectorAll(".card-actions :is(a, button)").forEach((accion) => {
+    conectarPrecargaPorIntencion(accion, obtenerRutaDesdeAccion(accion));
+  });
 
   const sincronizarAccesos = () => {
     orbita.establecerAccesos(extraerAccesosDesdeTarjetas(contenedorTarjetas));

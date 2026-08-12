@@ -342,16 +342,6 @@ body.pagina-configuracion::before {
   background: #071117;
 }
 
-.tema-preview.clasica {
-  background: linear-gradient(135deg, #172127, #0b1115);
-}
-
-.tema-preview.laboratorio {
-  background:
-    radial-gradient(circle at 72% 28%, rgba(88, 214, 141, .45), transparent 24%),
-    linear-gradient(135deg, #021018, #083325);
-}
-
 .tema-preview::before,
 .tema-preview::after,
 .modo-interfaz-preview i {
@@ -427,6 +417,12 @@ body.pagina-configuracion::before {
   margin-top: 24px;
   padding-top: 22px;
   border-top: 1px solid var(--config-border);
+}
+
+.modo-interfaz-principal {
+  margin-top: 16px;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .modo-interfaz-section > p,
@@ -527,6 +523,78 @@ body.pagina-configuracion::before {
   color: var(--config-accent) !important;
   font-size: .78rem !important;
   font-weight: 700;
+}
+
+.config-nav-link[hidden],
+.config-card[hidden] {
+  display: none !important;
+}
+
+.config-profile-photo-editor {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid var(--config-border);
+  border-radius: 20px;
+  background: var(--config-surface-soft);
+}
+
+.config-profile-avatar {
+  width: 112px;
+  height: 112px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--config-border-active);
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--celtic-400), var(--mineral-green));
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: 900;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .2);
+}
+
+.config-profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.config-profile-photo-controls {
+  min-width: 0;
+}
+
+.config-profile-photo-controls label,
+.config-profile-photo-controls small {
+  display: block;
+}
+
+.config-profile-photo-controls label {
+  margin-bottom: 8px;
+  color: var(--config-text);
+  font-weight: 800;
+}
+
+.config-profile-photo-controls input[type="file"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--config-border);
+  border-radius: 12px;
+  background: var(--config-surface-raised);
+  color: var(--config-text);
+}
+
+.config-profile-photo-controls input[type="file"]:disabled {
+  cursor: wait;
+  opacity: .58;
+}
+
+.config-profile-photo-controls small {
+  margin-top: 8px;
+  color: var(--config-muted);
 }
 
 .legal-settings-actions {
@@ -674,6 +742,18 @@ html[data-theme="light"] .modo-interfaz-opcion small {
     grid-template-columns: 1fr;
   }
 
+  .config-profile-photo-editor {
+    grid-template-columns: 76px minmax(0, 1fr);
+    gap: 14px;
+    padding: 14px;
+  }
+
+  .config-profile-avatar {
+    width: 76px;
+    height: 76px;
+    font-size: 1.25rem;
+  }
+
   .config-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -689,4 +769,148 @@ html[data-theme="light"] .modo-interfaz-opcion small {
   .config-nav-link,
   .tema-opcion,
   .modo-interfaz-opcion { transition: none; }
+}
+
+/* Selector de paletas pastel para el tema claro. */
+.paleta-clara-settings {
+  margin-top: 24px;
+  padding: 22px;
+  border: 1px solid var(--config-border);
+  border-radius: 18px;
+  background: var(--config-surface-soft);
+}
+
+.paleta-clara-settings[hidden] {
+  display: none;
+}
+
+.paleta-clara-settings h3 {
+  margin: 5px 0 6px;
+  color: var(--config-text);
+}
+
+.paleta-clara-settings > p {
+  margin-bottom: 16px;
+}
+
+.paletas-claras-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.paleta-clara-opcion {
+  position: relative;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid var(--config-border);
+  border-radius: 14px;
+  color: var(--config-text);
+  text-align: left;
+  background: rgba(255, 255, 255, .72);
+  cursor: pointer;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.paleta-clara-opcion:hover {
+  transform: translateY(-2px);
+}
+
+.paleta-clara-opcion:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--paleta-clara-acento, #3f8f63) 28%, transparent);
+  outline-offset: 2px;
+}
+
+.paleta-clara-opcion.activa {
+  border-color: var(--paleta-clara-acento, #3f8f63);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--paleta-clara-acento, #3f8f63) 16%, transparent);
+}
+
+.paleta-clara-opcion.activa::after {
+  content: "Activa";
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  padding: 3px 6px;
+  border-radius: 999px;
+  color: #ffffff;
+  background: var(--paleta-clara-acento, #3f8f63);
+  font-size: .55rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.paleta-clara-muestra {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  height: 42px;
+  margin-bottom: 9px;
+  padding: 9px;
+  border: 1px solid rgba(32, 64, 48, .1);
+  border-radius: 10px;
+  background: #e8f6ed;
+}
+
+.paleta-clara-muestra.cielo { background: #e8f4fb; }
+.paleta-clara-muestra.lavanda { background: #f0ebfa; }
+.paleta-clara-muestra.durazno { background: #fff0e7; }
+
+.paleta-clara-muestra i {
+  display: block;
+  width: 22%;
+  height: 55%;
+  border-radius: 999px;
+  background: rgba(36, 91, 62, .34);
+}
+
+.paleta-clara-muestra i:nth-child(2) { height: 78%; }
+.paleta-clara-muestra i:nth-child(3) { height: 38%; }
+
+.paleta-clara-opcion strong,
+.paleta-clara-opcion small {
+  display: block;
+}
+
+.paleta-clara-opcion strong {
+  margin-bottom: 3px;
+  padding-right: 38px;
+  font-size: .83rem;
+}
+
+.paleta-clara-opcion small {
+  color: var(--config-muted);
+  font-size: .68rem;
+  line-height: 1.35;
+}
+
+html[data-theme="light"] body.pagina-configuracion {
+  background: #ffffff !important;
+}
+
+html[data-theme="light"] .config-header,
+html[data-theme="light"] .config-nav,
+html[data-theme="light"] .config-card,
+html[data-theme="light"] .paleta-clara-settings,
+html[data-theme="light"] .tema-opcion,
+html[data-theme="light"] .modo-interfaz-opcion {
+  background: var(--paleta-clara-superficie, #e8f6ed) !important;
+  border-color: var(--paleta-clara-borde, #b8d9c4) !important;
+}
+
+html[data-theme="light"] .tema-opcion.activo,
+html[data-theme="light"] .modo-interfaz-opcion.activo {
+  background: var(--paleta-clara-superficie-fuerte, #d9efe1) !important;
+  border-color: var(--paleta-clara-acento, #3f8f63) !important;
+  color: var(--config-text) !important;
+}
+
+@media (max-width: 940px) {
+  .paletas-claras-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 520px) {
+  .paleta-clara-settings { padding: 16px; }
+  .paletas-claras-grid { grid-template-columns: 1fr; }
 }

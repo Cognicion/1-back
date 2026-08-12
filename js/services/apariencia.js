@@ -1,4 +1,4 @@
-import { doc, getDoc, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { db } from "../firebase.js";
 import {
   applyTheme,
@@ -8,29 +8,13 @@ import {
 } from "./themeService.js";
 import { getBiocellularPreferences, saveBiocellularPreferences } from "../themes/biocellularPreferences.js";
 
-export const TEMAS_COGNICION = Object.freeze({
-  CLASICA: "clasica",
-  LABORATORIO: "laboratorio"
-});
+const TEMA_LABORATORIO = "laboratorio";
 
 export const MODOS_INTERFAZ_COGNICION = Object.freeze({
   OSCURO: "dark",
   CLARO: "light",
   BIOCELULAR: "biocelular"
 });
-
-export const OPCIONES_TEMA_COGNICION = [
-  {
-    id: TEMAS_COGNICION.CLASICA,
-    nombre: "Clasica",
-    descripcion: "Conserva exactamente la interfaz actual de Cognicion."
-  },
-  {
-    id: TEMAS_COGNICION.LABORATORIO,
-    nombre: "Laboratorio",
-    descripcion: "Activa una capa visual futurista tipo panel medico avanzado."
-  }
-];
 
 export const OPCIONES_MODO_INTERFAZ_COGNICION = [
   {
@@ -49,25 +33,64 @@ export const OPCIONES_MODO_INTERFAZ_COGNICION = [
     id: MODOS_INTERFAZ_COGNICION.CLARO,
     nombre: "Claro",
     icono: "\u2600\uFE0F",
-    descripcion: "Gris neutro, paneles blancos, texto oscuro y acento verde profundo."
+    descripcion: "Fondo blanco, superficies pastel configurables y texto oscuro."
   }
 ];
 
+export const PALETAS_CLARAS_COGNICION = Object.freeze({
+  MENTA: "menta",
+  CIELO: "cielo",
+  LAVANDA: "lavanda",
+  DURAZNO: "durazno"
+});
+
+export const OPCIONES_PALETA_CLARA_COGNICION = [
+  { id: PALETAS_CLARAS_COGNICION.MENTA, nombre: "Menta", descripcion: "Verde claro, fresco y clínico." },
+  { id: PALETAS_CLARAS_COGNICION.CIELO, nombre: "Cielo", descripcion: "Azul pastel sereno y luminoso." },
+  { id: PALETAS_CLARAS_COGNICION.LAVANDA, nombre: "Lavanda", descripcion: "Violeta suave y descansado." },
+  { id: PALETAS_CLARAS_COGNICION.DURAZNO, nombre: "Durazno", descripcion: "Cálido, amable y discreto." }
+];
+
 const CLAVE_LOCAL = "cognicion.apariencia.tema";
-const TEMA_PREDETERMINADO_COGNICION = TEMAS_COGNICION.LABORATORIO;
+const CLAVE_PALETA_CLARA = "cognicion.apariencia.paletaClara";
+const TEMA_PREDETERMINADO_COGNICION = TEMA_LABORATORIO;
 const MODO_PREDETERMINADO_COGNICION = MODOS_INTERFAZ_COGNICION.BIOCELULAR;
 const cacheAparienciaUsuario = new Map();
 
-export function normalizarTemaCognicion(tema) {
-  const valor = String(tema || "").toLowerCase().trim();
-  return OPCIONES_TEMA_COGNICION.some((opcion) => opcion.id === valor)
-    ? valor
-    : TEMA_PREDETERMINADO_COGNICION;
+export function normalizarTemaCognicion() {
+  return TEMA_PREDETERMINADO_COGNICION;
 }
 
 
 export function normalizarModoInterfazCognicion(modo) {
   return normalizeTheme(modo);
+}
+
+export function normalizarPaletaClaraCognicion(paleta) {
+  const valor = String(paleta || "").toLowerCase().trim();
+  return OPCIONES_PALETA_CLARA_COGNICION.some((opcion) => opcion.id === valor)
+    ? valor
+    : PALETAS_CLARAS_COGNICION.MENTA;
+}
+
+export function obtenerPaletaClaraLocalCognicion() {
+  try {
+    return normalizarPaletaClaraCognicion(localStorage.getItem(CLAVE_PALETA_CLARA));
+  } catch (_) {
+    return PALETAS_CLARAS_COGNICION.MENTA;
+  }
+}
+
+export function aplicarPaletaClaraCognicion(paleta) {
+  const paletaSegura = normalizarPaletaClaraCognicion(paleta);
+  document.documentElement.dataset.paletaClara = paletaSegura;
+  return paletaSegura;
+}
+
+export function guardarPaletaClaraLocalCognicion(paleta) {
+  const paletaSegura = aplicarPaletaClaraCognicion(paleta);
+  try { localStorage.setItem(CLAVE_PALETA_CLARA, paletaSegura); } catch (_) { /* almacenamiento no disponible */ }
+  return paletaSegura;
 }
 
 export function obtenerModoInterfazLocalCognicion() {
@@ -86,29 +109,25 @@ export function aplicarModoInterfazCognicion(modo) {
 }
 export function obtenerTemaLocalCognicion() {
   try {
-    const guardado = localStorage.getItem(CLAVE_LOCAL);
-    return guardado ? normalizarTemaCognicion(guardado) : TEMA_PREDETERMINADO_COGNICION;
-  } catch (error) {
-    return TEMA_PREDETERMINADO_COGNICION;
-  }
+    localStorage.setItem(CLAVE_LOCAL, TEMA_PREDETERMINADO_COGNICION);
+  } catch (_) { /* almacenamiento no disponible */ }
+  return TEMA_PREDETERMINADO_COGNICION;
 }
 
-export function guardarTemaLocalCognicion(tema) {
-  const temaSeguro = normalizarTemaCognicion(tema);
+export function guardarTemaLocalCognicion() {
   try {
-    localStorage.setItem(CLAVE_LOCAL, temaSeguro);
+    localStorage.setItem(CLAVE_LOCAL, TEMA_PREDETERMINADO_COGNICION);
   } catch (error) {
     console.warn("No se pudo guardar la apariencia local.", error);
   }
-  return temaSeguro;
+  return TEMA_PREDETERMINADO_COGNICION;
 }
 
-export function aplicarTemaCognicion(tema) {
-  const temaSeguro = normalizarTemaCognicion(tema);
+export function aplicarTemaCognicion() {
   const root = document.documentElement;
-  document.body?.classList.toggle("tema-laboratorio", temaSeguro === TEMAS_COGNICION.LABORATORIO);
-  root.dataset.cognicionTheme = temaSeguro;
-  return temaSeguro;
+  document.body?.classList.add("tema-laboratorio");
+  root.dataset.cognicionTheme = TEMA_PREDETERMINADO_COGNICION;
+  return TEMA_PREDETERMINADO_COGNICION;
 }
 
 export function aplicarAparienciaGuardada() {
@@ -117,16 +136,8 @@ export function aplicarAparienciaGuardada() {
 }
 
 export async function obtenerPreferenciaAparienciaUsuario(uid) {
-  if (!uid) return obtenerTemaLocalCognicion();
-  try {
-    const snap = await getDoc(doc(db, "usuarios", uid));
-    const datos = snap.exists() ? snap.data() : {};
-    const temaRemoto = datos?.preferencias?.apariencia?.tema || datos?.apariencia?.tema || datos?.temaApariencia;
-    return temaRemoto ? normalizarTemaCognicion(temaRemoto) : obtenerTemaLocalCognicion();
-  } catch (error) {
-    console.warn("No se pudo leer la apariencia del usuario.", error);
-    return obtenerTemaLocalCognicion();
-  }
+  void uid;
+  return obtenerTemaLocalCognicion();
 }
 export async function obtenerModoInterfazUsuario(uid) {
   return initializeThemeForUser(uid ? { uid } : null);
@@ -152,32 +163,17 @@ export async function sincronizarAparienciaUsuario(uid, datosUsuario = null) {
       datos = {};
     }
   }
-  const temaRemoto = datos?.preferencias?.apariencia?.tema || datos?.apariencia?.tema || datos?.temaApariencia;
   const biocellularRemoto = datos?.preferencias?.apariencia?.biocelular;
   const modoRemoto = datos?.preferencias?.apariencia?.modoInterfaz || datos?.preferencias?.tema || datos?.apariencia?.modoInterfaz || datos?.modoInterfaz;
-  const tema = temaRemoto ? normalizarTemaCognicion(temaRemoto) : obtenerTemaLocalCognicion();
+  const paletaClaraRemota = datos?.preferencias?.apariencia?.paletaClara || datos?.apariencia?.paletaClara;
+  const tema = TEMA_PREDETERMINADO_COGNICION;
   const modoInterfaz = normalizarModoInterfazCognicion(modoRemoto);
   guardarTemaLocalCognicion(tema);
+  guardarPaletaClaraLocalCognicion(paletaClaraRemota || obtenerPaletaClaraLocalCognicion());
   if (biocellularRemoto && typeof biocellularRemoto === "object") saveBiocellularPreferences(biocellularRemoto);
   await initializeThemeForUser(uid ? { uid } : null, datos);
   aplicarTemaCognicion(tema);
   return tema;
-}
-
-export async function guardarPreferenciaAparienciaUsuario(uid, tema) {
-  const temaSeguro = guardarTemaLocalCognicion(tema);
-  aplicarTemaCognicion(temaSeguro);
-  if (uid) {
-    await setDoc(doc(db, "usuarios", uid), {
-      preferencias: {
-        apariencia: {
-          tema: temaSeguro,
-          actualizadoEn: serverTimestamp()
-        }
-      }
-    }, { merge: true });
-  }
-  return temaSeguro;
 }
 
 export async function guardarPreferenciasBiocellularUsuario(uid, preferences) {
@@ -190,4 +186,14 @@ export async function guardarPreferenciasBiocellularUsuario(uid, preferences) {
 export async function guardarModoInterfazUsuario(uid, modo) {
   const modoSeguro = guardarModoInterfazLocalCognicion(modo);
   return setThemeForUser(uid ? { uid } : null, modoSeguro);
+}
+
+export async function guardarPaletaClaraUsuario(uid, paleta) {
+  const paletaSegura = guardarPaletaClaraLocalCognicion(paleta);
+  if (uid) {
+    await setDoc(doc(db, "usuarios", uid), {
+      preferencias: { apariencia: { paletaClara: paletaSegura } }
+    }, { merge: true });
+  }
+  return paletaSegura;
 }

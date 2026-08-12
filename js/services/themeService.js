@@ -3,12 +3,27 @@ import { db } from "../firebase.js";
 
 const LEGACY_KEYS = ["cognicion.apariencia.modoInterfaz", "theme"];
 const LAST_THEME_STORAGE_KEY = "cognicion:theme:last";
+const LIGHT_PALETTE_STORAGE_KEY = "cognicion.apariencia.paletaClara";
+const PALETAS_CLARAS_VALIDAS = new Set(["menta", "cielo", "lavanda", "durazno"]);
 export const DEFAULT_THEME = "biocelular";
 const pendingByUid = new Map();
 const userSelectionVersion = new Map();
 
 export function getThemeStorageKey(uid) {
   return `cognicion:theme:${uid}`;
+}
+
+function normalizarPaletaClara(value) {
+  const paleta = String(value || "").toLowerCase().trim();
+  return PALETAS_CLARAS_VALIDAS.has(paleta) ? paleta : "menta";
+}
+
+function aplicarPaletaClaraDesdePerfil(profile = null) {
+  const remota = profile?.preferencias?.apariencia?.paletaClara || profile?.apariencia?.paletaClara;
+  const paleta = normalizarPaletaClara(remota || readStorage(LIGHT_PALETTE_STORAGE_KEY));
+  document.documentElement.dataset.paletaClara = paleta;
+  writeStorage(LIGHT_PALETTE_STORAGE_KEY, paleta);
+  return paleta;
 }
 
 export function normalizeTheme(value) {
@@ -51,7 +66,7 @@ export function applyTheme(theme) {
   root.dataset.theme = normalizedTheme;
   root.style.colorScheme = normalizedTheme === "light" ? "light" : "dark";
   root.style.backgroundColor = normalizedTheme === "light"
-    ? "#f3f3f1"
+    ? "#ffffff"
     : normalizedTheme === "biocelular" ? "#120609" : "#050505";
   if (normalizedTheme === "biocelular") {
     void import("../themes/biocellularThemeController.js")
@@ -88,9 +103,15 @@ function getRemoteTheme(profile = {}) {
 
 export async function getThemeFromUserProfile(uid, profile = null) {
   if (!uid) return null;
-  if (profile) return getRemoteTheme(profile);
+  if (profile) {
+    aplicarPaletaClaraDesdePerfil(profile);
+    return getRemoteTheme(profile);
+  }
   const snapshot = await getDoc(doc(db, "usuarios", uid));
-  return snapshot.exists() ? getRemoteTheme(snapshot.data()) : null;
+  if (!snapshot.exists()) return null;
+  const datos = snapshot.data();
+  aplicarPaletaClaraDesdePerfil(datos);
+  return getRemoteTheme(datos);
 }
 
 export async function initializeThemeForUser(user, profile = null) {

@@ -3,31 +3,36 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/f
 import {
   aplicarAparienciaGuardada,
   aplicarModoInterfazCognicion,
+  aplicarPaletaClaraCognicion,
   aplicarTemaCognicion,
   guardarModoInterfazUsuario,
+  guardarPaletaClaraUsuario,
   guardarPreferenciasBiocellularUsuario,
-  guardarPreferenciaAparienciaUsuario,
   MODOS_INTERFAZ_COGNICION,
   obtenerModoInterfazLocalCognicion,
+  obtenerPaletaClaraLocalCognicion,
   OPCIONES_MODO_INTERFAZ_COGNICION,
-  OPCIONES_TEMA_COGNICION,
-  sincronizarAparienciaUsuario,
-  TEMAS_COGNICION
+  OPCIONES_PALETA_CLARA_COGNICION,
+  sincronizarAparienciaUsuario
 } from "./services/apariencia.js";
 import { getBiocellularPreferences } from "./themes/biocellularPreferences.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { abrirLegalModal } from "./legal/legalModal.js";
 import { betaConsent, privacyNotice } from "./legal/legalDocuments.js";
 import { actualizarPreferenciaComunicaciones, obtenerEstadoConsentimientoLegal } from "./legal/legalConsentService.js";
+import { obtenerUsuario } from "./services/usuarios.js";
+import { registrarEventoAuditoria } from "./services/auditoria.js";
+import { renderizarFotoPerfil, subirFotoPerfil } from "./services/profilePhotoService.js";
+import { isAdministrator, usuarioEsPersonalClinico } from "./utils/roles.js";
 
 aplicarAparienciaGuardada();
 iniciarMonitoreoSesion("Configuracion - Apariencia");
 
 let uidActual = null;
-let temaGuardado = aplicarAparienciaGuardada();
-let temaPendiente = temaGuardado;
 let modoInterfazGuardado = obtenerModoInterfazLocalCognicion();
 let modoInterfazPendiente = modoInterfazGuardado;
+let paletaClaraGuardada = obtenerPaletaClaraLocalCognicion();
+let paletaClaraPendiente = paletaClaraGuardada;
 let biocellularPendiente = getBiocellularPreferences();
 let biocellularGuardado = { ...biocellularPendiente };
 let guardandoApariencia = false;
@@ -37,18 +42,20 @@ function estado(texto) {
   if (el) el.textContent = texto;
 }
 
-function nombreTema(tema) {
-  const opcion = OPCIONES_TEMA_COGNICION.find((item) => item.id === tema);
-  return opcion?.nombre || "Clasica";
-}
-
 function nombreModoInterfaz(modo) {
   const opcion = OPCIONES_MODO_INTERFAZ_COGNICION.find((item) => item.id === modo);
   return opcion?.nombre || "Futurista Oscuro";
 }
 
+function nombrePaletaClara(paleta) {
+  return OPCIONES_PALETA_CLARA_COGNICION.find((item) => item.id === paleta)?.nombre || "Menta";
+}
+
 function textoPreferenciaActiva() {
-  return `Preferencia activa: ${nombreTema(temaGuardado)} - ${nombreModoInterfaz(modoInterfazGuardado)}.`;
+  const paleta = modoInterfazGuardado === MODOS_INTERFAZ_COGNICION.CLARO
+    ? ` · Paleta ${nombrePaletaClara(paletaClaraGuardada)}`
+    : "";
+  return `Interfaz Laboratorio · ${nombreModoInterfaz(modoInterfazGuardado)}${paleta}.`;
 }
 
 function formatearFechaLegal(valor) {
@@ -58,8 +65,8 @@ function formatearFechaLegal(valor) {
 }
 
 function hayCambiosPendientes() {
-  return temaPendiente !== temaGuardado
-    || modoInterfazPendiente !== modoInterfazGuardado
+  return modoInterfazPendiente !== modoInterfazGuardado
+    || paletaClaraPendiente !== paletaClaraGuardada
     || JSON.stringify(biocellularPendiente) !== JSON.stringify(biocellularGuardado);
 }
 
@@ -78,45 +85,22 @@ function actualizarBotonesAccion() {
 }
 
 function actualizarVistaPrevia() {
-  aplicarTemaCognicion(temaPendiente);
+  aplicarTemaCognicion();
+  aplicarPaletaClaraCognicion(paletaClaraPendiente);
   aplicarModoInterfazCognicion(modoInterfazPendiente);
   const settings = document.getElementById("biocellularSettings");
   if (settings) settings.hidden = modoInterfazPendiente !== MODOS_INTERFAZ_COGNICION.BIOCELULAR;
+  const paletaClaraSettings = document.getElementById("paletaClaraSettings");
+  if (paletaClaraSettings) paletaClaraSettings.hidden = modoInterfazPendiente !== MODOS_INTERFAZ_COGNICION.CLARO;
 }
 
 function estadoVistaPrevia() {
+  const paleta = modoInterfazPendiente === MODOS_INTERFAZ_COGNICION.CLARO
+    ? ` · Paleta ${nombrePaletaClara(paletaClaraPendiente)}`
+    : "";
   estado(hayCambiosPendientes()
-    ? `Vista previa: ${nombreTema(temaPendiente)} - ${nombreModoInterfaz(modoInterfazPendiente)}. Pulsa Aplicar tema para guardar.`
+    ? `Vista previa: Laboratorio · ${nombreModoInterfaz(modoInterfazPendiente)}${paleta}. Pulsa Aplicar tema para guardar.`
     : textoPreferenciaActiva());
-}
-
-function renderizarTemas() {
-  const contenedor = document.getElementById("temasApariencia");
-  if (!contenedor) return;
-  contenedor.innerHTML = OPCIONES_TEMA_COGNICION.map((tema) => {
-    const seleccionado = tema.id === temaPendiente;
-    const guardado = tema.id === temaGuardado;
-    return `
-      <button type="button" class="tema-opcion ${seleccionado ? "activo" : ""} ${guardado ? "guardado" : ""}" data-tema="${tema.id}" aria-pressed="${seleccionado}">
-        <div class="tema-preview ${tema.id}" aria-hidden="true"></div>
-        <strong>${tema.nombre}</strong>
-        <small>${tema.descripcion}</small>
-      </button>
-    `;
-  }).join("");
-
-  contenedor.querySelectorAll("[data-tema]").forEach((boton) => {
-    boton.addEventListener("click", () => {
-      temaPendiente = boton.dataset.tema;
-      actualizarVistaPrevia();
-      renderizarTemas();
-      renderizarModosInterfaz();
-      actualizarBotonesAccion();
-      estadoVistaPrevia();
-    });
-  });
-
-  actualizarBotonesAccion();
 }
 
 function renderizarModosInterfaz() {
@@ -141,8 +125,8 @@ function renderizarModosInterfaz() {
     boton.addEventListener("click", () => {
       modoInterfazPendiente = boton.dataset.modoInterfaz;
       actualizarVistaPrevia();
-      renderizarTemas();
       renderizarModosInterfaz();
+      renderizarPaletasClaras();
       actualizarBotonesAccion();
       estadoVistaPrevia();
     });
@@ -158,28 +142,54 @@ function renderizarModosInterfaz() {
   actualizarBotonesAccion();
 }
 
+function renderizarPaletasClaras() {
+  const contenedor = document.getElementById("paletasClarasApariencia");
+  if (!contenedor) return;
+  contenedor.innerHTML = OPCIONES_PALETA_CLARA_COGNICION.map((paleta) => {
+    const seleccionada = paleta.id === paletaClaraPendiente;
+    const guardada = paleta.id === paletaClaraGuardada;
+    return `
+      <button type="button" class="paleta-clara-opcion ${seleccionada ? "activa" : ""} ${guardada ? "guardada" : ""}" data-paleta-clara="${paleta.id}" aria-pressed="${seleccionada}">
+        <span class="paleta-clara-muestra ${paleta.id}" aria-hidden="true"><i></i><i></i><i></i></span>
+        <strong>${paleta.nombre}</strong>
+        <small>${paleta.descripcion}</small>
+      </button>
+    `;
+  }).join("");
+
+  contenedor.querySelectorAll("[data-paleta-clara]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      paletaClaraPendiente = boton.dataset.paletaClara;
+      aplicarPaletaClaraCognicion(paletaClaraPendiente);
+      renderizarPaletasClaras();
+      actualizarBotonesAccion();
+      estadoVistaPrevia();
+    });
+  });
+}
+
 async function aplicarTemaPendiente() {
   if (!hayCambiosPendientes() || guardandoApariencia) return;
   guardandoApariencia = true;
   actualizarBotonesAccion();
   try {
     estado("Guardando apariencia...");
-    if (temaPendiente !== temaGuardado) {
-      temaGuardado = await guardarPreferenciaAparienciaUsuario(uidActual, temaPendiente);
-      temaPendiente = temaGuardado;
-    }
     if (modoInterfazPendiente !== modoInterfazGuardado) {
       modoInterfazGuardado = await guardarModoInterfazUsuario(uidActual, modoInterfazPendiente);
       modoInterfazPendiente = modoInterfazGuardado;
+    }
+    if (paletaClaraPendiente !== paletaClaraGuardada) {
+      paletaClaraGuardada = await guardarPaletaClaraUsuario(uidActual, paletaClaraPendiente);
+      paletaClaraPendiente = paletaClaraGuardada;
     }
     if (JSON.stringify(biocellularPendiente) !== JSON.stringify(biocellularGuardado)) {
       biocellularGuardado = await guardarPreferenciasBiocellularUsuario(uidActual, biocellularPendiente);
       biocellularPendiente = { ...biocellularGuardado };
     }
     actualizarVistaPrevia();
-    renderizarTemas();
     renderizarModosInterfaz();
-    estado(`Apariencia aplicada: ${nombreTema(temaGuardado)} - ${nombreModoInterfaz(modoInterfazGuardado)}.`);
+    renderizarPaletasClaras();
+    estado(textoPreferenciaActiva());
   } catch (error) {
     console.error("No se pudo guardar la apariencia.", error);
     estado("No se pudo guardar en la nube. La vista previa sigue activa; puedes reintentar o cancelar.");
@@ -190,34 +200,88 @@ async function aplicarTemaPendiente() {
 }
 
 function cancelarVistaPrevia() {
-  temaPendiente = temaGuardado;
   modoInterfazPendiente = modoInterfazGuardado;
+  paletaClaraPendiente = paletaClaraGuardada;
   biocellularPendiente = { ...biocellularGuardado };
   actualizarVistaPrevia();
-  renderizarTemas();
   renderizarModosInterfaz();
+  renderizarPaletasClaras();
   actualizarBotonesAccion();
   estado(`Vista previa cancelada. ${textoPreferenciaActiva()}`);
 }
 
 function restaurarTemaPredeterminado() {
-  temaPendiente = TEMAS_COGNICION.LABORATORIO;
   modoInterfazPendiente = MODOS_INTERFAZ_COGNICION.BIOCELULAR;
+  paletaClaraPendiente = "menta";
   biocellularPendiente = getBiocellularPreferences();
   actualizarVistaPrevia();
-  renderizarTemas();
   renderizarModosInterfaz();
+  renderizarPaletasClaras();
   actualizarBotonesAccion();
   estado("Predeterminado en vista previa. Pulsa Aplicar tema para guardar.");
 }
 
 function inicializarControlesApariencia() {
-  renderizarTemas();
   renderizarModosInterfaz();
+  renderizarPaletasClaras();
+  actualizarVistaPrevia();
   document.getElementById("aplicarTemaApariencia")?.addEventListener("click", aplicarTemaPendiente);
   document.getElementById("cancelarTemaApariencia")?.addEventListener("click", cancelarVistaPrevia);
   document.getElementById("restaurarTemaApariencia")?.addEventListener("click", restaurarTemaPredeterminado);
   actualizarBotonesAccion();
+}
+
+async function inicializarFotoPerfilConfiguracion(user) {
+  const perfil = await obtenerUsuario(user.uid);
+  const rol = perfil?.rol || perfil?.role || "";
+  if (!perfil || (!isAdministrator(perfil) && !usuarioEsPersonalClinico(rol))) return;
+
+  const nav = document.getElementById("navFotoPerfil");
+  const seccion = document.getElementById("foto-perfil");
+  const input = document.getElementById("fotoPerfilConfiguracion");
+  const preview = document.getElementById("fotoPerfilConfiguracionPreview");
+  const status = document.getElementById("estadoFotoPerfilConfiguracion");
+  const nombre = perfil.nombre || user.displayName || user.email || "DR";
+  let fotoUrl = perfil.fotoProfesional || user.photoURL || "";
+
+  nav.hidden = false;
+  seccion.hidden = false;
+  input.disabled = false;
+  renderizarFotoPerfil(preview, { url: fotoUrl, nombre, alt: "Foto de perfil profesional" });
+  status.textContent = fotoUrl ? "Fotografía actual guardada." : "Aún no has agregado una fotografía.";
+
+  if (input.dataset.profilePhotoReady === "true") return;
+  input.dataset.profilePhotoReady = "true";
+  input.addEventListener("change", async () => {
+    const file = input.files?.[0];
+    if (!file) return;
+    input.disabled = true;
+    status.textContent = "Subiendo fotografía...";
+    try {
+      const resultado = await subirFotoPerfil(user.uid, file);
+      fotoUrl = resultado.url;
+      renderizarFotoPerfil(preview, { url: fotoUrl, nombre, alt: "Foto de perfil profesional" });
+      status.textContent = "Fotografía actualizada. Ya está disponible en tu perfil profesional.";
+      registrarEventoAuditoria({
+        accion: "actualizar_foto_perfil",
+        modulo: "Configuración",
+        descripcion: "El usuario actualizó su fotografía de perfil desde Configuración.",
+        usuarioUid: user.uid,
+        usuarioNombre: perfil.nombre || "",
+        usuarioRol: rol || "medico",
+        exito: true,
+        detalles: { storagePath: resultado.storagePath }
+      }).catch((error) => {
+        console.warn("No se pudo registrar la auditoría de la fotografía.", error?.code || error?.name || "error");
+      });
+    } catch (error) {
+      console.error("No se pudo actualizar la fotografía de perfil.", error);
+      status.textContent = error?.message || "No se pudo subir la fotografía. Intenta nuevamente.";
+    } finally {
+      input.disabled = false;
+      input.value = "";
+    }
+  });
 }
 
 inicializarControlesApariencia();
@@ -228,6 +292,9 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
   uidActual = user.uid;
+  inicializarFotoPerfilConfiguracion(user).catch((error) => {
+    console.error("No se pudo inicializar la fotografía de perfil.", error);
+  });
   document.getElementById("verAvisoPrivacidad")?.addEventListener("click", (event) => abrirLegalModal(privacyNotice, event.currentTarget));
   document.getElementById("verConsentimientoBeta")?.addEventListener("click", (event) => abrirLegalModal(betaConsent, event.currentTarget));
   const preferenciaComunicaciones = document.getElementById("preferenciaComunicaciones");
@@ -245,14 +312,16 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("estadoLegal").textContent = "No se pudieron cargar los consentimientos.";
     console.error("[LEGAL][SETTINGS] Error de lectura", { code: error?.code || "unknown" });
   }
-  temaGuardado = await sincronizarAparienciaUsuario(user.uid);
-  temaPendiente = temaGuardado;
+  await sincronizarAparienciaUsuario(user.uid);
   modoInterfazGuardado = obtenerModoInterfazLocalCognicion();
   modoInterfazPendiente = modoInterfazGuardado;
+  paletaClaraGuardada = obtenerPaletaClaraLocalCognicion();
+  paletaClaraPendiente = paletaClaraGuardada;
   biocellularGuardado = getBiocellularPreferences();
   biocellularPendiente = { ...biocellularGuardado };
-  renderizarTemas();
   renderizarModosInterfaz();
+  renderizarPaletasClaras();
+  actualizarVistaPrevia();
   actualizarBotonesAccion();
   estado(textoPreferenciaActiva());
 });

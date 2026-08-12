@@ -28,10 +28,6 @@ import {
 } from "./catalogs/catalogoLaboratorioFray.js";
 import { renderizarFormularioLaboratorioFray } from "./components/solicitudLaboratorioFray.js";
 import {
-  obtenerTemaLocalCognicion,
-  TEMAS_COGNICION
-} from "./services/apariencia.js";
-import {
   construirNombreCompletoPaciente,
   obtenerNombrePacienteParaMostrar
 } from "./utils/nombresPacientes.js";

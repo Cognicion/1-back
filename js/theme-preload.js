@@ -2,6 +2,7 @@
 (function () {
   const GLOBAL_THEME_KEY = "cognicion:theme:last";
   const VISUAL_THEME_KEY = "cognicion.apariencia.tema";
+  const LIGHT_PALETTE_KEY = "cognicion.apariencia.paletaClara";
   const LEGACY_KEYS = ["cognicion.apariencia.modoInterfaz", "theme"];
   const DEFAULT_THEME = "biocelular";
   const root = document.documentElement;
@@ -32,10 +33,12 @@
     const storedTheme = readImmediateTheme();
     const appliedTheme = isValid(storedTheme) ? storedTheme : DEFAULT_THEME;
     root.dataset.theme = appliedTheme;
-    root.dataset.cognicionTheme = read(VISUAL_THEME_KEY) || "laboratorio";
+    root.dataset.paletaClara = read(LIGHT_PALETTE_KEY) || "menta";
+    root.dataset.cognicionTheme = "laboratorio";
+    try { localStorage.setItem(VISUAL_THEME_KEY, "laboratorio"); } catch (_) { /* almacenamiento no disponible */ }
     root.style.colorScheme = appliedTheme === "light" ? "light" : "dark";
     root.style.backgroundColor = appliedTheme === "light"
-      ? "#f3f3f1"
+      ? "#ffffff"
       : appliedTheme === "biocelular" ? "#120609" : "#050505";
     root.dataset.themeReady = "true";
     if (appliedTheme === "biocelular" && !document.getElementById("cognicion-biocellular-theme-css")) {

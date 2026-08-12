@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <link rel="stylesheet" href="css/legal.css">
-  <link rel="stylesheet" href="css/configuracion.css?v=1.865">
+  <link rel="stylesheet" href="css/configuracion.css?v=1.880-laboratorio-unico-v1">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
 <body class="pagina-configuracion">
@@ -35,6 +35,10 @@
           <span class="config-nav-icon" aria-hidden="true">◐</span>
           <span><strong>Apariencia</strong><small>Temas y animación</small></span>
         </a>
+        <a id="navFotoPerfil" class="config-nav-link" href="#foto-perfil" hidden>
+          <span class="config-nav-icon" aria-hidden="true">●</span>
+          <span><strong>Foto de perfil</strong><small>Imagen profesional</small></span>
+        </a>
         <a class="config-nav-link" href="#legal">
           <span class="config-nav-icon" aria-hidden="true">✓</span>
           <span><strong>Legal</strong><small>Documentos y permisos</small></span>
@@ -48,18 +52,23 @@
         <span class="config-section-icon" aria-hidden="true">✦</span>
         <div>
       <span class="config-kicker">Interfaz</span>
-      <h2>Estilo visual</h2>
-          <p>Elige la presentación general y después selecciona su combinación de color.</p>
+      <h2>Apariencia</h2>
+          <p>Selecciona la combinación de color de la interfaz Laboratorio.</p>
         </div>
       </div>
 
-      <div id="temasApariencia" class="temas-grid" aria-live="polite"></div>
-
-      <div class="modo-interfaz-section" aria-labelledby="tituloModoInterfaz">
+      <div class="modo-interfaz-section modo-interfaz-principal" aria-labelledby="tituloModoInterfaz">
         <span class="config-kicker">Color de interfaz</span>
         <h3 id="tituloModoInterfaz">Tema Biocelular, Oscuro o Claro</h3>
         <p>Biocelular es el tema predeterminado. Oscuro y Claro permanecen disponibles y cualquier preferencia guardada seguirá respetándose.</p>
         <div id="modoInterfazApariencia" class="modo-interfaz-grid" aria-live="polite"></div>
+      </div>
+
+      <div id="paletaClaraSettings" class="paleta-clara-settings" hidden aria-labelledby="tituloPaletaClara">
+        <span class="config-kicker">Personalización del tema claro</span>
+        <h3 id="tituloPaletaClara">Paleta pastel</h3>
+        <p>El fondo permanecerá blanco y las áreas principales utilizarán el color pastel seleccionado.</p>
+        <div id="paletasClarasApariencia" class="paletas-claras-grid" aria-live="polite"></div>
       </div>
 
       <div id="biocellularSettings" class="biocellular-settings" hidden aria-labelledby="tituloBiocellular">
@@ -101,6 +110,26 @@
       <p id="estadoApariencia" class="config-status">Cargando preferencia...</p>
     </section>
 
+    <section id="foto-perfil" class="config-card config-profile-photo" aria-labelledby="tituloFotoPerfilConfiguracion" hidden>
+      <div class="config-section-heading">
+        <span class="config-section-icon" aria-hidden="true">●</span>
+        <div>
+          <span class="config-kicker">Perfil profesional</span>
+          <h2 id="tituloFotoPerfilConfiguracion">Foto de perfil</h2>
+          <p>Esta imagen se mostrará en tu Panel Médico y en tu perfil profesional.</p>
+        </div>
+      </div>
+      <div class="config-profile-photo-editor">
+        <div id="fotoPerfilConfiguracionPreview" class="config-profile-avatar" aria-hidden="true">DR</div>
+        <div class="config-profile-photo-controls">
+          <label for="fotoPerfilConfiguracion">Seleccionar fotografía</label>
+          <input id="fotoPerfilConfiguracion" type="file" accept="image/jpeg,image/png,image/webp" disabled>
+          <small>Formatos JPG, PNG o WEBP. Tamaño máximo: 5 MB.</small>
+          <p id="estadoFotoPerfilConfiguracion" class="config-status" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
     <section id="legal" class="config-card legal-settings" aria-labelledby="tituloLegal">
       <div class="config-section-heading">
         <span class="config-section-icon" aria-hidden="true">✓</span>
@@ -126,7 +155,7 @@
     </div>
   </main>
 
-  <script type="module" src="js/configuracion.js"></script>
+  <script type="module" src="js/configuracion.js?v=1.880-laboratorio-unico-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>

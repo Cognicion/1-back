@@ -3,6 +3,7 @@ import { actualizarUsuario, obtenerUsuario } from "./services/usuarios.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
+import { renderizarFotoPerfil, subirFotoPerfil } from "./services/profilePhotoService.js";
 
 import {
   onAuthStateChanged
@@ -10,6 +11,7 @@ import {
 
 let medicoUid = null;
 let rolPerfilActual = "";
+let subiendoFoto = false;
 
 iniciarMonitoreoSesion("Perfil profesional");
 
@@ -24,6 +26,8 @@ const campos = {
   correo: document.getElementById("correoPerfil"),
   descripcion: document.getElementById("descripcionPerfil")
 };
+const archivoFotoPerfil = document.getElementById("archivoFotoPerfil");
+const estadoFotoPerfil = document.getElementById("estadoFotoPerfil");
 
 function normalizarRolPerfil(rol = "") {
   return String(rol || "").toLowerCase().trim();
@@ -51,7 +55,42 @@ onAuthStateChanged(auth, async (user) => {
   rolPerfilActual = normalizarRolPerfil(usuario.rol);
   llenarFormulario(usuario);
   renderPreview();
+  archivoFotoPerfil.disabled = false;
   document.body.classList.remove("bloqueado");
+});
+
+archivoFotoPerfil.addEventListener("change", async () => {
+  const file = archivoFotoPerfil.files?.[0];
+  if (!file || !medicoUid || subiendoFoto) return;
+
+  subiendoFoto = true;
+  archivoFotoPerfil.disabled = true;
+  estadoFotoPerfil.textContent = "Subiendo fotografía...";
+  try {
+    const resultado = await subirFotoPerfil(medicoUid, file);
+    campos.foto.value = resultado.url;
+    renderPreview();
+    estadoFotoPerfil.textContent = "Fotografía actualizada.";
+
+    registrarEventoAuditoria({
+      accion: "actualizar_foto_perfil",
+      modulo: "Perfil profesional",
+      descripcion: "El usuario actualizó su fotografía de perfil.",
+      usuarioUid: medicoUid,
+      usuarioRol: rolPerfilActual || "medico",
+      exito: true,
+      detalles: { storagePath: resultado.storagePath }
+    }).catch((error) => {
+      console.warn("No se pudo registrar la auditoría de la fotografía.", error?.code || error?.name || "error");
+    });
+  } catch (error) {
+    console.error("No se pudo actualizar la fotografía de perfil.", error);
+    estadoFotoPerfil.textContent = error?.message || "No se pudo subir la fotografía. Intenta nuevamente.";
+  } finally {
+    subiendoFoto = false;
+    archivoFotoPerfil.disabled = false;
+    archivoFotoPerfil.value = "";
+  }
 });
 
 document.getElementById("formPerfil").addEventListener("submit", async (e) => {
@@ -115,24 +154,11 @@ function renderPreview() {
   document.getElementById("contactoPreview").textContent = [campos.telefono.value, campos.correo.value].filter(Boolean).join(" · ") || "---";
   document.getElementById("descripcionPreview").textContent = campos.descripcion.value || "";
 
-  const foto = document.getElementById("fotoPreview");
-  if (campos.foto.value.trim()) {
-    foto.innerHTML = `<img src="${escaparAtributo(campos.foto.value.trim())}" alt="Fotografia profesional">`;
-  } else {
-    foto.textContent = iniciales(campos.nombre.value);
-  }
-}
-
-function iniciales(nombre) {
-  return (nombre || "DR")
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((x) => x[0])
-    .join("")
-    .toUpperCase();
-}
-
-function escaparAtributo(valor) {
-  return String(valor).replace(/"/g, "&quot;");
+  const datosFoto = {
+    url: campos.foto.value.trim(),
+    nombre: campos.nombre.value,
+    alt: "Fotografía profesional"
+  };
+  renderizarFotoPerfil(document.getElementById("fotoPreview"), datosFoto);
+  renderizarFotoPerfil(document.getElementById("fotoPerfilEditor"), datosFoto);
 }

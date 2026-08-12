@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Perfil profesional | Cognicion</title>
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-<link rel="stylesheet" href="css/perfil-profesional.css">
+<link rel="stylesheet" href="css/perfil-profesional.css?v=1.866-profile-photo-v1">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -32,9 +32,16 @@
       <label>Nombre profesional
         <input id="nombrePerfil" required>
       </label>
-      <label>Fotografia URL
-        <input id="fotoPerfil" placeholder="https://...">
-      </label>
+      <div class="campo-amplio foto-perfil-editor" aria-labelledby="tituloFotoPerfil">
+        <div class="foto foto-editor" id="fotoPerfilEditor" aria-hidden="true">DR</div>
+        <div class="foto-perfil-controles">
+          <strong id="tituloFotoPerfil">Fotografía de perfil</strong>
+          <p>Selecciona una imagen JPG, PNG o WEBP de hasta 5 MB.</p>
+          <input id="archivoFotoPerfil" type="file" accept="image/jpeg,image/png,image/webp" disabled>
+          <input id="fotoPerfil" type="hidden">
+          <p id="estadoFotoPerfil" class="estado-foto" role="status" aria-live="polite"></p>
+        </div>
+      </div>
       <label>Especialidad
         <input id="especialidadPerfil" placeholder="Psiquiatria, Psicologia clinica, Medicina interna...">
       </label>
@@ -76,7 +83,7 @@
   </section>
 </main>
 
-<script type="module" src="js/perfil-profesional.js"></script>
+<script type="module" src="js/perfil-profesional.js?v=1.866-profile-photo-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>

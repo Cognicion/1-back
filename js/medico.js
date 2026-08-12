@@ -1,4 +1,4 @@
-import { listarPacientes } from "./services/usuarios.js";
+import { listarPacientes } from "./services/usuarios.js?v=1.866";
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
@@ -115,13 +115,14 @@ async function inicializarPanelMedico() {
   }
 
   const perfilUsuario = await getUserProfileOnce(user.uid);
-  await sincronizarAparienciaUsuario(user.uid, perfilUsuario);
-
   const accesoPermitido = await cargarPerfilMedico(user, perfilUsuario);
 
   if (!accesoPermitido) return;
 
   document.body.classList.remove("bloqueado");
+  sincronizarAparienciaUsuario(user.uid, perfilUsuario).catch((error) => {
+    console.warn("No se pudo completar la sincronización de apariencia en segundo plano.", error);
+  });
   uidMedicoActual = user.uid;
   filtroCarpetaActual = cargarPreferenciaFiltroCarpeta();
   carpetasVisiblesInline = cargarPreferenciaCarpetasVisibles();
@@ -177,8 +178,10 @@ async function inicializarPanelMedico() {
   inicializarImportacionDocxLazy();
   inicializarRevisionDuplicadosLazy();
 
-  await cargarCarpetasMedico(user.uid);
-  await cargarPacientes(user.uid);
+  await Promise.all([
+    cargarCarpetasMedico(user.uid),
+    cargarPacientes(user.uid)
+  ]);
 }
 
 inicializarPanelMedico().catch((error) => {
@@ -302,9 +305,6 @@ async function cargarPerfilMedico(user, datosIniciales = null) {
 
   document.getElementById("correoMedico").textContent = correo || "";
 
-  const inicial = correo ? correo.charAt(0).toUpperCase() : "M";
-  document.getElementById("avatarMedico").textContent = inicial;
-
   const datos = datosIniciales || await getUserProfileOnce(user.uid);
 
   if (!datos) {
@@ -322,8 +322,42 @@ async function cargarPerfilMedico(user, datosIniciales = null) {
   }
   document.getElementById("nombreMedico").textContent =
     datos.nombre || "Médico sin nombre";
+  renderizarAvatarMedico({
+    fotoUrl: datos.fotoProfesional || user.photoURL || ""
+  });
 
   return true;
+}
+
+function renderizarAvatarMedico({ fotoUrl = "" } = {}) {
+  const avatar = document.getElementById("avatarMedico");
+  if (!avatar) return;
+
+  avatar.replaceChildren();
+  if (!fotoUrl) {
+    mostrarCamaraAvatar(avatar);
+    return;
+  }
+
+  avatar.classList.remove("sin-foto");
+  avatar.setAttribute("aria-label", "Foto de perfil del médico");
+  avatar.title = "Foto de perfil";
+  const imagen = document.createElement("img");
+  imagen.src = fotoUrl;
+  imagen.alt = "Foto de perfil del médico";
+  imagen.decoding = "async";
+  imagen.addEventListener("error", () => {
+    avatar.replaceChildren();
+    mostrarCamaraAvatar(avatar);
+  }, { once: true });
+  avatar.appendChild(imagen);
+}
+
+function mostrarCamaraAvatar(avatar) {
+  avatar.classList.add("sin-foto");
+  avatar.textContent = "📷";
+  avatar.setAttribute("aria-label", "Sube tu foto desde Perfil profesional o Configuración");
+  avatar.title = "Sube tu foto desde Perfil profesional o Configuración";
 }
 
 function mostrarBloqueoPanelMedico(mensaje) {

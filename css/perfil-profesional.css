@@ -78,6 +78,58 @@ body.bloqueado main { display: none; }
   grid-column: 1 / -1;
 }
 
+.foto-perfil-editor {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid rgba(126,182,138,0.22);
+  border-radius: 18px;
+  background: rgba(8,12,20,0.48);
+}
+
+.foto-editor {
+  width: 92px;
+  height: 92px;
+  margin: 0;
+  border-radius: 50%;
+}
+
+.foto-perfil-controles {
+  min-width: 0;
+}
+
+.foto-perfil-controles strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--white-950);
+}
+
+.foto-perfil-controles p {
+  margin: 0 0 10px;
+  color: #aab4c3;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.foto-perfil-controles input[type="file"] {
+  max-width: 100%;
+  cursor: pointer;
+}
+
+.foto-perfil-controles input[type="file"]:disabled {
+  cursor: wait;
+  opacity: .62;
+}
+
+.foto-perfil-controles .estado-foto {
+  min-height: 18px;
+  margin: 9px 0 0;
+  color: var(--celtic-300);
+  font-weight: 700;
+}
+
 label {
   display: grid;
   gap: 8px;
@@ -194,5 +246,14 @@ nav {
   .tarjeta-medico {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .foto-perfil-editor {
+    grid-template-columns: 76px minmax(0, 1fr);
+  }
+
+  .foto-editor {
+    width: 76px;
+    height: 76px;
   }
 }

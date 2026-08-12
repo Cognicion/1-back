@@ -127,3 +127,255 @@ html[data-theme="light"] :where(.selected, .active, .seleccionada, .activa) {
   background-image: none;
   color: var(--button-secondary-text);
 }
+
+/* Paletas pastel del tema claro. El lienzo permanece blanco y las superficies usan la paleta elegida. */
+html[data-theme="light"] {
+  --paleta-clara-fondo: #ffffff;
+  --paleta-clara-superficie: #e8f6ed;
+  --paleta-clara-superficie-fuerte: #d9efe1;
+  --paleta-clara-hover: #d2eadb;
+  --paleta-clara-borde: #b8d9c4;
+  --paleta-clara-acento: #3f8f63;
+  --page-bg: var(--paleta-clara-fondo);
+  --surface-primary: var(--paleta-clara-superficie);
+  --surface-secondary: var(--paleta-clara-superficie-fuerte);
+  --surface-hover: var(--paleta-clara-hover);
+  --surface-hover-light: var(--paleta-clara-hover);
+  --surface-selected-light: var(--paleta-clara-superficie-fuerte);
+  --border-subtle: var(--paleta-clara-borde);
+  --border-normal: var(--paleta-clara-borde);
+  --accent-primary: var(--paleta-clara-acento);
+  --button-primary-bg: var(--paleta-clara-acento);
+  --button-primary-border: var(--paleta-clara-acento);
+}
+
+html[data-theme="light"][data-paleta-clara="cielo"] {
+  --paleta-clara-superficie: #e8f4fb;
+  --paleta-clara-superficie-fuerte: #d8ecf8;
+  --paleta-clara-hover: #cfe7f4;
+  --paleta-clara-borde: #b5d5e7;
+  --paleta-clara-acento: #3f82a6;
+}
+
+html[data-theme="light"][data-paleta-clara="lavanda"] {
+  --paleta-clara-superficie: #f0ebfa;
+  --paleta-clara-superficie-fuerte: #e4dcf5;
+  --paleta-clara-hover: #dcd1f0;
+  --paleta-clara-borde: #cbbce7;
+  --paleta-clara-acento: #7660a8;
+}
+
+html[data-theme="light"][data-paleta-clara="durazno"] {
+  --paleta-clara-superficie: #fff0e7;
+  --paleta-clara-superficie-fuerte: #f9e1d2;
+  --paleta-clara-hover: #f5d8c6;
+  --paleta-clara-borde: #e8c6b1;
+  --paleta-clara-acento: #a96d4d;
+}
+
+html[data-theme="light"] body {
+  background-color: var(--paleta-clara-fondo) !important;
+  background-image: none !important;
+}
+
+html[data-theme="light"] body :where(
+  header,
+  aside,
+  .navbar,
+  .navbar-medico,
+  .sidebar,
+  .card,
+  .tarjeta,
+  .module-card,
+  .panel,
+  .panel-lab,
+  .seccion,
+  .contenido,
+  .hero,
+  .workspace-section,
+  .bloque,
+  .nota-card,
+  .paciente-card,
+  .escala-card,
+  .config-card,
+  .feature-card,
+  .estadisticas,
+  .stat,
+  .tabla-pacientes
+) {
+  background-color: var(--paleta-clara-superficie) !important;
+  background-image: none !important;
+  border-color: var(--paleta-clara-borde) !important;
+}
+
+/* Ventanas flotantes y velos: una sola semántica visual adaptada al tema activo. */
+html[data-theme] {
+  --ventana-flotante-velo: rgb(0 0 0 / 72%);
+  --ventana-flotante-superficie: linear-gradient(180deg, var(--surface-primary), var(--page-bg-alt));
+  --ventana-flotante-cabecera: var(--surface-secondary);
+  --ventana-flotante-interior: color-mix(in srgb, var(--surface-secondary) 82%, transparent);
+  --ventana-flotante-borde: var(--border-normal);
+  --ventana-flotante-texto: var(--text-primary);
+  --ventana-flotante-texto-suave: var(--text-secondary);
+  --ventana-flotante-acento: var(--accent-primary);
+  --ventana-flotante-sombra: 0 28px 90px rgb(0 0 0 / 48%);
+}
+
+html[data-theme="dark"] {
+  --ventana-flotante-velo: radial-gradient(circle at 50% 16%, rgb(47 100 65 / 16%), transparent 38%), rgb(2 7 4 / 80%);
+  --ventana-flotante-superficie: linear-gradient(180deg, rgb(12 24 17 / 98%), rgb(5 12 8 / 99%));
+  --ventana-flotante-cabecera: rgb(10 21 14 / 98%);
+  --ventana-flotante-interior: rgb(20 40 27 / 68%);
+  --ventana-flotante-borde: rgb(105 185 134 / 30%);
+  --ventana-flotante-acento: #69b986;
+}
+
+html[data-theme="light"] {
+  --ventana-flotante-velo: linear-gradient(rgb(27 62 40 / 28%), rgb(27 62 40 / 38%));
+  --ventana-flotante-superficie: linear-gradient(180deg, #ffffff, var(--paleta-clara-superficie));
+  --ventana-flotante-cabecera: var(--paleta-clara-superficie-fuerte);
+  --ventana-flotante-interior: rgb(255 255 255 / 76%);
+  --ventana-flotante-borde: var(--paleta-clara-borde);
+  --ventana-flotante-texto: #183025;
+  --ventana-flotante-texto-suave: #4f665a;
+  --ventana-flotante-acento: var(--paleta-clara-acento);
+  --ventana-flotante-sombra: 0 24px 68px rgb(28 61 41 / 22%);
+}
+
+html[data-theme="biocelular"] {
+  --ventana-flotante-velo:
+    radial-gradient(ellipse at 18% 18%, rgb(201 66 69 / 18%), transparent 34%),
+    radial-gradient(ellipse at 84% 76%, rgb(255 189 88 / 10%), transparent 30%),
+    rgb(13 3 6 / 82%);
+  --ventana-flotante-superficie: linear-gradient(180deg, rgb(43 10 17 / 99%), rgb(20 5 9 / 99%));
+  --ventana-flotante-cabecera: rgb(31 7 12 / 98%);
+  --ventana-flotante-interior: rgb(73 20 29 / 58%);
+  --ventana-flotante-borde: rgb(205 79 68 / 48%);
+  --ventana-flotante-texto: #fff1d5;
+  --ventana-flotante-texto-suave: #dfc8b5;
+  --ventana-flotante-acento: #ffbd58;
+  --ventana-flotante-sombra: 0 28px 90px rgb(0 0 0 / 58%), 0 0 46px rgb(201 66 69 / 12%);
+}
+
+html[data-theme] :where(
+  .modal-backdrop,
+  .modal-overlay,
+  .proximamente-overlay,
+  .patient-transfer-modal,
+  .patient-duplicates-modal,
+  .legal-modal-backdrop,
+  .reporte-overlay,
+  .modal-filtro-atencion,
+  .solicitud-imagen-overlay,
+  .resumen-editor-overlay,
+  .historial-signo-overlay,
+  .panel-tamizaje-overlay,
+  .calc-med-modal
+) {
+  background: var(--ventana-flotante-velo);
+}
+
+html[data-theme] :where(
+  .patient-transfer-panel,
+  .patient-duplicates-panel,
+  .legal-modal,
+  .reporte-modal,
+  .modal-tipo-paciente-contenido,
+  .modal-catalogo-pronosticos > div,
+  .modal-sincronizar-estudios-nota > div,
+  .calc-med-modal-card
+) {
+  color: var(--ventana-flotante-texto);
+  border-color: var(--ventana-flotante-borde);
+  background: var(--ventana-flotante-superficie);
+  box-shadow: var(--ventana-flotante-sombra);
+}
+
+html[data-theme] :where(
+  .patient-transfer-header,
+  .patient-transfer-actions,
+  .patient-duplicates-panel > header,
+  .legal-modal > header,
+  .legal-modal > footer,
+  .reporte-modal-header
+) {
+  color: var(--ventana-flotante-texto);
+  border-color: var(--ventana-flotante-borde);
+  background: var(--ventana-flotante-cabecera);
+}
+
+html[data-theme] :where(
+  .patient-transfer-file,
+  .patient-transfer-note,
+  .patient-transfer-preview,
+  .patient-transfer-summary,
+  .patient-transfer-result,
+  .patient-transfer-candidates,
+  .patient-transfer-indications-box,
+  .patient-transfer-clinical-sections,
+  .patient-transfer-clinical-section,
+  .patient-transfer-note-segment,
+  .reporte-opcion
+) {
+  color: var(--ventana-flotante-texto);
+  border-color: var(--ventana-flotante-borde);
+  background: var(--ventana-flotante-interior);
+}
+
+html[data-theme] :where(
+  .patient-transfer-header p,
+  .patient-transfer-result a,
+  .patient-transfer-indication-meta summary,
+  .legal-modal-type,
+  .legal-modal-content h3,
+  .reporte-kicker
+) {
+  color: var(--ventana-flotante-acento);
+}
+
+html[data-theme] :where(
+  .patient-transfer-header span,
+  .patient-transfer-header small,
+  .patient-transfer-muted,
+  .patient-transfer-progress div,
+  .patient-transfer-indications-count,
+  .patient-transfer-indication-meta,
+  .patient-transfer-candidates small,
+  .legal-modal p,
+  .reporte-modal p
+) {
+  color: var(--ventana-flotante-texto-suave);
+}
+
+html[data-theme] .patient-transfer-dropzone {
+  color: var(--ventana-flotante-texto);
+  border-color: color-mix(in srgb, var(--ventana-flotante-acento) 58%, transparent);
+  background: color-mix(in srgb, var(--ventana-flotante-acento) 10%, transparent);
+}
+
+html[data-theme] .patient-transfer-dropzone.activo {
+  border-color: var(--ventana-flotante-acento);
+  background: color-mix(in srgb, var(--ventana-flotante-acento) 18%, transparent);
+}
+
+html[data-theme] :where(
+  .patient-transfer-header button,
+  .patient-transfer-dropzone button,
+  .patient-transfer-actions button,
+  .patient-transfer-file button,
+  .patient-duplicates-panel button
+) {
+  color: var(--button-secondary-text);
+  border-color: var(--button-secondary-border);
+  background: var(--button-secondary-bg);
+}
+
+html[data-theme] .patient-transfer-actions button:last-child {
+  color: var(--button-primary-text);
+  border-color: var(--button-primary-border);
+  background: var(--button-primary-bg);
+}
+
+html[data-theme] :where(.patient-transfer-panel, .patient-duplicates-panel) {
+  scrollbar-color: var(--ventana-flotante-acento) var(--ventana-flotante-cabecera);
+}
