@@ -6,10 +6,6 @@
 // deployment marker: 2026-08-11-pharmacology-ssot-v1
 // deployment marker: 2026-08-11-ssri-interactions-v1
 // deployment marker: 2026-08-11-cytochrome-bridge-v1
-<<<<<<< HEAD
-export const APP_VERSION = "1.880";
-=======
 // deployment marker: 2026-08-11-typical-antipsychotics-v1
-export const APP_VERSION = "1.887";
->>>>>>> 345fddd56f1757a28b3a8fd05617451a33e19e0e
+export const APP_VERSION = "1.881";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;
