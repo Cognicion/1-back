@@ -19,8 +19,8 @@
   <link rel="icon" type="image/png" href="assets/favicon-cognicion-128.png">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <link rel="stylesheet" href="css/theme/public-pages-light.css">
-  <link rel="stylesheet" href="css/control-maestro.css?v=1.864">
-  <link rel="stylesheet" href="css/public-laboratory-home.css?v=1.883-claro-suave-v1">
+  <link rel="stylesheet" href="CONTROL%20MAESTRO.css?v=1.885">
+  <link rel="stylesheet" href="css/public-laboratory-home.css?v=1.885-botones-orbita">
   <link rel="stylesheet" href="css/public-interactions.css?v=20260811-interactions-v2">
 </head>
 
@@ -103,7 +103,7 @@
       <div class="laboratory-stage" aria-label="Representación abstracta de una plataforma clínica y neurotecnológica" role="group">
         <div class="laboratory-stage-glow" aria-hidden="true"></div>
         <div class="laboratory-orbit-path" aria-hidden="true"></div>
-        <div class="laboratory-orbit-track">
+        <div class="laboratory-orbit-track laboratory-orbit-track--interactions" data-index-orbit-button="interacciones-farmacologicas">
           <div class="laboratory-orbit-radius">
             <div class="laboratory-orbit-upright">
               <div class="laboratory-orbit-float">
@@ -112,11 +112,20 @@
             </div>
           </div>
         </div>
-        <div class="laboratory-orbit-track laboratory-orbit-track--medical">
+        <div class="laboratory-orbit-track laboratory-orbit-track--medical" data-index-orbit-button="panel-medico">
           <div class="laboratory-orbit-radius">
             <div class="laboratory-orbit-upright">
               <div class="laboratory-orbit-float">
                 <a class="laboratory-button laboratory-button-secondary laboratory-orbit-action" href="medico.html" aria-label="Abrir Panel Médico; requiere iniciar sesión">Panel Médico</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="laboratory-orbit-track laboratory-orbit-track--login" data-index-orbit-button="iniciar-sesion">
+          <div class="laboratory-orbit-radius">
+            <div class="laboratory-orbit-upright">
+              <div class="laboratory-orbit-float">
+                <a class="laboratory-button laboratory-button-secondary laboratory-orbit-action" href="login.html" aria-label="Inicia sesión para acceder a todas las funciones">Inicia sesión para acceder a todas las funciones</a>
               </div>
             </div>
           </div>

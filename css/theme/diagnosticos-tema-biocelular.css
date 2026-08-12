@@ -1,0 +1,23 @@
+/* Colores del módulo Diagnósticos — tema Biocelular. La geometría vive en paciente.css. */
+html[data-theme="biocelular"] .diagnostico-linea { border-bottom-color: var(--border-subtle); }
+html[data-theme="biocelular"] .diagnostico-linea.principal { color: var(--text-primary); }
+html[data-theme="biocelular"] .diagnostico-principal-badge { border-color: var(--border-normal); background: var(--accent-soft); color: var(--bio-amber); }
+html[data-theme="biocelular"] .boton-diagnostico-principal { border-color: var(--input-border); background: var(--surface-secondary); color: var(--text-primary); }
+html[data-theme="biocelular"] .boton-diagnostico-principal:hover { background: var(--surface-hover); color: var(--text-primary); }
+html[data-theme="biocelular"] .diagnostico-resultados { color: var(--text-muted); }
+html[data-theme="biocelular"] .diagnostico-opcion { border-color: var(--border-subtle); background: var(--surface-secondary); color: var(--text-primary); opacity: 1; }
+html[data-theme="biocelular"] .diagnostico-opcion strong { color: var(--bio-amber); opacity: 1; }
+html[data-theme="biocelular"] .diagnostico-opcion span,
+html[data-theme="biocelular"] .diagnostico-card .registro-top span:not(.diagnostico-principal-badge) { color: var(--text-secondary); opacity: 1; }
+html[data-theme="biocelular"] .diagnostico-manual-badge { border-color: var(--border-normal); background: var(--accent-soft); color: var(--bio-amber); }
+html[data-theme="biocelular"] .diagnostico-opcion:hover { border-color: var(--bio-amber); background: var(--surface-hover); color: var(--text-primary); box-shadow: 0 0 24px var(--bio-glow); }
+html[data-theme="biocelular"] .diagnostico-opcion:hover strong { color: var(--bio-amber); }
+html[data-theme="biocelular"] .diagnostico-opcion:hover span { color: var(--text-primary); }
+html[data-theme="biocelular"] .diagnostico-opcion:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+html[data-theme="biocelular"] .diagnostico-card .registro-top strong,
+html[data-theme="biocelular"] .diagnostico-estado-label,
+html[data-theme="biocelular"] #seccionDiagnosticos label { color: var(--text-primary); opacity: 1; }
+html[data-theme="biocelular"] #seccionDiagnosticos :is(input, select, textarea) { background: var(--input-bg); color: var(--input-text); border-color: var(--input-border); }
+html[data-theme="biocelular"] #seccionDiagnosticos :is(input, textarea)::placeholder { color: var(--input-placeholder); opacity: 1; }
+html[data-theme="biocelular"] #seccionDiagnosticos .texto-suave { color: var(--text-secondary) !important; opacity: 1; }
+html[data-theme="biocelular"] .diagnostico-estado-label select { background: var(--input-bg); color: var(--input-text); border-color: var(--input-border); }

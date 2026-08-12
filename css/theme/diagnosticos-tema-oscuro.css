@@ -1,0 +1,23 @@
+/* Colores del módulo Diagnósticos — tema Oscuro. La geometría vive en paciente.css. */
+html[data-theme="dark"] .diagnostico-linea { border-bottom-color: rgb(190 196 188 / 18%); }
+html[data-theme="dark"] .diagnostico-linea.principal { color: var(--text-primary); }
+html[data-theme="dark"] .diagnostico-principal-badge { border-color: var(--border-normal); background: var(--accent-soft); color: var(--accent-active); }
+html[data-theme="dark"] .boton-diagnostico-principal { border-color: var(--input-border); background: var(--surface-secondary); color: var(--text-primary); }
+html[data-theme="dark"] .boton-diagnostico-principal:hover { background: var(--surface-hover); color: var(--text-primary); }
+html[data-theme="dark"] .diagnostico-resultados { color: var(--text-muted); }
+html[data-theme="dark"] .diagnostico-opcion { border-color: var(--border-subtle); background: var(--surface-secondary); color: var(--text-primary); opacity: 1; }
+html[data-theme="dark"] .diagnostico-opcion strong { color: var(--accent-hover); opacity: 1; }
+html[data-theme="dark"] .diagnostico-opcion span,
+html[data-theme="dark"] .diagnostico-card .registro-top span:not(.diagnostico-principal-badge) { color: var(--text-secondary); opacity: 1; }
+html[data-theme="dark"] .diagnostico-manual-badge { border-color: rgb(126 182 138 / 32%); background: rgb(82 152 102 / 10%); color: var(--accent-hover); }
+html[data-theme="dark"] .diagnostico-opcion:hover { border-color: var(--border-active); background: var(--surface-hover); color: var(--text-primary); box-shadow: 0 0 24px rgb(82 152 102 / 12%); }
+html[data-theme="dark"] .diagnostico-opcion:hover strong { color: var(--accent-hover); }
+html[data-theme="dark"] .diagnostico-opcion:hover span { color: var(--text-primary); }
+html[data-theme="dark"] .diagnostico-opcion:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+html[data-theme="dark"] .diagnostico-card .registro-top strong,
+html[data-theme="dark"] .diagnostico-estado-label,
+html[data-theme="dark"] #seccionDiagnosticos label { color: var(--text-primary); opacity: 1; }
+html[data-theme="dark"] #seccionDiagnosticos :is(input, select, textarea) { background: var(--input-bg); color: var(--input-text); border-color: var(--input-border); }
+html[data-theme="dark"] #seccionDiagnosticos :is(input, textarea)::placeholder { color: var(--input-placeholder); opacity: 1; }
+html[data-theme="dark"] #seccionDiagnosticos .texto-suave { color: var(--text-secondary) !important; opacity: 1; }
+html[data-theme="dark"] .diagnostico-estado-label select { background: var(--input-bg); color: var(--input-text); border-color: var(--input-border); }

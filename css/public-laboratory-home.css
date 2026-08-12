@@ -409,10 +409,23 @@ body.public-lab-page .laboratory-button-secondary:hover {
 }
 
 .laboratory-orbit-track--medical {
+  display: var(--visibilidad-boton-index-panel-medico, block);
   --orbit-start-angle: 180deg;
   --orbit-end-angle: 540deg;
   --orbit-counter-start-angle: -180deg;
   --orbit-counter-end-angle: -540deg;
+}
+
+.laboratory-orbit-track--interactions {
+  display: var(--visibilidad-boton-index-interacciones-farmacologicas, block);
+}
+
+.laboratory-orbit-track--login {
+  display: var(--visibilidad-boton-index-iniciar-sesion, block);
+  --orbit-start-angle: 270deg;
+  --orbit-end-angle: 630deg;
+  --orbit-counter-start-angle: -270deg;
+  --orbit-counter-end-angle: -630deg;
 }
 
 .laboratory-orbit-radius {
