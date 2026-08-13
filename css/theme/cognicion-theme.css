@@ -9,6 +9,7 @@
 @import url("./components.css");
 @import url("./utilities.css");
 @import url("./responsive.css");
+@import url("../estilo-global-panel-medico.css?v=1.899");
 
 /* Semántica común para páginas con CSS legacy cargado antes o después del tema. */
 html[data-theme="light"] {

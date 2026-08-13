@@ -1,0 +1,149 @@
+/* Presentación compartida inspirada en el Panel Médico. No modifica acciones ni navegación. */
+:root {
+  --fuente-titulos-cognicion: Georgia, "Times New Roman", serif;
+}
+
+html[data-theme] :where(h1, h2, h3, h4, h5, h6),
+html[data-theme] :where(
+  .title,
+  .titulo,
+  .card-title,
+  .module-card__title,
+  .section-title,
+  .page-title,
+  .brand-name,
+  [data-global-header-title],
+  .global-header-identity strong,
+  .marca-medico-texto strong
+) {
+  font-family: var(--fuente-titulos-cognicion);
+  letter-spacing: .015em;
+}
+
+html[data-theme] :where(
+  button,
+  .btn,
+  a.btn,
+  .boton,
+  .btn-primary,
+  .btn-secondary,
+  .btn-primario,
+  .btn-secundario,
+  .boton-principal,
+  .boton-secundario,
+  .boton-filtro-atencion
+):not(.resizer):not(.cerrar):not(.close):not(.btn--icon):not(.notifications-button):not(.accesos-rapidos-toggle):not(.laboratory-orbit-action) {
+  border-radius: 7px;
+  box-shadow: none;
+}
+
+html[data-theme] :where(
+  button,
+  .btn,
+  a.btn,
+  .boton,
+  .btn-secondary,
+  .btn-secundario,
+  .boton-secundario,
+  .boton-filtro-atencion
+):not(.resizer):not(.cerrar):not(.close):not(.btn--icon):not(.notifications-button):not(.accesos-rapidos-toggle):not(.laboratory-orbit-action):hover:not(:disabled) {
+  color: var(--text-primary);
+  border-color: var(--accent-primary);
+  background: var(--surface-hover);
+}
+
+html[data-theme] :where(
+  .accion-global-medico,
+  .global-header-notifications,
+  .notifications-button
+) {
+  min-height: 44px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  color: var(--text-primary);
+  background: var(--surface-primary);
+  box-shadow: none;
+}
+
+html[data-theme] :where(.accion-global-medico, .global-header-notifications, .notifications-button):hover,
+html[data-theme] :where(.accion-global-medico, .global-header-notifications, .notifications-button):focus-visible {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+  background: var(--surface-hover);
+}
+
+html[data-theme] :where(.accion-global-icono, .global-header-notifications, .notifications-button:not(.mensajes-button)) {
+  position: relative;
+  width: 48px;
+  min-width: 48px;
+  padding: 0;
+  color: #ffc36b;
+}
+
+html[data-theme] :where(.accion-global-icono, .global-header-notifications, .notifications-button:not(.mensajes-button))::after {
+  content: "";
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #f59e42;
+}
+
+html[data-theme] .icono-lineal {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+html[data-theme] .icono-lineal svg {
+  width: 1.25em;
+  height: 1.25em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+html[data-theme] [data-global-app-header] .global-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+html[data-theme] [data-global-app-header] .accesos-rapidos-toggle {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  color: var(--button-primary-text);
+  border-color: color-mix(in srgb, var(--accent-primary) 55%, transparent);
+  background: var(--button-primary-bg);
+  box-shadow: none;
+}
+
+html[data-theme] [data-global-app-header] .accesos-rapidos-toggle:hover,
+html[data-theme] [data-global-app-header] .accesos-rapidos.abierto .accesos-rapidos-toggle {
+  color: var(--button-primary-text);
+  border-color: var(--accent-hover);
+  background: var(--button-primary-hover);
+  box-shadow: none;
+}
+
+@media (max-width: 760px) {
+  html[data-theme] [data-global-app-header] .global-header-actions {
+    gap: 6px;
+  }
+
+  html[data-theme] [data-global-app-header] .accesos-rapidos-toggle {
+    min-height: 40px;
+    padding-inline: 12px;
+  }
+
+  html[data-theme] :where(.accion-global-icono, .global-header-notifications, .notifications-button:not(.mensajes-button)) {
+    width: 42px;
+    min-width: 42px;
+    min-height: 40px;
+  }
+}

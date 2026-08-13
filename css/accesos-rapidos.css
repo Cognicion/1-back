@@ -4,12 +4,19 @@
   right: 14px;
   z-index: 20000;
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 10px;
   pointer-events: none;
 }
 
 .accesos-rapidos-global .accesos-rapidos {
   pointer-events: auto;
+}
+
+.accesos-rapidos-global .global-notifications-link {
+  pointer-events: auto;
+  text-decoration: none;
 }
 
 .accesos-rapidos {
@@ -30,12 +37,12 @@
 }
 
 .accesos-rapidos-toggle {
-  min-height: 42px;
-  padding: 10px 15px;
-  border: 1px solid rgba(126, 182, 138, 0.32);
-  border-radius: 999px;
-  color: var(--text-strong, var(--white-950));
-  background: var(--surface-secondary, #0e1411);
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 55%, transparent);
+  border-radius: 10px;
+  color: var(--button-primary-text, var(--white-950));
+  background: var(--button-primary-bg, #347a4d);
   box-shadow: none;
   font: inherit;
   font-weight: 800;
@@ -46,8 +53,8 @@
 
 .accesos-rapidos-toggle:hover,
 .accesos-rapidos.abierto .accesos-rapidos-toggle {
-  border-color: rgba(82, 152, 102, 0.78);
-  background: var(--action-primary-bg, #347a4d);
+  border-color: var(--accent-primary);
+  background: var(--button-primary-hover, #529866);
   transform: translateY(-1px);
   box-shadow: none;
 }
@@ -324,19 +331,21 @@ body.tema-claro .accesos-rapidos-guardados li {
 
 /* Celtic Cognicion layer: this file is loaded after the global theme. */
 html[data-theme] .accesos-rapidos-toggle {
-  border-radius: 2px;
-  color: var(--action-primary-text);
-  background: var(--action-primary-bg);
-  border-color: var(--action-primary-bg);
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  color: var(--button-primary-text);
+  background: var(--button-primary-bg);
+  border-color: color-mix(in srgb, var(--accent-primary) 55%, transparent);
   box-shadow: none;
 }
 
 html[data-theme] .accesos-rapidos-toggle:hover,
 html[data-theme] .accesos-rapidos.abierto .accesos-rapidos-toggle {
-  color: var(--action-primary-text);
-  background: var(--action-primary-hover);
+  color: var(--button-primary-text);
+  background: var(--button-primary-hover);
   border-color: var(--accent-hover);
-  box-shadow: 4px 4px 0 var(--surface-tertiary);
+  box-shadow: none;
 }
 
 html[data-theme] .accesos-rapidos-panel {

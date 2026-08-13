@@ -67,7 +67,7 @@ function asegurarEstilos() {
   if (document.querySelector('link[data-estilos-accesos-rapidos]')) return;
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "css/accesos-rapidos.css";
+  link.href = "css/accesos-rapidos.css?v=1.899";
   link.dataset.estilosAccesosRapidos = "true";
   document.head.appendChild(link);
 }
@@ -244,6 +244,19 @@ function crearContenedorAutomatico() {
   barra.appendChild(contenedor);
 }
 
+function asegurarCampanaVisualGlobal() {
+  if (document.querySelector('[data-global-app-header]') || document.querySelector('[aria-label*="notific" i], [data-global-notifications-link]')) return;
+  const barra = document.querySelector("[data-accesos-rapidos-global]");
+  if (!barra) return;
+  const enlace = document.createElement("a");
+  enlace.className = "accion-global-medico accion-global-icono global-notifications-link";
+  enlace.href = "dashboard.html#avisosDashboardModulo";
+  enlace.dataset.globalNotificationsLink = "true";
+  enlace.setAttribute("aria-label", "Abrir notificaciones");
+  enlace.innerHTML = `<span class="icono-lineal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg></span>`;
+  barra.prepend(enlace);
+}
+
 function renderizar(contenedor) {
   if (contenedor.dataset.accesosInicializados === "true") return;
   contenedor.parentElement?.classList.add("nav-accesos-rapidos");
@@ -329,6 +342,7 @@ export function inicializarAccesosRapidos(root = document) {
   configurarEventosGlobalesAccesos();
   asegurarEstilos();
   crearContenedorAutomatico();
+  asegurarCampanaVisualGlobal();
   root.querySelectorAll("[data-accesos-rapidos]").forEach(renderizar);
 }
 
