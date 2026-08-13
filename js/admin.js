@@ -104,6 +104,11 @@ const ESTADOS_REPORTE_ADMIN = [
   "descartado"
 ];
 
+const COLECCIONES_VISTA_CORROBORACION = [
+  "notasMedicas", "notasRapidas", "tratamientos", "estudios", "resultadosEscalas",
+  "agenda", "archivos", "imagenes", "documentos", "permisosMedicos", "registrosDiarios"
+];
+
 const SUBCOLECCIONES_USUARIO_PACIENTE = [
   "notasMedicas",
   "notasRapidas",
@@ -332,7 +337,108 @@ function configurarFiltros() {
 
   document.getElementById("btnGenerarCodigoMedico")?.addEventListener("click", generarCodigoMedicoAdmin);
   document.getElementById("btnActualizarCodigosMedico")?.addEventListener("click", cargarCodigosMedicoAdmin);
+  document.querySelectorAll("[data-cerrar-vista-corroboracion]").forEach((elemento) => {
+    elemento.addEventListener("click", cerrarVistaCorroboracionAdmin);
+  });
+  document.addEventListener("keydown", (evento) => {
+    if (evento.key === "Escape") cerrarVistaCorroboracionAdmin();
+  });
 }
+
+function cerrarVistaCorroboracionAdmin() {
+  const modal = document.getElementById("vistaCorroboracionAdmin");
+  if (!modal) return;
+  modal.hidden = true;
+  modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("vista-corroboracion-abierta");
+}
+
+function mostrarVistaCorroboracionAdmin() {
+  const modal = document.getElementById("vistaCorroboracionAdmin");
+  if (!modal) return;
+  modal.hidden = false;
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("vista-corroboracion-abierta");
+}
+
+function valorCorroboracion(valor) {
+  if (valor === null || valor === undefined || valor === "") return "Sin registro";
+  if (typeof valor?.toDate === "function") return formatearFechaAdmin(valor);
+  if (typeof valor === "object") return JSON.stringify(valor);
+  return String(valor);
+}
+
+function renderizarDocumentosCorroboracion(registros = []) {
+  if (!registros.length) return "<p class=\"admin-muted\">Sin documentos en esta colección.</p>";
+  return `<ul class="vista-corroboracion-lista">${registros.slice(0, 40).map((registro) => {
+    const datos = registro.data || {};
+    const resumen = datos.notaRapida || datos.titulo || datos.nombre || datos.archivoNombre || datos.descripcion || "Documento registrado";
+    return `<li><strong>${escaparHTML(resumen)}</strong><small>ID: ${escaparHTML(registro.id)}</small></li>`;
+  }).join("")}</ul>`;
+}
+
+window.abrirVistaCorroboracionAdmin = async function(uidUsuario) {
+  const usuario = usuariosAdmin.find((item) => item.id === uidUsuario);
+  if (!usuario || uidUsuario === adminActual?.uid) return;
+  const acceso = await usuarioPuedeAccederAdmin(adminActual);
+  if (!acceso.permitido) {
+    alert("No tienes permisos administrativos para abrir esta vista.");
+    return;
+  }
+
+  const titulo = document.getElementById("vistaCorroboracionTitulo");
+  const meta = document.getElementById("vistaCorroboracionMeta");
+  const contenido = document.getElementById("vistaCorroboracionContenido");
+  if (!titulo || !meta || !contenido) return;
+  titulo.textContent = usuario.nombre || usuario.email || "Cuenta consultada";
+  meta.textContent = `${usuario.email || "Sin correo"} · UID: ${usuario.id} · Solo lectura`;
+  contenido.innerHTML = "<p>Cargando información de la cuenta...</p>";
+  mostrarVistaCorroboracionAdmin();
+
+  await registrarAuditoriaAdmin("abrir_vista_corroboracion_admin", "El administrador abrió una vista de corroboración de solo lectura.", {
+    pacienteUid: usuario.rol === "paciente" ? usuario.id : "",
+    pacienteNombre: usuario.rol === "paciente" ? usuario.nombre || "" : "",
+    detalles: { usuarioObjetivoUid: usuario.id, usuarioObjetivoNombre: usuario.nombre || usuario.email || "", soloLectura: true }
+  });
+
+  const resultados = await Promise.all(COLECCIONES_VISTA_CORROBORACION.map(async (nombreColeccion) => {
+    try {
+      const snap = await getDocs(collection(db, "usuarios", uidUsuario, nombreColeccion));
+      return { nombre: nombreColeccion, registros: snap.docs.map((item) => ({ id: item.id, data: item.data() })) };
+    } catch (error) {
+      return { nombre: nombreColeccion, registros: [], error: error?.code || "sin_acceso" };
+    }
+  }));
+
+  contenido.innerHTML = `
+    <section class="vista-corroboracion-perfil">
+      <h3>Perfil</h3>
+      <dl>
+        <dt>Nombre</dt><dd>${escaparHTML(valorCorroboracion(usuario.nombre))}</dd>
+        <dt>Correo</dt><dd>${escaparHTML(valorCorroboracion(usuario.email))}</dd>
+        <dt>Rol</dt><dd>${escaparHTML(valorCorroboracion(usuario.rol))}</dd>
+        <dt>Estado</dt><dd>${escaparHTML(valorCorroboracion(usuario.estado || "activo"))}</dd>
+      </dl>
+    </section>
+    <section>
+      <h3>Información asociada</h3>
+      <div class="vista-corroboracion-colecciones">
+        ${resultados.map((resultado) => `
+          <article>
+            <h4>${escaparHTML(resultado.nombre)} <span>${resultado.registros.length}</span></h4>
+            ${resultado.error ? `<p class="admin-muted">No disponible: ${escaparHTML(resultado.error)}</p>` : renderizarDocumentosCorroboracion(resultado.registros)}
+          </article>
+        `).join("")}
+      </div>
+    </section>
+  `;
+
+  await registrarAuditoriaAdmin("consultar_datos_vista_corroboracion_admin", "El administrador consultó datos en una vista de corroboración de solo lectura.", {
+    pacienteUid: usuario.rol === "paciente" ? usuario.id : "",
+    pacienteNombre: usuario.rol === "paciente" ? usuario.nombre || "" : "",
+    detalles: { usuarioObjetivoUid: usuario.id, coleccionesConsultadas: resultados.map((item) => item.nombre), soloLectura: true }
+  });
+};
 
 async function publicarAvisoAdmin() {
   const titulo = document.getElementById("avisoAdminTitulo")?.value.trim() || "";
@@ -1421,6 +1527,9 @@ function renderizarUsuariosAdmin() {
         ${renderizarControlColaboradorAdmin(usuario)}
 
         <div class="paciente-admin-acciones">
+          <button type="button" onclick="abrirVistaCorroboracionAdmin('${usuario.id}')">
+            Vista de corroboración
+          </button>
           <button type="button" ${esAdminActual ? "disabled" : ""} onclick="cambiarRolUsuarioAdmin('${usuario.id}')">
             Cambiar rol
           </button>

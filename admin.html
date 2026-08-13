@@ -457,6 +457,26 @@
   </div>
 </dialog>
 
+<div id="vistaCorroboracionAdmin" class="vista-corroboracion-admin" hidden aria-hidden="true">
+  <div class="vista-corroboracion-backdrop" data-cerrar-vista-corroboracion></div>
+  <section class="vista-corroboracion-dialog" role="dialog" aria-modal="true" aria-labelledby="vistaCorroboracionTitulo">
+    <div class="vista-corroboracion-banner">
+      <strong>Vista de corroboración administrativa · Solo lectura</strong>
+      <span>Este acceso queda registrado en la bitácora. No permite editar, eliminar ni descargar información.</span>
+    </div>
+    <header class="vista-corroboracion-header">
+      <div>
+        <h2 id="vistaCorroboracionTitulo">Cuenta consultada</h2>
+        <p id="vistaCorroboracionMeta">Cargando información...</p>
+      </div>
+      <button type="button" data-cerrar-vista-corroboracion aria-label="Cerrar vista de corroboración">Cerrar</button>
+    </header>
+    <div id="vistaCorroboracionContenido" class="vista-corroboracion-contenido">
+      <p>Cargando información de la cuenta...</p>
+    </div>
+  </section>
+</div>
+
 <script type="module" src="js/admin.js?v=20260804-patterns-v7"></script>
 <script type="module" src="js/reportes.js"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
