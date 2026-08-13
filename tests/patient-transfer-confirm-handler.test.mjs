@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 const source = readFileSync(join(process.cwd(), "js/modules/patient-transfer/patientTransferController.js"), "utf8");
 const handlerStart = source.indexOf("async function handleConfirmTransferClick");
-const handlerEnd = source.indexOf("\n\nfunction resetAndOpen", handlerStart);
+const handlerEnd = source.indexOf("function resetAndOpen", handlerStart);
 
 assert.ok(handlerStart >= 0 && handlerEnd > handlerStart, "existe el handler nombrado de confirmacion");
 

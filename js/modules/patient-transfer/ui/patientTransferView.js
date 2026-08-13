@@ -624,6 +624,91 @@ export function applyBulkCandidateSelection(groups = [], { documentId = "", note
   return { groups: updatedGroups, candidateCount, affectedCount };
 }
 
+function isSelectedForTransfer(candidate = {}) {
+  return candidate.include === true || candidate.selectedForImport === true;
+}
+
+function forEachActiveTransferSegment(groups = [], callback = () => {}) {
+  (groups || []).forEach((group) => {
+    if (group.omitted) return;
+    (group.documents || []).forEach((document) => {
+      if (document.omitted) return;
+      const segments = document.noteSegments?.length ? document.noteSegments : [document];
+      segments.forEach((segment) => {
+        if (!segment?.omitted) callback(segment);
+      });
+    });
+  });
+}
+
+export function getAllDetectedDataSelectionState(groups = []) {
+  let selectableCount = 0;
+  let selectedCount = 0;
+  forEachActiveTransferSegment(groups, (segment) => {
+    ["diagnosis", "treatment", "indication"].forEach((candidateType) => {
+      candidatesForType(segment, candidateType).forEach((candidate) => {
+        if (!isTransferCandidateSelectable(candidate, candidateType)) return;
+        selectableCount += 1;
+        if (isSelectedForTransfer(candidate)) selectedCount += 1;
+      });
+    });
+    (segment.vitalSignsCandidates || []).forEach((candidate) => {
+      if (!isTransferCandidateSelectable(candidate, "vitalSigns")) return;
+      selectableCount += 1;
+      if (candidate.include !== false) selectedCount += 1;
+    });
+  });
+  return {
+    checked: selectableCount > 0 && selectedCount === selectableCount,
+    indeterminate: selectedCount > 0 && selectedCount < selectableCount,
+    disabled: selectableCount === 0,
+    selectableCount,
+    selectedCount
+  };
+}
+
+export function applyAllDetectedDataSelection(groups = [], { selected = false } = {}) {
+  let candidateCount = 0;
+  let affectedCount = 0;
+  const updateCandidates = (candidates, candidateType) => (candidates || []).map((candidate) => {
+    if (!isTransferCandidateSelectable(candidate, candidateType)) return candidate;
+    candidateCount += 1;
+    affectedCount += 1;
+    return {
+      ...candidate,
+      include: selected,
+      selectedForImport: selected,
+      confirmedByDoctor: selected
+    };
+  });
+  return {
+    groups: (groups || []).map((group) => ({
+      ...group,
+      documents: (group.documents || []).map((document) => {
+        if (group.omitted || document.omitted) return document;
+        const updateSegment = (segment) => {
+          if (segment.omitted) return segment;
+          const selectedIndications = new Map(updateCandidates(
+            candidatesForType(segment, "indication"),
+            "indication"
+          ).map((candidate) => [candidate.id, candidate]));
+          return {
+            ...segment,
+            diagnosisCandidates: updateCandidates(segment.diagnosisCandidates, "diagnosis"),
+            treatmentCandidates: updateCandidates(segment.treatmentCandidates, "treatment"),
+            treatmentPlanCandidates: (segment.treatmentPlanCandidates || []).map((candidate) => selectedIndications.get(candidate.id) || candidate),
+            vitalSignsCandidates: updateCandidates(segment.vitalSignsCandidates, "vitalSigns")
+          };
+        };
+        if (!document.noteSegments?.length) return updateSegment(document);
+        return { ...document, noteSegments: document.noteSegments.map(updateSegment) };
+      })
+    })),
+    candidateCount,
+    affectedCount
+  };
+}
+
 export function syncBulkSelectionControls(groups = []) {
   if (!root) return;
   root.querySelectorAll("[data-transfer-select-all]").forEach((control) => {
@@ -671,6 +756,15 @@ function renderBulkSelectionControl(doc, segment, candidateType, label) {
     affectedCount: 0
   });
   return `<label for="${escapeHtml(controlId)}" title="${help}"><input id="${escapeHtml(controlId)}" type="checkbox" data-action="toggle-all-candidates" data-transfer-select-all data-document-id="${escapeHtml(doc.id)}" data-note-id="${escapeHtml(segment.id)}" data-candidate-type="${candidateType}" ${state.checked ? "checked" : ""} ${state.disabled ? "disabled" : ""}> ${label}</label>`;
+}
+
+function renderIncludeAllDetectedDataControl(groups = []) {
+  const state = getAllDetectedDataSelectionState(groups);
+  return `<section class="patient-transfer-summary patient-transfer-include-all-data">
+    <label><input type="checkbox" data-transfer-include-all-data ${state.checked ? "checked" : ""} ${state.disabled ? "disabled" : ""}> Incluir todos los datos detectados</label>
+    <small>Aplica a signos vitales, diagnósticos, medicamentos e indicaciones de todas las notas activas.</small>
+    ${state.checked ? `<div class="patient-transfer-warning" role="status">Se seleccionaron todos los datos detectados. Se recomienda corroborarlos antes de confirmar el traspaso para evitar errores de compatibilidad o detección.</div>` : ""}
+  </section>`;
 }
 
 export function resizeTransferIndicationTextarea(textarea) {
@@ -1238,6 +1332,7 @@ export function renderDetectedGroups(groups = []) {
       <h3>Resumen del traspaso</h3>
       <p>Pacientes probables: ${groups.length} · Notas: ${countTransferNotes(groups)} · Con conflictos: ${groups.filter((group) => group.ambiguous).length}</p>
     </section>
+    ${renderIncludeAllDetectedDataControl(groups)}
     ${groups.map((group, index) => `
       <article class="patient-transfer-group">
         <header>

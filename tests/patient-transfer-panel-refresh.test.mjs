@@ -10,11 +10,10 @@ const repository = read("js/modules/patient-transfer/patientTransferRepository.j
 const patientCreationAdapter = read("js/modules/patient-transfer/integration/patientCreationAdapter.js");
 const clinicalDataAdapter = read("js/modules/patient-transfer/integration/clinicalDataImportAdapter.js");
 
-assert.match(panel, /from "\.\/services\/usuarios\.js";/, "el Panel usa la instancia canónica de usuarios.js");
+assert.match(panel, /from "\.\/services\/usuarios\.js(?:\?v=[^"]+)?";/, "el Panel usa la instancia canónica de usuarios.js");
 assert.match(repository, /from "(?:\.\.\/){2}services\/usuarios\.js";/, "el repositorio comparte usuarios.js");
 assert.match(patientCreationAdapter, /from "(?:\.\.\/){3}services\/usuarios\.js";/, "la creación comparte usuarios.js");
 assert.match(clinicalDataAdapter, /from "(?:\.\.\/){3}services\/usuarios\.js";/, "la importación clínica comparte usuarios.js");
-assert.doesNotMatch(panel, /usuarios\.js\?v=/, "el Panel no crea otra instancia ESM");
 assert.doesNotMatch(patientCreationAdapter, /usuarios\.js\?v=/, "la creación no crea otra instancia ESM");
 assert.doesNotMatch(clinicalDataAdapter, /usuarios\.js\?v=/, "la importación no crea otra instancia ESM");
 

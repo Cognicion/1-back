@@ -57,9 +57,9 @@ assert.match(controller, /const reviewedGroups = analyzedGroups;/, "el guardado 
 assert.match(controller, /expandSegmentedGroupsForSave/, "la persistencia crea una nota por segmento confirmado");
 assert.match(controller, /setFileMultipleNotesMode/, "la revisión actualiza el modo por archivo en el estado central");
 assert.match(controller, /multipleNotesMode/, "el controlador envía el modo explícito al segmentador");
-assert.match(transferIndex, /patientTransferController\.js\?v=v179-medication-presentation-concentration-ui-v1/, "el índice fuerza la carga del controlador publicado");
+assert.match(transferIndex, /patientTransferController\.js\?v=20260813-include-all-data-v1/, "el índice fuerza la carga del controlador publicado");
 assert.match(controller, /clinicalNoteSegmenter\.js\?v=20260810-imported-notes-v1/, "el controlador fuerza la carga del segmentador publicado");
-assert.match(controller, /patientTransferView\.js\?v=v179-medication-presentation-concentration-ui-v1/, "el controlador fuerza la carga de la UI de medicamentos");
+assert.match(controller, /patientTransferView\.js\?v=20260813-include-all-data-v1/, "el controlador fuerza la carga de la UI de medicamentos");
 assert.match(html, /patient-transfer\.css\?v=20260811-medication-presentation-concentration-ui-v1/, "el CSS de medicamentos usa un marcador de cache nuevo");
 assert.match(segmenter, /patient-transfer-segmentation-debug-v1/, "el segmentador expone un marcador verificable de compilación");
 assert.match(segmenter, /\[patient-transfer\] segmentation:boundaries/, "el segmentador registra los límites usados");
@@ -145,6 +145,8 @@ assert.match(repository, /notes-after-domain-error/, "la nota no se omite por un
 assert.match(repository, /registrarEventoAuditoria/, "registra auditoria");
 assert.match(repository, /uploadBytes/, "conserva archivo original en Storage");
 assert.match(repository, /findExistingPatientCandidates/, "busca coincidencias existentes antes de crear");
+assert.match(transferView, /Incluir todos los datos detectados/, "la revisión ofrece seleccionar datos de todas las notas");
+assert.match(transferView, /Se recomienda corroborarlos antes de confirmar el traspaso/, "la selección masiva muestra advertencia de corroboración");
 assert.match(repository, /textHash/, "detecta posible duplicado por texto normalizado");
 assert.doesNotMatch(repository, /console\.log\([^)]*fullText|console\.log\([^)]*nota/i, "no imprime notas completas en consola");
 

@@ -26,6 +26,7 @@ import {
 } from "./persistence/documentPersistenceEligibility.js";
 import {
   closePatientTransferView,
+  applyAllDetectedDataSelection,
   applyBulkCandidateSelection,
   getPatientTransferRoot,
   openPatientTransferView,
@@ -44,7 +45,7 @@ import {
   syncBulkSelectionControls,
   syncPatientNameInputs,
   updateMedicationScheduleUnitVisibility
-} from "./ui/patientTransferView.js?v=v179-medication-presentation-concentration-ui-v1";
+} from "./ui/patientTransferView.js?v=20260813-include-all-data-v1";
 
 let initialized = false;
 let selectedFiles = [];
@@ -1046,6 +1047,20 @@ function toggleAllCandidates(control) {
   console.info(`[patient-transfer] ${candidateType === "diagnosis" ? "select-all-diagnoses" : "select-all-treatments"}`, trace);
 }
 
+function toggleAllDetectedData(control) {
+  const selected = Boolean(control.checked);
+  syncReviewedGroupsFromView();
+  const result = applyAllDetectedDataSelection(analyzedGroups, { selected });
+  analyzedGroups = result.groups;
+  setPatientTransferGroups(analyzedGroups);
+  renderDetectedGroups(analyzedGroups);
+  console.info("patient-transfer:include-all-data", {
+    selected,
+    candidateCount: result.candidateCount,
+    affectedCount: result.affectedCount
+  });
+}
+
 function setFileMultipleNotesMode(documentId, value, { afterAnalysis = false } = {}) {
   const multipleNotesMode = normalizeMultipleNotesMode(value);
   selectedFiles = updateFileMultipleNotesMode(selectedFiles, documentId, multipleNotesMode)
@@ -1222,6 +1237,11 @@ export function initializePatientTransfer() {
   });
 
   root.addEventListener("change", (event) => {
+    const includeAllData = event.target.closest("[data-transfer-include-all-data]");
+    if (includeAllData) {
+      toggleAllDetectedData(includeAllData);
+      return;
+    }
     const selectAll = event.target.closest("[data-action='toggle-all-candidates']");
     if (selectAll) {
       console.info("[patient-transfer] select-all-debug", {

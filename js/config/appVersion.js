@@ -16,5 +16,6 @@
 // deployment marker: 2026-08-13-notas-externas-historial-v1
 // deployment marker: 2026-08-13-notas-externas-historial-v2
 // deployment marker: 2026-08-13-notas-externas-historial-v3
-export const APP_VERSION = "1.927";
+// deployment marker: 2026-08-13-include-all-data-v1
+export const APP_VERSION = "1.928";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

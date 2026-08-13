@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import {
+  applyAllDetectedDataSelection,
   applyBulkCandidateSelection,
+  getAllDetectedDataSelectionState,
   getBulkSelectionState,
   isTransferCandidateSelectable
 } from "../js/modules/patient-transfer/ui/patientTransferView.js";
@@ -120,5 +122,19 @@ const omitted = applyBulkCandidateSelection(groups, {
 assert.equal(omitted.affectedCount, 0, "una nota omitida conserva su selección previa");
 assert.equal(omitted.groups[0].documents[0].noteSegments[2].diagnosisCandidates[0].include, true);
 assert.equal(getBulkSelectionState(omitted.groups[0].documents[0].noteSegments[2].diagnosisCandidates, "diagnosis", true).disabled, true);
+
+const allDataInitial = getAllDetectedDataSelectionState(groups);
+assert.equal(allDataInitial.checked, false);
+assert.ok(allDataInitial.selectableCount > 0, "incluye candidatos de una o varias notas activas");
+
+const allDataSelected = applyAllDetectedDataSelection(groups, { selected: true });
+assert.equal(getAllDetectedDataSelectionState(allDataSelected.groups).checked, true);
+assert.ok(allDataSelected.groups[0].documents[0].noteSegments[0].diagnosisCandidates.every((candidate) => candidate.include && candidate.selectedForImport));
+assert.ok(allDataSelected.groups[0].documents[0].noteSegments[1].treatmentCandidates.every((candidate) => candidate.include && candidate.selectedForImport));
+assert.equal(allDataSelected.groups[0].documents[0].noteSegments[2].diagnosisCandidates[0].include, true, "no altera una nota omitida");
+
+const allDataCleared = applyAllDetectedDataSelection(allDataSelected.groups, { selected: false });
+assert.equal(getAllDetectedDataSelectionState(allDataCleared.groups).checked, false);
+assert.ok(allDataCleared.groups[0].documents[0].noteSegments[0].diagnosisCandidates.every((candidate) => !candidate.include && !candidate.selectedForImport));
 
 console.log("patient-transfer-bulk-selection.test.mjs OK");
