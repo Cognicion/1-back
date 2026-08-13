@@ -621,6 +621,16 @@ body.admin-startup-error .admin-startup-state span { color: #fca5a5; }
   border: 1px solid rgba(239, 68, 68, .26);
 }
 
+.codigo-medico-acciones {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.codigo-medico-acciones .paciente-admin-acciones {
+  justify-content: flex-start;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;

@@ -894,10 +894,14 @@ function renderizarCodigosMedicoAdmin() {
           <small>Creado: ${escaparHTML(formatearFechaAdmin(codigo.creadoEn))}</small>
           <small>Expira: ${escaparHTML(formatearFechaAdmin(codigo.expiraEn))}</small>
         </div>
-        <div>
+        <div class="codigo-medico-acciones">
           <span class="estado-codigo ${estado.clase}">${estado.texto}</span>
           ${codigo.usadoPorEmail ? `<small>Usado por: ${escaparHTML(codigo.usadoPorEmail)}</small>` : ""}
           ${codigo.usadoEn ? `<small>Uso: ${escaparHTML(formatearFechaAdmin(codigo.usadoEn))}</small>` : ""}
+          <div class="paciente-admin-acciones">
+            <button type="button" onclick="cambiarDuracionCodigoMedicoAdmin('${codigo.id}')">Cambiar duración</button>
+            <button type="button" ${estado.clase !== "vigente" ? "" : "disabled"} onclick="reactivarCodigoMedicoAdmin('${codigo.id}')">Reactivar código</button>
+          </div>
         </div>
       </article>
     `;
@@ -963,6 +967,54 @@ async function cargarResumen() {
     listaVisitas.innerHTML = "<p class=\"admin-muted\">El resumen de visitas no está disponible con los permisos actuales.</p>";
   }
 }
+
+window.cambiarDuracionCodigoMedicoAdmin = async function(codigoId) {
+  const codigo = codigosMedicoAdmin.find((item) => item.id === codigoId);
+  if (!codigo || !adminActual || !(await usuarioPuedeAccederAdmin(adminActual)).permitido) return;
+  const horasTexto = prompt("¿Cuántas horas debe permanecer vigente este código?", "24");
+  if (horasTexto === null) return;
+  const horas = Number(horasTexto);
+  if (!Number.isFinite(horas) || horas <= 0 || horas > 168) {
+    alert("Indica una duración entre 1 y 168 horas.");
+    return;
+  }
+  const expiraEn = new Date(Date.now() + horas * 60 * 60 * 1000).toISOString();
+  try {
+    await updateDoc(doc(db, "codigosAutorizacionMedico", codigoId), { expiraEn, duracionHoras: horas, actualizadoEn: new Date().toISOString(), actualizadoPorUid: adminActual.uid });
+    await registrarAuditoriaAdmin("cambiar_duracion_codigo_autorizacion_medico", "El administrador cambio la duracion de un codigo medico.", { detalles: { codigo: codigo.codigo || codigoId, horas, expiraEn } });
+    await cargarCodigosMedicoAdmin();
+  } catch (error) {
+    await registrarAuditoriaAdmin("error_cambiar_duracion_codigo_autorizacion_medico", "No se pudo cambiar la duracion de un codigo medico.", { exito: false, detalles: { codigo: codigo.codigo || codigoId, error: resumenError(error) } });
+    alert("No se pudo cambiar la duración: " + error.message);
+  }
+};
+
+window.reactivarCodigoMedicoAdmin = async function(codigoId) {
+  const codigo = codigosMedicoAdmin.find((item) => item.id === codigoId);
+  if (!codigo || estadoCodigoMedico(codigo).clase === "vigente" || !adminActual || !(await usuarioPuedeAccederAdmin(adminActual)).permitido) return;
+  if (!confirm(`¿Reactivar el código ${codigo.codigo || codigoId}? Volverá a estar disponible para un solo uso.`)) return;
+  const horasTexto = prompt("¿Cuántas horas debe permanecer vigente desde ahora?", "24");
+  if (horasTexto === null) return;
+  const horas = Number(horasTexto);
+  if (!Number.isFinite(horas) || horas <= 0 || horas > 168) {
+    alert("Indica una duración entre 1 y 168 horas.");
+    return;
+  }
+  const ahora = new Date();
+  const expiraEn = new Date(ahora.getTime() + horas * 60 * 60 * 1000).toISOString();
+  try {
+    await updateDoc(doc(db, "codigosAutorizacionMedico", codigoId), {
+      usado: false, usadoPorUid: "", usadoPorEmail: "", usadoPorNombre: "", usadoPorRol: "", usadoEn: "",
+      reactivadoEn: ahora.toISOString(), reactivadoPorUid: adminActual.uid, duracionHoras: horas,
+      expiraEn, actualizadoEn: ahora.toISOString(), actualizadoPorUid: adminActual.uid
+    });
+    await registrarAuditoriaAdmin("reactivar_codigo_autorizacion_medico", "El administrador reactivo un codigo medico usado.", { detalles: { codigo: codigo.codigo || codigoId, horas, expiraEn, usoAnteriorUid: codigo.usadoPorUid || "" } });
+    await cargarCodigosMedicoAdmin();
+  } catch (error) {
+    await registrarAuditoriaAdmin("error_reactivar_codigo_autorizacion_medico", "No se pudo reactivar un codigo medico.", { exito: false, detalles: { codigo: codigo.codigo || codigoId, error: resumenError(error) } });
+    alert("No se pudo reactivar el código: " + error.message);
+  }
+};
 
 function consolidarVisitasAdmin(registros = []) {
   const unicas = new Map();
