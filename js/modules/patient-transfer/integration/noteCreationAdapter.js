@@ -6,6 +6,12 @@ function sectionValue(sections = {}, key = "") {
   return sections[key] || "";
 }
 
+function sourceTextForImportedNote(document = {}) {
+  return [document.fullText, document.rawText, document.text]
+    .map((value) => String(value || "").replace(/<[^>]*>/g, "").trim())
+    .find(Boolean) || "";
+}
+
 function normalizeClinicalDate(value = "") {
   const text = String(value || "").trim();
   const dmy = text.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
@@ -47,7 +53,8 @@ export function importedNoteHasClinicalContent(document = {}) {
     sections.plan,
     sections.tratamiento,
     sections.pronostico,
-    sections.destino
+    sections.destino,
+    sourceTextForImportedNote(document)
   ].some((value) => String(value || "").replace(/<[^>]*>/g, "").trim());
 }
 
@@ -59,6 +66,7 @@ export function buildImportedNotePayload({ document, confirmedType, sourceFile, 
   const hour = document.sourceNoteTime || metadata.documentHour || document.time || "";
   const fechaNota = clinicalDateTime(date, hour);
   const vitalSigns = document.vitalSignsPayload || {};
+  const sourceText = sourceTextForImportedNote(document);
   const observacionFray = {
     tipoNota: "nota_externa",
     tipoNotaOriginal: type.key || document.noteType || "evolucion",
@@ -81,7 +89,7 @@ export function buildImportedNotePayload({ document, confirmedType, sourceFile, 
     bloqueada: true,
     origen: "nota_externa",
     notaRapida: type.key === "rapida" ? document.fullText || "" : "",
-    subjetivo: sectionValue(sections, "subjetivo"),
+    subjetivo: sectionValue(sections, "subjetivo") || sourceText,
     objetivo: sectionValue(sections, "examenMental"),
     analisis: sectionValue(sections, "analisis"),
     plan: [sectionValue(sections, "plan"), sectionValue(sections, "tratamiento")].filter(Boolean).join("\n\n"),

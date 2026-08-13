@@ -25,6 +25,23 @@ assert.equal(expanded.length, 3, "cada segmento debe expandirse independientemen
 assert.deepEqual(expanded.map((item) => item.sourceNoteDate), ["01/08/2026", "03/08/2026", "04/08/2026"]);
 assert.ok(expanded.every((item) => item.sourceNoteSegmentId), "cada nota debe conservar identidad de segmento");
 
+const rawOnly = expandSegmentedDocumentsForPersistence([{
+  id: "doc-raw-note",
+  hash: "hash-raw-note",
+  textHash: "text-raw-note",
+  metadata: {},
+  noteSegments: [{
+    id: "doc-raw-note-1",
+    rawText: "Evolucion clinica externa sin encabezados estructurados.",
+    sections: {},
+    date: "04/08/2026",
+    time: "10:30",
+    blocks: [],
+    omitted: false
+  }]
+}]);
+assert.equal(rawOnly[0].fullText, "Evolucion clinica externa sin encabezados estructurados.", "el segmento conserva el texto fuente para guardarse como nota canónica");
+
 const adapter = read("../js/modules/patient-transfer/integration/noteCreationAdapter.js");
 const repository = read("../js/modules/patient-transfer/patientTransferRepository.js");
 assert.match(adapter, /finalizarNotaClinica/);
@@ -35,6 +52,8 @@ assert.match(adapter, /origen: "nota_externa"/);
 assert.match(adapter, /fechaNota/);
 assert.match(adapter, /importedNoteId/);
 assert.match(adapter, /getDocFromServer/);
+assert.match(adapter, /sourceTextForImportedNote\(document\)/, "una nota con texto fuente no se descarta por falta de secciones");
+assert.match(adapter, /subjetivo: sectionValue\(sections, "subjetivo"\) \|\| sourceText/, "el texto fuente conserva una nota visible en el historial canónico");
 assert.match(repository, /patient-transfer:notes-source-real/);
 assert.match(repository, /patient-transfer:notes-history-before-real/);
 assert.match(repository, /patient-transfer:notes-history-after-real/);

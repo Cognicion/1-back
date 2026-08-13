@@ -4,7 +4,7 @@ import { registrarEventoAuditoria, resumenError } from "../../services/auditoria
 import { obtenerNombrePacienteParaMostrar } from "../../utils/nombresPacientes.js";
 import { DOCX_IMPORT_CONFIG } from "../importacionDocx/docxImportConfig.js";
 import { createTransferredPatient, mergeTransferredPatientFields } from "./integration/patientCreationAdapter.js?v=20260808-persistence-domains-v1";
-import { buildImportedNotePayload, createTransferredNote, importedNoteHasClinicalContent, importedNoteId } from "./integration/noteCreationAdapter.js?v=20260813-external-notes-v1";
+import { buildImportedNotePayload, createTransferredNote, importedNoteHasClinicalContent, importedNoteId } from "./integration/noteCreationAdapter.js?v=20260813-external-notes-history-v2";
 import { createImportedDiagnoses, createImportedIndications, createImportedTreatments } from "./integration/clinicalDataImportAdapter.js?v=v163-medications-indications-v1";
 import { runVitalSignsAndDiagnosesIndependently } from "./domainPersistenceIsolation.js?v=v161-imported-diagnoses-isolation-v1";
 import { vitalSignsToNotePayload } from "./parsing/vitalSignsParser.js?v=20260808-imported-vitals-v1";

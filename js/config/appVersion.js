@@ -14,5 +14,7 @@
 // deployment marker: 2026-08-13-control-center-permissions-v1
 // deployment marker: 2026-08-13-notas-importadas-corroboracion-v1
 // deployment marker: 2026-08-13-notas-externas-historial-v1
-export const APP_VERSION = "1.915";
+// deployment marker: 2026-08-13-notas-externas-historial-v2
+// deployment marker: 2026-08-13-notas-externas-historial-v3
+export const APP_VERSION = "1.917";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;
