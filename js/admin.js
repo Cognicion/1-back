@@ -377,6 +377,66 @@ function renderizarDocumentosCorroboracion(registros = []) {
   }).join("")}</ul>`;
 }
 
+function fechaNotaImportadaCorroboracion(nota = {}) {
+  const fecha = nota.fechaNotaInput || nota.importacionDocx?.originalDocumentDate || "";
+  const hora = nota.horaNotaInput || nota.importacionDocx?.originalDocumentTime || "";
+  if (fecha && hora) return `${fecha} ${hora}`;
+  if (fecha) return fecha;
+  return "Fecha clínica sin registro";
+}
+
+async function cargarNotasImportadasCorroboracion(uidMedico) {
+  const pacientesImportados = usuariosAdmin.filter((usuario) => (
+    usuario.rol === "paciente"
+    && usuario.ownerUid === uidMedico
+    && usuario.origenTraspasoPacientesDocx === true
+  ));
+
+  try {
+    const pacientes = await Promise.all(pacientesImportados.map(async (paciente) => {
+      const snap = await getDocs(collection(db, "usuarios", paciente.id, "notasMedicas"));
+      const notas = snap.docs
+        .map((docNota) => ({ id: docNota.id, ...docNota.data() }))
+        .filter((nota) => nota.importacionDocx?.importMethod === "docx-patient-transfer")
+        .sort((a, b) => `${b.fechaNotaInput || ""} ${b.horaNotaInput || ""}`.localeCompare(`${a.fechaNotaInput || ""} ${a.horaNotaInput || ""}`));
+      return {
+        id: paciente.id,
+        nombre: obtenerNombrePacienteParaMostrar(paciente) || "Paciente sin nombre",
+        notas
+      };
+    }));
+    return {
+      pacientes,
+      totalNotas: pacientes.reduce((total, paciente) => total + paciente.notas.length, 0)
+    };
+  } catch (error) {
+    return { pacientes: [], totalNotas: 0, error: error?.code || "sin_acceso" };
+  }
+}
+
+function renderizarNotasImportadasCorroboracion(importacion) {
+  if (importacion?.error) {
+    return `<p class="admin-muted">No disponible: ${escaparHTML(importacion.error)}</p>`;
+  }
+  if (!importacion?.pacientes?.length) {
+    return "<p class=\"admin-muted\">No hay pacientes importados asociados a este profesional.</p>";
+  }
+
+  return `
+    <p class="admin-muted">Las notas se conservan en el expediente de cada paciente, asociado a este profesional. Esta vista solo muestra identificación y fecha; no expone el contenido clínico.</p>
+    <div class="vista-corroboracion-colecciones">
+      ${importacion.pacientes.map((paciente) => `
+        <article>
+          <h4>${escaparHTML(paciente.nombre)} <span>${paciente.notas.length}</span></h4>
+          ${paciente.notas.length ? `<ul class="vista-corroboracion-lista">${paciente.notas.map((nota) => `
+            <li><strong>${escaparHTML(fechaNotaImportadaCorroboracion(nota))}</strong><small>${escaparHTML(nota.tipoNota || "Nota de evolución")} · ${escaparHTML(nota.importacionDocx?.sourceFileName || "Documento fuente preservado")}</small></li>
+          `).join("")}</ul>` : "<p class=\"admin-muted\">Sin notas de esta importación.</p>"}
+        </article>
+      `).join("")}
+    </div>
+  `;
+}
+
 window.abrirVistaCorroboracionAdmin = async function(uidUsuario) {
   const usuario = usuariosAdmin.find((item) => item.id === uidUsuario);
   if (!usuario || uidUsuario === adminActual?.uid) return;
@@ -401,14 +461,19 @@ window.abrirVistaCorroboracionAdmin = async function(uidUsuario) {
     detalles: { usuarioObjetivoUid: usuario.id, usuarioObjetivoNombre: usuario.nombre || usuario.email || "", soloLectura: true }
   });
 
-  const resultados = await Promise.all(COLECCIONES_VISTA_CORROBORACION.map(async (nombreColeccion) => {
+  const [resultados, importacionDocx] = await Promise.all([
+    Promise.all(COLECCIONES_VISTA_CORROBORACION.map(async (nombreColeccion) => {
     try {
       const snap = await getDocs(collection(db, "usuarios", uidUsuario, nombreColeccion));
       return { nombre: nombreColeccion, registros: snap.docs.map((item) => ({ id: item.id, data: item.data() })) };
     } catch (error) {
       return { nombre: nombreColeccion, registros: [], error: error?.code || "sin_acceso" };
     }
-  }));
+    })),
+    usuarioEsProfesionalTipoMedico(usuario.rol) || usuario.rol === "psicologo"
+      ? cargarNotasImportadasCorroboracion(uidUsuario)
+      : Promise.resolve(null)
+  ]);
 
   contenido.innerHTML = `
     <section class="vista-corroboracion-perfil">
@@ -431,12 +496,18 @@ window.abrirVistaCorroboracionAdmin = async function(uidUsuario) {
         `).join("")}
       </div>
     </section>
+    ${importacionDocx ? `
+      <section>
+        <h3>Pacientes y notas importadas <span>${importacionDocx.totalNotas || 0} notas · ${importacionDocx.pacientes?.length || 0} pacientes</span></h3>
+        ${renderizarNotasImportadasCorroboracion(importacionDocx)}
+      </section>
+    ` : ""}
   `;
 
   await registrarAuditoriaAdmin("consultar_datos_vista_corroboracion_admin", "El administrador consultó datos en una vista de corroboración de solo lectura.", {
     pacienteUid: usuario.rol === "paciente" ? usuario.id : "",
     pacienteNombre: usuario.rol === "paciente" ? usuario.nombre || "" : "",
-    detalles: { usuarioObjetivoUid: usuario.id, coleccionesConsultadas: resultados.map((item) => item.nombre), soloLectura: true }
+    detalles: { usuarioObjetivoUid: usuario.id, coleccionesConsultadas: resultados.map((item) => item.nombre), notasImportadasConsultadas: Boolean(importacionDocx), soloLectura: true }
   });
 };
 

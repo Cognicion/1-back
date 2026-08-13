@@ -12,5 +12,6 @@
 // deployment marker: 2026-08-11-diagnosticos-unificados-v1
 // deployment marker: 2026-08-12-pdf-cognicion-null-v1
 // deployment marker: 2026-08-13-control-center-permissions-v1
-export const APP_VERSION = "1.913";
+// deployment marker: 2026-08-13-notas-importadas-corroboracion-v1
+export const APP_VERSION = "1.914";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;
