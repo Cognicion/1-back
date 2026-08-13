@@ -128,9 +128,17 @@ export async function createTransferredNote(patientId, payload, noteId = "", use
     if (isDefinitive) return { id: ref.id, notaId: ref.id, existing: true, data: existingData, observed: true };
   }
 
-  await finalizarNotaClinica(patientId, ref.id, payload, {
+  const author = user?.nombre || user?.nombreCompleto || user?.email || "";
+  await finalizarNotaClinica(patientId, ref.id, {
+    ...payload,
+    pacienteId: patientId,
     usuarioId: user?.uid || "",
-    usuarioNombre: user?.nombre || user?.email || ""
+    usuarioNombre: author,
+    autor: author,
+    medicoResponsable: author
+  }, {
+    usuarioId: user?.uid || "",
+    usuarioNombre: author
   });
   const after = await getDocFromServer(ref);
   if (!after.exists()) {
