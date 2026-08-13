@@ -57,6 +57,9 @@ assert.match(adapter, /subjetivo: sectionValue\(sections, "subjetivo"\) \|\| sou
 assert.match(adapter, /pacienteId: patientId/, "la nota importada conserva el paciente destino canónico");
 assert.match(adapter, /usuarioId: user\?\.uid \|\| ""/, "la nota importada conserva el autor requerido por el historial canónico");
 assert.match(adapter, /medicoResponsable: author/, "la nota importada usa el formato de autor de nota.html");
+assert.match(adapter, /sanitizeFirestorePayload/, "la nota elimina valores undefined antes de usar el escritor canonico");
+assert.doesNotMatch(adapter, /structuredBlocks/, "los bloques crudos no se insertan en el documento canonico de notas");
+assert.doesNotMatch(adapter, /clinicalAnalysis/, "el analisis interno del parser no se inserta en el documento canonico de notas");
 assert.match(repository, /patient-transfer:notes-source-real/);
 assert.match(repository, /patient-transfer:notes-history-before-real/);
 assert.match(repository, /patient-transfer:notes-history-after-real/);
@@ -66,6 +69,9 @@ assert.match(repository, /notes-empty-segment-skipped/);
 assert.match(repository, /operation\.data\?\.status === "completed"/);
 assert.match(repository, /notes-after-domain-error/);
 assert.match(repository, /noteWillStillBeAttempted: true/);
+assert.match(repository, /notesObserved !== notesIncluded/, "una escritura incompleta de notas no se marca como completada");
+assert.match(repository, /error\.code = "notes-persistence-incomplete"/, "el fallo de historial queda visible y reintentable");
+assert.match(repository, /pacienteId: patientId/, "el control de duplicados conserva el paciente destino sin usar una variable inexistente");
 
 const nullDate = expandSegmentedDocumentsForPersistence([{
   id: "doc-null-date",

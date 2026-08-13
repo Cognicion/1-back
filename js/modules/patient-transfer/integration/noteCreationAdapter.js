@@ -1,5 +1,6 @@
 import { db } from "../../../firebase.js";
 import { finalizarNotaClinica } from "../../../services/notas.js?v=20260716-2";
+import { sanitizeFirestorePayload } from "../persistence/firestorePayloadSanitizer.js?v=20260813-notes-canonical-text-v1";
 import { doc, getDocFromServer } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 function sectionValue(sections = {}, key = "") {
@@ -110,10 +111,7 @@ export function buildImportedNotePayload({ document, confirmedType, sourceFile, 
       importedAt: new Date().toISOString(),
       originalDocumentDate: date,
       parserVersion: "patient-transfer-docx-v1",
-      transferImportId: importId,
-      structuredBlocks: document.blocks || [],
-      sections,
-      clinicalAnalysis: document.clinicalAnalysis || null
+      transferImportId: importId
     }
   };
 }
@@ -129,14 +127,15 @@ export async function createTransferredNote(patientId, payload, noteId = "", use
   }
 
   const author = user?.nombre || user?.nombreCompleto || user?.email || "";
-  await finalizarNotaClinica(patientId, ref.id, {
+  const canonicalPayload = sanitizeFirestorePayload({
     ...payload,
     pacienteId: patientId,
     usuarioId: user?.uid || "",
     usuarioNombre: author,
     autor: author,
     medicoResponsable: author
-  }, {
+  });
+  await finalizarNotaClinica(patientId, ref.id, canonicalPayload, {
     usuarioId: user?.uid || "",
     usuarioNombre: author
   });

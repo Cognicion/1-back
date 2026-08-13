@@ -4,7 +4,7 @@ import { registrarEventoAuditoria, resumenError } from "../../services/auditoria
 import { obtenerNombrePacienteParaMostrar } from "../../utils/nombresPacientes.js";
 import { DOCX_IMPORT_CONFIG } from "../importacionDocx/docxImportConfig.js";
 import { createTransferredPatient, mergeTransferredPatientFields } from "./integration/patientCreationAdapter.js?v=20260808-persistence-domains-v1";
-import { buildImportedNotePayload, createTransferredNote, importedNoteHasClinicalContent, importedNoteId } from "./integration/noteCreationAdapter.js?v=20260813-notes-history-canonical-v1";
+import { buildImportedNotePayload, createTransferredNote, importedNoteHasClinicalContent, importedNoteId } from "./integration/noteCreationAdapter.js?v=20260813-notes-canonical-text-v1";
 import { createImportedDiagnoses, createImportedIndications, createImportedTreatments } from "./integration/clinicalDataImportAdapter.js?v=v163-medications-indications-v1";
 import { runVitalSignsAndDiagnosesIndependently } from "./domainPersistenceIsolation.js?v=v161-imported-diagnoses-isolation-v1";
 import { vitalSignsToNotePayload } from "./parsing/vitalSignsParser.js?v=20260808-imported-vitals-v1";
@@ -22,6 +22,7 @@ import {
   canonicalImportedNoteReferences,
   canVerifyCanonicalImportedNotes
 } from "./persistence/importedNoteDuplicateValidation.js?v=20260813-notes-duplicate-validation-v1";
+import { sanitizeFirestorePayload } from "./persistence/firestorePayloadSanitizer.js?v=20260813-notes-canonical-text-v1";
 import {
   addDoc,
   collection,
@@ -1173,7 +1174,7 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         stage = "creating_patient_document_record";
         onProgress?.({ stage, message: "Registrando documento importado...", progress: 75 });
         traceTransfer(stage, { operation: "addDoc", path: `usuarios/${patientId}/documentosImportados`, authUid: user.uid, patientId, noteId: record.noteId });
-        await timed(`create-document-record-${documentResults.length}`, () => addDoc(collection(db, "usuarios", patientId, "documentosImportados"), {
+        await timed(`create-document-record-${documentResults.length}`, () => addDoc(collection(db, "usuarios", patientId, "documentosImportados"), sanitizeFirestorePayload({
           importacionId: operationId,
           transferOperationId: operationId,
           importMethod: "docx-patient-transfer",
@@ -1191,7 +1192,7 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           creadoPor: user.uid,
           creadoEn: serverTimestamp(),
           fechaISO: new Date().toISOString()
-        }), TIMEOUTS.firestoreWrite);
+        })), TIMEOUTS.firestoreWrite);
 
         stage = "creating_duplicate_record";
         onProgress?.({ stage, message: "Registrando control de duplicados...", progress: 80 });
@@ -1200,7 +1201,7 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         await timed(`create-duplicate-record-${documentResults.length}`, () => setDoc(duplicateRef, {
           ownerUid: user.uid,
           usuarioUid: user.uid,
-          pacienteId,
+          pacienteId: patientId,
           sourceFileHash: document.hash,
           hash: document.hash,
           textHash: document.textHash,
@@ -1260,6 +1261,14 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         idempotent: notesExisting,
         observed: noteErrors.length === 0
       });
+
+      const notesObserved = notesCreated + notesExisting;
+      if (notesIncluded > 0 && (noteErrors.length > 0 || notesObserved !== notesIncluded)) {
+        const error = new Error("No se pudieron guardar todas las notas externas en el historial del paciente.");
+        error.code = "notes-persistence-incomplete";
+        error.stage = "creating_note";
+        throw error;
+      }
 
       stage = "creating_audit";
       onProgress?.({ stage, message: "Registrando auditoria...", progress: 85 });
