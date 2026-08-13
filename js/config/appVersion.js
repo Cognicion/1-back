@@ -10,5 +10,6 @@
 // deployment marker: 2026-08-11-catalog-presentations-v1
 // deployment marker: 2026-08-11-pharmacology-files-consolidated-v1
 // deployment marker: 2026-08-11-diagnosticos-unificados-v1
-export const APP_VERSION = "1.911";
+// deployment marker: 2026-08-12-pdf-cognicion-null-v1
+export const APP_VERSION = "1.912";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;
