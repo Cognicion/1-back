@@ -5187,10 +5187,20 @@ function reemplazarFirmasPdfCognicion(contenedor) {
   else editorFirmas.remove();
 }
 
-function esperarRenderPdfCognicion() {
-  return new Promise((resolve) => {
+async function esperarRenderPdfCognicion() {
+  const renderizado = new Promise((resolve) => {
     requestAnimationFrame(() => requestAnimationFrame(resolve));
   });
+  const resultado = await esperarConTimeoutPdfCognicion(
+    renderizado,
+    TIMEOUT_RECURSO_PDF_COGNICION_MS
+  );
+  if (resultado.estado !== "ok") {
+    console.warn("[PDF Cognición] El render no confirmó dos cuadros; se continuará con la validación del documento.", {
+      estado: resultado.estado
+    });
+  }
+  return { estado: resultado.estado };
 }
 
 const CAMPOS_SIGNOS_VITALES_PDF_COGNICION = Object.freeze([

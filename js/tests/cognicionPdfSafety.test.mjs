@@ -12,8 +12,9 @@ import {
 const notaJs = await readFile(new URL("../nota.js", import.meta.url), "utf8");
 
 function extraerFuncion(codigo, nombre) {
-  const inicio = codigo.indexOf(`function ${nombre}(`);
+  let inicio = codigo.indexOf(`function ${nombre}(`);
   assert.notEqual(inicio, -1, `No se encontró ${nombre}`);
+  if (codigo.slice(Math.max(0, inicio - 6), inicio) === "async ") inicio -= 6;
   const finFirma = codigo.indexOf("\n", inicio);
   const apertura = codigo.lastIndexOf("{", finFirma);
   let profundidad = 0;
@@ -89,6 +90,84 @@ test("los registros y las esperas fallan de forma controlada", async () => {
   });
   assert.equal((await esperarConTimeoutPdfCognicion(Promise.reject(new Error("fallo")), 20)).estado, "error");
   assert.equal((await esperarConTimeoutPdfCognicion(new Promise(() => {}), 5)).estado, "timeout");
+});
+
+test("la espera de render termina de forma controlada si requestAnimationFrame se suspende", async () => {
+  const fuenteRender = extraerFuncion(notaJs, "esperarRenderPdfCognicion");
+  const advertencias = [];
+  const contexto = {
+    TIMEOUT_RECURSO_PDF_COGNICION_MS: 4000,
+    requestAnimationFrame() {},
+    esperarConTimeoutPdfCognicion: async (_promesa, milisegundos) => {
+      assert.equal(milisegundos, 4000);
+      return { estado: "timeout" };
+    },
+    console: {
+      warn(_mensaje, detalles) {
+        advertencias.push(detalles);
+      }
+    }
+  };
+
+  const ejecucion = vm.runInNewContext(
+    `${fuenteRender}; esperarRenderPdfCognicion().then((valor) => { resultadoRender = valor; });`,
+    contexto
+  );
+  await ejecucion;
+  assert.equal(contexto.resultadoRender.estado, "timeout");
+  assert.equal(advertencias.length, 1);
+  assert.deepEqual({ ...advertencias[0] }, { estado: "timeout" });
+});
+
+test("la limpieza espera afterprint y no depende de focus en navegadores móviles", () => {
+  const fuenteLimpieza = extraerFuncion(notaJs, "limpiarContenedorPdfCognicion");
+  const fuenteProgramacion = extraerFuncion(notaJs, "programarLimpiezaPdfCognicion");
+  const listeners = new Map();
+  let temporizador = null;
+  let removidos = 0;
+  let claseRetirada = false;
+  const contexto = {
+    contenedorPdfCognicionActivo: { remove: () => { removidos += 1; } },
+    manejadorAfterPrintCognicion: null,
+    temporizadorLimpiezaPdfCognicion: null,
+    TIMEOUT_LIMPIEZA_PDF_COGNICION_MS: 300000,
+    window: {
+      addEventListener(tipo, manejador) {
+        listeners.set(tipo, manejador);
+      },
+      removeEventListener(tipo) {
+        listeners.delete(tipo);
+      },
+      setTimeout(manejador, milisegundos) {
+        temporizador = { manejador, milisegundos };
+        return 73;
+      },
+      clearTimeout(identificador) {
+        assert.equal(identificador, 73);
+      }
+    },
+    document: {
+      body: {
+        classList: {
+          remove(clase) {
+            assert.equal(clase, "modo-impresion-cognicion");
+            claseRetirada = true;
+          }
+        }
+      }
+    }
+  };
+
+  vm.runInNewContext(`${fuenteLimpieza}; ${fuenteProgramacion}; programarLimpiezaPdfCognicion();`, contexto);
+  assert.equal(listeners.has("afterprint"), true);
+  assert.equal(listeners.has("focus"), false);
+  assert.equal(temporizador.milisegundos, 300000);
+  assert.equal(removidos, 0);
+
+  listeners.get("afterprint")();
+  assert.equal(removidos, 1);
+  assert.equal(claseRetirada, true);
+  assert.equal(contexto.contenedorPdfCognicionActivo, null);
 });
 
 test("las trazas no incluyen valores clínicos ni identificadores", () => {

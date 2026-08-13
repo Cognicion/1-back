@@ -12,7 +12,7 @@ Versión visible: 1.912
    - la versión vigente de la nota guardada, si está en edición;
    - los signos vitales resueltos por `resolverSignosVitalesNota()`.
 4. `construirContenedorPdfCognicion(datosPdf)` transforma los datos en un árbol DOM temporal A4.
-5. El contenedor se adjunta fuera de pantalla, se esperan de forma acotada las fuentes del sistema y los dos logos decorativos, y se validan texto y dimensiones.
+5. El contenedor se adjunta fuera de pantalla; se esperan de forma acotada dos cuadros de render, las fuentes del sistema y los dos logos decorativos, y se validan texto y dimensiones. Si una pestaña móvil queda en segundo plano, ninguna espera deja el botón bloqueado indefinidamente.
 6. Sólo después de una preparación válida se entrega el documento al navegador mediante `window.print()`.
 7. El navegador ofrece su diálogo nativo para imprimir o guardar como PDF. La limpieza se ejecuta con `afterprint` o mediante un temporizador de respaldo. No se limpia al recuperar el foco, porque Safari/iOS puede hacerlo antes de terminar el paginado.
 
