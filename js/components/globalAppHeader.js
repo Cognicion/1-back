@@ -103,6 +103,13 @@ function ensureMedicoActions(header) {
 
 function asegurarAccionNotificaciones(header) {
   if (header.querySelector('[aria-label*="notific" i], [data-global-header-notifications]')) return;
+  const campanaTemporal = document.querySelector('[data-global-notifications-link]');
+  if (campanaTemporal) {
+    const barraTemporal = campanaTemporal.closest("[data-accesos-rapidos-global]");
+    campanaTemporal.remove();
+    if (barraTemporal && !barraTemporal.children.length) barraTemporal.remove();
+    log("Campana temporal sustituida por la acción del encabezado");
+  }
   const actions = header.querySelector(".global-header-actions");
   if (!actions) return;
   const enlace = document.createElement("a");
