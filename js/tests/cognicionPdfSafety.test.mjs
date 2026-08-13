@@ -97,6 +97,33 @@ test("las trazas no incluyen valores clínicos ni identificadores", () => {
     notaJs.indexOf("function clonarNodoPdfCognicion")
   );
   assert.doesNotMatch(bloqueTraza, /pacienteActualDatos|uidPaciente|expediente|subjetivo|diagnostico/i);
+  assert.doesNotMatch(bloqueTraza, /error\?\.message|(?:^|[,{]\s*)message\s*:|(?:^|[,{]\s*)stack\s*:/m);
+  assert.match(bloqueTraza, /typeof error\?\.stack === "string"/);
+  assert.match(bloqueTraza, /CODIGOS_ERROR_PDF_COGNICION\.has\(error\?\.code\)/);
+  assert.match(bloqueTraza, /coincidenciaUbicacion\[1\]/);
   assert.match(notaJs, /trazarPdfCognicion\("datos-listos", \{[\s\S]*?tieneSignosVitales:[\s\S]*?diagnosticos:[\s\S]*?firmas:/);
   assert.doesNotMatch(notaJs, /trazarPdfCognicion\([^)]*(?:nombrePaciente|textoNota|expedienteId)/);
+
+  const fuenteRegistro = extraerFuncion(notaJs, "registrarErrorPdfCognicion");
+  const capturas = [];
+  const contexto = {
+    NOMBRES_ERROR_PDF_COGNICION: new Set(["Error", "TypeError"]),
+    CODIGOS_ERROR_PDF_COGNICION: new Set(["PDF_EMPTY_DOCUMENT"]),
+    errorMalicioso: {
+      name: "TypeError",
+      code: "UID-SECRETO",
+      message: "Paciente Identificable",
+      stack: "TypeError: Paciente Identificable\\n    at generarPDFNota (https://cognicionlabs.com/js/nota.js?v=UID-SECRETO:123:45)"
+    },
+    console: {
+      error(...argumentos) {
+        capturas.push(argumentos);
+      }
+    }
+  };
+  vm.runInNewContext(`${fuenteRegistro}; registrarErrorPdfCognicion("construccion", errorMalicioso);`, contexto);
+
+  const salida = JSON.stringify(capturas);
+  assert.doesNotMatch(salida, /Paciente Identificable|UID-SECRETO/);
+  assert.match(salida, /nota\.js:123:45/);
 });

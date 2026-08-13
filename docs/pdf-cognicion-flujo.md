@@ -14,7 +14,7 @@ Versión visible: 1.912
 4. `construirContenedorPdfCognicion(datosPdf)` transforma los datos en un árbol DOM temporal A4.
 5. El contenedor se adjunta fuera de pantalla, se esperan de forma acotada las fuentes del sistema y los dos logos decorativos, y se validan texto y dimensiones.
 6. Sólo después de una preparación válida se entrega el documento al navegador mediante `window.print()`.
-7. El navegador ofrece su diálogo nativo para imprimir o guardar como PDF. La limpieza se ejecuta con `afterprint`, al recuperar el foco o mediante un temporizador de respaldo.
+7. El navegador ofrece su diálogo nativo para imprimir o guardar como PDF. La limpieza se ejecuta con `afterprint` o mediante un temporizador de respaldo. No se limpia al recuperar el foco, porque Safari/iOS puede hacerlo antes de terminar el paginado.
 
 Este flujo no usa jsPDF, `Blob`, `URL.createObjectURL`, base64, `window.open()` ni una descarga mediante enlace. El `Blob` que existe más adelante en `nota.js` pertenece exclusivamente al formato Word Fray.
 
@@ -43,7 +43,7 @@ Se conservan trazas con el prefijo `[PDF Cognición]` para validación manual. R
 - conteos de diagnósticos, firmas, secciones e imágenes;
 - estado de fuentes e imágenes;
 - longitud del texto y dimensiones;
-- nombre, código, mensaje técnico acotado y pila del error.
+- nombre y código permitidos, más archivo/línea/columna sin URL ni parámetros.
 
 No registran nombres, expedientes, identificadores, texto clínico, diagnósticos, medicamentos, valores de signos, rutas Firestore ni contenido de firmas.
 

@@ -19,6 +19,7 @@ assert.match(modulo, /NOMBRE, FIRMA Y C\\u00c9DULA PROFESIONAL DEL M\\u00c9DICO/
 assert.match(modulo, /C\\u00e9d\. Prof\./);
 assert.match(modulo, /document\.body\.classList\.add\("modo-impresion-cognicion"\)/);
 assert.match(modulo, /window\.addEventListener\("afterprint", manejadorAfterPrintCognicion/);
+assert.doesNotMatch(modulo, /addEventListener\("focus", manejadorFocusPrintCognicion/);
 assert.match(modulo, /etapa = "construccion"/);
 assert.match(modulo, /etapa = "impresion"/);
 assert.match(modulo, /registrarErrorPdfCognicion\(etapa, error\)/);
@@ -27,7 +28,8 @@ assert.match(modulo, /await esperarRenderPdfCognicion\(\)/);
 assert.match(modulo, /await esperarFuentesPdfCognicion\(\)/);
 assert.match(modulo, /await esperarImagenesPdfCognicion\(contenedorPdfCognicionActivo\)/);
 assert.match(modulo, /TIMEOUT_RECURSO_PDF_COGNICION_MS/);
-assert.match(modulo, /if \(!texto\) throw new Error\("El contenedor temporal/);
+assert.match(modulo, /error\.code = "PDF_EMPTY_DOCUMENT"/);
+assert.match(modulo, /error\.code = "PDF_ZERO_DIMENSIONS"/);
 assert.match(modulo, /boton\.textContent = "Generando PDF\.\.\."/);
 assert.doesNotMatch(modulo, /setTimeout\(limpiarContenedorPdfCognicion, 1000\)/);
 assert.doesNotMatch(modulo, /window\.generarPDFNota\s*=\s*function\(\)\s*\{\s*window\.print\(\)/);

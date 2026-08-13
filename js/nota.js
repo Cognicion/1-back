@@ -5003,7 +5003,6 @@ window.regresarDesdeNota = function() {
 
 let contenedorPdfCognicionActivo = null;
 let manejadorAfterPrintCognicion = null;
-let manejadorFocusPrintCognicion = null;
 let temporizadorLimpiezaPdfCognicion = null;
 
 const TIMEOUT_RECURSO_PDF_COGNICION_MS = 4000;
@@ -5501,8 +5500,43 @@ function crearTablaSignosEvolucionPdfCognicion(signosVitales = {}) {
   return seccion;
 }
 
+function sanitizarDiagnosticoPdfCognicion(diagnostico, indice = 0) {
+  if (typeof diagnostico === "string") return diagnostico;
+  if (!esRegistroPdfCognicion(diagnostico)) return null;
+
+  const codigo = textoSeguroPdfCognicion(diagnostico.codigo);
+  const nombre = textoSeguroPdfCognicion(
+    diagnostico.nombre || diagnostico.descripcion || diagnostico.diagnostico
+  );
+  const texto = textoSeguroPdfCognicion(diagnostico.texto)
+    || `${codigo}${codigo && nombre ? " - " : ""}${nombre}`.trim();
+  if (!codigo && !nombre && !texto) return null;
+
+  return {
+    id: textoSeguroPdfCognicion(diagnostico.id),
+    diagnosticoId: textoSeguroPdfCognicion(diagnostico.diagnosticoId),
+    idCatalogo: textoSeguroPdfCognicion(diagnostico.idCatalogo),
+    catalogoId: textoSeguroPdfCognicion(diagnostico.catalogoId),
+    manual: diagnostico.manual === true,
+    codigo,
+    nombre,
+    catalogo: textoSeguroPdfCognicion(diagnostico.catalogo) || "CIE-10",
+    sistema: textoSeguroPdfCognicion(diagnostico.sistema),
+    sistemaClasificacion: textoSeguroPdfCognicion(diagnostico.sistemaClasificacion),
+    texto,
+    fechaSeleccion: fechaSeguraPdfCognicion(diagnostico.fechaSeleccion),
+    estado: textoSeguroPdfCognicion(diagnostico.estado),
+    especificador: textoSeguroPdfCognicion(diagnostico.especificador),
+    especificadores: textoSeguroPdfCognicion(diagnostico.especificadores),
+    orden: Number.isFinite(Number(diagnostico.orden)) ? Number(diagnostico.orden) : indice
+  };
+}
+
 function crearSeccionDiagnosticosEvolucionPdfCognicion(diagnosticos = []) {
-  const seleccionados = normalizarDiagnosticosNota(diagnosticos);
+  const fuente = Array.isArray(diagnosticos) ? diagnosticos : (diagnosticos ? [diagnosticos] : []);
+  const seleccionados = normalizarDiagnosticosNota(
+    fuente.map(sanitizarDiagnosticoPdfCognicion).filter(Boolean)
+  );
   if (!seleccionados.length) return null;
   const seccion = document.createElement("section");
   seccion.className = "cognicion-pdf-evolucion__bloque";
@@ -5592,10 +5626,6 @@ function limpiarContenedorPdfCognicion() {
     window.removeEventListener("afterprint", manejadorAfterPrintCognicion);
     manejadorAfterPrintCognicion = null;
   }
-  if (manejadorFocusPrintCognicion) {
-    window.removeEventListener("focus", manejadorFocusPrintCognicion);
-    manejadorFocusPrintCognicion = null;
-  }
   document.body.classList.remove("modo-impresion-cognicion");
   contenedorPdfCognicionActivo?.remove();
   contenedorPdfCognicionActivo = null;
@@ -5603,9 +5633,7 @@ function limpiarContenedorPdfCognicion() {
 
 function programarLimpiezaPdfCognicion() {
   manejadorAfterPrintCognicion = limpiarContenedorPdfCognicion;
-  manejadorFocusPrintCognicion = limpiarContenedorPdfCognicion;
   window.addEventListener("afterprint", manejadorAfterPrintCognicion, { once: true });
-  window.addEventListener("focus", manejadorFocusPrintCognicion, { once: true });
   temporizadorLimpiezaPdfCognicion = window.setTimeout(
     limpiarContenedorPdfCognicion,
     TIMEOUT_LIMPIEZA_PDF_COGNICION_MS
@@ -5669,13 +5697,21 @@ window.generarPDFNota = async function() {
     const texto = (contenedorPdfCognicionActivo.innerText || contenedorPdfCognicionActivo.textContent || "").trim();
     const ancho = contenedorPdfCognicionActivo.scrollWidth;
     const alto = contenedorPdfCognicionActivo.scrollHeight;
-    if (!texto) throw new Error("El contenedor temporal de la nota Cognicion esta vacio.");
-    if (ancho <= 0 || alto <= 0) throw new Error("El contenedor temporal de la nota Cognicion no tiene dimensiones visibles.");
+    if (!texto) {
+      const error = new Error("El contenedor temporal está vacío.");
+      error.code = "PDF_EMPTY_DOCUMENT";
+      throw error;
+    }
+    if (ancho <= 0 || alto <= 0) {
+      const error = new Error("El contenedor temporal no tiene dimensiones visibles.");
+      error.code = "PDF_ZERO_DIMENSIONS";
+      throw error;
+    }
     trazarPdfCognicion("documento-validado", { longitudTexto: texto.length, ancho, alto });
   } catch (error) {
     registrarErrorPdfCognicion(etapa, error);
     limpiarContenedorPdfCognicion();
-    alert("No fue posible preparar el PDF de la nota Cognición. La nota permanece guardada y no se realizó ningún cambio.");
+    alert("No fue posible preparar el PDF de la nota Cognición. El contenido permanece sin cambios.");
     if (boton) {
       boton.disabled = false;
       boton.textContent = textoOriginal;
@@ -5700,7 +5736,7 @@ window.generarPDFNota = async function() {
   } catch (error) {
     registrarErrorPdfCognicion(etapa, error);
     limpiarContenedorPdfCognicion();
-    alert("El documento se preparó, pero el navegador no pudo abrir la vista de impresión/PDF. La nota permanece guardada y sin cambios.");
+    alert("El documento se preparó, pero el navegador no pudo abrir la vista de impresión/PDF. El contenido permanece sin cambios.");
   } finally {
     if (!impresionSolicitada) limpiarContenedorPdfCognicion();
     if (boton) {

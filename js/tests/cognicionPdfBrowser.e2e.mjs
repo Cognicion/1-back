@@ -25,6 +25,8 @@ const fuentesProduccion = [
   "valorConUnidadSignoVital",
   "agregarBloqueEvolucionPdfCognicion",
   "crearTablaSignosEvolucionPdfCognicion",
+  "sanitizarDiagnosticoPdfCognicion",
+  "crearSeccionDiagnosticosEvolucionPdfCognicion",
   "construirContenedorPdfCognicion",
   "esperarImagenPdfCognicion",
   "esperarImagenesPdfCognicion"
@@ -52,7 +54,9 @@ test("Chrome genera un PDF A4 con signos null, Unicode, texto largo y un logo au
         'let pacienteActualDatos = { nombres: "Paciente", apellidoPaterno: "QA", fechaNacimiento: "1990-01-01", sexo: "X" };',
         'function datosInstitucionalesPaciente() { return { expediente: "QA-001", edad: "36", sexo: "X" }; }',
         'function obtenerNombrePacienteParaMostrar() { return "Paciente QA"; }',
-        'function crearSeccionDiagnosticosEvolucionPdfCognicion() { return null; }',
+        'function estadoDiagnosticoNotaValido(valor) { return String(valor || ""); }',
+        'function normalizarDiagnosticosNota(lista) { return lista; }',
+        'function textoDiagnosticoConEstado(dx) { return [dx.texto || dx.nombre || "", dx.estado || ""].filter(Boolean).join(" — "); }',
         'function obtenerFirmasPdfCognicion() { return []; }',
         'function crearSeccionFirmasPdfCognicion() { return null; }',
         ${JSON.stringify(fuentesProduccion)},
@@ -62,7 +66,12 @@ test("Chrome genera un PDF A4 con signos null, Unicode, texto largo y un logo au
       const unicode = "áéíóú ñ ü ¿¡ µ 🧠 \\uD800";
       const documento = runtime.construirContenedorPdfCognicion({
         signosVitales: null,
-        diagnosticos: [null, undefined],
+        diagnosticos: [
+          null,
+          undefined,
+          { codigo: { valor: "F32" }, nombre: { texto: "Diagnóstico sintético" }, estado: "Confirmado" },
+          { texto: { texto: "Diagnóstico desde objeto" } }
+        ],
         subjetivo: unicode + "\\n" + "Texto clínico sintético. ".repeat(900),
         objetivo: undefined,
         analisis: { texto: "Objeto conocido normalizado" },
@@ -96,6 +105,10 @@ test("Chrome genera un PDF A4 con signos null, Unicode, texto largo y un logo au
       return {
         imagenes,
         codigoImagenRequerida,
+        diagnosticosSinObjetos: !texto.includes("[object Object]")
+          && texto.includes("F32")
+          && texto.includes("Diagnóstico sintético")
+          && texto.includes("Diagnóstico desde objeto"),
         tablaSignosAusente: !documento.querySelector(".cognicion-pdf-evolucion__signos"),
         tablaParcial,
         unicodePreservado: texto.includes(unicode),
@@ -112,6 +125,7 @@ test("Chrome genera un PDF A4 con signos null, Unicode, texto largo y un logo au
     assert.equal(resultado.imagenes.total, 2);
     assert.equal(resultado.imagenes.fallidas, 1);
     assert.equal(resultado.codigoImagenRequerida, "PDF_REQUIRED_IMAGE_UNAVAILABLE");
+    assert.equal(resultado.diagnosticosSinObjetos, true);
     assert.ok(resultado.ancho > 0);
     assert.ok(resultado.alto > 0);
 
