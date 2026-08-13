@@ -4,8 +4,7 @@ import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { guardarSolicitudEliminacion } from "./services/reportes.js?v=20260716-1";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
-import { CIE10 } from "./data/cie10.js";
-import { CIE11 } from "./data/cie11.js";
+import { CIE10, CIE11 } from "./data/catalogoDiagnosticos.js?v=20260811-diagnosticos-unificados-v1";
 import { ESCALAS_PSIQUIATRICAS, interpretarEscala } from "./data/escalasPsiquiatricas.js";
 import {
   ESCALAS_MEDICINA_GENERAL,
@@ -100,6 +99,12 @@ import {
 import { calcularEdadPediatrica, formatearFechaDDMMAAAA } from "./pediatria/edad.js";
 import { calcularIMC as calcularIMCCentral } from "./utils/imc.js";
 import { construirTratamientoEIndicaciones } from "./utils/tratamientoIndicaciones.js";
+import {
+  esRegistroPdfCognicion,
+  esperarConTimeoutPdfCognicion,
+  fechaSeguraPdfCognicion,
+  textoSeguroPdfCognicion
+} from "./export/cognicionPdfSafety.js?v=20260812-pdf-cognicion-null-v1";
 import {
   calcularIMC as calcularIMCPediatrico,
   mantenimientoHollidaySegar,
@@ -1028,20 +1033,37 @@ function catalogoDiagnosticosCombinado() {
   ];
 }
 
+function textoBusquedaCatalogoDiagnostico(diagnostico = {}) {
+  return [diagnostico.codigo, diagnostico.nombre, ...(diagnostico.aliases || [])]
+    .filter(Boolean)
+    .join(" ")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function prioridadCoincidenciaDiagnostico(diagnostico = {}, consulta = "") {
+  const codigo = String(diagnostico.codigo || "").toLowerCase();
+  const nombre = String(diagnostico.nombre || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  if (codigo === consulta) return 0;
+  if (codigo.startsWith(consulta)) return 1;
+  if (nombre.startsWith(consulta)) return 2;
+  return 3;
+}
+
 function configurarBuscadorCatalogo(input, contenedor, catalogo, nombreCatalogo) {
   if (!input || !contenedor) return;
 
   input.addEventListener("input", () => {
-    const texto = input.value.toLowerCase().trim();
+    const texto = input.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
     contenedor.innerHTML = "";
 
-    if (texto.length < 2) return;
+    if (!texto) return;
 
     [...catalogo, ...catalogoManualPorTipo(nombreCatalogo)]
-      .filter((dx) =>
-        dx.codigo.toLowerCase().includes(texto) ||
-        dx.nombre.toLowerCase().includes(texto)
-      )
+      .filter((dx) => textoBusquedaCatalogoDiagnostico(dx).includes(texto))
+      .sort((a, b) => prioridadCoincidenciaDiagnostico(a, texto) - prioridadCoincidenciaDiagnostico(b, texto)
+        || String(a.codigo || "").localeCompare(String(b.codigo || ""), "es", { numeric: true }))
       .slice(0, 10)
       .forEach((dx) => {
         const item = document.createElement("div");
@@ -1065,18 +1087,17 @@ configurarBuscadorCatalogo(buscadorCIE11, resultadosCIE11Lista, CIE11, "CIE-11")
 
 if (buscadorDiagnostico && resultadosCIE10 && cie10Codigo && cie10Nombre) {
   buscadorDiagnostico.addEventListener("input", () => {
-    const texto = buscadorDiagnostico.value.toLowerCase().trim();
+    const texto = buscadorDiagnostico.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
     resultadosCIE10.innerHTML = "";
 
-    if (texto.length < 2) return;
+    if (!texto) return;
 
-    const resultados = catalogoDiagnosticosCombinado().filter((dx) => {
-      return (
-        dx.codigo.toLowerCase().includes(texto) ||
-        dx.nombre.toLowerCase().includes(texto)
-      );
-    }).slice(0, 10);
+    const resultados = catalogoDiagnosticosCombinado()
+      .filter((dx) => textoBusquedaCatalogoDiagnostico(dx).includes(texto))
+      .sort((a, b) => prioridadCoincidenciaDiagnostico(a, texto) - prioridadCoincidenciaDiagnostico(b, texto)
+        || String(a.codigo || "").localeCompare(String(b.codigo || ""), "es", { numeric: true }))
+      .slice(0, 10);
 
     resultados.forEach((dx) => {
       const item = document.createElement("div");
@@ -1693,6 +1714,7 @@ function normalizarDiagnosticosNota(lista = []) {
   const vistos = new Set();
   const fuente = Array.isArray(lista) ? lista : (lista ? [lista] : []);
   return fuente
+    .filter((dx) => typeof dx === "string" || (dx && typeof dx === "object" && !Array.isArray(dx)))
     .map((dx, index) => normalizarDiagnosticoNota(dx, index))
     .sort((a, b) => (Number(a.orden) || 0) - (Number(b.orden) || 0))
     .filter((dx) => {
@@ -4981,6 +5003,47 @@ window.regresarDesdeNota = function() {
 
 let contenedorPdfCognicionActivo = null;
 let manejadorAfterPrintCognicion = null;
+let temporizadorLimpiezaPdfCognicion = null;
+
+const TIMEOUT_RECURSO_PDF_COGNICION_MS = 4000;
+const TIMEOUT_LIMPIEZA_PDF_COGNICION_MS = 5 * 60 * 1000;
+const CODIGOS_ERROR_PDF_COGNICION = new Set([
+  "PDF_EMPTY_DOCUMENT",
+  "PDF_REQUIRED_IMAGE_UNAVAILABLE",
+  "PDF_ZERO_DIMENSIONS",
+  "PRINT_UNAVAILABLE"
+]);
+const NOMBRES_ERROR_PDF_COGNICION = new Set([
+  "AbortError",
+  "Error",
+  "InvalidStateError",
+  "NotSupportedError",
+  "RangeError",
+  "ReferenceError",
+  "SyntaxError",
+  "TypeError"
+]);
+
+function trazarPdfCognicion(etapa, detalles = {}) {
+  console.debug("[PDF Cognición]", { etapa, ...detalles });
+}
+
+function registrarErrorPdfCognicion(etapa, error) {
+  const name = NOMBRES_ERROR_PDF_COGNICION.has(error?.name) ? error.name : "Error";
+  const code = CODIGOS_ERROR_PDF_COGNICION.has(error?.code) ? error.code : "";
+  const coincidenciaUbicacion = typeof error?.stack === "string"
+    ? error.stack.match(/(?:\/|\\)([a-z0-9_.-]+\.m?js)(?:\?[^:\s)]*)?:(\d+):(\d+)/i)
+    : null;
+  const ubicacion = coincidenciaUbicacion
+    ? `${coincidenciaUbicacion[1]}:${coincidenciaUbicacion[2]}:${coincidenciaUbicacion[3]}`
+    : "";
+  console.error("[PDF Cognición] Error", {
+    etapa,
+    name,
+    code,
+    ubicacion
+  });
+}
 
 function clonarNodoPdfCognicion(nodo) {
   if (!nodo) return null;
@@ -5124,10 +5187,20 @@ function reemplazarFirmasPdfCognicion(contenedor) {
   else editorFirmas.remove();
 }
 
-function esperarRenderPdfCognicion() {
-  return new Promise((resolve) => {
+async function esperarRenderPdfCognicion() {
+  const renderizado = new Promise((resolve) => {
     requestAnimationFrame(() => requestAnimationFrame(resolve));
   });
+  const resultado = await esperarConTimeoutPdfCognicion(
+    renderizado,
+    TIMEOUT_RECURSO_PDF_COGNICION_MS
+  );
+  if (resultado.estado !== "ok") {
+    console.warn("[PDF Cognición] El render no confirmó dos cuadros; se continuará con la validación del documento.", {
+      estado: resultado.estado
+    });
+  }
+  return { estado: resultado.estado };
 }
 
 const CAMPOS_SIGNOS_VITALES_PDF_COGNICION = Object.freeze([
@@ -5143,7 +5216,7 @@ const CAMPOS_SIGNOS_VITALES_PDF_COGNICION = Object.freeze([
 ]);
 
 function valorConUnidadSignoVital(valor, unidad) {
-  const texto = String(valor ?? "").trim();
+  const texto = textoSeguroPdfCognicion(valor).trim();
   if (!texto) return "";
   if (unidad === "m" && /^[-+]?\d+(?:[.,]\d+)?$/.test(texto)) {
     const talla = Number(texto.replace(",", "."));
@@ -5174,7 +5247,7 @@ function formatearFechaHoraVitalesCognicion(signosVitales = {}) {
 }
 
 function crearSeccionSignosVitalesPdfCognicion(signosVitales) {
-  if (!signosVitales) return null;
+  if (!esRegistroPdfCognicion(signosVitales)) return null;
   const valores = CAMPOS_SIGNOS_VITALES_PDF_COGNICION
     .map(([clave, etiqueta, unidad]) => ({
       clave,
@@ -5245,21 +5318,83 @@ function datosExportacionCognicion() {
   return exportData;
 }
 
+async function esperarFuentesPdfCognicion() {
+  if (!document.fonts?.ready) return { estado: "no-disponible" };
+  const resultado = await esperarConTimeoutPdfCognicion(
+    document.fonts.ready,
+    TIMEOUT_RECURSO_PDF_COGNICION_MS
+  );
+  if (resultado.estado !== "ok") {
+    console.warn("[PDF Cognición] La fuente no estuvo lista; se usará la fuente del sistema.", {
+      estado: resultado.estado,
+      name: resultado.error?.name || ""
+    });
+  }
+  return { estado: resultado.estado };
+}
+
+async function esperarImagenPdfCognicion(imagen) {
+  const manejarFallo = () => {
+    if (imagen.dataset.pdfCognicionDecorativa === "true") {
+      imagen.remove();
+      return false;
+    }
+    const error = new Error("Una imagen requerida del documento no está disponible.");
+    error.name = "NotSupportedError";
+    error.code = "PDF_REQUIRED_IMAGE_UNAVAILABLE";
+    throw error;
+  };
+  let estadoCarga = imagen.complete ? "ok" : "pendiente";
+  if (!imagen.complete) {
+    let retirarListeners = () => {};
+    const carga = new Promise((resolve) => {
+      const finalizar = (estado) => {
+        retirarListeners();
+        resolve(estado);
+      };
+      const alCargar = () => finalizar("ok");
+      const alFallar = () => finalizar("error");
+      retirarListeners = () => {
+        imagen.removeEventListener("load", alCargar);
+        imagen.removeEventListener("error", alFallar);
+      };
+      imagen.addEventListener("load", alCargar, { once: true });
+      imagen.addEventListener("error", alFallar, { once: true });
+      if (imagen.complete) finalizar(imagen.naturalWidth > 0 ? "ok" : "error");
+    });
+    const resultadoCarga = await esperarConTimeoutPdfCognicion(
+      carga,
+      TIMEOUT_RECURSO_PDF_COGNICION_MS
+    );
+    retirarListeners();
+    estadoCarga = resultadoCarga.estado === "ok" ? resultadoCarga.valor : resultadoCarga.estado;
+  }
+
+  const imagenInvalida = estadoCarga !== "ok"
+    || (typeof imagen.naturalWidth === "number" && imagen.naturalWidth <= 0);
+  if (imagenInvalida) return manejarFallo();
+
+  if (typeof imagen.decode === "function") {
+    const decodificacion = await esperarConTimeoutPdfCognicion(
+      imagen.decode(),
+      TIMEOUT_RECURSO_PDF_COGNICION_MS
+    );
+    if (decodificacion.estado !== "ok") return manejarFallo();
+  }
+  return true;
+}
+
 async function esperarImagenesPdfCognicion(contenedor) {
   const imagenes = [...contenedor.querySelectorAll("img")];
-  await Promise.all(imagenes.map(async (imagen) => {
-    if (!imagen.complete) {
-      await new Promise((resolve) => {
-        imagen.addEventListener("load", resolve, { once: true });
-        imagen.addEventListener("error", resolve, { once: true });
-      });
-    }
-    if (typeof imagen.decode === "function") {
-      try { await imagen.decode(); } catch (error) {
-        console.warn("Una imagen del PDF Cognicion no pudo decodificarse; se continuara sin bloquear la nota.", error?.name || "error");
-      }
-    }
-  }));
+  const resultados = await Promise.all(imagenes.map(esperarImagenPdfCognicion));
+  const fallidas = resultados.filter((lista) => !lista).length;
+  if (fallidas) {
+    console.warn("[PDF Cognición] Se omitieron imágenes decorativas no disponibles.", {
+      total: imagenes.length,
+      fallidas
+    });
+  }
+  return { total: imagenes.length, fallidas };
 }
 
 function construirContenedorPdfCognicionLegacy(exportData = datosExportacionCognicion()) {
@@ -5336,7 +5471,7 @@ function construirContenedorPdfCognicionLegacy(exportData = datosExportacionCogn
 }
 
 function agregarBloqueEvolucionPdfCognicion(documento, titulo, contenido) {
-  const texto = String(contenido || "").trim();
+  const texto = textoSeguroPdfCognicion(contenido).trim();
   if (!texto) return;
   const seccion = document.createElement("section");
   seccion.className = "cognicion-pdf-evolucion__bloque";
@@ -5350,6 +5485,7 @@ function agregarBloqueEvolucionPdfCognicion(documento, titulo, contenido) {
 }
 
 function crearTablaSignosEvolucionPdfCognicion(signosVitales = {}) {
+  if (!esRegistroPdfCognicion(signosVitales)) return null;
   const valores = CAMPOS_SIGNOS_VITALES_PDF_COGNICION
     .map(([clave, etiqueta, unidad]) => ({ etiqueta, valor: valorConUnidadSignoVital(signosVitales[clave], unidad) }))
     .filter(({ valor }) => valor);
@@ -5374,8 +5510,43 @@ function crearTablaSignosEvolucionPdfCognicion(signosVitales = {}) {
   return seccion;
 }
 
+function sanitizarDiagnosticoPdfCognicion(diagnostico, indice = 0) {
+  if (typeof diagnostico === "string") return diagnostico;
+  if (!esRegistroPdfCognicion(diagnostico)) return null;
+
+  const codigo = textoSeguroPdfCognicion(diagnostico.codigo);
+  const nombre = textoSeguroPdfCognicion(
+    diagnostico.nombre || diagnostico.descripcion || diagnostico.diagnostico
+  );
+  const texto = textoSeguroPdfCognicion(diagnostico.texto)
+    || `${codigo}${codigo && nombre ? " - " : ""}${nombre}`.trim();
+  if (!codigo && !nombre && !texto) return null;
+
+  return {
+    id: textoSeguroPdfCognicion(diagnostico.id),
+    diagnosticoId: textoSeguroPdfCognicion(diagnostico.diagnosticoId),
+    idCatalogo: textoSeguroPdfCognicion(diagnostico.idCatalogo),
+    catalogoId: textoSeguroPdfCognicion(diagnostico.catalogoId),
+    manual: diagnostico.manual === true,
+    codigo,
+    nombre,
+    catalogo: textoSeguroPdfCognicion(diagnostico.catalogo) || "CIE-10",
+    sistema: textoSeguroPdfCognicion(diagnostico.sistema),
+    sistemaClasificacion: textoSeguroPdfCognicion(diagnostico.sistemaClasificacion),
+    texto,
+    fechaSeleccion: fechaSeguraPdfCognicion(diagnostico.fechaSeleccion),
+    estado: textoSeguroPdfCognicion(diagnostico.estado),
+    especificador: textoSeguroPdfCognicion(diagnostico.especificador),
+    especificadores: textoSeguroPdfCognicion(diagnostico.especificadores),
+    orden: Number.isFinite(Number(diagnostico.orden)) ? Number(diagnostico.orden) : indice
+  };
+}
+
 function crearSeccionDiagnosticosEvolucionPdfCognicion(diagnosticos = []) {
-  const seleccionados = normalizarDiagnosticosNota(diagnosticos);
+  const fuente = Array.isArray(diagnosticos) ? diagnosticos : (diagnosticos ? [diagnosticos] : []);
+  const seleccionados = normalizarDiagnosticosNota(
+    fuente.map(sanitizarDiagnosticoPdfCognicion).filter(Boolean)
+  );
   if (!seleccionados.length) return null;
   const seccion = document.createElement("section");
   seccion.className = "cognicion-pdf-evolucion__bloque";
@@ -5392,15 +5563,16 @@ function crearSeccionDiagnosticosEvolucionPdfCognicion(diagnosticos = []) {
   seleccionados.forEach((diagnostico) => {
     const fila = cuerpo.insertRow();
     const codigo = fila.insertCell();
-    codigo.textContent = diagnostico.codigo || "—";
+    codigo.textContent = textoSeguroPdfCognicion(diagnostico.codigo) || "—";
     const texto = fila.insertCell();
-    texto.textContent = textoDiagnosticoConEstado(diagnostico);
+    texto.textContent = textoSeguroPdfCognicion(textoDiagnosticoConEstado(diagnostico));
   });
   seccion.append(titulo, tabla);
   return seccion;
 }
 
 function construirContenedorPdfCognicion(exportData = datosExportacionCognicion()) {
+  const datosPdf = esRegistroPdfCognicion(exportData) ? exportData : {};
   const documento = document.createElement("main");
   documento.className = "contenedor cognicion-pdf-documento cognicion-pdf-evolucion";
   documento.setAttribute("aria-label", "Nota clínica Cognición para PDF");
@@ -5411,6 +5583,7 @@ function construirContenedorPdfCognicion(exportData = datosExportacionCognicion(
     const logo = document.createElement("img");
     logo.src = ruta;
     logo.alt = "Cognición";
+    logo.dataset.pdfCognicionDecorativa = "true";
     marcas.appendChild(logo);
   });
   documento.appendChild(marcas);
@@ -5423,27 +5596,29 @@ function construirContenedorPdfCognicion(exportData = datosExportacionCognicion(
   const identificacion = document.createElement("p");
   identificacion.className = "cognicion-pdf-evolucion__identificacion";
   identificacion.textContent = [
-    `Paciente: ${obtenerNombrePacienteParaMostrar(pacienteActualDatos || {}) || "—"}`,
-    paciente.expediente ? `Expediente: ${paciente.expediente}` : "",
-    paciente.edad ? `Edad: ${paciente.edad}` : "",
-    paciente.sexo ? `Sexo: ${paciente.sexo}` : "",
-    `Fecha: ${formatoFechaFray(exportData.fechaNotaInput || exportData.observacionFray?.fechaNota || new Date().toISOString().slice(0, 10))}`,
-    exportData.observacionFray?.horaNota ? `Hora: ${exportData.observacionFray.horaNota}` : ""
+    `Paciente: ${textoSeguroPdfCognicion(obtenerNombrePacienteParaMostrar(pacienteActualDatos || {})) || "—"}`,
+    paciente.expediente ? `Expediente: ${textoSeguroPdfCognicion(paciente.expediente)}` : "",
+    paciente.edad ? `Edad: ${textoSeguroPdfCognicion(paciente.edad)}` : "",
+    paciente.sexo ? `Sexo: ${textoSeguroPdfCognicion(paciente.sexo)}` : "",
+    `Fecha: ${fechaSeguraPdfCognicion(datosPdf.fechaNotaInput || datosPdf.observacionFray?.fechaNota || new Date())}`,
+    datosPdf.observacionFray?.horaNota
+      ? `Hora: ${textoSeguroPdfCognicion(datosPdf.observacionFray.horaNota)}`
+      : ""
   ].filter(Boolean).join(" · ");
   documento.appendChild(identificacion);
 
-  const signos = crearTablaSignosEvolucionPdfCognicion(exportData.signosVitales);
+  const signos = crearTablaSignosEvolucionPdfCognicion(datosPdf.signosVitales);
   if (signos) documento.appendChild(signos);
 
-  const observacion = exportData.observacionFray || {};
-  agregarBloqueEvolucionPdfCognicion(documento, "SUBJETIVO / PADECIMIENTO ACTUAL O EVOLUCIÓN", exportData.subjetivo || exportData.notaRapida);
+  const observacion = esRegistroPdfCognicion(datosPdf.observacionFray) ? datosPdf.observacionFray : {};
+  agregarBloqueEvolucionPdfCognicion(documento, "SUBJETIVO / PADECIMIENTO ACTUAL O EVOLUCIÓN", datosPdf.subjetivo || datosPdf.notaRapida);
   agregarBloqueEvolucionPdfCognicion(documento, "EXPLORACIÓN FÍSICA Y NEUROLÓGICA", observacion.exploracionFisicaNeurologica);
-  agregarBloqueEvolucionPdfCognicion(documento, "OBJETIVO / EXAMEN MENTAL", exportData.objetivo);
+  agregarBloqueEvolucionPdfCognicion(documento, "OBJETIVO / EXAMEN MENTAL", datosPdf.objetivo);
   agregarBloqueEvolucionPdfCognicion(documento, "RESULTADOS RELEVANTES DE ESTUDIOS DIAGNÓSTICOS", observacion.resultadosEstudios);
-  const diagnosticos = crearSeccionDiagnosticosEvolucionPdfCognicion(exportData.diagnosticos);
+  const diagnosticos = crearSeccionDiagnosticosEvolucionPdfCognicion(datosPdf.diagnosticos);
   if (diagnosticos) documento.appendChild(diagnosticos);
-  agregarBloqueEvolucionPdfCognicion(documento, "PLAN, TRATAMIENTO E INDICACIONES", exportData.plan || exportData.tratamiento);
-  agregarBloqueEvolucionPdfCognicion(documento, "COMENTARIO Y ANÁLISIS CLÍNICO", exportData.analisis);
+  agregarBloqueEvolucionPdfCognicion(documento, "PLAN, TRATAMIENTO E INDICACIONES", datosPdf.plan || datosPdf.tratamiento);
+  agregarBloqueEvolucionPdfCognicion(documento, "COMENTARIO Y ANÁLISIS CLÍNICO", datosPdf.analisis);
   agregarBloqueEvolucionPdfCognicion(documento, "PRONÓSTICO", observacion.pronostico);
   agregarBloqueEvolucionPdfCognicion(documento, "DESTINO", observacion.destino);
 
@@ -5453,6 +5628,10 @@ function construirContenedorPdfCognicion(exportData = datosExportacionCognicion(
 }
 
 function limpiarContenedorPdfCognicion() {
+  if (temporizadorLimpiezaPdfCognicion) {
+    window.clearTimeout(temporizadorLimpiezaPdfCognicion);
+    temporizadorLimpiezaPdfCognicion = null;
+  }
   if (manejadorAfterPrintCognicion) {
     window.removeEventListener("afterprint", manejadorAfterPrintCognicion);
     manejadorAfterPrintCognicion = null;
@@ -5460,6 +5639,15 @@ function limpiarContenedorPdfCognicion() {
   document.body.classList.remove("modo-impresion-cognicion");
   contenedorPdfCognicionActivo?.remove();
   contenedorPdfCognicionActivo = null;
+}
+
+function programarLimpiezaPdfCognicion() {
+  manejadorAfterPrintCognicion = limpiarContenedorPdfCognicion;
+  window.addEventListener("afterprint", manejadorAfterPrintCognicion, { once: true });
+  temporizadorLimpiezaPdfCognicion = window.setTimeout(
+    limpiarContenedorPdfCognicion,
+    TIMEOUT_LIMPIEZA_PDF_COGNICION_MS
+  );
 }
 
 window.generarPDFNota = async function() {
@@ -5472,6 +5660,7 @@ window.generarPDFNota = async function() {
   const boton = document.getElementById("btnDescargarNota");
   const textoOriginal = boton?.textContent || "Descargar nota";
   let impresionSolicitada = false;
+  let etapa = "inicio";
 
   try {
     if (boton) {
@@ -5479,29 +5668,85 @@ window.generarPDFNota = async function() {
       boton.textContent = "Generando PDF...";
       boton.setAttribute("aria-busy", "true");
     }
+    trazarPdfCognicion("inicio", {
+      printSupported: typeof window.print === "function",
+      mobileViewport: window.matchMedia?.("(max-width: 767px)")?.matches === true
+    });
     limpiarContenedorPdfCognicion();
-    contenedorPdfCognicionActivo = construirContenedorPdfCognicion();
+
+    etapa = "datos";
+    const datosPdf = datosExportacionCognicion();
+    trazarPdfCognicion("datos-listos", {
+      tieneSignosVitales: esRegistroPdfCognicion(datosPdf.signosVitales),
+      diagnosticos: Array.isArray(datosPdf.diagnosticos) ? datosPdf.diagnosticos.length : 0,
+      firmas: obtenerFirmasPdfCognicion().filter((firma) => !firma.vacia).length
+    });
+
+    etapa = "construccion";
+    contenedorPdfCognicionActivo = construirContenedorPdfCognicion(datosPdf);
+    trazarPdfCognicion("documento-construido", {
+      secciones: contenedorPdfCognicionActivo.querySelectorAll("section").length,
+      imagenes: contenedorPdfCognicionActivo.querySelectorAll("img").length
+    });
+
+    etapa = "dom";
     document.body.appendChild(contenedorPdfCognicionActivo);
     document.body.classList.add("modo-impresion-cognicion");
     await esperarRenderPdfCognicion();
-    if (document.fonts?.ready) await document.fonts.ready;
-    await esperarImagenesPdfCognicion(contenedorPdfCognicionActivo);
+
+    etapa = "fuentes";
+    const fuentes = await esperarFuentesPdfCognicion();
+    trazarPdfCognicion("fuentes-listas", fuentes);
+
+    etapa = "imagenes";
+    const imagenes = await esperarImagenesPdfCognicion(contenedorPdfCognicionActivo);
+    trazarPdfCognicion("imagenes-listas", imagenes);
     await esperarRenderPdfCognicion();
 
-    const texto = contenedorPdfCognicionActivo.innerText.trim();
+    etapa = "validacion";
+    const texto = (contenedorPdfCognicionActivo.innerText || contenedorPdfCognicionActivo.textContent || "").trim();
     const ancho = contenedorPdfCognicionActivo.scrollWidth;
     const alto = contenedorPdfCognicionActivo.scrollHeight;
-    if (!texto) throw new Error("El contenedor temporal de la nota Cognicion esta vacio.");
-    if (ancho <= 0 || alto <= 0) throw new Error("El contenedor temporal de la nota Cognicion no tiene dimensiones visibles.");
+    if (!texto) {
+      const error = new Error("El contenedor temporal está vacío.");
+      error.code = "PDF_EMPTY_DOCUMENT";
+      throw error;
+    }
+    if (ancho <= 0 || alto <= 0) {
+      const error = new Error("El contenedor temporal no tiene dimensiones visibles.");
+      error.code = "PDF_ZERO_DIMENSIONS";
+      throw error;
+    }
+    trazarPdfCognicion("documento-validado", { longitudTexto: texto.length, ancho, alto });
+  } catch (error) {
+    registrarErrorPdfCognicion(etapa, error);
+    limpiarContenedorPdfCognicion();
+    alert("No fue posible preparar el PDF de la nota Cognición. El contenido permanece sin cambios.");
+    if (boton) {
+      boton.disabled = false;
+      boton.textContent = textoOriginal;
+      boton.removeAttribute("aria-busy");
+    }
+    return;
+  }
 
-    manejadorAfterPrintCognicion = limpiarContenedorPdfCognicion;
-    window.addEventListener("afterprint", manejadorAfterPrintCognicion, { once: true });
+  try {
+    etapa = "impresion";
+    if (typeof window.print !== "function") {
+      const error = new Error("El navegador no ofrece una función de impresión compatible.");
+      error.name = "NotSupportedError";
+      error.code = "PRINT_UNAVAILABLE";
+      throw error;
+    }
+    programarLimpiezaPdfCognicion();
+    trazarPdfCognicion("impresion-iniciada", { printSupported: true });
     window.print();
     impresionSolicitada = true;
+    trazarPdfCognicion("impresion-solicitada");
   } catch (error) {
-    console.error("No se pudo generar el PDF del formato Cognicion:", error);
+    registrarErrorPdfCognicion(etapa, error);
     limpiarContenedorPdfCognicion();
-    alert("No fue posible generar el PDF de la nota Cognicion. El contenido permanece sin cambios.");
+    alert("El documento se preparó, pero el navegador no pudo abrir la vista de impresión/PDF. El contenido permanece sin cambios.");
   } finally {
     if (!impresionSolicitada) limpiarContenedorPdfCognicion();
     if (boton) {

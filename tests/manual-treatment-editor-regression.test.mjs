@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { buscarMedicamentos, medicamentoPorTexto } from "../js/data/medicamentos.js";
+import { buscarMedicamentos, medicamentoPorTexto } from "../js/data/catalogoFarmacologicoUnificado.js";
 
 const editor = fs.readFileSync(new URL("../js/paciente.js", import.meta.url), "utf8");
 const form = fs.readFileSync(new URL("../paciente.html", import.meta.url), "utf8");

@@ -9,16 +9,12 @@ import {
   resolverMedicamentoCanonico
 } from "../data/catalogoFarmacologicoUnificado.js";
 import {
-  MEDICAMENTOS_MAESTROS as MEDICAMENTOS_MAESTROS_LEGACY
-} from "../data/medicamentos.js";
-import {
   analizarInteraccionesPublicas,
   crearSeleccionMedicamento
 } from "../services/interaccionesPublicas.js";
 import { evaluarMedicamentosPaciente } from "../services/motorClinicoMedicamentos.js";
 
 assert.equal(CATALOGO_FARMACOLOGICO_OFICIAL, MEDICAMENTOS_MAESTROS, "el export maestro debe ser la misma fuente oficial");
-assert.equal(CATALOGO_FARMACOLOGICO_OFICIAL.length, MEDICAMENTOS_MAESTROS_LEGACY.length, "el adaptador legacy debe conservar cobertura");
 assert.equal(new Set(CATALOGO_FARMACOLOGICO_OFICIAL.map((item) => item.id)).size, CATALOGO_FARMACOLOGICO_OFICIAL.length, "no debe haber ids clínicos duplicados");
 assert.equal(new Set(CATALOGO_FARMACOLOGICO_OFICIAL.map((item) => item.principioActivoNormalizado)).size, CATALOGO_FARMACOLOGICO_OFICIAL.length, "no debe haber principios activos duplicados");
 assert.ok(MEDICAMENTOS_PRESENTACIONES.every((item) => item.clinicalMedicationId && item.selectedPresentationId), "toda presentación debe apuntar a un principio activo");

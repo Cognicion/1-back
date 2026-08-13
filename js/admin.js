@@ -104,6 +104,11 @@ const ESTADOS_REPORTE_ADMIN = [
   "descartado"
 ];
 
+const COLECCIONES_VISTA_CORROBORACION = [
+  "notasMedicas", "notasRapidas", "tratamientos", "estudios", "resultadosEscalas",
+  "agenda", "archivos", "imagenes", "documentos", "permisosMedicos", "registrosDiarios"
+];
+
 const SUBCOLECCIONES_USUARIO_PACIENTE = [
   "notasMedicas",
   "notasRapidas",
@@ -332,7 +337,179 @@ function configurarFiltros() {
 
   document.getElementById("btnGenerarCodigoMedico")?.addEventListener("click", generarCodigoMedicoAdmin);
   document.getElementById("btnActualizarCodigosMedico")?.addEventListener("click", cargarCodigosMedicoAdmin);
+  document.querySelectorAll("[data-cerrar-vista-corroboracion]").forEach((elemento) => {
+    elemento.addEventListener("click", cerrarVistaCorroboracionAdmin);
+  });
+  document.addEventListener("keydown", (evento) => {
+    if (evento.key === "Escape") cerrarVistaCorroboracionAdmin();
+  });
 }
+
+function cerrarVistaCorroboracionAdmin() {
+  const modal = document.getElementById("vistaCorroboracionAdmin");
+  if (!modal) return;
+  modal.hidden = true;
+  modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("vista-corroboracion-abierta");
+}
+
+function mostrarVistaCorroboracionAdmin() {
+  const modal = document.getElementById("vistaCorroboracionAdmin");
+  if (!modal) return;
+  modal.hidden = false;
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("vista-corroboracion-abierta");
+}
+
+function valorCorroboracion(valor) {
+  if (valor === null || valor === undefined || valor === "") return "Sin registro";
+  if (typeof valor?.toDate === "function") return formatearFechaAdmin(valor);
+  if (typeof valor === "object") return JSON.stringify(valor);
+  return String(valor);
+}
+
+function renderizarDocumentosCorroboracion(registros = []) {
+  if (!registros.length) return "<p class=\"admin-muted\">Sin documentos en esta colección.</p>";
+  return `<ul class="vista-corroboracion-lista">${registros.slice(0, 40).map((registro) => {
+    const datos = registro.data || {};
+    const resumen = datos.notaRapida || datos.titulo || datos.nombre || datos.archivoNombre || datos.descripcion || "Documento registrado";
+    return `<li><strong>${escaparHTML(resumen)}</strong><small>ID: ${escaparHTML(registro.id)}</small></li>`;
+  }).join("")}</ul>`;
+}
+
+function fechaNotaImportadaCorroboracion(nota = {}) {
+  const fecha = nota.fechaNotaInput || nota.importacionDocx?.originalDocumentDate || "";
+  const hora = nota.horaNotaInput || nota.importacionDocx?.originalDocumentTime || "";
+  if (fecha && hora) return `${fecha} ${hora}`;
+  if (fecha) return fecha;
+  return "Fecha clínica sin registro";
+}
+
+async function cargarNotasImportadasCorroboracion(uidMedico) {
+  const pacientesImportados = usuariosAdmin.filter((usuario) => (
+    usuario.rol === "paciente"
+    && usuario.ownerUid === uidMedico
+    && usuario.origenTraspasoPacientesDocx === true
+  ));
+
+  try {
+    const pacientes = await Promise.all(pacientesImportados.map(async (paciente) => {
+      const snap = await getDocs(collection(db, "usuarios", paciente.id, "notasMedicas"));
+      const notas = snap.docs
+        .map((docNota) => ({ id: docNota.id, ...docNota.data() }))
+        .filter((nota) => nota.importacionDocx?.importMethod === "docx-patient-transfer")
+        .sort((a, b) => `${b.fechaNotaInput || ""} ${b.horaNotaInput || ""}`.localeCompare(`${a.fechaNotaInput || ""} ${a.horaNotaInput || ""}`));
+      return {
+        id: paciente.id,
+        nombre: obtenerNombrePacienteParaMostrar(paciente) || "Paciente sin nombre",
+        notas
+      };
+    }));
+    return {
+      pacientes,
+      totalNotas: pacientes.reduce((total, paciente) => total + paciente.notas.length, 0)
+    };
+  } catch (error) {
+    return { pacientes: [], totalNotas: 0, error: error?.code || "sin_acceso" };
+  }
+}
+
+function renderizarNotasImportadasCorroboracion(importacion) {
+  if (importacion?.error) {
+    return `<p class="admin-muted">No disponible: ${escaparHTML(importacion.error)}</p>`;
+  }
+  if (!importacion?.pacientes?.length) {
+    return "<p class=\"admin-muted\">No hay pacientes importados asociados a este profesional.</p>";
+  }
+
+  return `
+    <p class="admin-muted">Las notas se conservan en el expediente de cada paciente, asociado a este profesional. Esta vista solo muestra identificación y fecha; no expone el contenido clínico.</p>
+    <div class="vista-corroboracion-colecciones">
+      ${importacion.pacientes.map((paciente) => `
+        <article>
+          <h4>${escaparHTML(paciente.nombre)} <span>${paciente.notas.length}</span></h4>
+          ${paciente.notas.length ? `<ul class="vista-corroboracion-lista">${paciente.notas.map((nota) => `
+            <li><strong>${escaparHTML(fechaNotaImportadaCorroboracion(nota))}</strong><small>${escaparHTML(nota.tipoNota || "Nota de evolución")} · ${escaparHTML(nota.importacionDocx?.sourceFileName || "Documento fuente preservado")}</small></li>
+          `).join("")}</ul>` : "<p class=\"admin-muted\">Sin notas de esta importación.</p>"}
+        </article>
+      `).join("")}
+    </div>
+  `;
+}
+
+window.abrirVistaCorroboracionAdmin = async function(uidUsuario) {
+  const usuario = usuariosAdmin.find((item) => item.id === uidUsuario);
+  if (!usuario || uidUsuario === adminActual?.uid) return;
+  const acceso = await usuarioPuedeAccederAdmin(adminActual);
+  if (!acceso.permitido) {
+    alert("No tienes permisos administrativos para abrir esta vista.");
+    return;
+  }
+
+  const titulo = document.getElementById("vistaCorroboracionTitulo");
+  const meta = document.getElementById("vistaCorroboracionMeta");
+  const contenido = document.getElementById("vistaCorroboracionContenido");
+  if (!titulo || !meta || !contenido) return;
+  titulo.textContent = usuario.nombre || usuario.email || "Cuenta consultada";
+  meta.textContent = `${usuario.email || "Sin correo"} · UID: ${usuario.id} · Solo lectura`;
+  contenido.innerHTML = "<p>Cargando información de la cuenta...</p>";
+  mostrarVistaCorroboracionAdmin();
+
+  await registrarAuditoriaAdmin("abrir_vista_corroboracion_admin", "El administrador abrió una vista de corroboración de solo lectura.", {
+    pacienteUid: usuario.rol === "paciente" ? usuario.id : "",
+    pacienteNombre: usuario.rol === "paciente" ? usuario.nombre || "" : "",
+    detalles: { usuarioObjetivoUid: usuario.id, usuarioObjetivoNombre: usuario.nombre || usuario.email || "", soloLectura: true }
+  });
+
+  const [resultados, importacionDocx] = await Promise.all([
+    Promise.all(COLECCIONES_VISTA_CORROBORACION.map(async (nombreColeccion) => {
+    try {
+      const snap = await getDocs(collection(db, "usuarios", uidUsuario, nombreColeccion));
+      return { nombre: nombreColeccion, registros: snap.docs.map((item) => ({ id: item.id, data: item.data() })) };
+    } catch (error) {
+      return { nombre: nombreColeccion, registros: [], error: error?.code || "sin_acceso" };
+    }
+    })),
+    usuarioEsProfesionalTipoMedico(usuario.rol) || usuario.rol === "psicologo"
+      ? cargarNotasImportadasCorroboracion(uidUsuario)
+      : Promise.resolve(null)
+  ]);
+
+  contenido.innerHTML = `
+    <section class="vista-corroboracion-perfil">
+      <h3>Perfil</h3>
+      <dl>
+        <dt>Nombre</dt><dd>${escaparHTML(valorCorroboracion(usuario.nombre))}</dd>
+        <dt>Correo</dt><dd>${escaparHTML(valorCorroboracion(usuario.email))}</dd>
+        <dt>Rol</dt><dd>${escaparHTML(valorCorroboracion(usuario.rol))}</dd>
+        <dt>Estado</dt><dd>${escaparHTML(valorCorroboracion(usuario.estado || "activo"))}</dd>
+      </dl>
+    </section>
+    <section>
+      <h3>Información asociada</h3>
+      <div class="vista-corroboracion-colecciones">
+        ${resultados.map((resultado) => `
+          <article>
+            <h4>${escaparHTML(resultado.nombre)} <span>${resultado.registros.length}</span></h4>
+            ${resultado.error ? `<p class="admin-muted">No disponible: ${escaparHTML(resultado.error)}</p>` : renderizarDocumentosCorroboracion(resultado.registros)}
+          </article>
+        `).join("")}
+      </div>
+    </section>
+    ${importacionDocx ? `
+      <section>
+        <h3>Pacientes y notas importadas <span>${importacionDocx.totalNotas || 0} notas · ${importacionDocx.pacientes?.length || 0} pacientes</span></h3>
+        ${renderizarNotasImportadasCorroboracion(importacionDocx)}
+      </section>
+    ` : ""}
+  `;
+
+  await registrarAuditoriaAdmin("consultar_datos_vista_corroboracion_admin", "El administrador consultó datos en una vista de corroboración de solo lectura.", {
+    pacienteUid: usuario.rol === "paciente" ? usuario.id : "",
+    pacienteNombre: usuario.rol === "paciente" ? usuario.nombre || "" : "",
+    detalles: { usuarioObjetivoUid: usuario.id, coleccionesConsultadas: resultados.map((item) => item.nombre), notasImportadasConsultadas: Boolean(importacionDocx), soloLectura: true }
+  });
+};
 
 async function publicarAvisoAdmin() {
   const titulo = document.getElementById("avisoAdminTitulo")?.value.trim() || "";
@@ -730,7 +907,15 @@ function renderizarCodigosMedicoAdmin() {
 async function cargarResumen() {
   const snapUsuarios = await getDocs(collection(db, "usuarios"));
   const snapAuditoria = await getDocs(collection(db, "auditoria"));
-  const snapVisitas = await getDocs(collection(db, "visitas"));
+  let visitas = null;
+
+  try {
+    const snapVisitas = await getDocs(collection(db, "visitas"));
+    visitas = consolidarVisitasAdmin(snapVisitas.docs.map((docVisita) => docVisita.data()));
+  } catch (error) {
+    if (error?.code !== "permission-denied") throw error;
+    console.warn("No se pudo cargar el resumen de visitas por permisos.");
+  }
 
   let totalUsuarios = 0;
   let totalPacientes = 0;
@@ -739,8 +924,6 @@ async function cargarResumen() {
   let totalPsicologos = 0;
   let totalInactividad = 0;
   let totalAuditoriaVisible = 0;
-  const visitas = consolidarVisitasAdmin(snapVisitas.docs.map((docVisita) => docVisita.data()));
-
   snapUsuarios.forEach((docUsuario) => {
     totalUsuarios++;
     const datos = docUsuario.data();
@@ -764,10 +947,21 @@ async function cargarResumen() {
   ponerTexto("totalPsicologos", totalPsicologos);
   ponerTexto("totalAuditoria", totalAuditoriaVisible);
   ponerTexto("totalInactividad", totalInactividad);
-  ponerTexto("totalVisitas", visitas.total);
-  ponerTexto("totalVisitasInvitados", visitas.invitados);
-  ponerTexto("totalVisitasRegistrados", visitas.registrados);
-  renderizarVisitasAdmin(visitas.items);
+  if (visitas) {
+    ponerTexto("totalVisitas", visitas.total);
+    ponerTexto("totalVisitasInvitados", visitas.invitados);
+    ponerTexto("totalVisitasRegistrados", visitas.registrados);
+    renderizarVisitasAdmin(visitas.items);
+    return;
+  }
+
+  ["totalVisitas", "totalVisitasInvitados", "totalVisitasRegistrados"].forEach((id) => {
+    ponerTexto(id, "No disponible");
+  });
+  const listaVisitas = document.getElementById("listaVisitasAdmin");
+  if (listaVisitas) {
+    listaVisitas.innerHTML = "<p class=\"admin-muted\">El resumen de visitas no está disponible con los permisos actuales.</p>";
+  }
 }
 
 function consolidarVisitasAdmin(registros = []) {
@@ -1421,6 +1615,9 @@ function renderizarUsuariosAdmin() {
         ${renderizarControlColaboradorAdmin(usuario)}
 
         <div class="paciente-admin-acciones">
+          <button type="button" onclick="abrirVistaCorroboracionAdmin('${usuario.id}')">
+            Vista de corroboración
+          </button>
           <button type="button" ${esAdminActual ? "disabled" : ""} onclick="cambiarRolUsuarioAdmin('${usuario.id}')">
             Cambiar rol
           </button>

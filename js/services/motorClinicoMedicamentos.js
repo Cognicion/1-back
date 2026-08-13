@@ -8,8 +8,9 @@ import {
 import {
   obtenerMedicamentoPorId,
   resolverMedicamentoCanonico
-} from "../data/catalogoFarmacologicoUnificado.js?v=20260811-catalog-presentations-v1";
-import { detectarInteraccionesPorCitocromos } from "../data/citocromosFarmacologicos.js?v=20260811-catalog-presentations-v1";
+} from "../data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-files-consolidated-v1";
+import { detectarInteraccionesPorCitocromos } from "../data/citocromosFarmacologicos.js?v=20260811-pharmacology-files-consolidated-v1";
+import { CATALOGO_DIAGNOSTICOS } from "../data/catalogoDiagnosticos.js?v=20260811-diagnosticos-unificados-v1";
 
 const SEVERIDAD_ORDEN = {
   informativa: 1,
@@ -85,6 +86,43 @@ function contieneConFuzzy(texto, patron) {
     );
   }
   return palabras.some((palabra) => Math.abs(palabra.length - buscado.length) <= 2 && distanciaLevenshtein(palabra, buscado) <= 2);
+}
+
+const DIAGNOSTICOS_POR_CODIGO = new Map();
+CATALOGO_DIAGNOSTICOS.forEach((diagnostico) => {
+  Object.values(diagnostico.sistemas || {}).forEach((sistema) => {
+    if (sistema?.codigo) DIAGNOSTICOS_POR_CODIGO.set(String(sistema.codigo).toUpperCase(), diagnostico);
+    if (sistema?.codigoCie10Cm) DIAGNOSTICOS_POR_CODIGO.set(String(sistema.codigoCie10Cm).toUpperCase(), diagnostico);
+  });
+});
+
+const REGLAS_MEDICAMENTO_DIAGNOSTICO_UNIFICADAS = (() => {
+  const porId = new Map(REGLAS_MEDICAMENTO_DIAGNOSTICO.map((regla) => [regla.id, regla]));
+  CATALOGO_DIAGNOSTICOS
+    .flatMap((diagnostico) => diagnostico.farmacologia?.reglas || [])
+    .forEach((reglaCatalogo) => {
+      const reglaOperativa = porId.get(reglaCatalogo.id) || {};
+      porId.set(reglaCatalogo.id, {
+        ...reglaOperativa,
+        ...reglaCatalogo,
+        diagnosticoCategoria: reglaCatalogo.categoriaRiesgo || reglaOperativa.diagnosticoCategoria,
+        escalamiento: reglaOperativa.escalamiento,
+        origenPropiedades: "catalogoDiagnosticos.js"
+      });
+    });
+  return [...porId.values()];
+})();
+
+function normalizarCodigoDiagnostico(codigo = "") {
+  return String(codigo || "").trim().toUpperCase().replace(/[†*]/g, "");
+}
+
+function categoriasPorDiagnostico(diagnostico = {}) {
+  const codigo = normalizarCodigoDiagnostico(diagnostico.codigo);
+  if (!codigo) return [];
+  const registro = DIAGNOSTICOS_POR_CODIGO.get(codigo)
+    || DIAGNOSTICOS_POR_CODIGO.get(codigo.slice(0, 3));
+  return [...new Set(registro?.farmacologia?.categoriasRiesgo || [])];
 }
 
 function patronNegado(texto, patron) {
@@ -403,19 +441,24 @@ export function resolverDiagnosticosClinicos(textos = []) {
   const vistos = new Set();
   DIAGNOSTICOS_CLINICOS.forEach((diagnostico) => {
     const patrones = [diagnostico.nombre, ...(diagnostico.sinonimos || [])];
+    const entradasPorCategoria = listaEstructurada.filter((item) =>
+      categoriasPorDiagnostico(item).includes(diagnostico.categoria)
+      && !ESTADOS_DIAGNOSTICO_INACTIVOS.has(item.estado)
+    );
     const coincide = listaTextos.some((texto) =>
       patrones.some((patron) => contieneConFuzzy(texto, patron) && !patronNegado(texto, patron))
-    );
+    ) || entradasPorCategoria.length > 0;
     if (!coincide || vistos.has(diagnostico.id)) return;
     vistos.add(diagnostico.id);
     encontrados.push({
       ...diagnostico,
+      codigoRelacionado: entradasPorCategoria[0]?.codigo || "",
       estado: listaEstructurada.find((item) =>
         patrones.some((patron) => contieneConFuzzy(item.texto, patron) && !patronNegado(item.texto, patron))
-      )?.estado || "confirmado",
+      )?.estado || entradasPorCategoria[0]?.estado || "confirmado",
       evidenciaTexto: listaTextos.find((texto) =>
         patrones.some((patron) => contieneConFuzzy(texto, patron) && !patronNegado(texto, patron))
-      ) || ""
+      ) || entradasPorCategoria[0]?.texto || ""
     });
   });
 
@@ -431,12 +474,15 @@ export function resolverDiagnosticosClinicos(textos = []) {
 }
 
 function reglaAplicaAMedicamento(regla, med) {
-  if (Array.isArray(regla.excluirIngredientes) && regla.excluirIngredientes.some((ingrediente) => med.ingredienteIds.includes(ingrediente))) return false;
-  if (Array.isArray(regla.excluirClases) && regla.excluirClases.some((clase) => med.clases.includes(clase))) return false;
-  if (regla.ingrediente && med.ingredienteIds.includes(regla.ingrediente)) return true;
-  if (regla.clase && med.clases.includes(regla.clase)) return true;
-  if (Array.isArray(regla.clases) && regla.clases.some((clase) => med.clases.includes(clase))) return true;
-  if (regla.riesgo && Number(med.riesgos[regla.riesgo] || 0) > 0) return true;
+  const selector = regla.medicamento || regla;
+  const ingredientes = [...(selector.ingredientes || []), selector.ingrediente].filter(Boolean);
+  const clases = [...(selector.clases || []), selector.clase].filter(Boolean);
+  const riesgos = [...(selector.riesgos || []), selector.riesgo].filter(Boolean);
+  if (Array.isArray(selector.excluirIngredientes) && selector.excluirIngredientes.some((ingrediente) => med.ingredienteIds.includes(ingrediente))) return false;
+  if (Array.isArray(selector.excluirClases) && selector.excluirClases.some((clase) => med.clases.includes(clase))) return false;
+  if (ingredientes.some((ingrediente) => med.ingredienteIds.includes(ingrediente))) return true;
+  if (clases.some((clase) => med.clases.includes(clase))) return true;
+  if (riesgos.some((riesgo) => Number(med.riesgos[riesgo] || 0) > 0)) return true;
   return false;
 }
 
@@ -596,7 +642,7 @@ function presentacionesOriginalesAlerta(...medicamentos) {
 export function evaluarMedicamentoContraDiagnosticos(medicamentosNormalizados = [], contextoDiagnostico) {
   const alertas = [];
   medicamentosNormalizados.forEach((med) => {
-    REGLAS_MEDICAMENTO_DIAGNOSTICO.forEach((regla) => {
+    REGLAS_MEDICAMENTO_DIAGNOSTICO_UNIFICADAS.forEach((regla) => {
       if (!reglaAplicaAMedicamento(regla, med)) return;
       const diagnosticosCoincidentes = contextoDiagnostico.diagnosticos.filter((diagnostico) =>
         diagnostico.categoria === regla.diagnosticoCategoria

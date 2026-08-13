@@ -153,7 +153,15 @@ html[data-theme="biocelular"] ::selection { color: #170609; background: #ffbd58;
 html[data-theme="biocelular"] body > main,
 html[data-theme="biocelular"] body > .dashboard-footer,
 html[data-theme="biocelular"] body > .contenedor,
-html[data-theme="biocelular"] body > .contenedor-principal {
+html[data-theme="biocelular"] body > .contenedor-principal,
+html[data-theme="biocelular"] body > .layout,
+html[data-theme="biocelular"] body > .app-shell,
+html[data-theme="biocelular"] body > .historia-layout,
+html[data-theme="biocelular"] body > .config-shell,
+html[data-theme="biocelular"] body > .admin-startup-state,
+html[data-theme="biocelular"] body > .tarjeta,
+html[data-theme="biocelular"] body > .container,
+html[data-theme="biocelular"] body > .wrap {
   position: relative;
   z-index: 3;
 }

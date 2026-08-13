@@ -11,7 +11,7 @@ function loadStylesheet() {
     link = document.createElement("link");
     link.id = STYLE_ID;
     link.rel = "stylesheet";
-    link.href = "css/theme/biocellular.css?v=20260811-content-layer";
+    link.href = "css/theme/biocellular.css?v=20260812-content-roots";
     document.head.append(link);
     console.debug("[BIOCELULAR] CSS cargado");
   }

@@ -14,7 +14,7 @@ function loadStyles() {
     if (document.querySelector('link[data-global-app-header-styles]')) return resolve();
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "css/global-app-header.css";
+    link.href = "css/global-app-header.css?v=1.899";
     link.dataset.globalAppHeaderStyles = "true";
     link.addEventListener("load", resolve, { once: true });
     link.addEventListener("error", resolve, { once: true });
@@ -99,6 +99,26 @@ function ensureMedicoActions(header) {
   actions.className = "global-header-actions";
   actions.innerHTML = `<div data-accesos-rapidos data-global-header-access></div>`;
   header.append(actions);
+}
+
+function asegurarAccionNotificaciones(header) {
+  if (header.querySelector('[aria-label*="notific" i], [data-global-header-notifications]')) return;
+  const campanaTemporal = document.querySelector('[data-global-notifications-link]');
+  if (campanaTemporal) {
+    const barraTemporal = campanaTemporal.closest("[data-accesos-rapidos-global]");
+    campanaTemporal.remove();
+    if (barraTemporal && !barraTemporal.children.length) barraTemporal.remove();
+    log("Campana temporal sustituida por la acción del encabezado");
+  }
+  const actions = header.querySelector(".global-header-actions");
+  if (!actions) return;
+  const enlace = document.createElement("a");
+  enlace.className = "accion-global-medico accion-global-icono global-header-notifications";
+  enlace.href = "dashboard.html#avisosDashboardModulo";
+  enlace.dataset.globalHeaderNotifications = "true";
+  enlace.setAttribute("aria-label", "Abrir notificaciones");
+  enlace.innerHTML = `<span class="icono-lineal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg></span>`;
+  actions.prepend(enlace);
 }
 
 function ensureGlobalActions(header, pageId) {
@@ -264,6 +284,7 @@ export async function mountGlobalAppHeader() {
   const page = getPageHeader(pageId);
   if (["paciente", "nota", "historia"].includes(pageId)) ensureBranding(header, pageId);
   ensureGlobalActions(header, pageId);
+  asegurarAccionNotificaciones(header);
   updateIdentity(header, page);
   if (pageId === "medico") ensureMedicoActions(header);
   const discovery = ensureDiscovery(header);

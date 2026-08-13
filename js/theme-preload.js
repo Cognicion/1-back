@@ -45,7 +45,7 @@
       const link = document.createElement("link");
       link.id = "cognicion-biocellular-theme-css";
       link.rel = "stylesheet";
-      link.href = "css/theme/biocellular.css";
+      link.href = "css/theme/biocellular.css?v=20260812-content-roots";
       document.head.appendChild(link);
     }
     if (appliedTheme === "biocelular") {

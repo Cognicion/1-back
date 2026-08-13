@@ -26,9 +26,10 @@ import {
   numero,
   superficieCorporal
 } from "./formulas.js";
-import { CATALOGO_MEDICAMENTOS_PEDIATRICOS } from "./catalogoMedicamentosPediatricos.js";
 import {
+  CATALOGO_MEDICAMENTOS_PEDIATRICOS,
   CATALOGO_FARMACOLOGICO_PEDIATRIA,
+  MEDICAMENTOS_PEDIATRICOS,
   MODOS_DOSIFICACION_PEDIATRICA,
   buildPediatricPrescription,
   estadoPediatricoMedicamento,
@@ -40,8 +41,7 @@ import {
   savePediatricPrescription,
   searchPediatricMedication,
   synchronizeFrequencyAndInterval
-} from "./prescripcionPediatrica.js?v=20260811-catalog-presentations-v1";
-import { MEDICAMENTOS_PEDIATRICOS } from "./medicamentos.js";
+} from "./prescripcionPediatrica.js?v=20260811-pharmacology-files-consolidated-v1";
 import { FUENTES_PEDIATRIA } from "./fuentes.js";
 
 aplicarAparienciaGuardada();

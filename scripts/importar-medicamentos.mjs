@@ -1,5 +1,5 @@
 import { writeFile } from "node:fs/promises";
-import { MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES, normalizarNombreMedicamento } from "../js/data/medicamentos.js";
+import { MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES, normalizarNombreMedicamento } from "../js/data/catalogoFarmacologicoUnificado.js";
 
 const args = new Set(process.argv.slice(2));
 const dryRun = args.has("--dry-run") || !args.has("--commit");

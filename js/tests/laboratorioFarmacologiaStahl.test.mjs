@@ -5,7 +5,7 @@ import {
   COBERTURA_FARMACOLOGICA,
   MEDICAMENTOS_MAESTROS,
   medicamentoPorTexto
-} from "../data/medicamentos.js";
+} from "../data/catalogoFarmacologicoUnificado.js";
 import { evaluarMedicamentosPaciente } from "../services/motorClinicoMedicamentos.js";
 
 const prescripcion = (nombre) => ({ medicamento: nombre, nombre, texto: nombre });

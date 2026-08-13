@@ -9,7 +9,8 @@ test("el exportador COGNICION resuelve e inserta un bloque propio de signos vita
   assert.match(moduloNota, /function datosExportacionCognicion\(\)/);
   assert.match(moduloNota, /resolverSignosVitalesNota\(notaGuardada/);
   assert.match(moduloNota, /resolverSignosVitalesNota\(formularioDeLaNota/);
-  assert.match(moduloNota, /crearSeccionSignosVitalesPdfCognicion\(exportData\.signosVitales\)/);
+  assert.match(moduloNota, /crearTablaSignosEvolucionPdfCognicion\(datosPdf\.signosVitales\)/);
+  assert.match(moduloNota, /if \(!esRegistroPdfCognicion\(signosVitales\)\) return null/);
   assert.match(moduloNota, /titulo\.textContent = "SIGNOS VITALES"/);
 });
 

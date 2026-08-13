@@ -1,15 +1,15 @@
 /**
  * CATÁLOGO FARMACOLÓGICO MAESTRO DE COGNICIÓN.
  *
- * Única fuente de verdad de medicamentos y presentaciones. Los archivos
- * medicamentos.js, medicamentosSuplementarios.js y farmacologiaUnificada.js
- * son adaptadores de compatibilidad y no contienen catálogos paralelos.
+ * Única fuente de verdad de medicamentos, presentaciones y propiedades.
+ * Los contratos públicos históricos se derivan y exportan desde este mismo
+ * archivo; las reglas y protocolos clínicos permanecen en módulos separados.
  * Presentaciones enriquecidas con RxNorm 03-Aug-2026 (API 3.1.354)
  * y fuentes regulatorias explícitas para conceptos sin producto RxNorm.
  * Corte de datos: 2026-08-11.
  */
 
-import { REGLAS_INTERACCIONES_CLINICAS } from "./reglasClinicasMedicamentosExtendidas.js?v=20260811-catalog-presentations-v1";
+import { REGLAS_INTERACCIONES_CLINICAS } from "./reglasClinicasMedicamentosExtendidas.js?v=20260811-pharmacology-files-consolidated-v1";
 
 export const CATALOGO_FARMACOLOGICO_METADATA = Object.freeze({
   esquema: "cognicion.catalogo-farmacologico.v2",
@@ -743,20 +743,15 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "anticoagulante_aine",
         "contraparteIds": [
-          "diclofenaco",
-          "ibuprofeno",
-          "ketorolaco",
-          "naproxeno"
-        ]
-      },
-      {
-        "idRegla": "anticoagulante_aine",
-        "contraparteIds": [
           "apixaban",
           "clopidogrel",
           "dabigatran",
+          "diclofenaco",
           "enoxaparina",
           "heparina",
+          "ibuprofeno",
+          "ketorolaco",
+          "naproxeno",
           "rivaroxaban",
           "warfarina"
         ]
@@ -1762,42 +1757,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "fluvoxamina_alcohol",
         "contraparteIds": [
           "fluvoxamina"
@@ -2473,42 +2432,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "fenobarbital_inductor_sustrato",
         "contraparteIds": [
           "fenobarbital"
@@ -2883,65 +2806,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "amiodarona_digoxina",
         "contraparteIds": [
           "digoxina"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
         ]
       },
       {
@@ -3400,33 +3264,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "anfetamina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
-        ]
-      },
-      {
         "idRegla": "isrs_triciclico_serotoninergico",
         "contraparteIds": [
           "citalopram",
@@ -3435,65 +3272,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "fluvoxamina",
           "paroxetina",
           "sertralina"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
         ]
       },
       {
@@ -4179,18 +3957,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDia": 90,
           "frecuenciaDia": 2,
           "maxMgDia": 4000
-        },
-        {
-          "etiqueta": "40 mg/kg/dia dividido cada 8-12 h",
-          "mgKgDia": 40,
-          "frecuenciaDia": 2,
-          "maxMgDia": 4000
-        },
-        {
-          "etiqueta": "80-90 mg/kg/dia dividido cada 12 h",
-          "mgKgDia": 90,
-          "frecuenciaDia": 2,
-          "maxMgDia": 4000
         }
       ],
       "embarazo": null,
@@ -4790,18 +4556,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDia": 90,
           "frecuenciaDia": 2,
           "maxMgDia": 4000
-        },
-        {
-          "etiqueta": "40-45 mg/kg/dia de amoxicilina dividido cada 12 h",
-          "mgKgDia": 45,
-          "frecuenciaDia": 2,
-          "maxMgDia": 4000
-        },
-        {
-          "etiqueta": "80-90 mg/kg/dia de amoxicilina dividido cada 12 h",
-          "mgKgDia": 90,
-          "frecuenciaDia": 2,
-          "maxMgDia": 4000
         }
       ],
       "embarazo": null,
@@ -4826,7 +4580,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     ],
     "interaccionesRelacionadas": [],
     "relacionDiagnosticos": [],
-    "notas": "Vigilar diarrea, hepatotoxicidad y alergia. Calcular habitualmente con el componente amoxicilina y revisar exposicion a clavulanato. Calcular habitualmente con el componente amoxicilina y revisar exposicion a clavulanato.",
+    "notas": "Vigilar diarrea, hepatotoxicidad y alergia. Calcular habitualmente con el componente amoxicilina y revisar exposicion a clavulanato.",
     "referencias": [
       "Ficha técnica institucional o nacional vigente.",
       "Lexicomp/Micromedex/guía clínica local: validar antes de uso clínico.",
@@ -5187,33 +4941,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "linezolid",
           "selegilina",
           "tranilcipromina"
-        ]
-      },
-      {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
         ]
       },
       {
@@ -5808,42 +5535,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "tipico_depresor_snc",
         "contraparteIds": [
           "clorpromazina",
@@ -6067,35 +5758,30 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "cyp3a4_inhibidor_sustrato",
         "contraparteIds": [
           "alprazolam",
+          "amiodarona",
           "apixaban",
           "aripiprazol",
           "atorvastatina",
-          "fentanilo",
-          "fosamprenavir",
-          "iloperidona",
-          "midazolam",
-          "oxicodona",
-          "pimozida",
-          "quetiapina",
-          "tacrolimus",
-          "triazolam"
-        ]
-      },
-      {
-        "idRegla": "cyp3a4_inhibidor_sustrato",
-        "contraparteIds": [
-          "amiodarona",
           "claritromicina",
           "diltiazem",
           "eritromicina",
+          "fentanilo",
           "fluconazol",
           "fluvoxamina",
+          "fosamprenavir",
+          "iloperidona",
           "indinavir",
           "ketoconazol",
+          "midazolam",
           "nefazodona",
           "nelfinavir",
+          "oxicodona",
+          "pimozida",
+          "quetiapina",
           "ritonavir",
           "saquinavir",
+          "tacrolimus",
+          "triazolam",
           "verapamilo",
           "zileuton"
         ]
@@ -6319,12 +6005,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDia": 0.05,
           "frecuenciaDia": 1,
           "maxMgDia": 30
-        },
-        {
-          "etiqueta": "0.05-0.15 mg/kg/dia cada 24 h",
-          "mgKgDia": 0.05,
-          "frecuenciaDia": 1,
-          "maxMgDia": 30
         }
       ],
       "embarazo": null,
@@ -6476,7 +6156,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "relacionDiagnosticos": [
       "Ver reglas de motor por diagnostico/comorbilidad."
     ],
-    "notas": "Puede causar acatisia. Vigilar acatisia, activacion, metabolismo y sintomas extrapiramidales. Vigilar acatisia, activacion, metabolismo y sintomas extrapiramidales.",
+    "notas": "Puede causar acatisia. Vigilar acatisia, activacion, metabolismo y sintomas extrapiramidales.",
     "referencias": [
       {
         "id": "dailymed_aripiprazol",
@@ -6986,12 +6666,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDia": 1.2,
           "frecuenciaDia": 1,
           "maxMgDia": 100
-        },
-        {
-          "etiqueta": "0.5-1.2 mg/kg/dia cada 24 h",
-          "mgKgDia": 1.2,
-          "frecuenciaDia": 1,
-          "maxMgDia": 100
         }
       ],
       "embarazo": null,
@@ -7070,7 +6744,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       "Enfermedad hepática requiere ajuste según gravedad",
       "Bipolaridad puede desestabilizarse"
     ],
-    "notas": "Vigilar efectos GI y PA. Vigilar TA, FC, apetito, somnolencia, irritabilidad e ideacion suicida. Vigilar TA, FC, apetito, somnolencia, irritabilidad e ideacion suicida.",
+    "notas": "Vigilar efectos GI y PA. Vigilar TA, FC, apetito, somnolencia, irritabilidad e ideacion suicida.",
     "referencias": [
       {
         "id": "stahl_prescribers_guide_6e_2017",
@@ -8295,18 +7969,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDia": 10,
           "frecuenciaDia": 1,
           "maxMgDia": 500
-        },
-        {
-          "etiqueta": "10 mg/kg/dia cada 24 h",
-          "mgKgDia": 10,
-          "frecuenciaDia": 1,
-          "maxMgDia": 500
-        },
-        {
-          "etiqueta": "10 mg/kg dia 1, luego 5 mg/kg/dia",
-          "mgKgDia": 10,
-          "frecuenciaDia": 1,
-          "maxMgDia": 500
         }
       ],
       "embarazo": null,
@@ -8432,65 +8094,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "isrs_riesgo_qt_regulatorio",
         "contraparteIds": [
           "citalopram",
@@ -8541,7 +8144,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       }
     ],
     "relacionDiagnosticos": [],
-    "notas": "Vigilar QT e interacciones. Vigilar QT y factores de riesgo cardiaco. Vigilar QT y factores de riesgo cardiaco.",
+    "notas": "Vigilar QT e interacciones. Vigilar QT y factores de riesgo cardiaco.",
     "referencias": [
       "Ficha técnica institucional o nacional vigente.",
       "Lexicomp/Micromedex/guía clínica local: validar antes de uso clínico.",
@@ -12096,12 +11699,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDia": 10,
           "frecuenciaDia": 2,
           "maxMgDia": 1200
-        },
-        {
-          "etiqueta": "10-20 mg/kg/dia dividido cada 12 h",
-          "mgKgDia": 10,
-          "frecuenciaDia": 2,
-          "maxMgDia": 1200
         }
       ],
       "embarazo": null,
@@ -12239,7 +11836,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "relacionDiagnosticos": [
       "Ver reglas de motor por diagnostico/comorbilidad."
     ],
-    "notas": "Interacciones CYP; vigilar BH y sodio. Vigilar rash, hemograma, sodio, funcion hepatica e interacciones. Vigilar rash, hemograma, sodio, funcion hepatica e interacciones.",
+    "notas": "Interacciones CYP; vigilar BH y sodio. Vigilar rash, hemograma, sodio, funcion hepatica e interacciones.",
     "referencias": [
       {
         "id": "dailymed_carbamazepina",
@@ -12785,12 +12382,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDia": 50,
           "frecuenciaDia": 3,
           "maxMgDia": 4000
-        },
-        {
-          "etiqueta": "25-50 mg/kg/dia dividido cada 6-8 h",
-          "mgKgDia": 50,
-          "frecuenciaDia": 3,
-          "maxMgDia": 4000
         }
       ],
       "embarazo": null,
@@ -12958,12 +12549,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDia": 75,
           "frecuenciaDia": 1,
           "maxMgDia": 2000
-        },
-        {
-          "etiqueta": "50-75 mg/kg/dia cada 24 h",
-          "mgKgDia": 75,
-          "frecuenciaDia": 1,
-          "maxMgDia": 2000
         }
       ],
       "embarazo": null,
@@ -12987,7 +12572,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     ],
     "interaccionesRelacionadas": [],
     "relacionDiagnosticos": [],
-    "notas": "Vigilar alergia, bilis espesa y compatibilidad con calcio en neonatos. Precaucion en neonatos, hiperbilirrubinemia y uso con calcio IV. Precaucion en neonatos, hiperbilirrubinemia y uso con calcio IV.",
+    "notas": "Vigilar alergia, bilis espesa y compatibilidad con calcio en neonatos. Precaucion en neonatos, hiperbilirrubinemia y uso con calcio IV.",
     "referencias": [
       "Ficha técnica institucional o nacional vigente.",
       "Lexicomp/Micromedex/guía clínica local: validar antes de uso clínico.",
@@ -13544,12 +13129,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         }
       ],
       "dosisPediatrica": [
-        {
-          "etiqueta": "0.25 mg/kg/dia cada 24 h",
-          "mgKgDia": 0.25,
-          "frecuenciaDia": 1,
-          "maxMgDia": 10
-        },
         {
           "etiqueta": "0.25 mg/kg/dia cada 24 h",
           "mgKgDia": 0.25,
@@ -14782,65 +14361,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "isrs_riesgo_qt_regulatorio",
         "contraparteIds": [
           "citalopram",
@@ -15108,43 +14628,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
-        ]
-      },
-      {
-        "idRegla": "isrs_isrs_duplicidad",
-        "contraparteIds": [
-          "escitalopram",
-          "fluoxetina",
-          "fluvoxamina",
-          "paroxetina",
-          "sertralina"
-        ]
-      },
-      {
         "idRegla": "isrs_isrs_duplicidad",
         "contraparteIds": [
           "escitalopram",
@@ -15168,65 +14651,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "amitriptilina",
           "desipramina",
           "imipramina"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
         ]
       },
       {
@@ -15340,16 +14764,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "isrs_serotoninergico_regulatorio",
-        "contraparteIds": [
-          "escitalopram",
-          "fluoxetina",
-          "fluvoxamina",
-          "paroxetina",
-          "sertralina"
-        ]
-      },
-      {
         "idRegla": "isrs_aine_sangrado_regulatorio",
         "contraparteIds": [
           "acido_acetilsalicilico",
@@ -15435,14 +14849,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "venlafaxina",
           "ziprasidona",
           "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "isrs_riesgo_qt_regulatorio",
-        "contraparteIds": [
-          "escitalopram",
-          "fluoxetina",
-          "sertralina"
         ]
       },
       {
@@ -15712,65 +15118,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "quetiapina",
           "tacrolimus",
           "triazolam"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
         ]
       },
       {
@@ -16381,42 +15728,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "tipico_depresor_snc",
         "contraparteIds": [
           "clorpromazina",
@@ -16805,12 +16116,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       "monitorizacion": [],
       "dosisAdulto": [],
       "dosisPediatrica": [
-        {
-          "etiqueta": "0.002-0.005 mg/kg/dia dividido cada 8-12 h",
-          "mgKgDia": 0.003,
-          "frecuenciaDia": 2,
-          "maxMgDia": 0.4
-        },
         {
           "etiqueta": "0.002-0.005 mg/kg/dia dividido cada 8-12 h",
           "mgKgDia": 0.003,
@@ -17597,101 +16902,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "depresor_snc_depresor_snc",
         "contraparteIds": [
           "alcohol",
@@ -17769,30 +16979,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
-          "trifluoperazina",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "tipico_depresor_snc",
         "contraparteIds": [
           "alcohol",
@@ -17803,52 +16989,41 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "clozapina",
           "diazepam",
           "difenhidramina",
+          "droperidol",
           "fenobarbital",
           "fentanilo",
+          "flufenazina",
+          "flupentixol",
           "gabapentina",
+          "haloperidol",
           "hidroxicina",
           "levomepromazina",
           "levometadilo",
           "lorazepam",
           "loxapina",
+          "mesoridazina",
           "metadona",
           "midazolam",
           "mirtazapina",
+          "molindona",
           "morfina",
           "nefazodona",
           "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_depresor_snc",
-        "contraparteIds": [
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
           "perfenazina",
           "periciazina",
           "pimozida",
           "pipotiazina",
+          "pregabalina",
           "proclorperazina",
           "promazina",
+          "prometazina",
           "tioridazina",
           "tiotixeno",
+          "tramadol",
+          "trazodona",
+          "triazolam",
           "trifluoperazina",
+          "zolpidem",
           "zuclopentixol"
         ]
       },
@@ -17926,40 +17101,30 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "clozapina",
           "difenhidramina",
           "disopiramida",
-          "hidroxicina",
-          "levomepromazina",
-          "loxapina",
-          "olanzapina",
-          "paroxetina",
-          "periciazina",
-          "promazina",
-          "prometazina",
-          "quetiapina",
-          "tolterodina",
-          "trihexifenidilo"
-        ]
-      },
-      {
-        "idRegla": "tipico_anticolinergico",
-        "contraparteIds": [
-          "clorprotixeno",
           "droperidol",
           "flufenazina",
           "flupentixol",
           "haloperidol",
+          "hidroxicina",
           "levomepromazina",
           "loxapina",
           "mesoridazina",
           "molindona",
+          "olanzapina",
+          "paroxetina",
           "perfenazina",
           "periciazina",
           "pimozida",
           "pipotiazina",
           "proclorperazina",
           "promazina",
+          "prometazina",
+          "quetiapina",
           "tioridazina",
           "tiotixeno",
+          "tolterodina",
           "trifluoperazina",
+          "trihexifenidilo",
           "zuclopentixol"
         ]
       },
@@ -18047,27 +17212,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "venlafaxina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_qt_aditivo",
-        "contraparteIds": [
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "mesoridazina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
           "zuclopentixol"
         ]
       },
@@ -18337,101 +17481,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "depresor_snc_depresor_snc",
         "contraparteIds": [
           "alcohol",
@@ -18509,30 +17558,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorpromazina",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
-          "trifluoperazina",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "tipico_depresor_snc",
         "contraparteIds": [
           "alcohol",
@@ -18543,52 +17568,41 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "clozapina",
           "diazepam",
           "difenhidramina",
+          "droperidol",
           "fenobarbital",
           "fentanilo",
+          "flufenazina",
+          "flupentixol",
           "gabapentina",
+          "haloperidol",
           "hidroxicina",
           "levomepromazina",
           "levometadilo",
           "lorazepam",
           "loxapina",
+          "mesoridazina",
           "metadona",
           "midazolam",
           "mirtazapina",
+          "molindona",
           "morfina",
           "nefazodona",
           "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_depresor_snc",
-        "contraparteIds": [
-          "clorpromazina",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
           "perfenazina",
           "periciazina",
           "pimozida",
           "pipotiazina",
+          "pregabalina",
           "proclorperazina",
           "promazina",
+          "prometazina",
           "tioridazina",
           "tiotixeno",
+          "tramadol",
+          "trazodona",
+          "triazolam",
           "trifluoperazina",
+          "zolpidem",
           "zuclopentixol"
         ]
       },
@@ -18666,40 +17680,30 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "clozapina",
           "difenhidramina",
           "disopiramida",
-          "hidroxicina",
-          "levomepromazina",
-          "loxapina",
-          "olanzapina",
-          "paroxetina",
-          "periciazina",
-          "promazina",
-          "prometazina",
-          "quetiapina",
-          "tolterodina",
-          "trihexifenidilo"
-        ]
-      },
-      {
-        "idRegla": "tipico_anticolinergico",
-        "contraparteIds": [
-          "clorpromazina",
           "droperidol",
           "flufenazina",
           "flupentixol",
           "haloperidol",
+          "hidroxicina",
           "levomepromazina",
           "loxapina",
           "mesoridazina",
           "molindona",
+          "olanzapina",
+          "paroxetina",
           "perfenazina",
           "periciazina",
           "pimozida",
           "pipotiazina",
           "proclorperazina",
           "promazina",
+          "prometazina",
+          "quetiapina",
           "tioridazina",
           "tiotixeno",
+          "tolterodina",
           "trifluoperazina",
+          "trihexifenidilo",
           "zuclopentixol"
         ]
       },
@@ -18759,27 +17763,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "venlafaxina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_qt_aditivo",
-        "contraparteIds": [
-          "clorpromazina",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "mesoridazina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
           "zuclopentixol"
         ]
       },
@@ -19354,42 +18337,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       },
       {
         "idRegla": "clozapina_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "depresor_snc_depresor_snc",
         "contraparteIds": [
           "alcohol",
           "alprazolam",
@@ -20550,33 +19497,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "citalopram",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
-        ]
-      },
-      {
         "idRegla": "isrs_triciclico_serotoninergico",
         "contraparteIds": [
           "citalopram",
@@ -20585,65 +19505,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "fluvoxamina",
           "paroxetina",
           "sertralina"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
         ]
       },
       {
@@ -21393,12 +20254,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDosis": 0.6,
           "frecuenciaDia": 1,
           "maxMgDia": 16
-        },
-        {
-          "etiqueta": "0.15-0.6 mg/kg/dosis",
-          "mgKgDosis": 0.6,
-          "frecuenciaDia": 1,
-          "maxMgDia": 16
         }
       ],
       "embarazo": null,
@@ -22109,12 +20964,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDosis": 0.2,
           "frecuenciaDia": 1,
           "maxMgDia": 10
-        },
-        {
-          "etiqueta": "0.1-0.3 mg/kg/dosis",
-          "mgKgDosis": 0.2,
-          "frecuenciaDia": 1,
-          "maxMgDia": 10
         }
       ],
       "embarazo": null,
@@ -22226,42 +21075,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "fluoxetina_benzodiacepinas_oxidativas",
         "contraparteIds": [
           "fluoxetina"
@@ -22327,7 +21140,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "relacionDiagnosticos": [
       "Ver reglas de motor por diagnostico/comorbilidad."
     ],
-    "notas": "Ansiedad, abstinencia, crisis; vida media larga. Validar indicacion y via; esta calculadora es apoyo educativo. Validar indicacion y via; esta calculadora es apoyo educativo.",
+    "notas": "Ansiedad, abstinencia, crisis; vida media larga. Validar indicacion y via; esta calculadora es apoyo educativo.",
     "referencias": [
       {
         "id": "dailymed_diazepam",
@@ -23254,42 +22067,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "tipico_depresor_snc",
         "contraparteIds": [
           "clorpromazina",
@@ -24071,65 +22848,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "isrs_riesgo_qt_regulatorio",
         "contraparteIds": [
           "citalopram",
@@ -24447,65 +23165,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     },
     "interacciones": [],
     "interaccionesRelacionadas": [
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
       {
         "idRegla": "qt_qt_clase",
         "contraparteIds": [
@@ -25029,65 +23688,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "isrs_riesgo_qt_regulatorio",
         "contraparteIds": [
           "citalopram",
@@ -25125,30 +23725,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "tiotixeno",
           "trifluoperazina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
-          "trifluoperazina",
           "zuclopentixol"
         ]
       },
@@ -25333,27 +23909,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "venlafaxina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_qt_aditivo",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "mesoridazina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
           "zuclopentixol"
         ]
       },
@@ -25585,33 +24140,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "ibuprofeno",
           "ketorolaco",
           "naproxeno"
-        ]
-      },
-      {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "citalopram",
-          "desipramina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
         ]
       },
       {
@@ -26680,12 +25208,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "anticoagulante_heparina_anticoagulante",
-        "contraparteIds": [
-          "heparina"
-        ]
-      },
-      {
         "idRegla": "isrs_antitrombotico_sangrado_regulatorio",
         "contraparteIds": [
           "citalopram",
@@ -27736,65 +26258,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "inhibidor_cyp3a4_estatina",
         "contraparteIds": [
           "atorvastatina",
@@ -28121,43 +26584,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
-        ]
-      },
-      {
-        "idRegla": "isrs_isrs_duplicidad",
-        "contraparteIds": [
-          "citalopram",
-          "fluoxetina",
-          "fluvoxamina",
-          "paroxetina",
-          "sertralina"
-        ]
-      },
-      {
         "idRegla": "isrs_isrs_duplicidad",
         "contraparteIds": [
           "citalopram",
@@ -28181,65 +26607,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "amitriptilina",
           "desipramina",
           "imipramina"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
         ]
       },
       {
@@ -28353,16 +26720,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "isrs_serotoninergico_regulatorio",
-        "contraparteIds": [
-          "citalopram",
-          "fluoxetina",
-          "fluvoxamina",
-          "paroxetina",
-          "sertralina"
-        ]
-      },
-      {
         "idRegla": "isrs_aine_sangrado_regulatorio",
         "contraparteIds": [
           "acido_acetilsalicilico",
@@ -28448,14 +26805,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "venlafaxina",
           "ziprasidona",
           "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "isrs_riesgo_qt_regulatorio",
-        "contraparteIds": [
-          "citalopram",
-          "fluoxetina",
-          "sertralina"
         ]
       },
       {
@@ -29346,14 +27695,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "isrs_imao",
         "contraparteIds": [
-          "isocarboxazida",
-          "selegilina",
-          "tranilcipromina"
-        ]
-      },
-      {
-        "idRegla": "isrs_imao",
-        "contraparteIds": [
           "amitriptilina",
           "anfetamina",
           "citalopram",
@@ -29364,6 +27705,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "fluoxetina",
           "fluvoxamina",
           "hierba_san_juan",
+          "isocarboxazida",
           "linezolid",
           "metadona",
           "nefazodona",
@@ -29373,6 +27715,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "sertralina",
           "sumatriptan",
           "tramadol",
+          "tranilcipromina",
           "trazodona",
           "triptofano",
           "venlafaxina"
@@ -29395,6 +27738,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "contraparteIds": [
           "amitriptilina",
           "anfetamina",
+          "azul_metileno",
           "citalopram",
           "desipramina",
           "duloxetina",
@@ -29403,44 +27747,8 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "fluoxetina",
           "fluvoxamina",
           "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
-        ]
-      },
-      {
-        "idRegla": "imao_serotoninergico_ext",
-        "contraparteIds": [
-          "azul_metileno",
           "isocarboxazida",
           "linezolid",
-          "selegilina",
-          "tranilcipromina"
-        ]
-      },
-      {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
           "metadona",
           "nefazodona",
           "paroxetina",
@@ -29449,6 +27757,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "sertralina",
           "sumatriptan",
           "tramadol",
+          "tranilcipromina",
           "trazodona",
           "triptofano",
           "venlafaxina"
@@ -30110,42 +28419,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "fenobarbital_inductor_sustrato",
         "contraparteIds": [
           "alprazolam",
@@ -30614,69 +28887,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "triptofano",
           "venlafaxina"
-        ]
-      },
-      {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
-        ]
-      },
-      {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
         ]
       },
       {
@@ -31714,65 +29924,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "inhibidor_cyp3a4_estatina",
         "contraparteIds": [
           "atorvastatina",
@@ -32129,65 +30280,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "inhibidor_cyp2d6_sustrato_cyp2d6",
         "contraparteIds": [
           "duloxetina",
@@ -32244,30 +30336,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "tiotixeno",
           "trifluoperazina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
-          "trifluoperazina",
           "zuclopentixol"
         ]
       },
@@ -32484,27 +30552,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "tipico_qt_aditivo",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "mesoridazina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "tipico_qt_electrolitos",
         "contraparteIds": [
           "bumetanida",
@@ -32705,12 +30752,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDia": 0.2,
           "frecuenciaDia": 1,
           "maxMgDia": 60
-        },
-        {
-          "etiqueta": "0.2-0.5 mg/kg/dia cada 24 h",
-          "mgKgDia": 0.2,
-          "frecuenciaDia": 1,
-          "maxMgDia": 60
         }
       ],
       "embarazo": null,
@@ -32871,43 +30912,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
-        ]
-      },
-      {
-        "idRegla": "isrs_isrs_duplicidad",
-        "contraparteIds": [
-          "citalopram",
-          "escitalopram",
-          "fluvoxamina",
-          "paroxetina",
-          "sertralina"
-        ]
-      },
-      {
         "idRegla": "isrs_isrs_duplicidad",
         "contraparteIds": [
           "citalopram",
@@ -32931,65 +30935,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "amitriptilina",
           "desipramina",
           "imipramina"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
         ]
       },
       {
@@ -33121,16 +31066,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "isrs_serotoninergico_regulatorio",
-        "contraparteIds": [
-          "citalopram",
-          "escitalopram",
-          "fluvoxamina",
-          "paroxetina",
-          "sertralina"
-        ]
-      },
-      {
         "idRegla": "isrs_aine_sangrado_regulatorio",
         "contraparteIds": [
           "acido_acetilsalicilico",
@@ -33222,14 +31157,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "venlafaxina",
           "ziprasidona",
           "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "isrs_riesgo_qt_regulatorio",
-        "contraparteIds": [
-          "citalopram",
-          "escitalopram",
-          "sertralina"
         ]
       },
       {
@@ -33354,7 +31281,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "relacionDiagnosticos": [
       "Ver reglas de motor por diagnostico/comorbilidad."
     ],
-    "notas": "Depresion, TOC, bulimia. Vigilar activacion, ideacion suicida, viraje maniforme e interacciones serotoninergicas. Vigilar activacion, ideacion suicida, viraje maniforme e interacciones serotoninergicas.",
+    "notas": "Depresion, TOC, bulimia. Vigilar activacion, ideacion suicida, viraje maniforme e interacciones serotoninergicas.",
     "referencias": [
       {
         "id": "dailymed_fluoxetina",
@@ -33735,65 +31662,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "isrs_riesgo_qt_regulatorio",
         "contraparteIds": [
           "citalopram",
@@ -33831,30 +31699,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "tiotixeno",
           "trifluoperazina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
-          "trifluoperazina",
           "zuclopentixol"
         ]
       },
@@ -34039,27 +31883,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "venlafaxina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_qt_aditivo",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "haloperidol",
-          "levomepromazina",
-          "mesoridazina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
           "zuclopentixol"
         ]
       },
@@ -34523,43 +32346,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
-        ]
-      },
-      {
-        "idRegla": "isrs_isrs_duplicidad",
-        "contraparteIds": [
-          "citalopram",
-          "escitalopram",
-          "fluoxetina",
-          "paroxetina",
-          "sertralina"
-        ]
-      },
-      {
         "idRegla": "isrs_isrs_duplicidad",
         "contraparteIds": [
           "citalopram",
@@ -34641,16 +32427,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "triptofano",
           "venlafaxina"
-        ]
-      },
-      {
-        "idRegla": "isrs_serotoninergico_regulatorio",
-        "contraparteIds": [
-          "citalopram",
-          "escitalopram",
-          "fluoxetina",
-          "paroxetina",
-          "sertralina"
         ]
       },
       {
@@ -35783,42 +33559,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "tipico_depresor_snc",
         "contraparteIds": [
           "clorpromazina",
@@ -36054,65 +33794,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "tioridazina",
           "tiotixeno",
           "trifluoperazina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
           "ziprasidona",
           "zuclopentixol"
         ]
@@ -37125,65 +34806,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "isrs_riesgo_qt_regulatorio",
         "contraparteIds": [
           "citalopram",
@@ -37500,65 +35122,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "isrs_riesgo_qt_regulatorio",
         "contraparteIds": [
           "citalopram",
@@ -37602,30 +35165,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "tiotixeno",
           "trifluoperazina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
-          "trifluoperazina",
           "zuclopentixol"
         ]
       },
@@ -37822,27 +35361,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "venlafaxina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_qt_aditivo",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "levomepromazina",
-          "mesoridazina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
           "zuclopentixol"
         ]
       },
@@ -38175,12 +35693,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "naproxeno",
           "rivaroxaban",
           "warfarina"
-        ]
-      },
-      {
-        "idRegla": "anticoagulante_heparina_anticoagulante",
-        "contraparteIds": [
-          "enoxaparina"
         ]
       },
       {
@@ -38898,12 +36410,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDosis": 0.5,
           "frecuenciaDia": 3,
           "maxMgDia": 100
-        },
-        {
-          "etiqueta": "0.5-1 mg/kg/dosis cada 6-8 h",
-          "mgKgDosis": 0.5,
-          "frecuenciaDia": 3,
-          "maxMgDia": 100
         }
       ],
       "embarazo": null,
@@ -39009,101 +36515,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "venlafaxina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
           "zuclopentixol"
         ]
       },
@@ -39238,7 +36649,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       }
     ],
     "relacionDiagnosticos": [],
-    "notas": "Ansiedad, insomnio; sedacion. Vigilar sedacion, QT y combinaciones con psicofarmacos. Vigilar sedacion, QT y combinaciones con psicofarmacos.",
+    "notas": "Ansiedad, insomnio; sedacion. Vigilar sedacion, QT y combinaciones con psicofarmacos.",
     "referencias": [
       "catalogo_cognicion_preexistente",
       "Rango educativo; validar por edad, peso e indicacion."
@@ -39566,33 +36977,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
-        ]
-      },
-      {
         "idRegla": "serotoninergico_triptan",
         "contraparteIds": [
           "rizatriptan",
@@ -39889,13 +37273,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "frecuenciaDia": 3,
           "maxMgKgDia": 40,
           "maxMgDia": 2400
-        },
-        {
-          "etiqueta": "5-10 mg/kg/dosis cada 6-8 h",
-          "mgKgDosis": 10,
-          "frecuenciaDia": 3,
-          "maxMgKgDia": 40,
-          "maxMgDia": 2400
         }
       ],
       "embarazo": null,
@@ -40020,7 +37397,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       }
     ],
     "relacionDiagnosticos": [],
-    "notas": "Analgesico y antiinflamatorio; vigilar funcion renal y gastrointestinal. Evitar en deshidratacion, enfermedad renal o lactantes pequenos sin indicacion clinica. Evitar en deshidratacion, enfermedad renal o lactantes pequenos sin indicacion clinica.",
+    "notas": "Analgesico y antiinflamatorio; vigilar funcion renal y gastrointestinal. Evitar en deshidratacion, enfermedad renal o lactantes pequenos sin indicacion clinica.",
     "referencias": [
       {
         "id": "dailymed_ibuprofeno",
@@ -40634,65 +38011,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "saquinavir",
           "verapamilo",
           "zileuton"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
         ]
       },
       {
@@ -42905,65 +40223,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "inhibidor_cyp3a4_estatina",
         "contraparteIds": [
           "atorvastatina",
@@ -43372,33 +40631,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "linezolid",
           "selegilina",
           "tranilcipromina"
-        ]
-      },
-      {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "venlafaxina"
         ]
       },
       {
@@ -44549,101 +41781,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "depresor_snc_depresor_snc",
         "contraparteIds": [
           "alcohol",
@@ -44905,12 +42042,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDia": 20,
           "frecuenciaDia": 2,
           "maxMgDia": 3000
-        },
-        {
-          "etiqueta": "20-60 mg/kg/dia dividido cada 12 h",
-          "mgKgDia": 20,
-          "frecuenciaDia": 2,
-          "maxMgDia": 3000
         }
       ],
       "embarazo": null,
@@ -44936,7 +42067,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     ],
     "interaccionesRelacionadas": [],
     "relacionDiagnosticos": [],
-    "notas": "Vigilar somnolencia, irritabilidad y ajuste renal. Vigilar irritabilidad, cambios conductuales y funcion renal. Vigilar irritabilidad, cambios conductuales y funcion renal.",
+    "notas": "Vigilar somnolencia, irritabilidad y ajuste renal. Vigilar irritabilidad, cambios conductuales y funcion renal.",
     "referencias": [
       "Ficha técnica institucional o nacional vigente.",
       "Lexicomp/Micromedex/guía clínica local: validar antes de uso clínico.",
@@ -45945,101 +43076,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "depresor_snc_depresor_snc",
         "contraparteIds": [
           "alcohol",
@@ -46117,30 +43153,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
-          "trifluoperazina",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "tipico_depresor_snc",
         "contraparteIds": [
           "alcohol",
@@ -46152,51 +43164,40 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "clozapina",
           "diazepam",
           "difenhidramina",
+          "droperidol",
           "fenobarbital",
           "fentanilo",
+          "flufenazina",
+          "flupentixol",
           "gabapentina",
+          "haloperidol",
           "hidroxicina",
           "levometadilo",
           "lorazepam",
           "loxapina",
+          "mesoridazina",
           "metadona",
           "midazolam",
           "mirtazapina",
+          "molindona",
           "morfina",
           "nefazodona",
           "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_depresor_snc",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
           "perfenazina",
           "periciazina",
           "pimozida",
           "pipotiazina",
+          "pregabalina",
           "proclorperazina",
           "promazina",
+          "prometazina",
           "tioridazina",
           "tiotixeno",
+          "tramadol",
+          "trazodona",
+          "triazolam",
           "trifluoperazina",
+          "zolpidem",
           "zuclopentixol"
         ]
       },
@@ -46275,39 +43276,29 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "clozapina",
           "difenhidramina",
           "disopiramida",
-          "hidroxicina",
-          "loxapina",
-          "olanzapina",
-          "paroxetina",
-          "periciazina",
-          "promazina",
-          "prometazina",
-          "quetiapina",
-          "tolterodina",
-          "trihexifenidilo"
-        ]
-      },
-      {
-        "idRegla": "tipico_anticolinergico",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
           "droperidol",
           "flufenazina",
           "flupentixol",
           "haloperidol",
+          "hidroxicina",
           "loxapina",
           "mesoridazina",
           "molindona",
+          "olanzapina",
+          "paroxetina",
           "perfenazina",
           "periciazina",
           "pimozida",
           "pipotiazina",
           "proclorperazina",
           "promazina",
+          "prometazina",
+          "quetiapina",
           "tioridazina",
           "tiotixeno",
+          "tolterodina",
           "trifluoperazina",
+          "trihexifenidilo",
           "zuclopentixol"
         ]
       },
@@ -46395,27 +43386,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "venlafaxina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_qt_aditivo",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "mesoridazina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
           "zuclopentixol"
         ]
       },
@@ -46868,43 +43838,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "contraparteIds": [
           "amitriptilina",
           "anfetamina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
-        ]
-      },
-      {
-        "idRegla": "imao_serotoninergico_ext",
-        "contraparteIds": [
           "azul_metileno",
-          "fenelzina",
-          "isocarboxazida",
-          "selegilina",
-          "tranilcipromina"
-        ]
-      },
-      {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
           "citalopram",
           "desipramina",
           "duloxetina",
@@ -46914,6 +43848,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "fluoxetina",
           "fluvoxamina",
           "hierba_san_juan",
+          "isocarboxazida",
           "metadona",
           "nefazodona",
           "paroxetina",
@@ -46922,6 +43857,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "sertralina",
           "sumatriptan",
           "tramadol",
+          "tranilcipromina",
           "trazodona",
           "triptofano",
           "venlafaxina"
@@ -48444,12 +45380,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDosis": 0.05,
           "frecuenciaDia": 1,
           "maxMgDia": 4
-        },
-        {
-          "etiqueta": "0.05-0.1 mg/kg/dosis",
-          "mgKgDosis": 0.05,
-          "frecuenciaDia": 1,
-          "maxMgDia": 4
         }
       ],
       "embarazo": null,
@@ -48558,42 +45488,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "tipico_depresor_snc",
         "contraparteIds": [
           "clorpromazina",
@@ -48647,7 +45541,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "relacionDiagnosticos": [
       "Ver reglas de motor por diagnostico/comorbilidad."
     ],
-    "notas": "Ansiedad aguda, catatonia; uso prudente. Uso bajo supervision clinica; vigilar depresion respiratoria y sedacion. Uso bajo supervision clinica; vigilar depresion respiratoria y sedacion.",
+    "notas": "Ansiedad aguda, catatonia; uso prudente. Uso bajo supervision clinica; vigilar depresion respiratoria y sedacion.",
     "referencias": [
       {
         "id": "dailymed_lorazepam",
@@ -49417,42 +46311,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "tipico_duplicidad_antipsicotica",
         "contraparteIds": [
           "aripiprazol",
@@ -49485,30 +46343,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "mesoridazina",
-          "molindona",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
-          "trifluoperazina",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "tipico_depresor_snc",
         "contraparteIds": [
           "alcohol",
@@ -49520,51 +46354,40 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "clozapina",
           "diazepam",
           "difenhidramina",
+          "droperidol",
           "fenobarbital",
           "fentanilo",
+          "flufenazina",
+          "flupentixol",
           "gabapentina",
+          "haloperidol",
           "hidroxicina",
           "levomepromazina",
           "levometadilo",
           "lorazepam",
+          "mesoridazina",
           "metadona",
           "midazolam",
           "mirtazapina",
+          "molindona",
           "morfina",
           "nefazodona",
           "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_depresor_snc",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "mesoridazina",
-          "molindona",
           "perfenazina",
           "periciazina",
           "pimozida",
           "pipotiazina",
+          "pregabalina",
           "proclorperazina",
           "promazina",
+          "prometazina",
           "tioridazina",
           "tiotixeno",
+          "tramadol",
+          "trazodona",
+          "triazolam",
           "trifluoperazina",
+          "zolpidem",
           "zuclopentixol"
         ]
       },
@@ -49643,39 +46466,29 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "clozapina",
           "difenhidramina",
           "disopiramida",
-          "hidroxicina",
-          "levomepromazina",
-          "olanzapina",
-          "paroxetina",
-          "periciazina",
-          "promazina",
-          "prometazina",
-          "quetiapina",
-          "tolterodina",
-          "trihexifenidilo"
-        ]
-      },
-      {
-        "idRegla": "tipico_anticolinergico",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
           "droperidol",
           "flufenazina",
           "flupentixol",
           "haloperidol",
+          "hidroxicina",
           "levomepromazina",
           "mesoridazina",
           "molindona",
+          "olanzapina",
+          "paroxetina",
           "perfenazina",
           "periciazina",
           "pimozida",
           "pipotiazina",
           "proclorperazina",
           "promazina",
+          "prometazina",
+          "quetiapina",
           "tioridazina",
           "tiotixeno",
+          "tolterodina",
           "trifluoperazina",
+          "trihexifenidilo",
           "zuclopentixol"
         ]
       }
@@ -49973,65 +46786,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "isrs_riesgo_qt_regulatorio",
         "contraparteIds": [
           "citalopram",
@@ -50204,12 +46958,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDia": 0.05,
           "frecuenciaDia": 1,
           "maxMgDia": 5
-        },
-        {
-          "etiqueta": "0.05-0.1 mg/kg/dia nocturna",
-          "mgKgDia": 0.05,
-          "frecuenciaDia": 1,
-          "maxMgDia": 5
         }
       ],
       "embarazo": null,
@@ -50234,7 +46982,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     ],
     "interaccionesRelacionadas": [],
     "relacionDiagnosticos": [],
-    "notas": "Trastornos del sueno; ajustar horario. Acompanar de intervenciones de higiene del sueno; validar preparacion y calidad del producto. Acompanar de intervenciones de higiene del sueno; validar preparacion y calidad del producto.",
+    "notas": "Trastornos del sueno; ajustar horario. Acompanar de intervenciones de higiene del sueno; validar preparacion y calidad del producto.",
     "referencias": [
       "catalogo_cognicion_preexistente",
       "Rango educativo; evidencia y regulacion varian por pais."
@@ -51060,65 +47808,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "isrs_riesgo_qt_regulatorio",
         "contraparteIds": [
           "citalopram",
@@ -51156,30 +47845,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "tiotixeno",
           "trifluoperazina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "molindona",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
-          "trifluoperazina",
           "zuclopentixol"
         ]
       },
@@ -51392,27 +48057,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "venlafaxina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_qt_aditivo",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
           "zuclopentixol"
         ]
       },
@@ -51754,33 +48398,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
-        ]
-      },
-      {
         "idRegla": "qt_qt_clase",
         "contraparteIds": [
           "amiodarona",
@@ -51836,101 +48453,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "venlafaxina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
           "zuclopentixol"
         ]
       },
@@ -52897,12 +49419,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDosis": 0.3,
           "frecuenciaDia": 2,
           "maxMgDia": 60
-        },
-        {
-          "etiqueta": "0.3 mg/kg/dosis cada 8-12 h",
-          "mgKgDosis": 0.3,
-          "frecuenciaDia": 2,
-          "maxMgDia": 60
         }
       ],
       "embarazo": null,
@@ -52960,7 +49476,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       "Psicosis puede empeorar",
       "Antecedente de consumo de sustancias aumenta riesgo de uso no terapéutico"
     ],
-    "notas": "TDAH; vigilar PA, FC, apetito. Controlar TA, FC, peso, talla, apetito, sueno y riesgo cardiovascular. Controlar TA, FC, peso, talla, apetito, sueno y riesgo cardiovascular.",
+    "notas": "TDAH; vigilar PA, FC, apetito. Controlar TA, FC, peso, talla, apetito, sueno y riesgo cardiovascular.",
     "referencias": [
       {
         "id": "stahl_prescribers_guide_6e_2017",
@@ -53452,12 +49968,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDosis": 0.1,
           "frecuenciaDia": 3,
           "maxMgDia": 30
-        },
-        {
-          "etiqueta": "0.1-0.15 mg/kg/dosis cada 6-8 h",
-          "mgKgDosis": 0.1,
-          "frecuenciaDia": 3,
-          "maxMgDia": 30
         }
       ],
       "embarazo": null,
@@ -53509,7 +50019,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       }
     ],
     "relacionDiagnosticos": [],
-    "notas": "Riesgo extrapiramidal y discinesia tardía; evitar uso prolongado. Usar con cautela por riesgo de distonia y efectos extrapiramidales. Usar con cautela por riesgo de distonia y efectos extrapiramidales.",
+    "notas": "Riesgo extrapiramidal y discinesia tardía; evitar uso prolongado. Usar con cautela por riesgo de distonia y efectos extrapiramidales.",
     "referencias": [
       "Ficha técnica institucional o nacional vigente.",
       "Lexicomp/Micromedex/guía clínica local: validar antes de uso clínico.",
@@ -54980,42 +51490,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "fenobarbital_inductor_sustrato",
         "contraparteIds": [
           "fenobarbital"
@@ -55439,42 +51913,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "tipico_depresor_snc",
         "contraparteIds": [
           "clorpromazina",
@@ -55833,30 +52271,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "tiotixeno",
           "trifluoperazina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
-          "trifluoperazina",
           "zuclopentixol"
         ]
       },
@@ -57040,42 +53454,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "tipico_depresor_snc",
         "contraparteIds": [
           "clorpromazina",
@@ -57348,65 +53726,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "tioridazina",
           "tiotixeno",
           "trifluoperazina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
           "ziprasidona",
           "zuclopentixol"
         ]
@@ -58510,69 +54829,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "triptofano",
           "venlafaxina"
-        ]
-      },
-      {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
-        ]
-      },
-      {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
         ]
       },
       {
@@ -60093,12 +56349,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDia": 1,
           "frecuenciaDia": 1,
           "maxMgDia": 40
-        },
-        {
-          "etiqueta": "0.7-1 mg/kg/dia cada 24 h",
-          "mgKgDia": 1,
-          "frecuenciaDia": 1,
-          "maxMgDia": 40
         }
       ],
       "embarazo": null,
@@ -60492,12 +56742,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         }
       ],
       "dosisPediatrica": [
-        {
-          "etiqueta": "0.15 mg/kg/dosis",
-          "mgKgDosis": 0.15,
-          "frecuenciaDia": 1,
-          "maxMgDia": 8
-        },
         {
           "etiqueta": "0.15 mg/kg/dosis",
           "mgKgDosis": 0.15,
@@ -61456,42 +57700,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "clozapina_depresor_snc",
         "contraparteIds": [
           "clozapina"
-        ]
-      },
-      {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
         ]
       },
       {
@@ -62741,13 +58949,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "frecuenciaDia": 4,
           "maxMgKgDia": 75,
           "maxMgDia": 4000
-        },
-        {
-          "etiqueta": "10-15 mg/kg/dosis cada 4-6 h",
-          "mgKgDosis": 15,
-          "frecuenciaDia": 4,
-          "maxMgKgDia": 75,
-          "maxMgDia": 4000
         }
       ],
       "embarazo": null,
@@ -63459,43 +59660,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
-        ]
-      },
-      {
-        "idRegla": "isrs_isrs_duplicidad",
-        "contraparteIds": [
-          "citalopram",
-          "escitalopram",
-          "fluoxetina",
-          "fluvoxamina",
-          "sertralina"
-        ]
-      },
-      {
         "idRegla": "isrs_isrs_duplicidad",
         "contraparteIds": [
           "citalopram",
@@ -63588,16 +59752,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "triptofano",
           "venlafaxina"
-        ]
-      },
-      {
-        "idRegla": "isrs_serotoninergico_regulatorio",
-        "contraparteIds": [
-          "citalopram",
-          "escitalopram",
-          "fluoxetina",
-          "fluvoxamina",
-          "sertralina"
         ]
       },
       {
@@ -64023,65 +60177,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "isrs_riesgo_qt_regulatorio",
         "contraparteIds": [
           "citalopram",
@@ -64382,65 +60477,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "inhibidor_cyp2d6_sustrato_cyp2d6",
         "contraparteIds": [
           "duloxetina",
@@ -64497,30 +60533,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "tiotixeno",
           "trifluoperazina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
-          "trifluoperazina",
           "zuclopentixol"
         ]
       },
@@ -64733,27 +60745,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "venlafaxina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_qt_aditivo",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "mesoridazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
           "zuclopentixol"
         ]
       },
@@ -65050,101 +61041,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "depresor_snc_depresor_snc",
         "contraparteIds": [
           "alcohol",
@@ -65222,30 +61118,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
-          "perfenazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
-          "trifluoperazina",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "tipico_depresor_snc",
         "contraparteIds": [
           "alcohol",
@@ -65257,51 +61129,40 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "clozapina",
           "diazepam",
           "difenhidramina",
+          "droperidol",
           "fenobarbital",
           "fentanilo",
+          "flufenazina",
+          "flupentixol",
           "gabapentina",
+          "haloperidol",
           "hidroxicina",
           "levomepromazina",
           "levometadilo",
           "lorazepam",
           "loxapina",
+          "mesoridazina",
           "metadona",
           "midazolam",
           "mirtazapina",
+          "molindona",
           "morfina",
           "nefazodona",
           "oxicodona",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_depresor_snc",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
           "perfenazina",
           "pimozida",
           "pipotiazina",
+          "pregabalina",
           "proclorperazina",
           "promazina",
+          "prometazina",
           "tioridazina",
           "tiotixeno",
+          "tramadol",
+          "trazodona",
+          "triazolam",
           "trifluoperazina",
+          "zolpidem",
           "zuclopentixol"
         ]
       },
@@ -65380,39 +61241,29 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "clozapina",
           "difenhidramina",
           "disopiramida",
-          "hidroxicina",
-          "levomepromazina",
-          "loxapina",
-          "olanzapina",
-          "paroxetina",
-          "promazina",
-          "prometazina",
-          "quetiapina",
-          "tolterodina",
-          "trihexifenidilo"
-        ]
-      },
-      {
-        "idRegla": "tipico_anticolinergico",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
           "droperidol",
           "flufenazina",
           "flupentixol",
           "haloperidol",
+          "hidroxicina",
           "levomepromazina",
           "loxapina",
           "mesoridazina",
           "molindona",
+          "olanzapina",
+          "paroxetina",
           "perfenazina",
           "pimozida",
           "pipotiazina",
           "proclorperazina",
           "promazina",
+          "prometazina",
+          "quetiapina",
           "tioridazina",
           "tiotixeno",
+          "tolterodina",
           "trifluoperazina",
+          "trihexifenidilo",
           "zuclopentixol"
         ]
       },
@@ -65500,27 +61351,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "venlafaxina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_qt_aditivo",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "mesoridazina",
-          "perfenazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
           "zuclopentixol"
         ]
       },
@@ -65811,65 +61641,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "inhibidor_cyp2d6_sustrato_cyp2d6",
         "contraparteIds": [
           "duloxetina",
@@ -65943,30 +61714,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "tiotixeno",
           "trifluoperazina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
-          "perfenazina",
-          "periciazina",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
-          "trifluoperazina",
           "zuclopentixol"
         ]
       },
@@ -66151,27 +61898,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "venlafaxina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_qt_aditivo",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "mesoridazina",
-          "perfenazina",
-          "periciazina",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
           "zuclopentixol"
         ]
       },
@@ -66769,65 +62495,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "isrs_riesgo_qt_regulatorio",
         "contraparteIds": [
           "citalopram",
@@ -66865,30 +62532,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "tiotixeno",
           "trifluoperazina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
-          "trifluoperazina",
           "zuclopentixol"
         ]
       },
@@ -67101,27 +62744,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "venlafaxina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_qt_aditivo",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "mesoridazina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
           "zuclopentixol"
         ]
       },
@@ -67849,12 +63471,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDia": 1,
           "frecuenciaDia": 1,
           "maxMgDia": 60
-        },
-        {
-          "etiqueta": "1-2 mg/kg/dia cada 12-24 h",
-          "mgKgDia": 1,
-          "frecuenciaDia": 1,
-          "maxMgDia": 60
         }
       ],
       "embarazo": null,
@@ -68459,42 +64075,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "tipico_depresor_snc",
         "contraparteIds": [
           "clorpromazina",
@@ -68653,65 +64233,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     },
     "interacciones": [],
     "interaccionesRelacionadas": [
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
       {
         "idRegla": "qt_qt_clase",
         "contraparteIds": [
@@ -69070,65 +64591,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "tioridazina",
           "tiotixeno",
           "trifluoperazina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
           "ziprasidona",
           "zuclopentixol"
         ]
@@ -69553,65 +65015,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "isrs_riesgo_qt_regulatorio",
         "contraparteIds": [
           "citalopram",
@@ -69649,30 +65052,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "tiotixeno",
           "trifluoperazina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
-          "trifluoperazina",
           "zuclopentixol"
         ]
       },
@@ -69885,27 +65264,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "venlafaxina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_qt_aditivo",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "mesoridazina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
           "zuclopentixol"
         ]
       },
@@ -70215,101 +65573,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "depresor_snc_depresor_snc",
         "contraparteIds": [
           "alcohol",
@@ -70387,30 +65650,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "tioridazina",
-          "tiotixeno",
-          "trifluoperazina",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "tipico_depresor_snc",
         "contraparteIds": [
           "alcohol",
@@ -70422,51 +65661,40 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "clozapina",
           "diazepam",
           "difenhidramina",
+          "droperidol",
           "fenobarbital",
           "fentanilo",
+          "flufenazina",
+          "flupentixol",
           "gabapentina",
+          "haloperidol",
           "hidroxicina",
           "levomepromazina",
           "levometadilo",
           "lorazepam",
           "loxapina",
+          "mesoridazina",
           "metadona",
           "midazolam",
           "mirtazapina",
+          "molindona",
           "morfina",
           "nefazodona",
           "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_depresor_snc",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
           "perfenazina",
           "periciazina",
           "pimozida",
           "pipotiazina",
+          "pregabalina",
           "proclorperazina",
+          "prometazina",
           "tioridazina",
           "tiotixeno",
+          "tramadol",
+          "trazodona",
+          "triazolam",
           "trifluoperazina",
+          "zolpidem",
           "zuclopentixol"
         ]
       },
@@ -70545,39 +65773,29 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "clozapina",
           "difenhidramina",
           "disopiramida",
-          "hidroxicina",
-          "levomepromazina",
-          "loxapina",
-          "olanzapina",
-          "paroxetina",
-          "periciazina",
-          "prometazina",
-          "quetiapina",
-          "tolterodina",
-          "trihexifenidilo"
-        ]
-      },
-      {
-        "idRegla": "tipico_anticolinergico",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
           "droperidol",
           "flufenazina",
           "flupentixol",
           "haloperidol",
+          "hidroxicina",
           "levomepromazina",
           "loxapina",
           "mesoridazina",
           "molindona",
+          "olanzapina",
+          "paroxetina",
           "perfenazina",
           "periciazina",
           "pimozida",
           "pipotiazina",
           "proclorperazina",
+          "prometazina",
+          "quetiapina",
           "tioridazina",
           "tiotixeno",
+          "tolterodina",
           "trifluoperazina",
+          "trihexifenidilo",
           "zuclopentixol"
         ]
       },
@@ -70665,27 +65883,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "venlafaxina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_qt_aditivo",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "mesoridazina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "tioridazina",
-          "tiotixeno",
           "zuclopentixol"
         ]
       },
@@ -70986,42 +66183,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "clozapina_depresor_snc",
         "contraparteIds": [
           "clozapina"
-        ]
-      },
-      {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
         ]
       },
       {
@@ -71997,65 +67158,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "fenobarbital_inductor_sustrato",
         "contraparteIds": [
           "fenobarbital"
@@ -72451,65 +67553,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "tioridazina",
           "tiotixeno",
           "trifluoperazina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
           "ziprasidona",
           "zuclopentixol"
         ]
@@ -73377,12 +68420,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDia": 0.02,
           "frecuenciaDia": 1,
           "maxMgDia": 6
-        },
-        {
-          "etiqueta": "0.01-0.03 mg/kg/dia cada 12-24 h",
-          "mgKgDia": 0.02,
-          "frecuenciaDia": 1,
-          "maxMgDia": 6
         }
       ],
       "embarazo": null,
@@ -73539,65 +68576,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "inhibidor_cyp2d6_sustrato_cyp2d6",
         "contraparteIds": [
           "duloxetina",
@@ -73690,7 +68668,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       "Parkinson o demencia con cuerpos de Lewy aumentan la relevancia de efectos motores",
       "Riesgo cardiovascular requiere valorar ortostatismo y QTc según factores coexistentes"
     ],
-    "notas": "Vigilar prolactina y sintomas extrapiramidales. Vigilar sintomas extrapiramidales, peso, prolactina, metabolismo y QT segun riesgo. Vigilar sintomas extrapiramidales, peso, prolactina, metabolismo y QT segun riesgo.",
+    "notas": "Vigilar prolactina y sintomas extrapiramidales. Vigilar sintomas extrapiramidales, peso, prolactina, metabolismo y QT segun riesgo.",
     "referencias": [
       {
         "id": "stahl_prescribers_guide_6e_2017",
@@ -74196,65 +69174,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "quetiapina",
           "tacrolimus",
           "triazolam"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
         ]
       },
       {
@@ -75074,39 +69993,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "triptofano",
           "venlafaxina"
-        ]
-      },
-      {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
-        ]
-      },
-      {
-        "idRegla": "serotoninergico_triptan",
-        "contraparteIds": [
-          "sumatriptan"
         ]
       },
       {
@@ -76080,12 +70966,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDosis": 0.15,
           "frecuenciaDia": 1,
           "maxMgDia": 5
-        },
-        {
-          "etiqueta": "0.15 mg/kg/dosis nebulizada",
-          "mgKgDosis": 0.15,
-          "frecuenciaDia": 1,
-          "maxMgDia": 5
         }
       ],
       "embarazo": null,
@@ -76110,7 +70990,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     ],
     "interaccionesRelacionadas": [],
     "relacionDiagnosticos": [],
-    "notas": "Vigilar taquicardia, temblor e hipokalemia en dosis altas. La dosis inhalada depende del dispositivo y protocolo; esta calculadora aproxima nebulizacion. La dosis inhalada depende del dispositivo y protocolo; esta calculadora aproxima nebulizacion.",
+    "notas": "Vigilar taquicardia, temblor e hipokalemia en dosis altas. La dosis inhalada depende del dispositivo y protocolo; esta calculadora aproxima nebulizacion.",
     "referencias": [
       "Ficha técnica institucional o nacional vigente.",
       "Lexicomp/Micromedex/guía clínica local: validar antes de uso clínico.",
@@ -76583,65 +71463,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "inhibidor_cyp3a4_estatina",
         "contraparteIds": [
           "atorvastatina",
@@ -76880,14 +71701,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "isrs_imao",
         "contraparteIds": [
-          "fenelzina",
-          "isocarboxazida",
-          "tranilcipromina"
-        ]
-      },
-      {
-        "idRegla": "isrs_imao",
-        "contraparteIds": [
           "amitriptilina",
           "anfetamina",
           "citalopram",
@@ -76899,6 +71712,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "fluoxetina",
           "fluvoxamina",
           "hierba_san_juan",
+          "isocarboxazida",
           "linezolid",
           "metadona",
           "nefazodona",
@@ -76907,6 +71721,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "sertralina",
           "sumatriptan",
           "tramadol",
+          "tranilcipromina",
           "trazodona",
           "triptofano",
           "venlafaxina"
@@ -76929,6 +71744,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "contraparteIds": [
           "amitriptilina",
           "anfetamina",
+          "azul_metileno",
           "citalopram",
           "desipramina",
           "duloxetina",
@@ -76938,44 +71754,8 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "fluoxetina",
           "fluvoxamina",
           "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
-        ]
-      },
-      {
-        "idRegla": "imao_serotoninergico_ext",
-        "contraparteIds": [
-          "azul_metileno",
-          "fenelzina",
           "isocarboxazida",
           "linezolid",
-          "tranilcipromina"
-        ]
-      },
-      {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
           "metadona",
           "nefazodona",
           "paroxetina",
@@ -76983,6 +71763,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "sertralina",
           "sumatriptan",
           "tramadol",
+          "tranilcipromina",
           "trazodona",
           "triptofano",
           "venlafaxina"
@@ -77481,12 +72262,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDia": 0.5,
           "frecuenciaDia": 1,
           "maxMgDia": 200
-        },
-        {
-          "etiqueta": "0.5-1 mg/kg/dia cada 24 h",
-          "mgKgDia": 0.5,
-          "frecuenciaDia": 1,
-          "maxMgDia": 200
         }
       ],
       "embarazo": null,
@@ -77652,43 +72427,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
-        ]
-      },
-      {
-        "idRegla": "isrs_isrs_duplicidad",
-        "contraparteIds": [
-          "citalopram",
-          "escitalopram",
-          "fluoxetina",
-          "fluvoxamina",
-          "paroxetina"
-        ]
-      },
-      {
         "idRegla": "isrs_isrs_duplicidad",
         "contraparteIds": [
           "citalopram",
@@ -77712,65 +72450,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "amitriptilina",
           "desipramina",
           "imipramina"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
         ]
       },
       {
@@ -77884,16 +72563,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "isrs_serotoninergico_regulatorio",
-        "contraparteIds": [
-          "citalopram",
-          "escitalopram",
-          "fluoxetina",
-          "fluvoxamina",
-          "paroxetina"
-        ]
-      },
-      {
         "idRegla": "isrs_aine_sangrado_regulatorio",
         "contraparteIds": [
           "acido_acetilsalicilico",
@@ -77982,14 +72651,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "isrs_riesgo_qt_regulatorio",
-        "contraparteIds": [
-          "citalopram",
-          "escitalopram",
-          "fluoxetina"
-        ]
-      },
-      {
         "idRegla": "isrs_cyp2d6_sustrato_regulatorio",
         "contraparteIds": [
           "aripiprazol",
@@ -78075,7 +72736,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       }
     ],
     "relacionDiagnosticos": [],
-    "notas": "Depresion, ansiedad, TOC, TEPT. Vigilar activacion, ideacion suicida, viraje maniforme y sintomas gastrointestinales. Vigilar activacion, ideacion suicida, viraje maniforme y sintomas gastrointestinales.",
+    "notas": "Depresion, ansiedad, TOC, TEPT. Vigilar activacion, ideacion suicida, viraje maniforme y sintomas gastrointestinales.",
     "referencias": [
       {
         "id": "dailymed_sertralina",
@@ -78822,65 +73483,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "isrs_riesgo_qt_regulatorio",
         "contraparteIds": [
           "citalopram",
@@ -79083,65 +73685,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "tioridazina",
           "tiotixeno",
           "trifluoperazina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
           "ziprasidona",
           "zuclopentixol"
         ]
@@ -79964,39 +74507,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "tramadol",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
-        ]
-      },
-      {
-        "idRegla": "serotoninergico_triptan",
-        "contraparteIds": [
-          "rizatriptan"
-        ]
-      },
-      {
         "idRegla": "serotoninergico_triptan",
         "contraparteIds": [
           "amitriptilina",
@@ -80495,65 +75005,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "saquinavir",
           "verapamilo",
           "zileuton"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
         ]
       },
       {
@@ -82153,65 +76604,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "inhibidor_cyp2d6_sustrato_cyp2d6",
         "contraparteIds": [
           "duloxetina",
@@ -82276,30 +76668,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "tiotixeno",
           "trifluoperazina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tiotixeno",
-          "trifluoperazina",
           "zuclopentixol"
         ]
       },
@@ -82512,27 +76880,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "venlafaxina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_qt_aditivo",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "mesoridazina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tiotixeno",
           "zuclopentixol"
         ]
       },
@@ -82902,65 +77249,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "isrs_riesgo_qt_regulatorio",
         "contraparteIds": [
           "citalopram",
@@ -82998,30 +77286,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "tioridazina",
           "trifluoperazina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "trifluoperazina",
           "zuclopentixol"
         ]
       },
@@ -83206,27 +77470,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "venlafaxina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_qt_aditivo",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "mesoridazina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
           "zuclopentixol"
         ]
       },
@@ -83726,65 +77969,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     },
     "interacciones": [],
     "interaccionesRelacionadas": [
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
       {
         "idRegla": "qt_qt_clase",
         "contraparteIds": [
@@ -84502,69 +78686,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "trazodona",
-          "triptofano",
-          "venlafaxina"
-        ]
-      },
-      {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "trazodona",
-          "triazolam",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "depresor_snc_depresor_snc",
         "contraparteIds": [
           "alcohol",
@@ -85121,33 +79242,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "triptofano",
-          "venlafaxina"
-        ]
-      },
-      {
         "idRegla": "qt_qt_clase",
         "contraparteIds": [
           "amiodarona",
@@ -85203,101 +79297,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "tolterodina",
           "venlafaxina",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "venlafaxina",
-          "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "triazolam",
-          "zolpidem",
           "zuclopentixol"
         ]
       },
@@ -85764,42 +79763,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "zolpidem",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "fenobarbital_inductor_sustrato",
         "contraparteIds": [
           "fenobarbital"
@@ -86036,30 +79999,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "tioridazina",
           "tiotixeno",
           "ziprasidona",
-          "zuclopentixol"
-        ]
-      },
-      {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
           "zuclopentixol"
         ]
       },
@@ -86753,12 +80692,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "mgKgDia": 15,
           "frecuenciaDia": 2,
           "maxMgDia": 3000
-        },
-        {
-          "etiqueta": "10-15 mg/kg/dia dividido cada 12 h",
-          "mgKgDia": 15,
-          "frecuenciaDia": 2,
-          "maxMgDia": 3000
         }
       ],
       "embarazo": null,
@@ -86805,7 +80738,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "relacionDiagnosticos": [
       "Ver reglas de motor por diagnostico/comorbilidad."
     ],
-    "notas": "Vigilar PFH, plaquetas; teratogenicidad. Requiere vigilancia clinica y laboratorial segun protocolo: funcion hepatica, plaquetas, niveles si aplica. Requiere vigilancia clinica y laboratorial segun protocolo: funcion hepatica, plaquetas, niveles si aplica.",
+    "notas": "Vigilar PFH, plaquetas; teratogenicidad. Requiere vigilancia clinica y laboratorial segun protocolo: funcion hepatica, plaquetas, niveles si aplica.",
     "referencias": [
       {
         "id": "dailymed_valproato",
@@ -87734,33 +81667,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "serotoninergico_serotoninergico",
-        "contraparteIds": [
-          "amitriptilina",
-          "anfetamina",
-          "citalopram",
-          "desipramina",
-          "duloxetina",
-          "escitalopram",
-          "fenelzina",
-          "fentanilo",
-          "fluoxetina",
-          "fluvoxamina",
-          "hierba_san_juan",
-          "linezolid",
-          "metadona",
-          "nefazodona",
-          "paroxetina",
-          "rizatriptan",
-          "selegilina",
-          "sertralina",
-          "sumatriptan",
-          "tramadol",
-          "trazodona",
-          "triptofano"
-        ]
-      },
-      {
         "idRegla": "isrs_irsn_serotoninergico",
         "contraparteIds": [
           "citalopram",
@@ -87769,65 +81675,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "fluvoxamina",
           "paroxetina",
           "sertralina"
-        ]
-      },
-      {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "ziprasidona",
-          "zuclopentixol"
         ]
       },
       {
@@ -89087,65 +82934,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "zuclopentixol"
-        ]
-      },
-      {
         "idRegla": "isrs_riesgo_qt_regulatorio",
         "contraparteIds": [
           "citalopram",
@@ -89372,42 +83160,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "clozapina_depresor_snc",
         "contraparteIds": [
           "clozapina"
-        ]
-      },
-      {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zuclopentixol"
         ]
       },
       {
@@ -89833,101 +83585,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "qt_qt_clase",
-        "contraparteIds": [
-          "amiodarona",
-          "amitriptilina",
-          "azitromicina",
-          "ciprofloxacino",
-          "citalopram",
-          "claritromicina",
-          "clorpromazina",
-          "clorprotixeno",
-          "desipramina",
-          "disopiramida",
-          "dolasetron",
-          "droperidol",
-          "eritromicina",
-          "escitalopram",
-          "fluconazol",
-          "flufenazina",
-          "fluoxetina",
-          "flupentixol",
-          "gatifloxacino",
-          "halofantrina",
-          "haloperidol",
-          "hidroxicina",
-          "iloperidona",
-          "ketoconazol",
-          "levomepromazina",
-          "levometadilo",
-          "mefloquina",
-          "mesoridazina",
-          "metadona",
-          "moxifloxacino",
-          "pentamidina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "probucol",
-          "procainamida",
-          "proclorperazina",
-          "promazina",
-          "quetiapina",
-          "quinidina",
-          "risperidona",
-          "ritonavir",
-          "saquinavir",
-          "sertralina",
-          "sotalol",
-          "sparfloxacino",
-          "tacrolimus",
-          "tioridazina",
-          "tiotixeno",
-          "tolterodina",
-          "trazodona",
-          "venlafaxina",
-          "ziprasidona"
-        ]
-      },
-      {
-        "idRegla": "depresor_snc_depresor_snc",
-        "contraparteIds": [
-          "alcohol",
-          "alprazolam",
-          "apomorfina",
-          "clonazepam",
-          "clorpromazina",
-          "clorprotixeno",
-          "clozapina",
-          "diazepam",
-          "difenhidramina",
-          "fenobarbital",
-          "fentanilo",
-          "gabapentina",
-          "hidroxicina",
-          "levomepromazina",
-          "levometadilo",
-          "lorazepam",
-          "loxapina",
-          "metadona",
-          "midazolam",
-          "mirtazapina",
-          "morfina",
-          "nefazodona",
-          "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem"
-        ]
-      },
-      {
         "idRegla": "depresor_snc_depresor_snc",
         "contraparteIds": [
           "alcohol",
@@ -90005,30 +83662,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
-        "idRegla": "tipico_duplicidad_antipsicotica",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno",
-          "trifluoperazina"
-        ]
-      },
-      {
         "idRegla": "tipico_depresor_snc",
         "contraparteIds": [
           "alcohol",
@@ -90040,52 +83673,41 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "clozapina",
           "diazepam",
           "difenhidramina",
+          "droperidol",
           "fenobarbital",
           "fentanilo",
+          "flufenazina",
+          "flupentixol",
           "gabapentina",
+          "haloperidol",
           "hidroxicina",
           "levomepromazina",
           "levometadilo",
           "lorazepam",
           "loxapina",
+          "mesoridazina",
           "metadona",
           "midazolam",
           "mirtazapina",
+          "molindona",
           "morfina",
           "nefazodona",
           "oxicodona",
-          "periciazina",
-          "pregabalina",
-          "promazina",
-          "prometazina",
-          "tramadol",
-          "trazodona",
-          "triazolam",
-          "zolpidem"
-        ]
-      },
-      {
-        "idRegla": "tipico_depresor_snc",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "loxapina",
-          "mesoridazina",
-          "molindona",
           "perfenazina",
           "periciazina",
           "pimozida",
           "pipotiazina",
+          "pregabalina",
           "proclorperazina",
           "promazina",
+          "prometazina",
           "tioridazina",
           "tiotixeno",
-          "trifluoperazina"
+          "tramadol",
+          "trazodona",
+          "triazolam",
+          "trifluoperazina",
+          "zolpidem"
         ]
       },
       {
@@ -90233,27 +83855,6 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "trazodona",
           "venlafaxina",
           "ziprasidona"
-        ]
-      },
-      {
-        "idRegla": "tipico_qt_aditivo",
-        "contraparteIds": [
-          "clorpromazina",
-          "clorprotixeno",
-          "droperidol",
-          "flufenazina",
-          "flupentixol",
-          "haloperidol",
-          "levomepromazina",
-          "mesoridazina",
-          "perfenazina",
-          "periciazina",
-          "pimozida",
-          "pipotiazina",
-          "proclorperazina",
-          "promazina",
-          "tioridazina",
-          "tiotixeno"
         ]
       },
       {
@@ -90423,11 +84024,18 @@ function adaptarRegistroMaestro(medicamento) {
 const CATALOGO_BASE = CATALOGO_FARMACOLOGICO_MAESTRO.map(adaptarRegistroMaestro);
 
 function construirIndiceInteraccionesReciprocas() {
-  const indice = new Map(CATALOGO_BASE.map((medicamento) => [medicamento.id, []]));
+  const indice = new Map(CATALOGO_BASE.map((medicamento) => [medicamento.id, new Map()]));
   const registrar = (medicamento, regla, contrapartes) => {
     const contraparteIds = [...new Set(contrapartes.filter((item) => item.id !== medicamento.id).map((item) => item.id))].sort();
     if (!contraparteIds.length) return;
-    indice.get(medicamento.id).push({
+    const reglasMedicamento = indice.get(medicamento.id);
+    const existente = reglasMedicamento.get(regla.id);
+    if (existente) {
+      existente.contraparteIds = [...new Set([...existente.contraparteIds, ...contraparteIds])].sort();
+      existente.medicamentos = [medicamento.id, ...existente.contraparteIds];
+      return;
+    }
+    reglasMedicamento.set(regla.id, {
       id: regla.id,
       idRegla: regla.id,
       severidad: regla.severidad,
@@ -90449,7 +84057,7 @@ function construirIndiceInteraccionesReciprocas() {
     ladoA.forEach((medicamento) => registrar(medicamento, regla, ladoB));
     ladoB.forEach((medicamento) => registrar(medicamento, regla, ladoA));
   });
-  return indice;
+  return new Map([...indice].map(([medicamentoId, reglas]) => [medicamentoId, [...reglas.values()]]));
 }
 
 const INDICE_INTERACCIONES = construirIndiceInteraccionesReciprocas();
@@ -90633,4 +84241,393 @@ export function medicamentoPorTexto(texto = "") {
   const porPresentacion = MEDICAMENTOS_PRESENTACIONES.find((item) => normalizado.includes(normalizarNombreMedicamento(item.nombre)) && normalizado.includes(normalizarNombreMedicamento(item.selectedPresentationText)));
   if (porPresentacion) return POR_ID.get(porPresentacion.clinicalMedicationId) || null;
   return buscarMedicamentos(texto, { limit: 1, strict: true })[0] || null;
+}
+
+// Vistas y contratos históricos derivados del catálogo maestro. Ninguno de
+// estos exports materializa una segunda fuente farmacológica.
+export const MEDICAMENTOS_SUPLEMENTARIOS = Object.freeze(
+  CATALOGO_FARMACOLOGICO_OFICIAL.filter((medicamento) =>
+    (medicamento.origenesCatalogo || []).includes("catalogo_suplementario")
+  )
+);
+
+export const CATALOGO_MEDICAMENTOS_PEDIATRICOS = Object.freeze(
+  CATALOGO_FARMACOLOGICO_OFICIAL
+    .filter((medicamento) => medicamento.pediatria?.ficha)
+    .sort((a, b) => (a.pediatria.catalogOrder ?? 999) - (b.pediatria.catalogOrder ?? 999))
+    .map((medicamento) => Object.freeze({
+      ...medicamento.pediatria.ficha,
+      medicationId: medicamento.id
+    }))
+);
+
+export const MEDICAMENTOS_PEDIATRICOS = Object.freeze(
+  CATALOGO_FARMACOLOGICO_OFICIAL
+    .filter((medicamento) => medicamento.pediatria?.legacy)
+    .sort((a, b) => (a.pediatria.legacyOrder ?? 999) - (b.pediatria.legacyOrder ?? 999))
+    .map((medicamento) => Object.freeze({
+      ...medicamento.pediatria.legacy,
+      clinicalMedicationId: medicamento.id,
+      medicationId: medicamento.id
+    }))
+);
+
+export const DATO_NO_ENCONTRADO = "dato no encontrado en fuente local";
+export const FUENTE_PENDIENTE = "fuente pendiente";
+export const FUENTE_STAHL = Object.freeze({
+  id: "stahl_prescribers_guide_6e_2017",
+  titulo: "Stahl's Essential Psychopharmacology: Prescriber's Guide, 6th ed.",
+  autores: "Stephen M. Stahl",
+  editorial: "Cambridge University Press",
+  anio: 2017,
+  rutaLocal: "fuentes_farmacologicas/stahl_prescribers_guide.pdf"
+});
+
+function fichaDesdeMedicamento(medicamento = {}) {
+  const datos = medicamento.datosClinicos || {};
+  const cinetica = medicamento.farmacocinetica || {};
+  if (medicamento.farmacologia && medicamento.farmacologia.estadoFuente === "verificada_local") {
+    return medicamento.farmacologia;
+  }
+  return {
+    esquema: "cognicion.farmacologia.v1",
+    id: medicamento.id,
+    nombreGenerico: medicamento.genericName || medicamento.nombre,
+    grupoFarmacologico: medicamento.clasePrincipal,
+    claseFarmacologica: medicamento.clasePrincipal,
+    subclase: medicamento.clases?.[1] || "",
+    nombresComerciales: medicamento.marcas || [],
+    sinonimos: medicamento.sinonimos || [],
+    presentaciones: (medicamento.presentaciones || []).map((presentacion) => ({
+      id: presentacion.id,
+      formaFarmaceutica: presentacion.forma,
+      concentracion: presentacion.concentracion,
+      unidad: "",
+      via: presentacion.via,
+      fuente: presentacion.fuente
+    })),
+    mecanismoAccion: cinetica.mecanismoAccion || DATO_NO_ENCONTRADO,
+    indicaciones: datos.indicaciones || [],
+    dosisHabitual: medicamento.dosisHabitual || DATO_NO_ENCONTRADO,
+    vidaMedia: cinetica.vidaMedia || DATO_NO_ENCONTRADO,
+    metabolismo: cinetica.metabolismo || DATO_NO_ENCONTRADO,
+    cyp: cinetica.cyp || [],
+    viaEliminacion: cinetica.eliminacion || DATO_NO_ENCONTRADO,
+    metabolitosActivos: cinetica.metabolitosActivos || [],
+    contraindicacionesAbsolutas: datos.contraindicaciones || [],
+    precauciones: datos.precauciones || [],
+    interaccionesMedicamento: medicamento.interacciones || [],
+    interaccionesDiagnostico: medicamento.relacionDiagnosticos || [],
+    efectosAdversos: medicamento.efectosAdversos || [],
+    vigilancia: datos.monitorizacion || [],
+    fuentes: medicamento.referencias || [],
+    estadoFuente: medicamento.estadoFuente || FUENTE_PENDIENTE,
+    confianza: medicamento.confianza || "no evaluada"
+  };
+}
+
+export const FARMACOLOGIA_VERIFICADA = Object.freeze(Object.fromEntries(
+  CATALOGO_FARMACOLOGICO_OFICIAL
+    .filter((medicamento) => medicamento.estadoFuente === "verificada_local")
+    .map((medicamento) => [medicamento.id, fichaDesdeMedicamento(medicamento)])
+));
+
+export function enriquecerFarmacologiaUnificada(medicamento = {}) {
+  const canonico = obtenerMedicamentoPorId(medicamento.id)
+    || medicamentoPorTexto(medicamento.genericName || medicamento.nombre || "");
+  return canonico ? { ...medicamento, ...canonico } : medicamento;
+}
+
+export function construirCapaFarmacologicaUnificada(medicamentos = []) {
+  return medicamentos.map(enriquecerFarmacologiaUnificada);
+}
+
+export function resumirCoberturaFarmacologica(medicamentos = []) {
+  const totalNormalizados = medicamentos.length;
+  const verificados = medicamentos.filter((medicamento) => medicamento.estadoFuente === "verificada_local");
+  return {
+    totalNormalizados,
+    conFuenteVerificada: verificados.length,
+    datosCompletos: verificados.filter((medicamento) => medicamento.presentaciones?.length).length,
+    fuentePendiente: totalNormalizados - verificados.length,
+    idsVerificados: verificados.map((medicamento) => medicamento.id)
+  };
+}
+
+function normalizarTextoCompat(valor = "") {
+  return normalizarNombreMedicamento(valor)
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function slugMedicamentoCompat(valor = "") {
+  return normalizarTextoCompat(valor).replace(/\s+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+function textoPresentacionCompat(presentacion) {
+  if (typeof presentacion === "string") return presentacion;
+  return presentacion?.texto || presentacion?.presentationDescription || "";
+}
+
+function clavePresentacionCompat(presentacion = {}) {
+  return [
+    normalizarTextoCompat(textoPresentacionCompat(presentacion)),
+    normalizarTextoCompat(presentacion.via || presentacion.route || "")
+  ].join("|");
+}
+
+function elegirValorCompat(...valores) {
+  return valores.find((valor) => {
+    if (Array.isArray(valor)) return valor.length;
+    return valor !== undefined && valor !== null && String(valor).trim() !== "";
+  });
+}
+
+function normalizarPresentacionesCompat(medicamento = {}) {
+  return (medicamento.presentaciones || medicamento.formulations || [])
+    .map((presentacion) => {
+      const texto = textoPresentacionCompat(presentacion);
+      if (!texto) return null;
+      if (typeof presentacion === "string") return { texto, via: "oral", activo: true };
+      return {
+        ...presentacion,
+        texto,
+        via: presentacion.via || presentacion.route || "oral",
+        activo: presentacion.activo !== false && presentacion.active !== false
+      };
+    })
+    .filter(Boolean);
+}
+
+function separarPrincipiosActivosCompat(medicamento = {}) {
+  const declarados = medicamento.principiosActivos || medicamento.activeIngredients;
+  if (Array.isArray(declarados) && declarados.length) return listaUnica(declarados);
+  const nombre = medicamento.genericName || medicamento.nombreGenerico || medicamento.nombre || "";
+  return listaUnica(String(nombre).split(/\s*(?:\/|\+|\by\b|\be\b)\s*/i));
+}
+
+function dosisDesdePresentacionesCompat(presentaciones = []) {
+  return listaUnica(presentaciones.flatMap((presentacion) =>
+    [...String(presentacion.texto || "").matchAll(/(\d+(?:[.,]\d+)?)\s*(mg|mcg|µg|g|ml|ui|u)\b/gi)]
+      .map((coincidencia) => coincidencia[1].replace(",", ".") + " " + coincidencia[2].replace("µg", "mcg"))
+  ));
+}
+
+function normalizarMedicamentoBaseCompat(medicamento, origen = "catalogo") {
+  const nombre = medicamento.nombre || medicamento.genericName || medicamento.nombreGenerico || medicamento.id || "";
+  const id = medicamento.id || slugMedicamentoCompat(nombre);
+  const presentaciones = normalizarPresentacionesCompat(medicamento);
+  const frecuenciaDosis = typeof medicamento.dosisHabitual === "string"
+    ? medicamento.dosisHabitual.match(/cada\s+\d+\s+horas?/gi)
+    : [];
+  return {
+    ...medicamento,
+    id,
+    nombre,
+    genericName: medicamento.genericName || medicamento.nombreGenerico || nombre,
+    grupoFarmacologico: medicamento.grupoFarmacologico || medicamento.clase || medicamento.claseFarmacologica || medicamento.therapeuticClasses?.[0] || "Medicamento",
+    clase: medicamento.clase || medicamento.claseFarmacologica || medicamento.grupoFarmacologico || medicamento.therapeuticClasses?.[0] || "Medicamento",
+    therapeuticClasses: listaUnica(medicamento.therapeuticClasses, medicamento.grupoFarmacologico, medicamento.clase, medicamento.claseFarmacologica),
+    especialidades: listaUnica(medicamento.especialidades, medicamento.specialties),
+    specialties: listaUnica(medicamento.specialties, medicamento.especialidades),
+    brandNames: listaUnica(medicamento.brandNames, medicamento.marcas, medicamento.nombresComerciales),
+    synonyms: listaUnica(medicamento.synonyms, medicamento.sinonimos),
+    principiosActivos: separarPrincipiosActivosCompat(medicamento),
+    presentaciones,
+    formulations: medicamento.formulations || presentaciones.map((presentacion, index) => ({
+      id: id + "-p" + (index + 1),
+      presentationDescription: presentacion.texto,
+      route: presentacion.via || "oral",
+      active: presentacion.activo !== false
+    })),
+    dosisHabitual: medicamento.dosisHabitual || medicamento.adultDosing?.[0]?.usualDose?.text || "",
+    dosisHabituales: listaUnica(medicamento.dosisHabituales, medicamento.doses, dosisDesdePresentacionesCompat(presentaciones)),
+    frecuenciasSugeridas: listaUnica(medicamento.frecuenciasSugeridas, medicamento.frecuencias, frecuenciaDosis),
+    adultDosing: medicamento.adultDosing || (medicamento.dosisHabitual ? [{
+      indicationId: "uso_habitual",
+      population: "adult",
+      usualDose: { text: medicamento.dosisHabitual },
+      administrationNotes: []
+    }] : []),
+    pediatricDosing: medicamento.pediatricDosing || [],
+    indications: listaUnica(medicamento.indications, medicamento.indicaciones),
+    contraindications: listaUnica(medicamento.contraindications, medicamento.contraindicaciones, medicamento.contraindicacionesAbsolutas),
+    precautions: listaUnica(medicamento.precautions, medicamento.precauciones, medicamento.warnings),
+    warnings: listaUnica(medicamento.warnings, medicamento.precautions, medicamento.precauciones),
+    monitoring: listaUnica(medicamento.monitoring, medicamento.monitorizacion, medicamento.vigilancia),
+    interactions: listaUnica(medicamento.interactions, medicamento.interaccionesMedicamento),
+    references: listaUnica(medicamento.references, medicamento.fuentes),
+    active: medicamento.active !== false,
+    origenesCatalogo: listaUnica(medicamento.origenesCatalogo, origen),
+    origen
+  };
+}
+
+function clavesMedicamentoCompat(medicamento = {}) {
+  return listaUnica(
+    medicamento.id,
+    normalizarPrincipioActivo(medicamento.nombre),
+    normalizarPrincipioActivo(medicamento.genericName),
+    medicamento.synonyms?.map(normalizarPrincipioActivo),
+    medicamento.brandNames?.map(normalizarPrincipioActivo)
+  ).filter(Boolean);
+}
+
+function fusionarPresentacionesCompat(idClinico, ...listas) {
+  const indice = new Map();
+  listas.flatMap((lista) => Array.isArray(lista) ? lista : [lista]).filter(Boolean).forEach((presentacion) => {
+    const texto = textoPresentacionCompat(presentacion);
+    if (!texto) return;
+    const normalizada = typeof presentacion === "string"
+      ? { texto, via: "oral", activo: true }
+      : { ...presentacion, texto, via: presentacion.via || presentacion.route || "oral", activo: presentacion.activo !== false && presentacion.active !== false };
+    const clave = clavePresentacionCompat(normalizada);
+    if (!indice.has(clave)) indice.set(clave, normalizada);
+  });
+  const presentaciones = [...indice.values()];
+  const formulations = presentaciones.map((presentacion, index) => ({
+    id: idClinico + "-p" + (index + 1),
+    presentationDescription: presentacion.texto,
+    route: presentacion.via || "oral",
+    active: presentacion.activo !== false
+  }));
+  return { presentaciones, formulations };
+}
+
+function fusionarMedicamentosCompat(existente, entrante) {
+  const idClinico = existente.id || entrante.id;
+  const fusion = fusionarPresentacionesCompat(idClinico, existente.presentaciones, entrante.presentaciones);
+  const clase = elegirValorCompat(existente.clase, entrante.clase, existente.grupoFarmacologico, entrante.grupoFarmacologico, "Medicamento");
+  return {
+    ...entrante,
+    ...existente,
+    id: idClinico,
+    nombre: elegirValorCompat(existente.nombre, entrante.nombre),
+    genericName: elegirValorCompat(existente.genericName, entrante.genericName, existente.nombre, entrante.nombre),
+    grupoFarmacologico: elegirValorCompat(existente.grupoFarmacologico, entrante.grupoFarmacologico, clase),
+    clase,
+    therapeuticClasses: listaUnica(existente.therapeuticClasses, entrante.therapeuticClasses, clase),
+    presentaciones: fusion.presentaciones,
+    formulations: fusion.formulations,
+    brandNames: listaUnica(existente.brandNames, entrante.brandNames),
+    synonyms: listaUnica(existente.synonyms, entrante.synonyms),
+    principiosActivos: listaUnica(existente.principiosActivos, entrante.principiosActivos),
+    dosisHabituales: listaUnica(existente.dosisHabituales, entrante.dosisHabituales),
+    frecuenciasSugeridas: listaUnica(existente.frecuenciasSugeridas, entrante.frecuenciasSugeridas),
+    especialidades: listaUnica(existente.especialidades, entrante.especialidades),
+    specialties: listaUnica(existente.specialties, entrante.specialties),
+    indications: listaUnica(existente.indications, entrante.indications),
+    contraindications: listaUnica(existente.contraindications, entrante.contraindications),
+    precautions: listaUnica(existente.precautions, entrante.precautions),
+    warnings: listaUnica(existente.warnings, entrante.warnings),
+    monitoring: listaUnica(existente.monitoring, entrante.monitoring),
+    interactions: listaUnica(existente.interactions, entrante.interactions),
+    references: listaUnica(existente.references, entrante.references),
+    origenesCatalogo: listaUnica(existente.origenesCatalogo, entrante.origenesCatalogo, existente.origen, entrante.origen),
+    active: existente.active !== false || entrante.active !== false
+  };
+}
+
+function crearMedicamentoDesdeFarmacologiaCompat(id, ficha = {}) {
+  return normalizarMedicamentoBaseCompat({
+    id,
+    nombre: ficha.nombreGenerico || id,
+    genericName: ficha.nombreGenerico || id,
+    grupoFarmacologico: ficha.grupoFarmacologico || ficha.claseFarmacologica,
+    clase: ficha.claseFarmacologica || ficha.grupoFarmacologico,
+    therapeuticClasses: [ficha.claseFarmacologica, ficha.subclase].filter(Boolean),
+    brandNames: ficha.nombresComerciales || [],
+    synonyms: ficha.sinonimos || [],
+    presentaciones: ficha.presentaciones || [],
+    dosisHabitual: ficha.dosisHabitual,
+    indications: ficha.indicaciones || [],
+    contraindications: ficha.contraindicacionesAbsolutas || [],
+    precautions: ficha.precauciones || [],
+    monitoring: ficha.vigilancia || [],
+    interactions: ficha.interaccionesMedicamento || [],
+    references: ficha.fuentes || []
+  }, "farmacologia_verificada");
+}
+
+export function construirCatalogoFarmacologicoNormalizado({
+  medicamentos = [],
+  suplementarios = [],
+  farmacologiaVerificada = {}
+} = {}) {
+  const indice = new Map();
+  const alias = new Map();
+  const conflictos = [];
+  const agregar = (medicamento, origen) => {
+    const normalizado = normalizarMedicamentoBaseCompat({ ...medicamento, origen }, origen);
+    if (!normalizado.nombre || normalizado.active === false) return;
+    const claves = clavesMedicamentoCompat(normalizado);
+    const claveExistente = claves.map((clave) => alias.get(clave)).find(Boolean);
+    const clavePrincipal = claveExistente || claves[0] || normalizado.id;
+    indice.set(clavePrincipal, indice.has(clavePrincipal)
+      ? fusionarMedicamentosCompat(indice.get(clavePrincipal), normalizado)
+      : normalizado);
+    claves.forEach((clave) => {
+      const previa = alias.get(clave);
+      if (previa && previa !== clavePrincipal) conflictos.push({ clave, previa, actual: clavePrincipal });
+      alias.set(clave, clavePrincipal);
+    });
+  };
+  medicamentos.forEach((medicamento) => agregar(medicamento, medicamento.origen || "catalogo_legacy"));
+  suplementarios.forEach((medicamento) => agregar(medicamento, medicamento.origen || "catalogo_suplementario"));
+  Object.entries(farmacologiaVerificada).forEach(([id, ficha]) => {
+    const fichaId = normalizarPrincipioActivo(ficha.nombreGenerico || id);
+    const yaExiste = [...indice.values()].some((medicamento) => medicamento.id === id || clavesMedicamentoCompat(medicamento).includes(fichaId));
+    if (!yaExiste) agregar(crearMedicamentoDesdeFarmacologiaCompat(id, ficha), "farmacologia_verificada");
+  });
+  const medicamentosNormalizados = [...indice.values()].map((medicamento) => {
+    const fusion = fusionarPresentacionesCompat(medicamento.id, medicamento.presentaciones);
+    return {
+      ...medicamento,
+      clinicalMedicationId: medicamento.id,
+      principioActivoNormalizado: normalizarPrincipioActivo(medicamento.genericName || medicamento.nombre || medicamento.id),
+      presentaciones: fusion.presentaciones,
+      formulations: fusion.formulations
+    };
+  }).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+  return {
+    medicamentos: medicamentosNormalizados,
+    conflictos,
+    estadisticas: {
+      registrosEntrada: medicamentos.length + suplementarios.length,
+      medicamentosUnicos: medicamentosNormalizados.length,
+      presentaciones: medicamentosNormalizados.reduce((total, medicamento) => total + (medicamento.presentaciones || []).length, 0),
+      conflictos: conflictos.length
+    }
+  };
+}
+
+export function crearPresentacionesPlanas(medicamentos = []) {
+  return medicamentos.flatMap((medicamento) => {
+    const presentaciones = medicamento.presentaciones?.length
+      ? medicamento.presentaciones
+      : [{ texto: "presentacion no especificada", via: "" }];
+    return presentaciones.map((presentacion, index) => ({
+      ...medicamento,
+      clinicalMedicationId: medicamento.id,
+      selectedPresentationId: medicamento.formulations?.[index]?.id || medicamento.id + "-p" + (index + 1),
+      selectedPresentationText: presentacion.texto,
+      presentationText: presentacion.texto,
+      presentacion: presentacion.texto,
+      via: presentacion.via || "",
+      texto: medicamento.nombre + ", " + presentacion.texto + "."
+    }));
+  });
+}
+
+export function agruparMedicamentosPorClase(medicamentos = []) {
+  const grupos = new Map();
+  medicamentos.forEach((medicamento) => {
+    const clase = medicamento.grupoFarmacologico || medicamento.clase || medicamento.therapeuticClasses?.[0] || "Medicamento";
+    if (!grupos.has(clase)) grupos.set(clase, []);
+    grupos.get(clase).push(medicamento);
+  });
+  return [...grupos.entries()]
+    .map(([grupo, items]) => ({ grupo, medicamentos: items.sort((a, b) => a.nombre.localeCompare(b.nombre, "es")) }))
+    .sort((a, b) => a.grupo.localeCompare(b.grupo, "es"));
 }

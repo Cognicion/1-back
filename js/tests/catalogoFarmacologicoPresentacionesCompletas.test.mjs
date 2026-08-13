@@ -4,14 +4,14 @@ import {
   CATALOGO_FARMACOLOGICO_MAESTRO,
   CATALOGO_FARMACOLOGICO_METADATA,
   CATALOGO_FARMACOLOGICO_OFICIAL,
+  CATALOGO_MEDICAMENTOS_PEDIATRICOS,
+  MEDICAMENTOS_PEDIATRICOS,
   MEDICAMENTOS_PRESENTACIONES,
   buscarMedicamentos,
   medicamentoPorTexto,
   obtenerMedicamentoPorId,
   resolverMedicamentoCanonico
 } from "../data/catalogoFarmacologicoUnificado.js";
-import { CATALOGO_MEDICAMENTOS_PEDIATRICOS } from "../pediatria/catalogoMedicamentosPediatricos.js";
-import { MEDICAMENTOS_PEDIATRICOS } from "../pediatria/medicamentos.js";
 
 const CAMPOS_MEDICAMENTO = [
   "id", "legacyIds", "nombre", "genericName", "principioActivo", "principiosActivos",
@@ -39,6 +39,12 @@ for (const medicamento of CATALOGO_FARMACOLOGICO_OFICIAL) {
   assert.ok(medicamento.clases.length, `${medicamento.id} debe declarar clase farmacológica`);
   assert.ok(medicamento.presentaciones.length, `${medicamento.id} debe tener presentaciones`);
   assert.ok(medicamento.referencias.length, `${medicamento.id} debe conservar trazabilidad de fuente`);
+  const dosisPediatricas = (medicamento.datosClinicos?.dosisPediatrica || []).map((dosis) => JSON.stringify(dosis));
+  assert.equal(new Set(dosisPediatricas).size, dosisPediatricas.length, `${medicamento.id} no debe duplicar dosis pediátricas`);
+  const reglasRelacionadas = (medicamento.interaccionesRelacionadas || []).map((interaccion) => interaccion.idRegla);
+  assert.equal(new Set(reglasRelacionadas).size, reglasRelacionadas.length, `${medicamento.id} no debe duplicar relaciones farmacológicas`);
+  const reglasEstructuradas = (medicamento.interaccionesEstructuradas || []).map((interaccion) => interaccion.idRegla || interaccion.id);
+  assert.equal(new Set(reglasEstructuradas).size, reglasEstructuradas.length, `${medicamento.id} no debe duplicar interacciones derivadas`);
 
   for (const presentacion of medicamento.presentaciones) {
     for (const campo of CAMPOS_PRESENTACION) {
@@ -78,25 +84,26 @@ for (const [legacyId, canonico] of [
 }
 
 const maestro = fs.readFileSync(new URL("../data/catalogoFarmacologicoUnificado.js", import.meta.url), "utf8");
-const legacy = fs.readFileSync(new URL("../data/medicamentos.js", import.meta.url), "utf8");
-const suplementario = fs.readFileSync(new URL("../data/medicamentosSuplementarios.js", import.meta.url), "utf8");
-const farmacologia = fs.readFileSync(new URL("../data/farmacologiaUnificada.js", import.meta.url), "utf8");
-const catalogoPediatrico = fs.readFileSync(new URL("../pediatria/catalogoMedicamentosPediatricos.js", import.meta.url), "utf8");
-const medicamentosPediatricos = fs.readFileSync(new URL("../pediatria/medicamentos.js", import.meta.url), "utf8");
 const editorTratamiento = fs.readFileSync(new URL("../paciente.js", import.meta.url), "utf8");
+const prescripcionPediatrica = fs.readFileSync(new URL("../pediatria/prescripcionPediatrica.js", import.meta.url), "utf8");
+const archivosRedundantes = [
+  "../data/farmacologiaMerge.js",
+  "../data/farmacologiaUnificada.js",
+  "../data/medicamentos.js",
+  "../data/medicamentosSuplementarios.js",
+  "../pediatria/catalogoMedicamentosPediatricos.js",
+  "../pediatria/medicamentos.js"
+];
 
 assert.doesNotMatch(maestro, /from\s+["']\.\/medicamentos(?:Suplementarios)?\.js/);
 assert.doesNotMatch(maestro, /from\s+["']\.\/farmacologiaUnificada\.js/);
-assert.match(legacy, /ADAPTADOR LEGACY/);
-assert.match(suplementario, /ADAPTADOR LEGACY/);
-assert.match(farmacologia, /ADAPTADOR LEGACY/);
-assert.doesNotMatch(legacy, /export\s+const\s+MEDICAMENTOS\s*=\s*\[/);
-assert.doesNotMatch(suplementario, /export\s+const\s+MEDICAMENTOS_SUPLEMENTARIOS\s*=\s*\[/);
-assert.doesNotMatch(farmacologia, /const\s+CATALOGO_FARMACOLOGICO\s*=\s*\[/);
-assert.match(catalogoPediatrico, /ADAPTADOR PEDIATRICO/);
-assert.match(medicamentosPediatricos, /ADAPTADOR LEGACY/);
-assert.doesNotMatch(catalogoPediatrico, /CATALOGO_MEDICAMENTOS_PEDIATRICOS\s*=\s*\[/);
-assert.doesNotMatch(medicamentosPediatricos, /MEDICAMENTOS_PEDIATRICOS(?:_LEGACY)?\s*=\s*\[/);
+for (const archivo of archivosRedundantes) {
+  assert.equal(fs.existsSync(new URL(archivo, import.meta.url)), false, `${archivo} debe haberse absorbido en el catálogo maestro`);
+}
+assert.match(maestro, /export const MEDICAMENTOS_SUPLEMENTARIOS/);
+assert.match(maestro, /export const CATALOGO_MEDICAMENTOS_PEDIATRICOS/);
+assert.match(maestro, /export const MEDICAMENTOS_PEDIATRICOS/);
+assert.doesNotMatch(prescripcionPediatrica, /catalogoMedicamentosPediatricos|\.\/medicamentos\.js/);
 
 assert.equal(MEDICAMENTOS_PEDIATRICOS.length, 28);
 assert.equal(CATALOGO_MEDICAMENTOS_PEDIATRICOS.length, 6);

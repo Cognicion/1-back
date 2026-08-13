@@ -9,7 +9,7 @@ import {
   normalizarTallaCm,
   superficieCorporal
 } from "../pediatria/formulas.js";
-import { calcularDosisMedicamento } from "../pediatria/medicamentos.js";
+import { calcularDosisMedicamento } from "../pediatria/prescripcionPediatrica.js";
 
 const edad = calcularEdadPediatrica("2020-01-15", "2026-07-13");
 assert.equal(edad.años, 6);

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   construirCatalogoFarmacologicoNormalizado
-} from "../data/farmacologiaMerge.js";
+} from "../data/catalogoFarmacologicoUnificado.js";
 
 test("la capa normalizada expone presentaciones, dosis y principios activos sin catálogo paralelo", () => {
   const resultado = construirCatalogoFarmacologicoNormalizado({

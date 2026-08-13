@@ -17,7 +17,7 @@ import {
   generarRazonamientoClinico,
   generarRecomendacionesLaboratorio,
   obtenerBaseFarmacologicaInicial
-} from "./services/sofiaClinica.js?v=20260811-catalog-presentations-v1";
+} from "./services/sofiaClinica.js?v=20260811-pharmacology-files-consolidated-v1";
 
 aplicarAparienciaGuardada();
 
