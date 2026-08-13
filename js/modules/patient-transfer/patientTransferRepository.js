@@ -19,6 +19,10 @@ import {
   resolveAssociationTargetPatientId
 } from "./persistence/documentPersistenceEligibility.js?v=20260809-duplicate-decision-v1";
 import {
+  canonicalImportedNoteReferences,
+  canVerifyCanonicalImportedNotes
+} from "./persistence/importedNoteDuplicateValidation.js?v=20260813-notes-duplicate-validation-v1";
+import {
   addDoc,
   collection,
   doc,
@@ -604,18 +608,66 @@ async function acquireTransferOperation({ user, group, operationId }) {
 
 export async function findDuplicateImport({ hash = "", textHash = "", userUid = "" } = {}) {
   if (!userUid) return null;
+
+  async function canonicalNotesExist(record = {}, { requireCompletedStatus = false, source = "unknown" } = {}) {
+    const { patientId, noteIds } = canonicalImportedNoteReferences(record);
+    if (!canVerifyCanonicalImportedNotes(record, { requireCompletedStatus })) {
+      console.warn("patient-transfer:stale-duplicate-ignored", {
+        source,
+        completed: String(record.status || "").toLowerCase() === "completed",
+        hasTarget: Boolean(patientId),
+        noteReferenceCount: noteIds.length,
+        canonicalNotesObserved: false
+      });
+      return false;
+    }
+
+    try {
+      const notes = await Promise.all(noteIds.map((noteId) => timed(
+        "duplicate-canonical-note-query",
+        () => getDocFromServer(doc(db, "usuarios", patientId, "notasMedicas", noteId)),
+        TIMEOUTS.query
+      )));
+      const observed = notes.length === noteIds.length && notes.every((note) => note.exists());
+      if (!observed) {
+        console.warn("patient-transfer:stale-duplicate-ignored", {
+          source,
+          completed: String(record.status || "").toLowerCase() === "completed",
+          hasTarget: true,
+          noteReferenceCount: noteIds.length,
+          canonicalNotesObserved: false
+        });
+      }
+      return observed;
+    } catch (error) {
+      console.warn("patient-transfer:duplicate-note-verification-unavailable", {
+        source,
+        errorCode: error?.code || error?.name || "unknown"
+      });
+      return false;
+    }
+  }
+
   if (hash) {
     const opId = `docx_${hash}`;
     const opPath = `usuarios/${userUid}/${TRANSFER_COLLECTION}/${opId}`;
     traceTransfer("duplicate-check", { operation: "getDoc", path: opPath, authUid: userUid });
     const operation = await timed("duplicate-operation-query", () => getDoc(transferOperationRef(userUid, opId)), TIMEOUTS.query);
     if (operation.exists()) {
-      return { id: operation.id, ...operation.data(), duplicateStatus: "operacion_asociada" };
+      const operationRecord = { id: operation.id, ...operation.data() };
+      if (await canonicalNotesExist(operationRecord, { requireCompletedStatus: true, source: "operation" })) {
+        return { ...operationRecord, duplicateStatus: "operacion_asociada" };
+      }
     }
     const exactPath = `usuarios/${userUid}/${DOCX_IMPORT_CONFIG.duplicateUserSubcollection}/${hash}`;
     traceTransfer("duplicate-check", { operation: "getDoc", path: exactPath, authUid: userUid });
     const exact = await timed("duplicate-exact-query", () => getDoc(doc(db, "usuarios", userUid, DOCX_IMPORT_CONFIG.duplicateUserSubcollection, hash)), TIMEOUTS.query);
-    if (exact.exists()) return { id: exact.id, ...exact.data(), duplicateStatus: "duplicado_exacto" };
+    if (exact.exists()) {
+      const exactRecord = { id: exact.id, ...exact.data() };
+      if (await canonicalNotesExist(exactRecord, { source: "exact-hash" })) {
+        return { ...exactRecord, duplicateStatus: "duplicado_exacto" };
+      }
+    }
   }
   if (textHash) {
     const path = `usuarios/${userUid}/${DOCX_IMPORT_CONFIG.duplicateUserSubcollection}`;
@@ -624,11 +676,13 @@ export async function findDuplicateImport({ hash = "", textHash = "", userUid = 
       collection(db, "usuarios", userUid, DOCX_IMPORT_CONFIG.duplicateUserSubcollection),
       where("ownerUid", "==", userUid),
       where("textHash", "==", textHash),
-      limit(1)
+      limit(10)
     )), TIMEOUTS.query);
-    if (!snap.empty) {
-      const docSnap = snap.docs[0];
-      return { id: docSnap.id, ...docSnap.data(), duplicateStatus: "posible_duplicado" };
+    for (const docSnap of snap.docs) {
+      const textRecord = { id: docSnap.id, ...docSnap.data() };
+      if (await canonicalNotesExist(textRecord, { source: "normalized-text" })) {
+        return { ...textRecord, duplicateStatus: "posible_duplicado" };
+      }
     }
   }
   return null;
