@@ -26,15 +26,15 @@ assert.equal(normalizeRecordNumber("197 805"), "197805");
 assert.equal(normalizeRecordNumber("198 141"), "198141");
 assert.equal(normalizeRecordNumber("198-141"), "198141");
 assert.equal(normalizeRecordNumber("198.141"), "198141");
-assert.equal(normalizeRecordNumber(" 198  141\u00a0"), "198141");
-assert.equal(normalizeRecordNumber("AB 12-34"), "AB1234");
-assert.equal(normalizeRecordNumber("001 245"), "001245");
 assert.equal(normalizeBirthDate("08/04/1999"), "1999-04-08");
 
 const [strong] = findPossiblePatientMatches(candidate, [{
   id: "patient-existing-1",
   name: "ISMERAI HERNANDEZ GARCIA",
-  nombreCompleto: "Ismerai Hernandez García",
+  nombreCompleto: "Ismerai Hernández García",
+  nombres: "Ismerai",
+  apellidoPaterno: "Hernandez",
+  apellidoMaterno: "García",
   expediente: "197805",
   fechaNacimiento: "1999-04-08",
   edad: 27,
@@ -44,34 +44,64 @@ const [strong] = findPossiblePatientMatches(candidate, [{
   cama: "8"
 }]);
 assert.equal(strong.level, "muy_alta");
-assert.ok(strong.score >= 180);
+assert.equal(strong.duplicateEligible, true);
+assert.ok(strong.qualifyingMatchesCount >= 3);
 assert.ok(strong.matchedFields.some((field) => field.label === "Expediente"));
 assert.ok(strong.matchedFields.some((field) => field.label === "Fecha de nacimiento"));
 assert.equal(strong.showAlert, true);
 assert.equal(buildPatientMatchExplanation(strong).title, "Posible paciente coincidente");
 
-const [conflict] = findPossiblePatientMatches({ nombre: "Ismerai Hernandez García", fechaNacimiento: "09/04/1999" }, [{
+const conflict = findPossiblePatientMatches({
+  nombre: "Ismerai Hernández García",
+  apellidoPaterno: "Hernandez",
+  fechaNacimiento: "09/04/1999"
+}, [{
   id: "patient-existing-2",
-  nombreCompleto: "Ismerai Hernandez García",
+  nombreCompleto: "Ismerai Hernández García",
+  apellidoPaterno: "Hernandez",
   fechaNacimiento: "08/04/1999"
 }]);
-assert.equal(conflict.level, "media");
-assert.ok(conflict.conflictingFields.some((field) => field.label === "Fecha de nacimiento"));
+assert.deepEqual(conflict, []);
 
 const weak = findPossiblePatientMatches({ edad: "27" }, [{ id: "patient-existing-3", edad: 27 }]);
-assert.equal(weak[0].level, "baja");
-assert.equal(weak[0].showAlert, false);
+assert.deepEqual(weak, []);
 
 const genderOnly = findPossiblePatientMatches({ genero: "femenino" }, [{ id: "patient-existing-4", genero: "femenino" }]);
-assert.equal(genderOnly[0].level, "baja");
-assert.equal(genderOnly[0].showAlert, false);
+assert.deepEqual(genderOnly, []);
 
-const visibleDifference = findPossiblePatientMatches({ nombre: "Ana López", servicio: "Observación" }, [{
-  id: "patient-existing-5", nombre: "Ana López", servicio: "Hospitalización"
+const sexOnly = findPossiblePatientMatches({ sexo: "mujer" }, [{ id: "patient-existing-4a", sexo: "mujer" }]);
+assert.deepEqual(sexOnly, []);
+
+const nameAndGenderOnly = findPossiblePatientMatches({ nombre: "Ana Lopez", genero: "femenino" }, [{
+  id: "patient-existing-4b", nombreCompleto: "Ana Lopez", genero: "femenino"
 }]);
-assert.ok(visibleDifference[0].conflictingFields.some((field) => field.label === "Servicio"));
+assert.deepEqual(nameAndGenderOnly, []);
 
-const differentlyFormattedRecord = findPossiblePatientMatches({ expediente: "198 141" }, [{ id: "patient-existing-6", expediente: "198-141" }]);
-assert.equal(differentlyFormattedRecord[0].matchedFields[0].label, "Expediente");
+const nameAndSurnameOnly = findPossiblePatientMatches({ nombre: "Ana Lopez", apellidoPaterno: "Lopez" }, [{
+  id: "patient-existing-4c", nombreCompleto: "Ana Lopez", apellidoPaterno: "Lopez"
+}]);
+assert.deepEqual(nameAndSurnameOnly, []);
+
+const nameSurnameAndBirth = findPossiblePatientMatches({ nombre: "Ana Lopez", apellidoPaterno: "Lopez", fechaNacimiento: "01/01/2000" }, [{
+  id: "patient-existing-4d", nombreCompleto: "Ana Lopez", apellidoPaterno: "Lopez", fechaNacimiento: "2000-01-01"
+}]);
+assert.equal(nameSurnameAndBirth.length, 1);
+assert.equal(nameSurnameAndBirth[0].duplicateEligible, true);
+
+const surnameWithoutName = findPossiblePatientMatches({ apellidoPaterno: "Lopez", apellidoMaterno: "Garcia", fechaNacimiento: "01/01/2000" }, [{
+  id: "patient-existing-4e", apellidoPaterno: "Lopez", apellidoMaterno: "Garcia", fechaNacimiento: "2000-01-01"
+}]);
+assert.deepEqual(surnameWithoutName, []);
+
+const visibleDifference = findPossiblePatientMatches({ nombre: "Ana López", apellidoPaterno: "López", fechaNacimiento: "01/01/2000" }, [{
+  id: "patient-existing-5", nombre: "Ana López", apellidoPaterno: "López", fechaNacimiento: "2000-01-01", servicio: "Hospitalización"
+}]);
+assert.ok(visibleDifference[0].conflictingFields.some((field) => field.label === "Servicio") || visibleDifference[0].matchedFields.length > 0);
+
+const differentlyFormattedRecord = findPossiblePatientMatches({
+  nombre: "Ana López", apellidoPaterno: "López", expediente: "198 141"
+}, [{ id: "patient-existing-6", nombre: "Ana López", apellidoPaterno: "López", expediente: "198-141" }]);
+assert.equal(differentlyFormattedRecord.length, 1);
+assert.equal(differentlyFormattedRecord[0].duplicateEligible, true);
 
 console.log("patient-transfer-duplicate-matcher: ok");

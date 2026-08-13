@@ -150,6 +150,56 @@
   color: #fecaca;
 }
 
+.patient-transfer-duplicate-resolution {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.patient-transfer-duplicate-resolution legend {
+  width: 100%;
+}
+
+.patient-transfer-duplicate-decision-options {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  width: 100%;
+}
+
+.patient-transfer-duplicate-decision-option {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  margin: 0;
+  padding: 5px 8px;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.patient-transfer-duplicate-decision-option input[type="radio"] {
+  width: auto;
+  margin: 0 5px 0 0;
+}
+
+.patient-transfer-duplicate-existing-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  margin: 0;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+
+.patient-transfer-duplicate-existing-option select {
+  width: min(320px, 42vw);
+  min-height: 32px;
+  padding: 5px 8px;
+}
+
 .patient-transfer-file-list {
   display: grid;
   gap: 10px;

@@ -108,6 +108,13 @@ assert.match(controller, /catalogMatchMethod === "manual-none"/, "una desvincula
 assert.match(transferView, /filter\(isMeaningfulMedicationAdministration\)/, "una unidad oculta sin hora ni dosis no crea una toma fantasma");
 assert.match(transferView, /shouldShowMedicationAdministrationUnit/, "la pauta decide visualmente si necesita mostrar unidad");
 assert.match(transferView, /data-transfer-tx-schedule-unit[^>]*hidden/, "la unidad redundante se oculta sin borrarla del modelo");
+assert.match(transferView, /openNoteSegments/, "el rerender conserva el estado abierto de las notas");
+assert.match(transferView, /data-transfer-document-id=\"\$\{escapeHtml\(doc\.id\)\}/, "cada nota conserva también el documento propietario");
+assert.match(transferView, /segment\.dataset\.transferDocumentId/, "el estado abierto usa la identidad compuesta documento-nota");
+assert.match(transferView, /segment\.open = openNoteSegments\.get\(segmentKey\)/, "la nota activa se restaura después de seleccionar todos");
+assert.match(transferView, /patient-transfer-duplicate-decision-options/, "las decisiones de duplicado usan un grupo compacto");
+assert.match(transferView, /patient-transfer-duplicate-decision-option/, "las opciones de duplicado tienen estilo compacto");
+assert.match(transferView, /data-transfer-duplicate-resolution/, "la UI conserva la fuente canónica de decisión");
 assert.match(transferView, /formatMedicationPresentation/, "presentacion y concentracion usan un formatter visual central");
 assert.match(transferView, /mergeMedicationPresentationColumn/, "la concentracion se integra visualmente en Presentacion");
 assert.match(transferView, /patient-transfer-medication-presentation-compact/, "la edicion de presentacion es compacta");

@@ -95,46 +95,60 @@ export function findPossiblePatientMatches(candidate = {}, existingPatients = []
     const recordSame = same(candidateFields.record, current.record, normalizeRecordNumber);
     const nameSame = same(candidateFields.name, current.name, normalizePatientName);
     const birthSame = same(candidateFields.birth, current.birth, normalizeBirthDate);
+    const paternoSame = same(candidateFields.paterno, current.paterno, normalizePatientName);
+    const maternoSame = same(candidateFields.materno, current.materno, normalizePatientName);
     const institutionSame = same(candidateFields.institution, current.institution, normalizePatientName);
+    const qualifyingMatches = new Set();
 
-    if (curpSame) { score += 100; addMatch(matchedFields, "CURP", candidateFields.curp, current.curp, 100); }
+    if (curpSame) { score += 100; qualifyingMatches.add("curp"); addMatch(matchedFields, "CURP", candidateFields.curp, current.curp, 100); }
     else if (candidateFields.curp && current.curp) { score -= 100; conflictingFields.push({ label: "CURP", candidateValue: candidateFields.curp, existingValue: current.curp, penalty: -100 }); }
-    if (recordSame) { score += 90; addMatch(matchedFields, "Expediente", candidateFields.record, current.record, 90); }
+    if (recordSame) { score += 90; qualifyingMatches.add("record"); addMatch(matchedFields, "Expediente", candidateFields.record, current.record, 90); }
     else if (candidateFields.record && current.record && institutionSame) { score -= 40; conflictingFields.push({ label: "Expediente", candidateValue: candidateFields.record, existingValue: current.record, penalty: -40 }); }
     if (nameSame && birthSame) {
+      qualifyingMatches.add("name"); qualifyingMatches.add("birth");
       score += 80; addMatch(matchedFields, "Nombre completo", candidateFields.name, current.name, 60); addMatch(matchedFields, "Fecha de nacimiento", candidateFields.birth, current.birth, 40);
     } else {
-      if (nameSame) { score += 60; addMatch(matchedFields, "Nombre completo", candidateFields.name, current.name, 60); }
+      if (nameSame) { score += 60; qualifyingMatches.add("name"); addMatch(matchedFields, "Nombre completo", candidateFields.name, current.name, 60); }
       else if (candidateFields.name && current.name) { score -= 40; conflictingFields.push({ label: "Nombre completo", candidateValue: candidateFields.name, existingValue: current.name, penalty: -40 }); }
-      if (birthSame) { score += 40; addMatch(matchedFields, "Fecha de nacimiento", candidateFields.birth, current.birth, 40); }
+      if (birthSame) { score += 40; qualifyingMatches.add("birth"); addMatch(matchedFields, "Fecha de nacimiento", candidateFields.birth, current.birth, 40); }
       else if (candidateFields.birth && current.birth) { score -= 60; conflictingFields.push({ label: "Fecha de nacimiento", candidateValue: candidateFields.birth, existingValue: current.birth, penalty: -60 }); }
     }
     const simpleMatches = [
       ["Apellido paterno", candidateFields.paterno, current.paterno, normalizePatientName, 20],
       ["Apellido materno", candidateFields.materno, current.materno, normalizePatientName, 20],
       ["Nombres", candidateFields.nombres, current.nombres, normalizePatientName, 20],
-      ["Sexo", candidateFields.sex, current.sex, normalizePatientName, 5],
       ["Género", candidateFields.gender, current.gender, normalizePatientName, 5],
       ["Servicio", candidateFields.service, current.service, normalizePatientName, 3],
       ["Institución", candidateFields.institution, current.institution, normalizePatientName, 3],
       ["Cama", candidateFields.bed, current.bed, normalizeRecordNumber, 1]
     ];
     for (const [label, left, right, normalizer, weight] of simpleMatches) {
-      if (left && right && same(left, right, normalizer)) { score += weight; addMatch(matchedFields, label, left, right, weight); }
+      if (left && right && same(left, right, normalizer)) {
+        const countsAsIdentityFactor = label !== "Sexo" && !label.toLowerCase().startsWith("g");
+        if (countsAsIdentityFactor) {
+          score += weight;
+          if (label === "Apellido paterno") qualifyingMatches.add("paternalSurname");
+          if (label === "Apellido materno") qualifyingMatches.add("maternalSurname");
+          if (!["Apellido paterno", "Apellido materno"].includes(label)) qualifyingMatches.add(label);
+          addMatch(matchedFields, label, left, right, weight);
+        }
+      }
       else if (left && right) conflictingFields.push({ label, candidateValue: left, existingValue: right });
     }
-    if (candidateFields.age && current.age && Number(candidateFields.age) === Number(current.age)) { score += 5; addMatch(matchedFields, "Edad", candidateFields.age, current.age, 5); }
+    if (candidateFields.age && current.age && Number(candidateFields.age) === Number(current.age)) { score += 5; qualifyingMatches.add("age"); addMatch(matchedFields, "Edad", candidateFields.age, current.age, 5); }
     else if (candidateFields.age && current.age) conflictingFields.push({ label: "Edad", candidateValue: candidateFields.age, existingValue: current.age });
 
-    const strongEvidence = Boolean(curpSame || recordSame || nameSame || (nameSame && birthSame));
+    const duplicateEligible = Boolean(nameSame && (paternoSame || maternoSame) && qualifyingMatches.size >= 3);
+    const strongEvidence = duplicateEligible;
     const veryHigh = Boolean(curpSame || (recordSame && institutionSame) || (nameSame && birthSame));
     const high = Boolean(!veryHigh && (recordSame || nameSame) && score >= 40);
     const level = !matchedFields.length ? "ninguna" : !strongEvidence ? "baja" : veryHigh ? "muy_alta" : high ? "alta" : "media";
     return {
       id: existing.id || existing.patientId || "", patientId: existing.id || existing.patientId || "", patient: data,
       name: existing.name || current.name, expediente: current.record, score, level, strongEvidence,
-      showAlert: ["media", "alta", "muy_alta"].includes(level), matchedFields, conflictingFields
+      showAlert: duplicateEligible && ["media", "alta", "muy_alta"].includes(level), duplicateEligible,
+      qualifyingMatchesCount: qualifyingMatches.size, matchedFields, conflictingFields
     };
-  }).filter((match) => match.patientId && match.matchedFields.length)
+  }).filter((match) => match.patientId && match.duplicateEligible)
     .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, "es"));
 }

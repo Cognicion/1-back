@@ -349,7 +349,7 @@ function renderCandidateSelect(group) {
     omitted: group.omitted
   }) === DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING;
   return `
-    <label ${isAssociating ? "" : "hidden"}>Paciente existente
+    <label class="patient-transfer-duplicate-existing-option" ${isAssociating ? "" : "hidden"}>Paciente existente
       <select data-transfer-existing="${group.id}" ${isAssociating ? "" : "disabled"}>
         <option value="">Seleccionar paciente</option>
         ${candidates.map((candidate) => option(candidate.id, `${candidate.name} ${candidate.expediente ? `· ${candidate.expediente}` : ""}`, candidate.id === group.selectedPatientId)).join("")}
@@ -425,10 +425,12 @@ function renderDuplicateWarning(group) {
     <details><summary>Comparar datos</summary><table class="patient-transfer-data-table"><thead><tr><th>Campo</th><th>Dato del documento</th><th>Dato registrado</th></tr></thead><tbody>${comparisonTable}</tbody></table></details>
     <fieldset class="patient-transfer-duplicate-resolution">
       <legend>Decisión para este paciente</legend>
-      <label><input type="radio" name="duplicate-resolution-${group.id}" value="associate_existing" data-transfer-duplicate-resolution="${group.id}" ${resolution === DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING ? "checked" : ""}> Asociar las notas al paciente existente</label>
+      <div class="patient-transfer-duplicate-decision-options">
+      <label class="patient-transfer-duplicate-decision-option"><input type="radio" name="duplicate-resolution-${group.id}" value="associate_existing" data-transfer-duplicate-resolution="${group.id}" ${resolution === DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING ? "checked" : ""}> <span>Asociar las notas al paciente existente</span></label>
       ${renderCandidateSelect(group)}
-      <label><input type="radio" name="duplicate-resolution-${group.id}" value="create_new" data-transfer-duplicate-resolution="${group.id}" ${resolution === DUPLICATE_RESOLUTION.CREATE_NEW ? "checked" : ""}> Crear un paciente nuevo de todas formas</label>
-      <label><input type="radio" name="duplicate-resolution-${group.id}" value="omit" data-transfer-duplicate-resolution="${group.id}" ${resolution === DUPLICATE_RESOLUTION.OMIT ? "checked" : ""}> Omitir este paciente</label>
+      <label class="patient-transfer-duplicate-decision-option"><input type="radio" name="duplicate-resolution-${group.id}" value="create_new" data-transfer-duplicate-resolution="${group.id}" ${resolution === DUPLICATE_RESOLUTION.CREATE_NEW ? "checked" : ""}> <span>Crear un paciente nuevo de todas formas</span></label>
+      <label class="patient-transfer-duplicate-decision-option"><input type="radio" name="duplicate-resolution-${group.id}" value="omit" data-transfer-duplicate-resolution="${group.id}" ${resolution === DUPLICATE_RESOLUTION.OMIT ? "checked" : ""}> <span>Omitir este paciente</span></label>
+      </div>
     </fieldset>
     ${strongest.patientId || strongest.id ? `<a href="paciente.html?id=${encodeURIComponent(strongest.patientId || strongest.id)}" target="_blank" rel="noopener">Ver expediente existente</a>` : ""}
   </section>`;
@@ -891,7 +893,7 @@ function renderNoteSegment(doc, segment, index) {
     diagnoses: (segment.diagnosisCandidates || []).length,
     treatments: (segment.treatmentCandidates || []).length
   });
-  return `<details class="patient-transfer-note-segment" data-transfer-segment="${segment.id}" ${index === 0 ? "open" : ""}>
+  return `<details class="patient-transfer-note-segment" data-transfer-segment="${segment.id}" data-transfer-document-id="${escapeHtml(doc.id)}" ${index === 0 ? "open" : ""}>
     <summary><strong>${escapeHtml(title)}</strong><span>${escapeHtml(date)} · ${escapeHtml(time)}</span></summary>
     <header>
       <div><strong>Nota ${index + 1}</strong><small>Bloques ${segment.startBlockIndex}–${segment.endBlockIndex}</small></div>
@@ -1226,6 +1228,10 @@ function enhanceMedicationPautaTables(modal) {
 export function renderDetectedGroups(groups = []) {
   const modal = ensureRoot();
   const saveButton = modal.querySelector("[data-transfer-save]");
+  const openNoteSegments = new Map(
+    [...modal.querySelectorAll("[data-transfer-segment]")]
+      .map((segment) => [`${segment.dataset.transferDocumentId || ""}:${segment.dataset.transferSegment || ""}`, segment.open])
+  );
   saveButton.disabled = !groups.length;
   modal.querySelector("[data-transfer-review]").innerHTML = groups.length ? `
     <section class="patient-transfer-summary">
@@ -1250,6 +1256,10 @@ export function renderDetectedGroups(groups = []) {
         <div class="patient-transfer-field-grid">${renderFields(group)}</div>
         <div class="patient-transfer-documents">${group.documents.map((doc) => renderDocument(doc, groups, group.id)).join("")}</div>
       </article>`).join("")}` : "";
+  modal.querySelectorAll("[data-transfer-segment]").forEach((segment) => {
+    const segmentKey = `${segment.dataset.transferDocumentId || ""}:${segment.dataset.transferSegment || ""}`;
+    if (openNoteSegments.has(segmentKey)) segment.open = openNoteSegments.get(segmentKey);
+  });
   collectRenderedSubjectiveMetrics(groups).forEach((metrics) => {
     console.info("[patient-transfer] subjective:rendered", metrics);
     console.assert(
