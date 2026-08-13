@@ -29,6 +29,9 @@ const adapter = read("../js/modules/patient-transfer/integration/noteCreationAda
 const repository = read("../js/modules/patient-transfer/patientTransferRepository.js");
 assert.match(adapter, /finalizarNotaClinica/);
 assert.match(adapter, /estadoNota: "definitiva"/);
+assert.match(adapter, /tipoNota: "Nota externa"/);
+assert.match(adapter, /tipoNotaClave: `nota_externa:/);
+assert.match(adapter, /origen: "nota_externa"/);
 assert.match(adapter, /fechaNota/);
 assert.match(adapter, /importedNoteId/);
 assert.match(adapter, /getDocFromServer/);
@@ -39,6 +42,8 @@ assert.match(repository, /patient-transfer:notes-write-not-observed/);
 assert.match(repository, /importedNoteHasClinicalContent/);
 assert.match(repository, /notes-empty-segment-skipped/);
 assert.match(repository, /operation\.data\?\.status === "completed"/);
+assert.match(repository, /notes-after-domain-error/);
+assert.match(repository, /noteWillStillBeAttempted: true/);
 
 const nullDate = expandSegmentedDocumentsForPersistence([{
   id: "doc-null-date",

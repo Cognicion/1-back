@@ -4071,6 +4071,7 @@ function fechaNotaHistorial(datos = {}) {
 
 function etiquetaTipoNotaHistorial(datos = {}) {
   const tipo = datos.observacionFray?.tipoNota || datos.tipoNota || "";
+  if (tipo === "nota_externa" || datos.origen === "nota_externa" || datos.formato === "docx_patient_transfer") return "Nota externa";
   if (tipo === "ingreso") return "Nota inicial / nota de ingreso";
   if (tipo === "evolucion") return "Nota de evolución";
   if (tipo === "envio_piso") return "Nota de envío a hospitalización";

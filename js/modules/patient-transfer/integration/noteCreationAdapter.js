@@ -60,7 +60,8 @@ export function buildImportedNotePayload({ document, confirmedType, sourceFile, 
   const fechaNota = clinicalDateTime(date, hour);
   const vitalSigns = document.vitalSignsPayload || {};
   const observacionFray = {
-    tipoNota: type.key || document.noteType || "evolucion",
+    tipoNota: "nota_externa",
+    tipoNotaOriginal: type.key || document.noteType || "evolucion",
     fechaNota,
     horaNota: hour,
     servicio: service,
@@ -71,13 +72,14 @@ export function buildImportedNotePayload({ document, confirmedType, sourceFile, 
     ...(Object.keys(vitalSigns).length ? vitalSigns : {})
   };
   return {
-    tipoNota: type.label || document.noteType || "Nota clinica importada",
-    tipoNotaClave: `traspaso_docx:${type.key || document.noteType || "tipo_no_reconocido"}`,
+    tipoNota: "Nota externa",
+    tipoNotaOriginal: type.label || document.noteType || "Nota clinica importada",
+    tipoNotaClave: `nota_externa:${type.key || document.noteType || "tipo_no_reconocido"}`,
     formato: "docx_patient_transfer",
     estadoNota: "definitiva",
     esBorrador: false,
     bloqueada: true,
-    origen: "docx_patient_transfer",
+    origen: "nota_externa",
     notaRapida: type.key === "rapida" ? document.fullText || "" : "",
     subjetivo: sectionValue(sections, "subjetivo"),
     objetivo: sectionValue(sections, "examenMental"),

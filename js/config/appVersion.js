@@ -13,5 +13,6 @@
 // deployment marker: 2026-08-12-pdf-cognicion-null-v1
 // deployment marker: 2026-08-13-control-center-permissions-v1
 // deployment marker: 2026-08-13-notas-importadas-corroboracion-v1
-export const APP_VERSION = "1.914";
+// deployment marker: 2026-08-13-notas-externas-historial-v1
+export const APP_VERSION = "1.915";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

@@ -136,9 +136,12 @@ const patientAdapter = read("js/modules/patient-transfer/integration/patientCrea
 const noteAdapter = read("js/modules/patient-transfer/integration/noteCreationAdapter.js");
 assert.match(patientAdapter, /crearPacienteProvisional/, "reutiliza creacion existente de pacientes");
 assert.match(noteAdapter, /finalizarNotaClinica/, "reutiliza el escritor canonico de notas definitivas");
+assert.match(noteAdapter, /tipoNota: "Nota externa"/, "las notas importadas se etiquetan como externas");
+assert.match(noteAdapter, /origen: "nota_externa"/, "las notas importadas conservan origen externo");
 assert.match(noteAdapter, /getDocFromServer/, "verifica la nota desde el servidor");
 assert.match(repository, /createTransferredPatient/, "el repository usa el adaptador de pacientes");
 assert.match(repository, /createTransferredNote/, "el repository usa el adaptador de notas");
+assert.match(repository, /notes-after-domain-error/, "la nota no se omite por un fallo previo de otro dominio");
 assert.match(repository, /registrarEventoAuditoria/, "registra auditoria");
 assert.match(repository, /uploadBytes/, "conserva archivo original en Storage");
 assert.match(repository, /findExistingPatientCandidates/, "busca coincidencias existentes antes de crear");

@@ -4,7 +4,7 @@ import { registrarEventoAuditoria, resumenError } from "../../services/auditoria
 import { obtenerNombrePacienteParaMostrar } from "../../utils/nombresPacientes.js";
 import { DOCX_IMPORT_CONFIG } from "../importacionDocx/docxImportConfig.js";
 import { createTransferredPatient, mergeTransferredPatientFields } from "./integration/patientCreationAdapter.js?v=20260808-persistence-domains-v1";
-import { buildImportedNotePayload, createTransferredNote, importedNoteHasClinicalContent, importedNoteId } from "./integration/noteCreationAdapter.js";
+import { buildImportedNotePayload, createTransferredNote, importedNoteHasClinicalContent, importedNoteId } from "./integration/noteCreationAdapter.js?v=20260813-external-notes-v1";
 import { createImportedDiagnoses, createImportedIndications, createImportedTreatments } from "./integration/clinicalDataImportAdapter.js?v=v163-medications-indications-v1";
 import { runVitalSignsAndDiagnosesIndependently } from "./domainPersistenceIsolation.js?v=v161-imported-diagnoses-isolation-v1";
 import { vitalSignsToNotePayload } from "./parsing/vitalSignsParser.js?v=20260808-imported-vitals-v1";
@@ -988,9 +988,10 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           }
         });
         if (domainOutcome.errors.length) {
-          const firstDomainError = domainOutcome.errors[0].error;
-          stage = firstDomainError.stage || stage;
-          throw firstDomainError;
+          console.warn("patient-transfer:notes-after-domain-error", {
+            domainErrorCount: domainOutcome.errors.length,
+            noteWillStillBeAttempted: true
+          });
         }
 
         const clinicalSourceNoteKey = `${operationId}_${documentResults.length}_${patientId}`;
@@ -1179,6 +1180,11 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           noteErrors.push({ code: error?.code || error?.name || "unknown" });
           console.error("patient-transfer:domain-error", { domain: "notes", stage: "creating_note", errorCode: error?.code || error?.name || "unknown" });
           console.warn("patient-transfer:notes-write-not-observed", { observed: false });
+        }
+        if (domainOutcome.errors.length) {
+          const firstDomainError = domainOutcome.errors[0].error;
+          stage = firstDomainError.stage || stage;
+          throw firstDomainError;
         }
       }
 
