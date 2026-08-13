@@ -836,7 +836,15 @@ function renderizarCodigosMedicoAdmin() {
 async function cargarResumen() {
   const snapUsuarios = await getDocs(collection(db, "usuarios"));
   const snapAuditoria = await getDocs(collection(db, "auditoria"));
-  const snapVisitas = await getDocs(collection(db, "visitas"));
+  let visitas = null;
+
+  try {
+    const snapVisitas = await getDocs(collection(db, "visitas"));
+    visitas = consolidarVisitasAdmin(snapVisitas.docs.map((docVisita) => docVisita.data()));
+  } catch (error) {
+    if (error?.code !== "permission-denied") throw error;
+    console.warn("No se pudo cargar el resumen de visitas por permisos.");
+  }
 
   let totalUsuarios = 0;
   let totalPacientes = 0;
@@ -845,8 +853,6 @@ async function cargarResumen() {
   let totalPsicologos = 0;
   let totalInactividad = 0;
   let totalAuditoriaVisible = 0;
-  const visitas = consolidarVisitasAdmin(snapVisitas.docs.map((docVisita) => docVisita.data()));
-
   snapUsuarios.forEach((docUsuario) => {
     totalUsuarios++;
     const datos = docUsuario.data();
@@ -870,10 +876,21 @@ async function cargarResumen() {
   ponerTexto("totalPsicologos", totalPsicologos);
   ponerTexto("totalAuditoria", totalAuditoriaVisible);
   ponerTexto("totalInactividad", totalInactividad);
-  ponerTexto("totalVisitas", visitas.total);
-  ponerTexto("totalVisitasInvitados", visitas.invitados);
-  ponerTexto("totalVisitasRegistrados", visitas.registrados);
-  renderizarVisitasAdmin(visitas.items);
+  if (visitas) {
+    ponerTexto("totalVisitas", visitas.total);
+    ponerTexto("totalVisitasInvitados", visitas.invitados);
+    ponerTexto("totalVisitasRegistrados", visitas.registrados);
+    renderizarVisitasAdmin(visitas.items);
+    return;
+  }
+
+  ["totalVisitas", "totalVisitasInvitados", "totalVisitasRegistrados"].forEach((id) => {
+    ponerTexto(id, "No disponible");
+  });
+  const listaVisitas = document.getElementById("listaVisitasAdmin");
+  if (listaVisitas) {
+    listaVisitas.innerHTML = "<p class=\"admin-muted\">El resumen de visitas no está disponible con los permisos actuales.</p>";
+  }
 }
 
 function consolidarVisitasAdmin(registros = []) {
