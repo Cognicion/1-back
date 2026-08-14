@@ -28,7 +28,17 @@ assert.doesNotMatch(
 );
 
 const html = readFileSync(new URL("../../paciente.html", import.meta.url), "utf8");
-assert.match(html, /paciente\.js\?v=20260813-fuente-docx-diagnostico-tratamiento-v1/);
+assert.doesNotMatch(
+  browserDecodedSource,
+  /await\s+cargarResumenClinicoFuenteDocx\s*\(/,
+  "la consulta secundaria de notas DOCX no debe bloquear la carga principal del expediente"
+);
+assert.match(
+  browserDecodedSource,
+  /cargarResumenClinicoFuenteDocxEnSegundoPlano\(uidPaciente, datos\)/,
+  "el resumen DOCX debe cargarse despues de renderizar los datos principales"
+);
+assert.match(html, /paciente\.js\?v=20260813-expediente-docx-summary-background-v1/);
 assert.match(html, /No fue posible cargar el expediente\./);
 
 console.log("pacienteEntrypointSyntax tests passed");

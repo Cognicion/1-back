@@ -907,6 +907,24 @@ async function cargarResumenClinicoFuenteDocx(pacienteId) {
   }
 }
 
+function cargarResumenClinicoFuenteDocxEnSegundoPlano(pacienteId, datosPaciente) {
+  const pacienteIdSolicitado = String(pacienteId || "").trim();
+  if (!pacienteIdSolicitado || !datosPaciente) return;
+
+  void cargarResumenClinicoFuenteDocx(pacienteIdSolicitado).then((resumen) => {
+    if (!resumen) return;
+    if (pacienteIdSolicitado !== String(uidPaciente || "").trim()) return;
+    if (datosPacienteActual !== datosPaciente) return;
+
+    datosPaciente.importacionDocxResumen = resumen;
+    datosPacienteActual = datosPaciente;
+    ejecutarSeguroPaciente(
+      "fuente clinica DOCX del resumen",
+      () => renderizarVistaLaboratorioPaciente(datosPaciente)
+    );
+  });
+}
+
 function renderizarBloqueFuenteClinicaDocx(datos = datosPacienteActual || {}) {
   const resumen = datos.importacionDocxResumen;
   const notas = Array.isArray(resumen?.notas) ? resumen.notas : [];
@@ -3018,12 +3036,6 @@ async function cargarDatosPaciente() {
     throw new Error("patient_access_denied");
   }
 
-  const resumenFuenteDocx = await cargarResumenClinicoFuenteDocx(uidPaciente);
-  if (resumenFuenteDocx) {
-    datos.importacionDocxResumen = resumenFuenteDocx;
-    datosPacienteActual = datos;
-  }
-
   console.info("patient:vitals-read", {
     ...firebaseRuntimeInfo(),
     targetFingerprint: technicalFingerprint(uidPaciente),
@@ -3144,6 +3156,7 @@ async function cargarDatosPaciente() {
   ejecutarSeguroPaciente("visibilidad de campos institucionales", () => actualizarVisibilidadCamposInstitucionalesPaciente(datos));
   ejecutarSeguroPaciente("vista laboratorio de datos generales", () => renderizarVistaLaboratorioPaciente(datos));
   ejecutarSeguroPaciente("resumen peditrico del paciente", () => renderizarResumenPediatricoPaciente(datos));
+  cargarResumenClinicoFuenteDocxEnSegundoPlano(uidPaciente, datos);
 }
 
 window.mostrarResumen = function() {
