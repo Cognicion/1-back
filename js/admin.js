@@ -1863,11 +1863,16 @@ function renderizarFormatosAdmin() {
     const institucionTexto = institucionUsuarioFormato(usuario);
     const controles = formatosControlables.map((formato) => {
       const autorizado = esAdmin ? cuentaActiva : permisos[formato.id] === true;
+      const reservadoParaOtroUsuario = Boolean(formato.authorizedUserUid && usuario.id !== formato.authorizedUserUid && !esAdmin);
       return `
         <div class="usuario-admin-meta formato-admin-control">
           <span>${escaparHTML(formato.nombre)}</span>
-          <span>${esAdmin ? (cuentaActiva ? "Acceso global" : "Cuenta desactivada") : (autorizado ? "Permiso individual" : "Sin acceso")}</span>
-          ${esAdmin ? "<small>El acceso global proviene del rol de administrador y no puede retirarse desde permisos individuales.</small>" : `<button type="button" data-toggle-formato-admin="${escaparHTML(usuario.id)}" data-formato="${escaparHTML(formato.id)}" data-valor="${autorizado ? "false" : "true"}">${autorizado ? "Revocar permiso" : "Otorgar permiso"}</button>`}
+          <span>${esAdmin ? (cuentaActiva ? "Acceso global" : "Cuenta desactivada") : (reservadoParaOtroUsuario ? `Reservado para ${formato.authorizedUserLabel || "un usuario autorizado"}` : (autorizado ? "Permiso individual" : "Sin acceso"))}</span>
+          ${esAdmin
+            ? "<small>El acceso global proviene del rol de administrador y no puede retirarse desde permisos individuales.</small>"
+            : reservadoParaOtroUsuario
+              ? `<small>Este paquete solo puede otorgarse a ${escaparHTML(formato.authorizedUserLabel || "el usuario autorizado")}.</small>`
+              : `<button type="button" data-toggle-formato-admin="${escaparHTML(usuario.id)}" data-formato="${escaparHTML(formato.id)}" data-valor="${autorizado ? "false" : "true"}">${autorizado ? "Revocar permiso" : "Otorgar permiso"}</button>`}
         </div>
       `;
     }).join("");
@@ -1910,11 +1915,16 @@ async function alternarFormatoUsuarioAdmin(evento) {
   const formato = boton.dataset.formato || "";
   const valor = boton.dataset.valor === "true";
   const usuario = usuariosAdmin.find((item) => item.id === uid);
+  const definicionFormato = FORMATOS_INSTITUCIONALES.find((item) => item.id === formato);
 
   if (!uid || !formato || !usuario) return;
   if (esAdministradorFormato(usuario)) {
     console.debug("[CentroControl:Formatos]", { uid: usuario.id, rol: "admin", formatoId: formato, action: "toggle", result: "global-access-preserved" });
     alert("Este usuario conserva acceso a todos los formatos por su rol de administrador.");
+    return;
+  }
+  if (definicionFormato?.authorizedUserUid && uid !== definicionFormato.authorizedUserUid) {
+    alert(`Este paquete está reservado para ${definicionFormato.authorizedUserLabel || "el usuario autorizado"}.`);
     return;
   }
   if (!usuarioEsActorProfesionalFormato(usuario)) {
@@ -1947,6 +1957,11 @@ async function alternarFormatoUsuarioAdmin(evento) {
 }
 
 async function aplicarFormatoUsuariosVisiblesAdmin(formato, valor) {
+  const definicionFormato = FORMATOS_INSTITUCIONALES.find((item) => item.id === formato);
+  if (definicionFormato?.authorizedUserUid) {
+    alert(`El paquete ${definicionFormato.nombre} solo puede administrarse desde el perfil de ${definicionFormato.authorizedUserLabel || "su usuario autorizado"}.`);
+    return;
+  }
   const visibles = usuariosFiltradosFormatosAdmin();
   const usuarios = visibles.filter((usuario) => !esAdministradorFormato(usuario));
   const administradoresOmitidos = visibles.length - usuarios.length;

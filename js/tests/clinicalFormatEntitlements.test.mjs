@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import {
   FORMAT_PERMISSION_FRAY,
   FORMAT_PERMISSION_NAVARRO,
+  FORMAT_PERMISSION_HUGO_WILSON,
+  HUGO_WILSON_FORMAT_OWNER_UID,
   permisosFormatosDesdeUsuario,
   usuarioEsActorProfesionalFormato,
   usuarioPuedeAdministrarPermisosFormato,
@@ -9,6 +11,8 @@ import {
   resolverPermisosEfectivosFormatos,
   puedeAccederFormato
 } from "../services/formatosInstitucionales.js";
+
+console.debug = () => {};
 
 const medicoFray = {
   id: "medico-1",
@@ -23,6 +27,22 @@ const medicoNavarro = {
   rol: "medico",
   institucion: "Navarro",
   permisosFormatos: { [FORMAT_PERMISSION_NAVARRO]: true }
+};
+
+const medicoHugoWilson = {
+  id: HUGO_WILSON_FORMAT_OWNER_UID,
+  uid: HUGO_WILSON_FORMAT_OWNER_UID,
+  rol: "medico",
+  permisosFormatos: { [FORMAT_PERMISSION_HUGO_WILSON]: true },
+  formatPermissionMetadata: { [FORMAT_PERMISSION_HUGO_WILSON]: { status: "active" } }
+};
+
+const medicoAjenoConPermisoErroneo = {
+  id: "medico-ajeno",
+  uid: "medico-ajeno",
+  rol: "medico",
+  permisosFormatos: { [FORMAT_PERMISSION_HUGO_WILSON]: true },
+  formatPermissionMetadata: { [FORMAT_PERMISSION_HUGO_WILSON]: { status: "active" } }
 };
 
 const adminSinPerfilMedico = {
@@ -57,6 +77,10 @@ assert.equal(usuarioPuedeAdministrarPermisosFormato(adminSinPerfilMedico), true)
 assert.equal(permisosFormatosDesdeUsuario(adminSinPerfilMedico)[FORMAT_PERMISSION_FRAY], undefined);
 assert.equal(usuarioPuedeUsarFormato("evolucion_observacion", permisosFormatosDesdeUsuario(medicoFray), medicoFray.rol, medicoFray), true);
 assert.equal(usuarioPuedeUsarFormato("referencia_navarro", permisosFormatosDesdeUsuario(medicoNavarro), medicoNavarro.rol, medicoNavarro), true);
+assert.equal(usuarioPuedeUsarFormato("hugo_wilson_consulta", permisosFormatosDesdeUsuario(medicoHugoWilson), medicoHugoWilson.rol, medicoHugoWilson), true);
+assert.equal(usuarioPuedeUsarFormato("hugo_wilson_consulta", permisosFormatosDesdeUsuario(medicoAjenoConPermisoErroneo), medicoAjenoConPermisoErroneo.rol, medicoAjenoConPermisoErroneo), false);
+assert.equal(usuarioPuedeUsarFormato("hugo_wilson_consulta", { [FORMAT_PERMISSION_HUGO_WILSON]: true }, "medico"), false);
+assert.equal(usuarioPuedeUsarFormato("hugo_wilson_consulta", {}, "admin", adminSinPerfilMedico), true);
 assert.equal(usuarioPuedeUsarFormato("evolucion_observacion", permisosFormatosDesdeUsuario(adminSinPerfilMedico), adminSinPerfilMedico.rol, adminSinPerfilMedico), true);
 assert.equal(usuarioPuedeUsarFormato("evolucion_observacion", { [FORMAT_PERMISSION_FRAY]: true }, "admin"), true);
 assert.equal(usuarioPuedeUsarFormato("evolucion_observacion", permisosFormatosDesdeUsuario(adminConPerfilMedico), adminConPerfilMedico.rol, adminConPerfilMedico), true);
@@ -72,5 +96,13 @@ const revocado = {
 };
 assert.equal(usuarioPuedeUsarFormato("evolucion_observacion", permisosFormatosDesdeUsuario(revocado), revocado.rol, revocado), false);
 assert.equal(usuarioPuedeUsarFormato("evolucion_observacion", {}, "admin", { ...adminSinPerfilMedico, activo: false }), false);
+assert.deepEqual(
+  resolverPermisosEfectivosFormatos({ usuario: medicoHugoWilson, catalogoFormatos: ["hugo_wilson_consulta"] }).formatosPermitidos,
+  ["hugo_wilson_consulta"]
+);
+assert.deepEqual(
+  resolverPermisosEfectivosFormatos({ usuario: medicoAjenoConPermisoErroneo, catalogoFormatos: ["hugo_wilson_consulta"] }).formatosPermitidos,
+  []
+);
 
 console.log("clinicalFormatEntitlements.test.mjs OK");

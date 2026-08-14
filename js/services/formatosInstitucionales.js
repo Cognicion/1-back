@@ -2,6 +2,9 @@ import { isAdministrator, normalizarRol } from "../utils/roles.js";
 
 export const FORMAT_PERMISSION_FRAY = "fray_clinical_formats";
 export const FORMAT_PERMISSION_NAVARRO = "navarro_referral_format";
+export const FORMAT_PERMISSION_HUGO_WILSON = "hugo_wilson_private_formats";
+
+export const HUGO_WILSON_FORMAT_OWNER_UID = "D1wJppySnzdtUPMGNMSQLi8YwNJ2";
 
 export const INSTITUTION_FRAY = "hpfba";
 export const INSTITUTION_NAVARRO = "navarro";
@@ -65,6 +68,14 @@ export const NAVARRO_FORMAT_IDS = Object.freeze([
   "referencia_navarro"
 ]);
 
+export const HUGO_WILSON_FORMAT_IDS = Object.freeze([
+  "hugo_wilson_consulta",
+  "hugo_wilson_evolucion",
+  "hugo_wilson_interconsulta",
+  "hugo_wilson_urgencias",
+  "hugo_wilson_egreso"
+]);
+
 export const FORMATOS_INSTITUCIONALES = Object.freeze([
   {
     id: FORMAT_PERMISSION_FRAY,
@@ -84,6 +95,17 @@ export const FORMATOS_INSTITUCIONALES = Object.freeze([
     institutionId: INSTITUTION_NAVARRO,
     requiereAutorizacion: true,
     valores: NAVARRO_FORMAT_IDS
+  },
+  {
+    id: FORMAT_PERMISSION_HUGO_WILSON,
+    legacyId: "hugo_wilson",
+    nombre: "Dr. Hugo Wilson",
+    descripcion: "Paquete privado de consulta, evolución, interconsulta, urgencias y egreso para el Dr. Hugo Wilson.",
+    institutionId: "",
+    requiereAutorizacion: true,
+    authorizedUserUid: HUGO_WILSON_FORMAT_OWNER_UID,
+    authorizedUserLabel: "Dr. Hugo Wilson",
+    valores: HUGO_WILSON_FORMAT_IDS
   }
 ]);
 
@@ -94,7 +116,8 @@ const LEGACY_PERMISSION_ALIASES = Object.freeze({
   fray_observacion_evolucion: FORMAT_PERMISSION_FRAY,
   fray_observacion_envio_piso: FORMAT_PERMISSION_FRAY,
   referencia_navarro: FORMAT_PERMISSION_NAVARRO,
-  navarro: FORMAT_PERMISSION_NAVARRO
+  navarro: FORMAT_PERMISSION_NAVARRO,
+  hugo_wilson: FORMAT_PERMISSION_HUGO_WILSON
 });
 
 export const ACCIONES_FORMATO = Object.freeze([
@@ -223,6 +246,17 @@ export function usuarioPuedeAdministrarPermisosFormato(usuario = {}) {
   return esAdministradorFormato(usuario);
 }
 
+function formatoInstitucionalPorPermiso(permissionId = "") {
+  return FORMATOS_INSTITUCIONALES.find((item) => item.id === permissionId || item.legacyId === permissionId) || null;
+}
+
+function usuarioAutorizadoParaPaquetePrivado(usuario = {}, formato = null) {
+  if (!formato?.authorizedUserUid) return true;
+  if (esAdministradorFormato(usuario)) return true;
+  const uid = String(usuario.uid || usuario.id || usuario.userUid || "").trim();
+  return uid === formato.authorizedUserUid;
+}
+
 export function resolverFormatoClinico(formatId = "") {
   const id = normalizar(formatId);
   if (FRAY_FORMAT_IDS.includes(id)) {
@@ -243,6 +277,15 @@ export function resolverFormatoClinico(formatId = "") {
       branding: "navarro"
     };
   }
+  if (HUGO_WILSON_FORMAT_IDS.includes(id)) {
+    return {
+      formatId: id,
+      permissionId: FORMAT_PERMISSION_HUGO_WILSON,
+      institutionId: "",
+      institutional: true,
+      branding: "hugo_wilson"
+    };
+  }
   return {
     formatId: id,
     permissionId: "",
@@ -254,6 +297,7 @@ export function resolverFormatoClinico(formatId = "") {
 
 export function grupoFormatoInstitucional(valor = "", etiqueta = "") {
   const texto = normalizar(`${valor} ${etiqueta}`);
+  if (HUGO_WILSON_FORMAT_IDS.includes(normalizar(valor)) || texto.includes("hugo wilson")) return FORMAT_PERMISSION_HUGO_WILSON;
   if (texto.includes("navarro")) return FORMAT_PERMISSION_NAVARRO;
   if (FRAY_FORMAT_IDS.includes(normalizar(valor)) || texto.includes("fray") || texto.includes("observacion")) return FORMAT_PERMISSION_FRAY;
   return "";
@@ -280,9 +324,14 @@ export function permisosFormatosDesdeUsuario(usuario = {}) {
 
 export function usuarioTieneFormatoInstitucional(usuario = {}, permissionId = "") {
   const resolved = resolverFormatoClinico(permissionId);
-  const formato = FORMATOS_INSTITUCIONALES.find((item) => item.id === permissionId || item.legacyId === permissionId);
-  const idPermiso = formato?.id || permissionId;
+  const formato = formatoInstitucionalPorPermiso(resolved.permissionId || permissionId);
+  const idPermiso = formato?.id || resolved.permissionId || permissionId;
   if (!cuentaActiva(usuario) || !usuarioEsActorProfesionalFormato(usuario)) return false;
+  if (esAdministradorFormato(usuario)) return true;
+  if (!usuarioAutorizadoParaPaquetePrivado(usuario, formato)) return false;
+  if (formato?.authorizedUserUid) {
+    return permisoExplicitoVigente(usuario, resolved.formatId) || permisoExplicitoVigente(usuario, idPermiso);
+  }
   if (permisoExplicitoVigente(usuario, resolved.formatId) || permisoExplicitoVigente(usuario, idPermiso)) return true;
   return membresiaInstitucionalActiva(usuario, formato?.institutionId || resolved.institutionId || "");
 }
@@ -313,6 +362,8 @@ export function resolverPermisosEfectivosFormatos({ usuario = {}, claims = null,
   const accionesPermitidas = {};
   catalogoFormatos.forEach((formatId) => {
     const resolved = resolverFormatoClinico(formatId);
+    const formato = formatoInstitucionalPorPermiso(resolved.permissionId);
+    if (!usuarioAutorizadoParaPaquetePrivado(usuario, formato)) return;
     const metadata = usuario.formatPermissionMetadata?.[resolved.permissionId] || usuario.metadataPermisosFormatos?.[resolved.permissionId] || null;
     const metadataEstado = normalizar(metadata?.status || metadata?.estado || "active");
     if (metadata && ["revoked", "revocado", "inactive", "inactivo"].includes(metadataEstado)) return;
@@ -361,6 +412,7 @@ export function usuarioPuedeUsarFormato(valor = "", permisos = {}, rol = "", usu
   if (usuario) return puedeAccederFormato({ usuario, formatoId: resolved.formatId, accion: "ver" });
   const rolNormalizado = normalizarRol(rol);
   if (["admin", "administrador", "superadmin", "admin_principal", "administrador_principal"].includes(rolNormalizado)) return true;
+  if (formatoInstitucionalPorPermiso(resolved.permissionId)?.authorizedUserUid) return false;
   return permisoIncluyeAccion(permisos[resolved.formatId], "ver") || permisoIncluyeAccion(permisos[resolved.permissionId], "ver");
 }
 
@@ -370,6 +422,7 @@ export function obtenerEntitlementsFormatos(usuario = {}) {
     permisos,
     frayClinicalFormats: usuarioPuedeUsarFormato("evolucion_observacion", permisos, usuario.rol || "", usuario),
     navarroReferralFormat: usuarioPuedeUsarFormato("referencia_navarro", permisos, usuario.rol || "", usuario),
+    hugoWilsonPrivateFormats: usuarioPuedeUsarFormato("hugo_wilson_consulta", permisos, usuario.rol || "", usuario),
     canUse(formatId = "") {
       return usuarioPuedeUsarFormato(formatId, permisos, usuario.rol || "", usuario);
     }

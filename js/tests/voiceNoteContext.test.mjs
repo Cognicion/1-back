@@ -3,6 +3,7 @@ import fs from "node:fs";
 import {
   FORMAT_PERMISSION_FRAY,
   FORMAT_PERMISSION_NAVARRO,
+  FORMAT_PERMISSION_HUGO_WILSON,
   getCompatibleVoiceStyles,
   getDefaultVoiceNoteType,
   getDefaultVoiceStyle,
@@ -11,6 +12,9 @@ import {
   noteTypeOptions,
   writingStyleOptions
 } from "../services/voiceNoteCatalogService.js";
+import { HUGO_WILSON_FORMAT_OWNER_UID } from "../services/formatosInstitucionales.js";
+
+console.debug = () => {};
 
 const root = new URL("../../", import.meta.url);
 const read = (path) => fs.readFileSync(new URL(path, root), "utf8");
@@ -24,6 +28,18 @@ const usuarioNavarro = {
   rol: "medico",
   institucion: "Navarro",
   permisosFormatos: { [FORMAT_PERMISSION_NAVARRO]: true }
+};
+const usuarioHugoWilson = {
+  id: HUGO_WILSON_FORMAT_OWNER_UID,
+  uid: HUGO_WILSON_FORMAT_OWNER_UID,
+  rol: "medico",
+  permisosFormatos: { [FORMAT_PERMISSION_HUGO_WILSON]: true }
+};
+const usuarioAjenoConPermisoHugo = {
+  id: "medico-ajeno",
+  uid: "medico-ajeno",
+  rol: "medico",
+  permisosFormatos: { [FORMAT_PERMISSION_HUGO_WILSON]: true }
 };
 
 const tipos = noteTypeOptions();
@@ -41,6 +57,8 @@ assert.equal(getVoiceNoteTypesForService("Observacion").some((item) => item.id =
 assert.ok(getVoiceNoteTypesForService("Observacion", { usuario: usuarioFray, userProfile: usuarioFray, permisos: usuarioFray.permisosFormatos }).some((item) => item.id === "evolucion_observacion"));
 assert.equal(getVoiceNoteTypesForService("Urgencias").some((item) => item.id === "referencia_navarro"), false);
 assert.ok(getVoiceNoteTypesForService("Urgencias", { usuario: usuarioNavarro, userProfile: usuarioNavarro, permisos: usuarioNavarro.permisosFormatos }).some((item) => item.id === "referencia_navarro"));
+assert.ok(getVoiceNoteTypesForService("Consulta externa", { usuario: usuarioHugoWilson, userProfile: usuarioHugoWilson, permisos: usuarioHugoWilson.permisosFormatos }).some((item) => item.id === "hugo_wilson_consulta"));
+assert.equal(getVoiceNoteTypesForService("Consulta externa", { usuario: usuarioAjenoConPermisoHugo, userProfile: usuarioAjenoConPermisoHugo, permisos: usuarioAjenoConPermisoHugo.permisosFormatos }).some((item) => item.id === "hugo_wilson_consulta"), false);
 assert.ok(getCompatibleVoiceStyles("referencia_navarro", { usuario: usuarioNavarro, userProfile: usuarioNavarro, permisos: usuarioNavarro.permisosFormatos }).some((item) => item.id === "urgencias_referencia_breve"));
 
 const vozSource = read("js/nota-por-voz.js");

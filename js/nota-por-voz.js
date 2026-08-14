@@ -52,11 +52,11 @@ import {
   getVoiceNoteStyle,
   getVoiceNoteTypesForService,
   resolveVoiceNoteConfiguration
-} from "./services/voiceNoteCatalogService.js?v=20260719-format-entitlements";
+} from "./services/voiceNoteCatalogService.js?v=20260813-hugo-wilson-private-formats-v1";
 import {
   permisosFormatosDesdeUsuario,
   usuarioPuedeUsarFormato
-} from "./services/formatosInstitucionales.js?v=20260719-actor-format-permissions";
+} from "./services/formatosInstitucionales.js?v=20260813-hugo-wilson-private-formats-v1";
 import { resolverEntitlementsMembresia } from "./services/subscriptionEntitlementService.js?v=20260719-format-entitlements";
 import {
   crearConfiguracionSeguraExamenMental,
@@ -4043,10 +4043,10 @@ async function init() {
       location.href = "dashboard.html";
       return;
     }
-    state.perfil = perfil;
-    state.formatPermissions = permisosFormatosDesdeUsuario(perfil);
-    state.formatEntitlements = { permisos: state.formatPermissions, usuario: perfil };
-    state.subscriptionEntitlements = resolverEntitlementsMembresia(perfil);
+    state.perfil = { ...perfil, uid: user.uid };
+    state.formatPermissions = permisosFormatosDesdeUsuario(state.perfil);
+    state.formatEntitlements = { permisos: state.formatPermissions, usuario: state.perfil };
+    state.subscriptionEntitlements = resolverEntitlementsMembresia(state.perfil);
     state.customStyleConfigs = await listarConfiguracionesEstilo(user.uid).catch(() => []);
     state.defaultStyleConfigId = await obtenerConfiguracionEstiloPredeterminada(user.uid).catch(() => "safe_default");
     renderConfiguracionesMentalesGuardadas();

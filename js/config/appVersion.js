@@ -22,5 +22,6 @@
 // deployment marker: 2026-08-13-notes-canonical-text-v1
 // deployment marker: 2026-08-13-fuente-docx-diagnostico-tratamiento-v1
 // deployment marker: 2026-08-13-vista-previa-usuario-admin-v1
-export const APP_VERSION = "1.933";
+// deployment marker: 2026-08-13-hugo-wilson-private-formats-v1
+export const APP_VERSION = "1.934";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

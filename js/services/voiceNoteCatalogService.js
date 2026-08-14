@@ -5,14 +5,16 @@ import {
 import {
   FRAY_FORMAT_IDS,
   NAVARRO_FORMAT_IDS,
+  HUGO_WILSON_FORMAT_IDS,
   FORMAT_PERMISSION_FRAY,
   FORMAT_PERMISSION_NAVARRO,
+  FORMAT_PERMISSION_HUGO_WILSON,
   resolverFormatoClinico,
   usuarioPuedeUsarFormato
 } from "./formatosInstitucionales.js";
 import { resolverEntitlementsMembresia } from "./subscriptionEntitlementService.js";
 
-export const VOICE_NOTE_CATALOG_VERSION = "voice_note_catalog_v1_2026-07-18";
+export const VOICE_NOTE_CATALOG_VERSION = "voice_note_catalog_v1_2026-08-13-hugo-wilson-private-formats";
 export const VOICE_NOTE_STYLE_CATALOG_VERSION = "voice_note_style_catalog_v1_2026-07-18";
 
 const SOAP_FIELD_KEYS = Object.freeze([
@@ -107,6 +109,66 @@ export const VOICE_NOTE_TYPE_CATALOG = Object.freeze([
     enabled: true,
     sections: ["Identificación", "Motivo", "Examen mental", "Impresión", "Recomendaciones"],
     description: "Referencia breve pero suficiente, con unidad de origen/destino, riesgo y recomendaciones."
+  },
+  {
+    id: "hugo_wilson_consulta",
+    label: "Dr. Hugo Wilson · Consulta psiquiátrica",
+    shortLabel: "Hugo Wilson · Consulta",
+    templateId: "consulta_externa_psiquiatria",
+    destinationFields: SOAP_FIELD_KEYS,
+    compatibleServices: ["consulta externa", "interconsulta", "ambulatorio", "*"],
+    version: VOICE_NOTE_CATALOG_VERSION,
+    enabled: true,
+    sections: ["Padecimiento actual", "Examen mental", "Comentario", "Plan"],
+    description: "Formato privado del Dr. Hugo Wilson para consulta psiquiátrica."
+  },
+  {
+    id: "hugo_wilson_evolucion",
+    label: "Dr. Hugo Wilson · Evolución psiquiátrica",
+    shortLabel: "Hugo Wilson · Evolución",
+    templateId: "general_evolution_note",
+    destinationFields: SOAP_FIELD_KEYS,
+    compatibleServices: ["consulta externa", "hospitalizacion", "hospitalización", "observacion", "observación", "*"],
+    version: VOICE_NOTE_CATALOG_VERSION,
+    enabled: true,
+    sections: ["Evolución", "Examen mental", "Análisis", "Plan"],
+    description: "Formato privado del Dr. Hugo Wilson para notas de evolución."
+  },
+  {
+    id: "hugo_wilson_interconsulta",
+    label: "Dr. Hugo Wilson · Interconsulta",
+    shortLabel: "Hugo Wilson · Interconsulta",
+    templateId: "general_consultation_liaison_note",
+    destinationFields: SOAP_FIELD_KEYS,
+    compatibleServices: ["interconsulta", "consulta externa", "*"],
+    version: VOICE_NOTE_CATALOG_VERSION,
+    enabled: true,
+    sections: ["Motivo", "Valoración", "Análisis", "Recomendaciones"],
+    description: "Formato privado del Dr. Hugo Wilson para interconsulta."
+  },
+  {
+    id: "hugo_wilson_urgencias",
+    label: "Dr. Hugo Wilson · Urgencias psiquiátricas",
+    shortLabel: "Hugo Wilson · Urgencias",
+    templateId: "general_emergency_note",
+    destinationFields: SOAP_FIELD_KEYS,
+    compatibleServices: ["urgencias", "observacion", "observación", "*"],
+    version: VOICE_NOTE_CATALOG_VERSION,
+    enabled: true,
+    sections: ["Motivo", "Riesgo", "Impresión", "Plan"],
+    description: "Formato privado del Dr. Hugo Wilson para urgencias psiquiátricas."
+  },
+  {
+    id: "hugo_wilson_egreso",
+    label: "Dr. Hugo Wilson · Egreso",
+    shortLabel: "Hugo Wilson · Egreso",
+    templateId: "general_discharge_note",
+    destinationFields: ["evolutionOrSubjective", "analysis", "plan"],
+    compatibleServices: ["hospitalizacion", "hospitalización", "urgencias", "consulta externa", "*"],
+    version: VOICE_NOTE_CATALOG_VERSION,
+    enabled: true,
+    sections: ["Evolución global", "Estado actual", "Recomendaciones", "Destino"],
+    description: "Formato privado del Dr. Hugo Wilson para egreso."
   },
   {
     id: "contrarreferencia",
@@ -552,4 +614,11 @@ export function resolveVoiceNoteConfiguration({ noteType = "", styleId = "", use
   };
 }
 
-export { FRAY_FORMAT_IDS, NAVARRO_FORMAT_IDS, FORMAT_PERMISSION_FRAY, FORMAT_PERMISSION_NAVARRO };
+export {
+  FRAY_FORMAT_IDS,
+  NAVARRO_FORMAT_IDS,
+  HUGO_WILSON_FORMAT_IDS,
+  FORMAT_PERMISSION_FRAY,
+  FORMAT_PERMISSION_NAVARRO,
+  FORMAT_PERMISSION_HUGO_WILSON
+};
