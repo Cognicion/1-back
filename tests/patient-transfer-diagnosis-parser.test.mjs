@@ -163,6 +163,43 @@ const treatmentWithDiagnosticStatusIsNotDiagnosis = parseDiagnosisBlock({
 });
 assert.deepEqual(treatmentWithDiagnosticStatusIsNotDiagnosis, []);
 
+const subjectiveAntecedentNarrativesAreNotDiagnoses = detectDiagnosisCandidates({
+  documentId: "subjective-antecedents-are-not-diagnoses",
+  sections: {
+    subjetivo: [
+      "Paciente adulta con antecedente de seguimiento por varias especialidades y evolución estable.",
+      "Antecedente de tratamiento farmacológico actualmente suspendido.",
+      "Se considera probable mejoría clínica con vigilancia ambulatoria."
+    ].join("\n")
+  }
+});
+assert.deepEqual(subjectiveAntecedentNarrativesAreNotDiagnoses, []);
+
+const substanceHistoryOutsideDiagnosisSectionIsNotDiagnosis = detectDiagnosisCandidates({
+  documentId: "substance-history-is-not-diagnosis",
+  sections: {
+    subjetivo: "Antecedente de consumo ocasional de alcohol, actualmente suspendido."
+  }
+});
+assert.deepEqual(substanceHistoryOutsideDiagnosisSectionIsNotDiagnosis, []);
+
+const embeddedNarrativeDiagnosisRemainsDetected = detectDiagnosisCandidates({
+  documentId: "embedded-narrative-diagnosis",
+  sections: {
+    subjetivo: "Paciente adulta que cuenta con diagnóstico de trastorno bipolar, actualmente en seguimiento ambulatorio."
+  }
+});
+assert.equal(embeddedNarrativeDiagnosisRemainsDetected.length, 1);
+assert.equal(embeddedNarrativeDiagnosisRemainsDetected[0].diagnosisName, "Trastorno bipolar");
+
+const codeLikeTextOutsideDiagnosisContextIsIgnored = detectDiagnosisCandidates({
+  documentId: "code-like-nondiagnostic-text",
+  sections: {
+    examenMental: "Escala A123 aplicada durante la entrevista clínica."
+  }
+});
+assert.deepEqual(codeLikeTextOutsideDiagnosisContextIsIgnored, []);
+
 const prefixedRealDiagnosesRemainDetected = parseDiagnosisBlock({
   text: [
     "- Trastorno depresivo recurrente, episodio actual grave F33.2",

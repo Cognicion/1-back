@@ -1,5 +1,5 @@
 import { MEDICAMENTOS_MAESTROS, medicamentoPorTexto } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-files-consolidated-v1";
-import { adaptDiagnosisBlock, adaptDiagnosisCandidates } from "../../clinical-document-engine/adapters/diagnosisAdapter.js?v=20260813-diagnosis-row-prefix-filter-v2";
+import { adaptDiagnosisBlock, adaptDiagnosisCandidates } from "../../clinical-document-engine/adapters/diagnosisAdapter.js?v=20260813-diagnosis-context-gate-v1";
 import { adaptMedicationBlock, adaptMedicationCandidates } from "../../clinical-document-engine/adapters/medicationAdapter.js";
 
 function normalizeText(value = "") {

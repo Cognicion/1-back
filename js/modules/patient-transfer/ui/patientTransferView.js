@@ -1,6 +1,6 @@
 import { FIELD_RULES, NOTE_TYPE_RULES } from "../../importacionDocx/docxImportConfig.js";
 import { construirNombreCompletoPaciente } from "../../../utils/nombresPacientes.js";
-import { parseMedicationSchedules } from "../parsing/clinicalCandidateParser.js?v=20260804-duplicate-diagnosis-v1";
+import { parseMedicationSchedules } from "../parsing/clinicalCandidateParser.js?v=20260813-diagnosis-context-gate-v1";
 import { buildPatientMatchExplanation, normalizeRecordNumber } from "../parsing/patientDuplicateMatcher.js";
 import {
   DUPLICATE_RESOLUTION,

@@ -13,7 +13,7 @@ const PARSER = "midc.diagnosisParser";
 const VERSION = "1.0";
 const STATUS_ONLY = /^(?:se agrega|se descarta|antecedente|remision|en remision|probable|a descartar|confirmado)$/i;
 const END_ALIASES = [...BOUNDARY_ALIASES.plan, ...BOUNDARY_ALIASES.medication, ...BOUNDARY_ALIASES.analysis, ...BOUNDARY_ALIASES.prognosis, ...BOUNDARY_ALIASES.destination, ...BOUNDARY_ALIASES.note];
-const NARRATIVE_DIAGNOSIS_START = /(?:cuenta\s+con\s+diagn[oó]stico\s+de|antecedente\s+de|con\s+diagn[oó]stico\s+previo\s+de|diagn[oó]stico\s+previo\s+de|diagnosticad[oa]\s+con|se\s+diagnostic[oó]|diagn[oó]stico\s+de)\s+/i;
+const NARRATIVE_DIAGNOSIS_START = /(?:cuenta\s+con\s+diagn[oó]stico\s+de|antecedente\s+de|con\s+diagn[oó]stico\s+previo\s+de|diagn[oó]stico\s+previo\s+de|diagnosticad[oa]\s+con|se\s+diagnostic[oó]|diagn[oó]stico\s+de|probable|a\s+descartar)\s+/i;
 const NARRATIVE_DIAGNOSIS_END = /\s+(?:otorgado\s+en|diagnosticad[oa]\s+en|desde|en\s+seguimiento|tratad[oa]\s+con|con\s+tratamiento|con\s+esquema|[úu]ltimo\s+esquema|actualmente\s+recibe|manejad[oa]\s+con|hospitalizad[oa]\s+en|por\s+parte\s+de|bajo\s+tratamiento|egres(?:o|ada|ado)|posteriormente|remitid[oa]|referid[oa]|evolucion[oó]|present[oó]\s+mejor[ií]a|en\s+\d{4})\b/i;
 
 const normalizeCatalogName = (value = "") => normalizeClinicalComparisonText(value).replace(/\s+/g, " ").trim();
@@ -160,6 +160,8 @@ const TREATMENT_ONLY_START = /^(?:(?:actualmente\s+)?(?:bajo|en)\s+tratamiento\b
 const TREATMENT_CONTEXT = /\b(?:tratamiento|medicaci[oó]n|medicamentos?|farmacoterapia|esquema\s+farmacol[oó]gico|recibe|toma|administrar|dosis)\b/i;
 const MEDICATION_DOSE = /\b\d+(?:[.,]\d+)?\s*(?:mcg|ug|mg|g|ml|ui)(?:\s*\/\s*(?:d[ií]a|h|hora|ml|\d+(?:[.,]\d+)?\s*ml))?\b/i;
 const STRUCTURAL_ROW_PREFIX = /^\s*(?:(?:[\-\u2013\u2014\u2022\u00b7\u25aa\u25e6\uf0b7*]+|\(?\d{1,3}\)?[.)-]+|[a-z][.)-]+|[ivxlcdm]+[.)-]+)\s*)+/i;
+const NON_DIAGNOSIS_ENTITY_START = /^(?:actualmente|bajo\s+tratamiento|en\s+tratamiento|tratamiento|medicaci[oó]n|medicamentos?|farmacoterapia|esquema|seguimiento|control|manejo|consulta|hospitalizaci[oó]n|internamiento|ingreso|egreso|cirug[ií]a|valoraci[oó]n|atenci[oó]n|mejor[ií]a|estabilidad|evoluci[oó]n|respuesta|adherencia|riesgo|sintomatolog[ií]a|cuadro|condici[oó]n|consumo|uso)\b/i;
+const DIAGNOSTIC_ENTITY_START = /^(?:trastorno|episodio|s[ií]ndrome|enfermedad|esquizofrenia|psicosis|depresi[oó]n|ansiedad|distimia|discapacidad|dependencia|intoxicaci[oó]n|lesi[oó]n|obesidad|diabetes|hipertensi[oó]n|soporte\s+familiar|c[oó]nyuge|historia\s+personal)\b/i;
 
 function diagnosisRowForClassification(text = "") {
   return String(text || "")
@@ -169,19 +171,41 @@ function diagnosisRowForClassification(text = "") {
     .trim();
 }
 
+function isPlausibleNarrativeDiagnosisEntity(value = "", context = "") {
+  const source = String(value || "").replace(/\s+/g, " ").trim();
+  const normalized = normalizeClinicalComparisonText(source);
+  const normalizedContext = normalizeClinicalComparisonText(context);
+  const strongDiagnosticCue = /\b(?:cuenta\s+con\s+diagnostico\s+de|con\s+diagnostico\s+previo\s+de|diagnostico\s+previo\s+de|diagnostico\s+de|diagnosticad[oa]\s+con|se\s+diagnostico|probable|a\s+descartar)\b/i.test(normalizedContext);
+  if (!source || source.length > 120 || NON_DIAGNOSIS_ENTITY_START.test(normalized)) return false;
+  if (/^(?:mujer|hombre|paciente|masculino|femenino)\b/i.test(normalized)) return false;
+  if (TREATMENT_CONTEXT.test(normalized) && MEDICATION_DOSE.test(normalized)) return false;
+  if (DIAGNOSTIC_ENTITY_START.test(normalized)) return true;
+  if (/^[A-ZÁÉÍÓÚÑ]{2,12}(?:\s+[\p{L}-]+){0,3}$/u.test(source)) return true;
+  if (!strongDiagnosticCue) return false;
+  if (resolveCatalogPrefix(source)) return true;
+  const words = normalized.split(/\s+/).filter(Boolean);
+  return words.length <= 8
+    && !/\b(?:refiere|presenta|acude|comenta|menciona|recibe|tratad[oa]|diagnosticad[oa]|otorgad[oa]|seguimiento|evoluci[oó]n)\b/i.test(normalized)
+    && !/[.;:]\s+\S/.test(source);
+}
+
 function isTreatmentOnlyClinicalText(text = "") {
   const source = normalizeClinicalComparisonText(text).replace(/\s+/g, " ").trim();
   if (!source) return false;
   if (TREATMENT_ONLY_START.test(source)) return true;
   if (!TREATMENT_CONTEXT.test(source) || !MEDICATION_DOSE.test(source)) return false;
-  return !(extractNarrativeDiagnosisEntity(source) || resolveCatalogPrefix(source) || startsWithDiagnosticName(source));
+  const narrativeEntity = extractNarrativeDiagnosisEntity(source);
+  return !((narrativeEntity && isPlausibleNarrativeDiagnosisEntity(narrativeEntity, source)) || resolveCatalogPrefix(source) || startsWithDiagnosticName(source));
 }
 
 function logNarrativeBoundary({ documentId, noteId, text, reason }) {
+  const normalized = diagnosisRowForClassification(text);
   clinicalImportLogger.info("diagnosisParser:narrativeBoundary", JSON.stringify({
     documentId,
     noteId,
-    textInitial: String(text || "").replace(/\s+/g, " ").trim().slice(0, 80),
+    textLength: normalized.length,
+    startsWithDemographicNarrative: /^(?:mujer|hombre|paciente|masculino|femenino)\b/i.test(normalized),
+    hasDiagnosticCue: /\b(?:diagn[oó]stico|antecedente\s+de|diagnosticad[oa]|probable|a\s+descartar)\b/i.test(normalized),
     reason
   }));
 }
@@ -391,7 +415,10 @@ export function parseDiagnosisCandidates({ text = "", section = "diagnosticos", 
       return;
     }
     const codeOnly = codes.length === 1 && /^[A-Z]\d{2,3}(?:\.\d{1,2})?$/i.test(classificationText);
-    const narrativeEntity = codeOnly ? "" : extractNarrativeDiagnosisEntity(classificationText);
+    const extractedNarrativeEntity = codeOnly ? "" : extractNarrativeDiagnosisEntity(classificationText);
+    const narrativeEntity = isPlausibleNarrativeDiagnosisEntity(extractedNarrativeEntity, classificationText)
+      ? extractedNarrativeEntity
+      : "";
     const name = codeOnly ? "" : (narrativeEntity
       ? normalizeNarrativeDiagnosisName(normalizeDiagnosis(narrativeEntity, codes))
       : normalizeDiagnosis(classificationText, codes));
@@ -401,7 +428,11 @@ export function parseDiagnosisCandidates({ text = "", section = "diagnosticos", 
       state = "WAITING_DIAGNOSIS";
       return;
     }
-    if (!explicit && section !== "diagnosticos" && !codes.length && !isDiagnosticContext(classificationText)) {
+    if (section !== "diagnosticos" && codes.length && !narrativeEntity && !isDiagnosticContext(classificationText.replace(/\bantecedente\b/gi, ""))) {
+      discardedCount += 1;
+      return;
+    }
+    if (section !== "diagnosticos" && !codes.length && !narrativeEntity) {
       discardedCount += 1;
       return;
     }
