@@ -11,11 +11,16 @@ const scriptEvc = readFileSync(resolve(raiz, "js/rehabilitacion-evc.js"), "utf8"
 assert.match(paginaModulo, /href="rehabilitacion-evc\.html"[^>]*data-enlace-rehabilitacion-evc/);
 assert.match(paginaEvc, /id="dominiosEvaluacionEvc"/);
 assert.match(paginaEvc, /id="planEvc"/);
+assert.match(paginaEvc, /id="dialogPruebaEvc"/);
 assert.match(paginaEvc, /Esta herramienta no es para síntomas agudos/);
-assert.match(paginaEvc, /no es una escala estandarizada ni establece un diagnóstico/i);
-assert.match(paginaEvc, /strokebestpractices\.ca/);
-assert.match(paginaEvc, /nice\.org\.uk/);
+assert.match(paginaEvc, /no puntos de corte clínicos, percentiles ni diagnósticos/i);
+assert.match(paginaEvc, /Oxford Cognitive Screen \(OCS\)/);
+assert.match(paginaEvc, /Programa de autorrehabilitación asistida/);
+assert.match(paginaEvc, /pubmed\.ncbi\.nlm\.nih\.gov\/40503808/);
+assert.match(paginaEvc, /pubmed\.ncbi\.nlm\.nih\.gov\/34823545/);
 assert.match(scriptEvc, /generarPlanEvc/);
+assert.match(scriptEvc, /calificarPruebaEvc/);
+assert.match(scriptEvc, /progresoBateriaEvc/);
 assert.match(scriptEvc, /urlConPaciente/);
 
 const ids = [...paginaEvc.matchAll(/\sid="([^"]+)"/g)].map((coincidencia) => coincidencia[1]);

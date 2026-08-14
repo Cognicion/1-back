@@ -235,7 +235,8 @@ function actividadesUnicas(prioridades) {
 }
 
 function construirProtocolo(evaluacion, minutosSesion) {
-  const frecuenciaObjetivo = Math.max(3, evaluacion.diasSemana);
+  const frecuenciaObjetivo = evaluacion.diasSemana;
+  const etiquetaFrecuencia = `${frecuenciaObjetivo} ${frecuenciaObjetivo === 1 ? "sesión" : "sesiones"} por semana`;
   const minutosInicio = Math.min(20, minutosSesion);
   const bloqueCognitivo = Math.max(6, Math.round(minutosSesion * 0.45));
   const bloqueFuncional = Math.max(4, Math.round(minutosSesion * 0.3));
@@ -251,12 +252,12 @@ function construirProtocolo(evaluacion, minutosSesion) {
       },
       {
         periodo: "Semanas 2–4",
-        dosis: `${frecuenciaObjetivo} sesiones por semana de hasta ${minutosSesion} min`,
+        dosis: `${etiquetaFrecuencia} de hasta ${minutosSesion} min`,
         objetivo: "Práctica adaptativa en uno o dos dominios prioritarios y transferencia inmediata a una tarea cotidiana."
       },
       {
         periodo: "Semanas 5–6",
-        dosis: `${frecuenciaObjetivo} sesiones por semana de hasta ${minutosSesion} min`,
+        dosis: `${etiquetaFrecuencia} de hasta ${minutosSesion} min`,
         objetivo: "Generalizar estrategias a la meta funcional, reducir ayudas de forma gradual y preparar mantenimiento."
       }
     ],
@@ -313,6 +314,7 @@ export function generarPlanEvc(entrada = {}) {
   const noEvaluables = DOMINIOS_EVC.filter((dominio) => evaluacion.pruebas[dominio.id]?.noEvaluable);
   if (noEvaluables.length) alertas.push(`Dominios no evaluables con esta batería: ${noEvaluables.map((dominio) => dominio.nombre).join(", ")}. Deben adaptarse o valorarse con otro método.`);
   if (evaluacion.factoresInterferencia.length) alertas.push("Hay factores de interferencia registrados; deben considerarse antes de atribuir el resultado a un dominio cognitivo.");
+  if (evaluacion.diasSemana < 3) alertas.push("La frecuencia seleccionada es menor que la utilizada habitualmente en los estudios domiciliarios citados; conservarla puede ser apropiado por tolerancia, pero debe revisarse con el profesional.");
 
   const protocolo = construirProtocolo(evaluacion, minutosSesion);
 

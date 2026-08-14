@@ -45,7 +45,12 @@ assert.equal(new Set(plan.actividades.map((actividad) => actividad.id)).size, pl
 assert.ok(plan.actividades.some((actividad) => actividad.id === "go-nogo"));
 assert.ok(plan.actividades.some((actividad) => actividad.id === "cpt"));
 assert.ok(plan.apoyos.some((apoyo) => /cuidador/i.test(apoyo)));
-assert.ok(plan.alertas.some((alerta) => /dificultad marcada/i.test(alerta)));
+assert.ok(plan.alertas.some((alerta) => /necesidad alta de apoyo/i.test(alerta)));
+assert.equal(plan.duracionInicialSemanas, 6);
+assert.equal(plan.revisionSemanas, 1);
+assert.equal(plan.protocolo.fases.length, 3);
+assert.ok(plan.protocolo.criteriosSuspension.some((regla) => /nuevo EVC/i.test(regla)));
+assert.ok(plan.protocolo.limites.some((regla) => /tDCS/i.test(regla)));
 
 const normalizada = normalizarEvaluacionEvc({
   dominios: { atencion: 9, memoria: -5 },
@@ -64,7 +69,11 @@ assert.equal(normalizada.metaPrincipal, "Meta con espacios");
 const mantenimiento = generarPlanEvc({ dominios: { atencion: 0, memoria: 0 } });
 assert.equal(mantenimiento.valido, true);
 assert.equal(mantenimiento.prioridades.length, 2);
-assert.equal(nivelDificultadEvc(0), "Sin dificultad observada");
+assert.equal(nivelDificultadEvc(0), "Sin apoyo adicional en esta tarea");
+
+const frecuenciaReducida = generarPlanEvc({ dominios: { atencion: 1 }, diasSemana: 1 });
+assert.equal(frecuenciaReducida.protocolo.fases[1].dosis, "1 sesión por semana de hasta 25 min");
+assert.ok(frecuenciaReducida.alertas.some((alerta) => /menor que la utilizada habitualmente/i.test(alerta)));
 
 const resumen = resumirPlanEvc(plan);
 assert.match(resumen, /BORRADOR DE REHABILITACIÓN COGNITIVA POST-EVC/);
