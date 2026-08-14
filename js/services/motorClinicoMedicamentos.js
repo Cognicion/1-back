@@ -10,7 +10,7 @@ import {
   resolverMedicamentoCanonico
 } from "../data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-files-consolidated-v1";
 import { detectarInteraccionesPorCitocromos } from "../data/citocromosFarmacologicos.js?v=20260811-pharmacology-files-consolidated-v1";
-import { CATALOGO_DIAGNOSTICOS } from "../data/catalogoDiagnosticos.js?v=20260811-diagnosticos-unificados-v1";
+import { CATALOGO_DIAGNOSTICOS } from "../data/catalogoDiagnosticos.js?v=20260813-cie10-cd-v1";
 
 const SEVERIDAD_ORDEN = {
   informativa: 1,
@@ -461,6 +461,30 @@ export function resolverDiagnosticosClinicos(textos = []) {
       ) || entradasPorCategoria[0]?.texto || ""
     });
   });
+
+  // Las categorías farmacológicas declaradas por el catálogo diagnóstico son
+  // operativas aunque no exista un alias equivalente en DIAGNOSTICOS_CLINICOS.
+  // Esto mantiene catalogoDiagnosticos.js como fuente única para reglas nuevas.
+  listaEstructurada
+    .filter((item) => !ESTADOS_DIAGNOSTICO_INACTIVOS.has(item.estado))
+    .forEach((item) => {
+      categoriasPorDiagnostico(item).forEach((categoria) => {
+        if (encontrados.some((diagnostico) => diagnostico.categoria === categoria)) return;
+        const id = `catalogo-${categoria}-${normalizarCodigoDiagnostico(item.codigo) || normalizarTextoClinico(item.texto).replace(/\s+/g, "_")}`;
+        if (vistos.has(id)) return;
+        vistos.add(id);
+        encontrados.push({
+          id,
+          nombre: item.texto,
+          categoria,
+          sinonimos: [],
+          codigoRelacionado: item.codigo || "",
+          estado: item.estado || "confirmado",
+          evidenciaTexto: item.texto,
+          origenPropiedades: "catalogoDiagnosticos.js"
+        });
+      });
+    });
 
   const childPugh = detectarChildPugh(listaTextos);
   return {

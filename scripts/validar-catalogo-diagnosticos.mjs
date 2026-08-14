@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { access, readFile, readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -38,10 +39,12 @@ function codigosUnicos(catalogo, nombre) {
 
 assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.fuenteUnica, true);
 assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.integridad.codigosAbfFaltantes, 0);
+assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.integridad.codigosCFaltantes, 0);
+assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.integridad.codigosDFaltantes, 0);
 assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.integridad.codigosLegacyOmitidos, 0);
-assert.equal(CATALOGO_DIAGNOSTICOS.length, 1757);
+assert.equal(CATALOGO_DIAGNOSTICOS.length, 2823);
 assert.equal(new Set(CATALOGO_DIAGNOSTICOS.map((diagnostico) => diagnostico.id)).size, CATALOGO_DIAGNOSTICOS.length);
-assert.equal(CIE10.length, 1738);
+assert.equal(CIE10.length, 2804);
 assert.equal(CIE11.length, 28);
 assert.equal(DSM5.length, 12);
 codigosUnicos(CIE10, "CIE-10");
@@ -54,9 +57,13 @@ for (const catalogo of [CIE10, CIE11, DSM5]) {
 }
 
 assert.deepEqual(
-  Object.fromEntries(["A", "B", "F"].map((letra) => [letra, CIE10.filter((diagnostico) => diagnostico.codigo.startsWith(letra)).length])),
-  { A: 465, B: 459, F: 467 }
+  Object.fromEntries(["A", "B", "C", "D", "F"].map((letra) => [letra, CIE10.filter((diagnostico) => diagnostico.codigo.startsWith(letra)).length])),
+  { A: 465, B: 459, C: 539, D: 527, F: 467 }
 );
+for (const [letra, esperado] of [["C", "24b24733336786e991118109fa484698b9e4000f8a04469247e7dcb2029e7059"], ["D", "5fcf520a101357c413137aef708ed043297a3772616d6d0c7145f5cf577248ac"]]) {
+  const codigos = CIE10.filter((diagnostico) => diagnostico.codigo.startsWith(letra)).map((diagnostico) => diagnostico.codigo).sort();
+  assert.equal(createHash("sha256").update(codigos.join("\n")).digest("hex"), esperado, `Conjunto oficial ${letra} alterado`);
+}
 assert.ok(CATALOGO_DIAGNOSTICOS.every((diagnostico) =>
   Object.values(diagnostico.sistemas || {}).every((sistema) => sistema.codigo && sistema.nombre && sistema.criterios?.length)
 ), "Existe al menos un panel diagnóstico vacío");
@@ -75,14 +82,14 @@ const archivosDatos = await readdir(dataDir);
 assert.deepEqual(archivosDatos.filter((archivo) => /(?:diagnostic|cie10|cie11)/i.test(archivo)).sort(), ["catalogoDiagnosticos.js"]);
 
 for (const [archivo, modulo] of [
-  ["paciente.html", "js/paciente.js?v=20260811-diagnosticos-unificados-v1"],
-  ["nota.html", "js/nota.js?v=20260811-diagnosticos-unificados-v1"],
-  ["biblioteca.html", "js/biblioteca.js?v=20260811-diagnosticos-unificados-v1"],
-  ["laboratorio-farmacologia.html", "js/laboratorio-farmacologia.js?v=20260811-diagnosticos-unificados-v1"]
+  ["paciente.html", "js/paciente.js?v=20260813-cie10-cd-v1"],
+  ["nota.html", "js/nota.js?v=20260813-cie10-cd-v1"],
+  ["biblioteca.html", "js/biblioteca.js?v=20260813-cie10-cd-v1"],
+  ["laboratorio-farmacologia.html", "js/laboratorio-farmacologia.js?v=20260813-cie10-cd-v1"]
 ]) {
   assert.match(await readFile(resolve(root, archivo), "utf8"), new RegExp(modulo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 }
-assert.match(await readFile(resolve(root, "js/config/appVersion.js"), "utf8"), /APP_VERSION = "1\.898"/);
+assert.match(await readFile(resolve(root, "js/config/appVersion.js"), "utf8"), /APP_VERSION = "1\.956"/);
 
 const resultadoFarmacologia = evaluarMedicamentosPaciente({
   paciente: { diagnosticos: [{ codigo: "6C70", diagnostico: "Piromanía", estado: "confirmado" }] },
@@ -90,15 +97,21 @@ const resultadoFarmacologia = evaluarMedicamentosPaciente({
 });
 assert.ok(resultadoFarmacologia.alertas.some((alerta) => /control de los impulsos/i.test(alerta.titulo)));
 
+const resultadoOncologia = evaluarMedicamentosPaciente({
+  paciente: { diagnosticos: [{ codigo: "C71.9", diagnostico: "Tumor maligno del encéfalo", estado: "confirmado" }] },
+  medicamentos: [{ medicamento: "Bupropion 150 mg" }]
+});
+assert.ok(resultadoOncologia.alertas.some((alerta) => /tumor del sistema nervioso central/i.test(alerta.titulo)));
+
 console.log(JSON.stringify({
   archivoUnico: "js/data/catalogoDiagnosticos.js",
   entidades: CATALOGO_DIAGNOSTICOS.length,
   cie10: CIE10.length,
   cie11: CIE11.length,
   dsm5: DSM5.length,
-  capitulosCompletos: { A: 465, B: 459, F: 467 },
+  capitulosCompletos: { A: 465, B: 459, C: 539, D: 527, F: 467 },
   panelesVacios: 0,
   duplicados: 0,
-  version: "1.898",
+  version: "1.956",
   alertaFarmacologicaCie11: true
 }, null, 2));

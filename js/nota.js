@@ -4,7 +4,7 @@ import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { guardarSolicitudEliminacion } from "./services/reportes.js?v=20260716-1";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
-import { CIE10, CIE11 } from "./data/catalogoDiagnosticos.js?v=20260811-diagnosticos-unificados-v1";
+import { CIE10, CIE11 } from "./data/catalogoDiagnosticos.js?v=20260813-cie10-cd-v1";
 import { ESCALAS_PSIQUIATRICAS, interpretarEscala } from "./data/escalasPsiquiatricas.js";
 import { ESCALAS_SOLICITADAS } from "./data/escalasSolicitadas.js";
 import {

@@ -1,5 +1,5 @@
 /** Fuente única de verdad para versiones visibles de documentos Cognición. */
-// Convención general: incrementos de 0.001. Esta entrega aplica el +0.010 solicitado expresamente (1.888 → 1.898).
+// Convención general: incrementos de 0.001. Esta entrega CIE-10 C/D aplica el +0.010 solicitado (1.946 → 1.956).
 // deployment marker: 2026-08-11-memory-connectome-v3
 // deployment marker: 2026-08-11-public-interactions-v1
 // deployment marker: 2026-08-11-public-interactions-class-rules-v1
@@ -25,5 +25,6 @@
 // deployment marker: 2026-08-13-hugo-wilson-private-formats-v1
 // deployment marker: 2026-08-13-expediente-docx-summary-background-v1
 // deployment marker: 2026-08-13-hugo-wilson-brand-assets-v1
-export const APP_VERSION = "1.946";
+// deployment marker: 2026-08-13-cie10-cd-v1 (+0.010)
+export const APP_VERSION = "1.956";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

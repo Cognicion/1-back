@@ -21,6 +21,8 @@ const GRUPOS_CIE10_BIBLIOTECA = [
   { id: "todos", etiqueta: "Todos los CIE-10" },
   { id: "A", etiqueta: "A00-A99 · Ciertas enfermedades infecciosas y parasitarias" },
   { id: "B", etiqueta: "B00-B99 · Ciertas enfermedades infecciosas y parasitarias" },
+  { id: "C", etiqueta: "C00-C97 · Tumores malignos" },
+  { id: "D", etiqueta: "D00-D89 · Neoplasias in situ/benignas y trastornos hematológicos/inmunitarios" },
   { id: "F", etiqueta: "F00-F99 · Trastornos mentales y del comportamiento" },
   { id: "E", etiqueta: "E00-E90 · Endocrino, nutrición y metabolismo" },
   { id: "G", etiqueta: "G00-G99 · Enfermedades del sistema nervioso" },
@@ -124,8 +126,13 @@ function validarDiagnosticosBiblioteca(diagnosticos = []) {
       if (!SYSTEM_ORDER.includes(sistema)) errores.push(`sistema desconocido: ${sistema}`);
       if (datos?.codigo && codigos.has(`${sistema}:${datos.codigo}`)) errores.push(`código duplicado: ${datos.codigo}`);
       if (datos?.codigo) codigos.add(`${sistema}:${datos.codigo}`);
-      if (!Array.isArray(datos?.criterios)) errores.push(`criterios inválidos en ${sistema}`);
-      (datos?.criterios || []).forEach((grupo) => validarGrupo(grupo, `${sistema}/${grupo?.id || "sin-id"}`));
+      if (datos?.criteriosLazy) {
+        const descriptor = Object.getOwnPropertyDescriptor(datos, "criterios");
+        if (typeof descriptor?.get !== "function") errores.push(`carga diferida de criterios inválida en ${sistema}`);
+      } else {
+        if (!Array.isArray(datos?.criterios)) errores.push(`criterios inválidos en ${sistema}`);
+        (datos?.criterios || []).forEach((grupo) => validarGrupo(grupo, `${sistema}/${grupo?.id || "sin-id"}`));
+      }
     });
     if (errores.length) {
       console.error("Registro omitido de Biblioteca clínica:", diagnostico?.id || diagnostico?.nombre, errores);
@@ -194,8 +201,8 @@ function usuarioPuedeUsarBiblioteca(user, usuario = {}) {
 const libraryRoot = document.querySelector("[data-library-root]");
 const datosBibliotecaListos = libraryRoot
   ? Promise.all([
-    import("./data/catalogoDiagnosticos.js?v=20260811-diagnosticos-unificados-v1"),
-    import("./data/psicoeducacionBiblioteca.js?v=20260811-diagnosticos-unificados-v1")
+    import("./data/catalogoDiagnosticos.js?v=20260813-cie10-cd-v1"),
+    import("./data/psicoeducacionBiblioteca.js?v=20260813-cie10-cd-v1")
   ]).then(([diagnosticosModule, psicoeducacionModule]) => {
     DIAGNOSTICOS_VALIDOS = validarDiagnosticosBiblioteca(diagnosticosModule.CATALOGO_DIAGNOSTICOS);
     PSICOEDUCACION = psicoeducacionModule.PSICOEDUCACION || [];
@@ -383,6 +390,7 @@ function convertirDiagnosticosManuales() {
 
 function textoBusquedaDiagnostico(diagnostico) {
   const sistemas = Object.values(diagnostico.sistemas || {});
+  const incluirContenidoClinico = !diagnostico.contenidoClinicoLazy;
   const textosGrupo = (grupo) => [
     grupo.titulo,
     grupo.introduccion,
@@ -396,15 +404,17 @@ function textoBusquedaDiagnostico(diagnostico) {
     diagnostico.categoria,
     diagnostico.subcategoria,
     ...(diagnostico.aliases || []),
-    diagnostico.psicoeducacion,
-    ...(diagnostico.diagnosticoDiferencial || []),
-    ...(diagnostico.comorbilidades || []),
-    ...(diagnostico.evaluacionClinica || []),
+    ...(incluirContenidoClinico ? [
+      diagnostico.psicoeducacion,
+      ...(diagnostico.diagnosticoDiferencial || []),
+      ...(diagnostico.comorbilidades || []),
+      ...(diagnostico.evaluacionClinica || [])
+    ] : []),
     ...sistemas.flatMap((sistema) => [
       sistema.codigo,
       sistema.codigoCie10Cm,
       sistema.nombre,
-      ...(sistema.criterios || []).flatMap(textosGrupo),
+      ...(sistema.criteriosLazy ? [] : (sistema.criterios || []).flatMap(textosGrupo)),
       ...(sistema.especificadores || []),
       ...(sistema.notas || []),
       ...(sistema.subtipos || []).flatMap((subtipo) => [

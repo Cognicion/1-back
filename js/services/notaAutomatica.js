@@ -9,7 +9,7 @@ import {
 } from "./clinicalValidationService.js";
 import { ejecutarPipelineClinico, segmentarConversacionClinica } from "./clinicalPipeline.js";
 import { isEvolutionDocumentType, isEvolutionNarrativeStyle } from "./voiceNoteStyleTemplates.js";
-import { CIE10 } from "../data/catalogoDiagnosticos.js?v=20260811-diagnosticos-unificados-v1";
+import { CIE10 } from "../data/catalogoDiagnosticos.js?v=20260813-cie10-cd-v1";
 
 const CIE10_BASE = Object.fromEntries(CIE10.map(({ codigo, nombre }) => [codigo, nombre]));
 
