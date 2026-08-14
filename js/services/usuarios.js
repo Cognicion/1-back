@@ -1,5 +1,6 @@
 import { db } from "../firebase.js";
 import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
+import { registerPatientNameParts } from "../modules/patient-transfer/parsing/patientNameDictionaries.js?v=20260814-patient-name-dictionary-v1";
 import { usuarioEsProfesionalTipoMedico } from "../utils/roles.js";
 import {
     createAuthorizedPatientQueryDescriptors,
@@ -252,6 +253,11 @@ export async function crearPacienteProvisional(datos){
         collection(db,"usuarios"),
         payload
     );
+    registerPatientNameParts({
+        nombres: payload.nombres,
+        apellidoPaterno: payload.apellidoPaterno,
+        apellidoMaterno: payload.apellidoMaterno
+    });
     invalidarListasPacientes();
     return refPaciente;
 

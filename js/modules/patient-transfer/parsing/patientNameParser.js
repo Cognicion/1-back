@@ -3,6 +3,10 @@ import {
   normalizarAliasPaciente,
   normalizarTextoBusquedaPaciente
 } from "../../../utils/nombresPacientes.js?v=20260814-patient-alias-v1";
+import {
+  getGivenNamesDictionary,
+  getSurnamesDictionary
+} from "./patientNameDictionaries.js?v=20260814-patient-name-dictionary-v1";
 
 export const NAME_PARTICLES = Object.freeze([
   "de",
@@ -26,39 +30,6 @@ export const PATIENT_NAME_SOURCE_FORMATS = Object.freeze({
 
 const HONORIFIC_PREFIXES = /^(dr|dra|lic|sr|sra|paciente)\.?\s+/i;
 const SUFFIXES = new Set(["jr", "jr.", "ii", "iii"]);
-const COMMON_SECOND_GIVEN_NAMES = new Set([
-  "antonio",
-  "carlos",
-  "cecilio",
-  "fernanda",
-  "fernando",
-  "guadalupe",
-  "jose",
-  "josé",
-  "juan",
-  "luis",
-  "maria",
-  "maría"
-]);
-const COMMON_GIVEN_NAMES = new Set([
-  "ana",
-  "antonio",
-  "brian",
-  "carmen",
-  "carlos",
-  "cecilio",
-  "efrain",
-  "enedina",
-  "fernanda",
-  "fernando",
-  "filemon",
-  "guadalupe",
-  "ismerai",
-  "jose",
-  "juan",
-  "luis",
-  "maria"
-]);
 
 const NAMES_FIRST_STRUCTURED_LABELS = new Set([
   "nombre completo del paciente",
@@ -203,11 +174,11 @@ export function inferStructuredPatientNameFormat(fullName = "", evidence = {}) {
   if (analysisValue.includes(",")) return PATIENT_NAME_SOURCE_FORMATS.HOSPITAL_SURNAMES_FIRST;
   const tokens = analysisValue.split(/\s+/).filter(Boolean);
   if (tokens.length < 3) return PATIENT_NAME_SOURCE_FORMATS.UNKNOWN;
-  if (COMMON_GIVEN_NAMES.has(tokenKey(tokens[0]))) return PATIENT_NAME_SOURCE_FORMATS.NAMES_FIRST;
+  if (getGivenNamesDictionary().has(tokenKey(tokens[0]))) return PATIENT_NAME_SOURCE_FORMATS.NAMES_FIRST;
 
   const hospitalParts = hospitalNameParts(tokens, analysisValue);
   const firstHospitalGivenName = hospitalParts?.nombres?.split(/\s+/)[0] || "";
-  if (COMMON_GIVEN_NAMES.has(tokenKey(firstHospitalGivenName))) {
+  if (getGivenNamesDictionary().has(tokenKey(firstHospitalGivenName))) {
     return PATIENT_NAME_SOURCE_FORMATS.HOSPITAL_SURNAMES_FIRST;
   }
   // Un campo etiquetado como nombre completo aporta evidencia estructural de
@@ -216,7 +187,8 @@ export function inferStructuredPatientNameFormat(fullName = "", evidence = {}) {
   if (hasNamesFirstStructuredLabel(evidence)) {
     return PATIENT_NAME_SOURCE_FORMATS.NAMES_FIRST;
   }
-  return PATIENT_NAME_SOURCE_FORMATS.UNKNOWN;
+  const surnameEvidence = tokens.slice(-2).filter((token) => getSurnamesDictionary().has(tokenKey(token))).length;
+  return surnameEvidence >= 1 ? PATIENT_NAME_SOURCE_FORMATS.NAMES_FIRST : PATIENT_NAME_SOURCE_FORMATS.UNKNOWN;
 }
 
 function takeCompoundPaternal(tokens = [], paternalStart) {
@@ -267,7 +239,7 @@ export function suggestPatientNameParts(fullName = "", options = {}) {
       normalizedForMatching: normalizarTextoBusquedaPaciente(originalValue)
     };
   }
-  if (tokens.length === 3 && COMMON_SECOND_GIVEN_NAMES.has(tokenKey(tokens[1]))) {
+  if (tokens.length === 3 && getGivenNamesDictionary().has(tokenKey(tokens[1]))) {
     return {
       nombres: tokens.slice(0, 2).join(" "),
       apellidoPaterno: tokens[2],

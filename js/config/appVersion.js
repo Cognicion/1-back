@@ -38,5 +38,6 @@
 // deployment marker: 2026-08-14-ieca-atc-c09aa-v1
 // deployment marker: 2026-08-14-post-evc-guided-battery-v2
 // deployment marker: 2026-08-14-patient-name-order-v2
-export const APP_VERSION = "1.986";
+// deployment marker: 2026-08-14-patient-name-dictionary-v1
+export const APP_VERSION = "1.987";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

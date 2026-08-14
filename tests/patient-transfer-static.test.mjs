@@ -34,7 +34,7 @@ for (const file of expectedFiles) {
 
 const medico = read("js/medico.js");
 assert.match(medico, /btnImportarDocxPaciente/, "medico.js registra el unico boton de importacion DOCX");
-assert.match(medico, /import\("\.\/modules\/patient-transfer\/index\.js\?v=20260814-patient-name-order-v2"\)/, "el módulo activo se carga con lazy loading y versión explícita");
+assert.match(medico, /import\("\.\/modules\/patient-transfer\/index\.js\?v=20260814-patient-name-dictionary-v1"\)/, "el módulo activo se carga con lazy loading y versión explícita");
 assert.doesNotMatch(medico, /modules\/importacionDocx\/docxImportController/, "medico.js no abre el importador local simplificado");
 
 const html = read("medico.html");
@@ -45,6 +45,10 @@ assert.match(html, /patient-transfer\.css/, "medico.html carga estilos del modul
 const controller = read("js/modules/patient-transfer/patientTransferController.js");
 const transferIndex = read("js/modules/patient-transfer/index.js");
 const fieldParser = read("js/modules/patient-transfer/parsing/patientFieldParser.js");
+const patientNameParser = read("js/modules/patient-transfer/parsing/patientNameParser.js");
+const patientRepository = read("js/modules/patient-transfer/patientTransferRepository.js");
+const patientCreationAdapter = read("js/modules/patient-transfer/integration/patientCreationAdapter.js");
+const usersService = read("js/services/usuarios.js");
 const segmenter = read("js/modules/patient-transfer/parsing/clinicalNoteSegmenter.js");
 const transferView = read("js/modules/patient-transfer/ui/patientTransferView.js");
 const transferCss = read("css/modules/patient-transfer.css");
@@ -58,9 +62,14 @@ assert.match(controller, /const reviewedGroups = analyzedGroups;/, "el guardado 
 assert.match(controller, /expandSegmentedGroupsForSave/, "la persistencia crea una nota por segmento confirmado");
 assert.match(controller, /setFileMultipleNotesMode/, "la revisión actualiza el modo por archivo en el estado central");
 assert.match(controller, /multipleNotesMode/, "el controlador envía el modo explícito al segmentador");
-assert.match(transferIndex, /patientTransferController\.js\?v=20260814-patient-name-order-v2/, "el índice fuerza la carga del controlador publicado");
-assert.match(controller, /patientFieldParser\.js\?v=20260814-patient-name-order-v2/, "el controlador fuerza la carga del parser de paciente publicado");
-assert.match(fieldParser, /patientNameParser\.js\?v=20260814-patient-name-order-v2/, "el parser de campos fuerza la carga del parser de nombres publicado");
+assert.match(transferIndex, /patientTransferController\.js\?v=20260814-patient-name-dictionary-v1/, "el índice fuerza la carga del controlador publicado");
+assert.match(controller, /patientFieldParser\.js\?v=20260814-patient-name-dictionary-v1/, "el controlador fuerza la carga del parser de paciente publicado");
+assert.match(fieldParser, /patientNameParser\.js\?v=20260814-patient-name-dictionary-v1/, "el parser de campos fuerza la carga del parser de nombres publicado");
+assert.match(patientNameParser, /patientNameDictionaries\.js\?v=20260814-patient-name-dictionary-v1/, "el parser de nombres carga el diccionario publicado");
+assert.match(controller, /patientTransferRepository\.js\?v=20260814-patient-name-dictionary-v1/, "el controlador carga el repositorio que comparte el diccionario");
+assert.match(patientRepository, /patientCreationAdapter\.js\?v=20260814-patient-name-dictionary-v1/, "el repositorio carga el adaptador de creación actualizado");
+assert.match(patientCreationAdapter, /usuarios\.js\?v=20260814-patient-name-dictionary-v1/, "la creación de pacientes usa el servicio de usuarios actualizado");
+assert.match(usersService, /registerPatientNameParts/, "el alta de paciente registra sus partes en el diccionario local");
 assert.match(controller, /clinicalNoteSegmenter\.js\?v=20260810-imported-notes-v1/, "el controlador fuerza la carga del segmentador publicado");
 assert.match(controller, /patientTransferView\.js\?v=20260814-patient-alias-v1/, "el controlador fuerza la carga de la UI del importador publicada");
 assert.match(html, /patient-transfer\.css\?v=20260811-medication-presentation-concentration-ui-v1/, "el CSS de medicamentos usa un marcador de cache nuevo");

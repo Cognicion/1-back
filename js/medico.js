@@ -1,4 +1,4 @@
-import { listarPacientes } from "./services/usuarios.js?v=20260811-patient-list-recovery-v2";
+import { listarPacientes } from "./services/usuarios.js?v=20260814-patient-name-dictionary-v1";
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
@@ -269,7 +269,7 @@ function inicializarImportacionDocxLazy() {
     try {
       if (!traspasoPacientesPromise) {
         // Marcador de cache del importador documental.
-        traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260814-patient-name-order-v2");
+        traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260814-patient-name-dictionary-v1");
       }
       const modulo = await traspasoPacientesPromise;
       modulo.openPatientTransfer();

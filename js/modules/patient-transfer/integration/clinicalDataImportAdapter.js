@@ -1,5 +1,5 @@
 import { db } from "../../../firebase.js";
-import { actualizarUsuario, obtenerUsuario } from "../../../services/usuarios.js";
+import { actualizarUsuario, obtenerUsuario } from "../../../services/usuarios.js?v=20260814-patient-name-dictionary-v1";
 import { crearTratamiento, listarTratamientos } from "../../../services/tratamientos.js";
 import { normalizarTextoBusquedaPaciente } from "../../../utils/nombresPacientes.js";
 import {
