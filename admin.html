@@ -234,6 +234,58 @@
       <button id="btnRetirarNavarroVisibles" type="button">Revocar formato Navarro al medico</button>
     </div>
 
+    <div class="formato-manual-admin-grid">
+      <form id="formCrearFormatoManualAdmin" class="formato-manual-admin-card">
+        <h3>Crear formato manual</h3>
+        <p>Define el formato y, si aplica, sube su logo. No se asignará automáticamente a ningún usuario.</p>
+        <label>Identificador
+          <input id="formatoManualId" required maxlength="80" placeholder="ej. nota_institucional">
+        </label>
+        <label>Nombre visible
+          <input id="formatoManualNombre" required maxlength="120" placeholder="Nombre del formato">
+        </label>
+        <label>Descripción
+          <textarea id="formatoManualDescripcion" maxlength="500" placeholder="Uso y alcance del formato"></textarea>
+        </label>
+        <label>Contenido manual
+          <textarea id="formatoManualContenido" required placeholder="Escribe aquí la estructura o instrucciones del formato"></textarea>
+        </label>
+        <label>Logo opcional
+          <input id="formatoManualLogo" type="file" accept="image/png,image/jpeg,image/webp">
+        </label>
+        <button type="submit">Crear formato manual</button>
+      </form>
+
+      <form id="formCrearPaqueteFormatosAdmin" class="formato-manual-admin-card">
+        <h3>Crear paquete para usuarios</h3>
+        <p>Selecciona manualmente los formatos y las cuentas que recibirán el paquete.</p>
+        <label>Nombre del paquete
+          <input id="paqueteFormatoNombre" required maxlength="120" placeholder="Paquete institucional">
+        </label>
+        <label>Descripción
+          <textarea id="paqueteFormatoDescripcion" maxlength="500" placeholder="Descripción del paquete"></textarea>
+        </label>
+        <label>Formatos incluidos
+          <select id="paqueteFormatoFormatos" multiple required size="6"></select>
+        </label>
+        <label>Usuarios destinatarios
+          <select id="paqueteFormatoUsuarios" multiple required size="6"></select>
+        </label>
+        <button type="submit">Crear y asignar paquete</button>
+      </form>
+    </div>
+
+    <div class="tabla-header formato-manual-lista-header">
+      <div>
+        <h3>Formatos manuales y paquetes</h3>
+        <p>Catálogo y asignaciones creados manualmente por administradores.</p>
+      </div>
+      <button id="btnActualizarCatalogoManualAdmin" type="button">Actualizar catálogo manual</button>
+    </div>
+    <div id="listaCatalogoManualAdmin" class="lista-pacientes-admin">
+      <p>Cargando catálogo manual...</p>
+    </div>
+
     <div id="listaFormatosAdmin" class="lista-pacientes-admin">
       <p>Cargando permisos de formatos...</p>
     </div>

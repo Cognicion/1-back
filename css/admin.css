@@ -1340,6 +1340,46 @@ select:disabled {
 .reconocimiento-admin-control select { width: 100%; margin-top: .25rem; }
 .reconocimiento-admin-control small { display: block; margin-top: .25rem; opacity: .75; }
 
+.formato-manual-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 18px 0;
+}
+.formato-manual-admin-card {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--black-800);
+  border-radius: 16px;
+  background: rgba(5, 7, 6, .55);
+}
+.formato-manual-admin-card h3 { margin: 0; }
+.formato-manual-admin-card p { margin: 0; color: var(--gray-400); font-size: 13px; }
+.formato-manual-admin-card label { display: grid; gap: 5px; color: var(--green-200); font-weight: 700; font-size: 13px; }
+.formato-manual-admin-card input,
+.formato-manual-admin-card textarea,
+.formato-manual-admin-card select { width: 100%; box-sizing: border-box; }
+.formato-manual-admin-card textarea { min-height: 92px; resize: vertical; }
+.formato-manual-admin-card select[multiple] { min-height: 140px; }
+.formato-manual-lista-header { margin-top: 20px; }
+.formato-manual-registro-admin {
+  display: flex;
+  gap: 14px;
+  align-items: start;
+  padding: 14px 16px;
+  border: 1px solid var(--black-800);
+  border-radius: 14px;
+  background: var(--black-900);
+}
+.formato-manual-registro-admin img { width: 64px; height: 64px; object-fit: contain; border-radius: 10px; background: white; }
+.formato-manual-registro-admin h4 { margin: 0 0 5px; color: var(--white-950); }
+.formato-manual-registro-admin p { margin: 7px 0 0; color: var(--gray-300); }
+.formato-manual-registro-admin small { color: var(--gray-400); overflow-wrap: anywhere; }
+@media (max-width: 760px) {
+  .formato-manual-admin-grid { grid-template-columns: 1fr; }
+}
+
 .vista-corroboracion-admin[hidden] { display: none; }
 .vista-corroboracion-admin {
   position: fixed;

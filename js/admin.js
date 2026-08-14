@@ -1,5 +1,6 @@
 ﻿import { auth, db } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
+import { obtenerStorage } from "./firebase.js";
 import { obtenerFunctions } from "./firebase.js";
 import { actualizarReconocimientoColaborador } from "./services/colaboradores.js";
 import { TIPOS_COLABORADOR } from "./config/tiposColaborador.js";
@@ -58,6 +59,8 @@ import {
   updateDoc,
   where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getDownloadURL, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
 const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
@@ -83,6 +86,8 @@ let pacientesAdmin = [];
 let usuariosAdmin = [];
 let reportesUsuariosAdmin = [];
 let codigosMedicoAdmin = [];
+let formatosManualesAdmin = [];
+let paquetesFormatosAdmin = [];
 let avisosGlobalesAdmin = [];
 let notasPorPaciente = {};
 let adminActual = null;
@@ -254,6 +259,7 @@ onAuthStateChanged(auth, async (user) => {
     await cargarResumen();
     await cargarCodigosMedicoAdmin();
     await cargarUsuariosAdmin();
+    await cargarCatalogoManualFormatosAdmin();
     await cargarPacientesAdmin();
     await cargarReportesUsuariosAdmin();
     await cargarAvisosAdmin();
@@ -305,6 +311,9 @@ function configurarFiltros() {
   document.getElementById("btnActualizarUsuariosAdmin")?.addEventListener("click", cargarUsuariosAdmin);
   document.getElementById("btnActualizarUsuariosRecientesAdmin")?.addEventListener("click", cargarUsuariosAdmin);
   document.getElementById("btnActualizarFormatosAdmin")?.addEventListener("click", cargarUsuariosAdmin);
+  document.getElementById("btnActualizarCatalogoManualAdmin")?.addEventListener("click", cargarCatalogoManualFormatosAdmin);
+  document.getElementById("formCrearFormatoManualAdmin")?.addEventListener("submit", crearFormatoManualAdmin);
+  document.getElementById("formCrearPaqueteFormatosAdmin")?.addEventListener("submit", crearPaqueteFormatosAdmin);
   document.getElementById("btnAutorizarFrayVisibles")?.addEventListener("click", () => aplicarFormatoUsuariosVisiblesAdmin(FORMAT_PERMISSION_FRAY, true));
   document.getElementById("btnRetirarFrayVisibles")?.addEventListener("click", () => aplicarFormatoUsuariosVisiblesAdmin(FORMAT_PERMISSION_FRAY, false));
   document.getElementById("btnAutorizarNavarroVisibles")?.addEventListener("click", () => aplicarFormatoUsuariosVisiblesAdmin(FORMAT_PERMISSION_NAVARRO, true));
@@ -1799,6 +1808,165 @@ async function retirarReconocimientoColaboradorAdmin(evento) {
   }
 }
 
+
+function normalizarIdFormatoManual(valor = "") {
+  return String(valor)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9_-]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 80);
+}
+
+function catalogoFormatosParaPaquetesAdmin() {
+  const manuales = formatosManualesAdmin.map((formato) => ({
+    id: formato.id,
+    nombre: formato.nombre || formato.id,
+    origen: "manual"
+  }));
+  const institucionales = FORMATOS_INSTITUCIONALES.map((formato) => ({
+    id: formato.id,
+    nombre: formato.nombre || formato.id,
+    origen: "institucional"
+  }));
+  return [...manuales, ...institucionales].filter((formato, indice, lista) => lista.findIndex((item) => item.id === formato.id) === indice);
+}
+
+function poblarSelectoresCatalogoManualAdmin() {
+  const selectorFormatos = document.getElementById("paqueteFormatoFormatos");
+  const selectorUsuarios = document.getElementById("paqueteFormatoUsuarios");
+  if (selectorFormatos) {
+    selectorFormatos.innerHTML = catalogoFormatosParaPaquetesAdmin().map((formato) => `
+      <option value="${escaparHTML(formato.id)}">${escaparHTML(formato.nombre)} · ${escaparHTML(formato.origen)}</option>
+    `).join("");
+  }
+  if (selectorUsuarios) {
+    selectorUsuarios.innerHTML = usuariosAdmin
+      .filter((usuario) => usuario.id !== adminActual?.uid)
+      .sort((a, b) => String(a.nombre || a.email || "").localeCompare(String(b.nombre || b.email || ""), "es", { sensitivity: "base" }))
+      .map((usuario) => `<option value="${escaparHTML(usuario.id)}">${escaparHTML(usuario.nombre || usuario.email || usuario.id)} · ${escaparHTML(usuario.rol || "sin rol")}</option>`)
+      .join("");
+  }
+}
+
+function renderizarCatalogoManualFormatosAdmin() {
+  const contenedor = document.getElementById("listaCatalogoManualAdmin");
+  if (!contenedor) return;
+  const formatos = formatosManualesAdmin.map((formato) => `
+    <article class="formato-manual-registro-admin">
+      ${formato.logoUrl ? `<img src="${escaparHTML(formato.logoUrl)}" alt="Logo de ${escaparHTML(formato.nombre || formato.id)}">` : ""}
+      <div>
+        <h4>${escaparHTML(formato.nombre || formato.id)}</h4>
+        <small>ID: ${escaparHTML(formato.id)} · Creado: ${escaparHTML(formatearFechaAdmin(formato.creadoEn))}</small>
+        <p>${escaparHTML(formato.descripcion || "Sin descripción")}</p>
+      </div>
+    </article>
+  `).join("");
+  const paquetes = paquetesFormatosAdmin.map((paquete) => {
+    const nombresUsuarios = (paquete.asignadoUserUids || []).map((uid) => usuariosAdmin.find((usuario) => usuario.id === uid)?.nombre || uid);
+    return `
+      <article class="formato-manual-registro-admin">
+        <div>
+          <h4>Paquete: ${escaparHTML(paquete.nombre || paquete.id)}</h4>
+          <small>Formatos: ${escaparHTML((paquete.formatosIds || []).join(", ") || "Sin formatos")}</small>
+          <p>${escaparHTML(paquete.descripcion || "Sin descripción")}</p>
+          <small>Usuarios: ${escaparHTML(nombresUsuarios.join(", ") || "Sin asignación")}</small>
+        </div>
+      </article>
+    `;
+  }).join("");
+  contenedor.innerHTML = formatos + paquetes || "<p>No hay formatos manuales ni paquetes creados.</p>";
+}
+
+async function cargarCatalogoManualFormatosAdmin() {
+  const contenedor = document.getElementById("listaCatalogoManualAdmin");
+  if (contenedor) contenedor.innerHTML = "<p>Cargando catálogo manual...</p>";
+  try {
+    const [snapFormatos, snapPaquetes] = await Promise.all([
+      getDocs(collection(db, "formatosAdministrados")),
+      getDocs(collection(db, "paquetesFormatos"))
+    ]);
+    formatosManualesAdmin = snapFormatos.docs.map((item) => ({ id: item.id, ...item.data() }))
+      .sort((a, b) => String(a.nombre || a.id).localeCompare(String(b.nombre || b.id), "es", { sensitivity: "base" }));
+    paquetesFormatosAdmin = snapPaquetes.docs.map((item) => ({ id: item.id, ...item.data() }))
+      .sort((a, b) => String(b.creadoEn || "").localeCompare(String(a.creadoEn || "")));
+    poblarSelectoresCatalogoManualAdmin();
+    renderizarCatalogoManualFormatosAdmin();
+  } catch (error) {
+    if (contenedor) contenedor.innerHTML = `<p class="admin-muted">No se pudo cargar el catálogo manual: ${escaparHTML(error.message)}</p>`;
+  }
+}
+
+async function crearFormatoManualAdmin(evento) {
+  evento.preventDefault();
+  if (!adminActual || !(await usuarioPuedeAccederAdmin(adminActual)).permitido) return;
+  const id = normalizarIdFormatoManual(document.getElementById("formatoManualId")?.value);
+  const nombre = document.getElementById("formatoManualNombre")?.value.trim() || "";
+  const descripcion = document.getElementById("formatoManualDescripcion")?.value.trim() || "";
+  const contenido = document.getElementById("formatoManualContenido")?.value.trim() || "";
+  const archivo = document.getElementById("formatoManualLogo")?.files?.[0] || null;
+  if (!id || !nombre || !contenido) {
+    alert("Completa el identificador, nombre y contenido del formato.");
+    return;
+  }
+  if (archivo && (!archivo.type.startsWith("image/") || archivo.size > 5 * 1024 * 1024)) {
+    alert("El logo debe ser una imagen de máximo 5 MB.");
+    return;
+  }
+  try {
+    const existente = await getDoc(doc(db, "formatosAdministrados", id));
+    if (existente.exists()) {
+      alert("Ya existe un formato con ese identificador.");
+      return;
+    }
+    let logoUrl = "";
+    let logoPath = "";
+    if (archivo) {
+      const almacenamiento = await obtenerStorage();
+      logoPath = `formatos-manuales/logos/${id}-${Date.now()}-${normalizarIdFormatoManual(archivo.name)}`;
+      const logoRef = ref(almacenamiento, logoPath);
+      await uploadBytes(logoRef, archivo, { contentType: archivo.type });
+      logoUrl = await getDownloadURL(logoRef);
+    }
+    const ahora = new Date().toISOString();
+    await setDoc(doc(db, "formatosAdministrados", id), { id, nombre, descripcion, contenido, logoUrl, logoPath, activo: true, creadoEn: ahora, creadoPorUid: adminActual.uid, actualizadoEn: ahora });
+    await registrarAuditoriaAdmin("crear_formato_manual_admin", "El administrador creó un formato manual.", { detalles: { formatoId: id, nombre, tieneLogo: Boolean(logoUrl) } });
+    evento.currentTarget.reset();
+    await cargarCatalogoManualFormatosAdmin();
+    alert("Formato manual creado correctamente.");
+  } catch (error) {
+    await registrarAuditoriaAdmin("error_crear_formato_manual_admin", "No se pudo crear un formato manual.", { exito: false, detalles: { formatoId: id, error: resumenError(error) } });
+    alert("No se pudo crear el formato: " + error.message);
+  }
+}
+
+async function crearPaqueteFormatosAdmin(evento) {
+  evento.preventDefault();
+  if (!adminActual || !(await usuarioPuedeAccederAdmin(adminActual)).permitido) return;
+  const nombre = document.getElementById("paqueteFormatoNombre")?.value.trim() || "";
+  const descripcion = document.getElementById("paqueteFormatoDescripcion")?.value.trim() || "";
+  const formatosIds = [...(document.getElementById("paqueteFormatoFormatos")?.selectedOptions || [])].map((option) => option.value).filter(Boolean);
+  const asignadoUserUids = [...(document.getElementById("paqueteFormatoUsuarios")?.selectedOptions || [])].map((option) => option.value).filter(Boolean);
+  if (!nombre || !formatosIds.length || !asignadoUserUids.length) {
+    alert("Selecciona nombre, al menos un formato y al menos un usuario.");
+    return;
+  }
+  try {
+    const paqueteId = `${normalizarIdFormatoManual(nombre)}_${Date.now()}`;
+    const ahora = new Date().toISOString();
+    await setDoc(doc(db, "paquetesFormatos", paqueteId), { id: paqueteId, nombre, descripcion, formatosIds, asignadoUserUids, creadoEn: ahora, creadoPorUid: adminActual.uid, actualizadoEn: ahora, activo: true });
+    await Promise.all(asignadoUserUids.map((uid) => updateDoc(doc(db, "usuarios", uid), { paquetesFormatosAsignados: arrayUnion(paqueteId), formatosManualesAsignados: arrayUnion(...formatosIds), formatosManualesActualizadosEn: ahora, formatosManualesActualizadosPor: adminActual.uid })));
+    await registrarAuditoriaAdmin("crear_paquete_formatos_admin", "El administrador creó y asignó manualmente un paquete de formatos.", { detalles: { paqueteId, formatosIds, asignadoUserUids } });
+    evento.currentTarget.reset();
+    await cargarCatalogoManualFormatosAdmin();
+    alert("Paquete creado y asignado correctamente.");
+  } catch (error) {
+    await registrarAuditoriaAdmin("error_crear_paquete_formatos_admin", "No se pudo crear o asignar un paquete de formatos.", { exito: false, detalles: { error: resumenError(error) } });
+    alert("No se pudo crear el paquete: " + error.message);
+  }
+}
 
 function institucionUsuarioFormato(usuario = {}) {
   return usuario.institucion ||
