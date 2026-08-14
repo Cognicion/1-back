@@ -140,6 +140,43 @@ const diagnosisWithTreatmentContext = parseDiagnosisBlock({
 assert.equal(diagnosisWithTreatmentContext.length, 1);
 assert.equal(diagnosisWithTreatmentContext[0].diagnosisName, "Trastorno bipolar");
 
+const productionLikeNarrativesWithDocxPrefixes = detectDiagnosisCandidates({
+  documentId: "docx-list-prefixes-are-not-diagnoses",
+  sections: {
+    diagnosticos: [
+      "- Mujer de 27 años de edad, con seguimiento por especialidades y bajo tratamiento médico.",
+      "• Medicación psiquiátrica previa",
+      "3) Actualmente bajo tratamiento con Medicamento Delta 100 mg/día."
+    ].join("\n")
+  }
+});
+assert.deepEqual(productionLikeNarrativesWithDocxPrefixes, []);
+
+const treatmentWithDiagnosticStatusIsNotDiagnosis = parseDiagnosisBlock({
+  text: [
+    "- Mujer de 27 años con seguimiento por especialidades ANTECEDENTE",
+    "- Medicación psiquiátrica previa ANTECEDENTE"
+  ].join("\n"),
+  section: "diagnosticos",
+  explicit: true,
+  documentId: "treatment-with-status"
+});
+assert.deepEqual(treatmentWithDiagnosticStatusIsNotDiagnosis, []);
+
+const prefixedRealDiagnosesRemainDetected = parseDiagnosisBlock({
+  text: [
+    "- Trastorno depresivo recurrente, episodio actual grave F33.2",
+    "• Antecedente de trastorno bipolar diagnosticado en 2022"
+  ].join("\n"),
+  section: "diagnosticos",
+  explicit: true,
+  documentId: "prefixed-real-diagnoses"
+});
+assert.equal(prefixedRealDiagnosesRemainDetected.length, 2);
+assert.equal(prefixedRealDiagnosesRemainDetected[0].code, "F33.2");
+assert.equal(prefixedRealDiagnosesRemainDetected[1].diagnosisName, "Trastorno bipolar");
+assert.equal(prefixedRealDiagnosesRemainDetected[1].status, "Antecedente");
+
 const deduplicated = detectDiagnosisCandidates({
   documentId: "dedup",
   sections: {

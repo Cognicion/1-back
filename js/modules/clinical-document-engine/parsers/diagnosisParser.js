@@ -159,9 +159,18 @@ function isExplicitNarrativeDiagnosis(text = "") {
 const TREATMENT_ONLY_START = /^(?:(?:actualmente\s+)?(?:bajo|en)\s+tratamiento\b|medicaci[oó]n\b|medicamentos?\b|farmacoterapia\b|(?:esquema|tratamiento)\s+(?:farmacol[oó]gico|psiqui[aá]trico)\b|(?:[uú]ltimo|actual|previo)\s+esquema\s+farmacol[oó]gico\b)/i;
 const TREATMENT_CONTEXT = /\b(?:tratamiento|medicaci[oó]n|medicamentos?|farmacoterapia|esquema\s+farmacol[oó]gico|recibe|toma|administrar|dosis)\b/i;
 const MEDICATION_DOSE = /\b\d+(?:[.,]\d+)?\s*(?:mcg|ug|mg|g|ml|ui)(?:\s*\/\s*(?:d[ií]a|h|hora|ml|\d+(?:[.,]\d+)?\s*ml))?\b/i;
+const STRUCTURAL_ROW_PREFIX = /^\s*(?:(?:[\-\u2013\u2014\u2022\u00b7\u25aa\u25e6\uf0b7*]+|\(?\d{1,3}\)?[.)-]+|[a-z][.)-]+|[ivxlcdm]+[.)-]+)\s*)+/i;
+
+function diagnosisRowForClassification(text = "") {
+  return String(text || "")
+    .replace(/\u00a0/g, " ")
+    .replace(STRUCTURAL_ROW_PREFIX, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 function isTreatmentOnlyClinicalText(text = "") {
-  const source = String(text || "").replace(/\s+/g, " ").trim();
+  const source = normalizeClinicalComparisonText(text).replace(/\s+/g, " ").trim();
   if (!source) return false;
   if (TREATMENT_ONLY_START.test(source)) return true;
   if (!TREATMENT_CONTEXT.test(source) || !MEDICATION_DOSE.test(source)) return false;
@@ -352,6 +361,7 @@ export function parseDiagnosisCandidates({ text = "", section = "diagnosticos", 
 
   rows.forEach((row, rowIndex) => {
     const rowText = row.text.trim();
+    const classificationText = diagnosisRowForClassification(rowText);
     const rowStatus = statusValue(row.statusAfter);
     if (row.statusOnly) {
       const previous = pendingNames.at(-1);
@@ -362,36 +372,36 @@ export function parseDiagnosisCandidates({ text = "", section = "diagnosticos", 
       state = "READING_STATUS";
       return;
     }
-    if (!rowText) return;
-    const codes = splitDiagnosticCodes(rowText);
-    if (!codes.length && !rowStatus && isTreatmentOnlyClinicalText(rowText)) {
+    if (!classificationText) return;
+    const codes = splitDiagnosticCodes(classificationText);
+    if (!codes.length && isTreatmentOnlyClinicalText(classificationText)) {
       discardedCount += 1;
       state = candidates.length ? "FINALIZE_DIAGNOSIS" : "WAITING_DIAGNOSIS";
       return;
     }
-    if (!codes.length && !rowStatus && isNarrativeClinicalText(rowText) && !startsWithDiagnosticName(rowText) && !isExplicitNarrativeDiagnosis(rowText)) {
+    if (!codes.length && isNarrativeClinicalText(classificationText) && !startsWithDiagnosticName(classificationText) && !isExplicitNarrativeDiagnosis(classificationText)) {
       logNarrativeBoundary({
         documentId,
         noteId,
-        text: rowText,
+        text: classificationText,
         reason: candidates.length ? "narrative-after-diagnosis" : "narrative-without-diagnostic-structure"
       });
       discardedCount += 1;
       state = candidates.length ? "FINALIZE_DIAGNOSIS" : "WAITING_DIAGNOSIS";
       return;
     }
-    const codeOnly = codes.length === 1 && /^[A-Z]\d{2,3}(?:\.\d{1,2})?$/i.test(rowText.trim());
-    const narrativeEntity = codeOnly ? "" : extractNarrativeDiagnosisEntity(rowText);
+    const codeOnly = codes.length === 1 && /^[A-Z]\d{2,3}(?:\.\d{1,2})?$/i.test(classificationText);
+    const narrativeEntity = codeOnly ? "" : extractNarrativeDiagnosisEntity(classificationText);
     const name = codeOnly ? "" : (narrativeEntity
       ? normalizeNarrativeDiagnosisName(normalizeDiagnosis(narrativeEntity, codes))
-      : normalizeDiagnosis(rowText, codes));
+      : normalizeDiagnosis(classificationText, codes));
     if (!name && !codes.length) { discardedCount += 1; return; }
     if (EXCLUDED_DIAGNOSIS_TEXT.test(name) || /^plan\s+terap/i.test(name) || /^(?:diagn[oó]sticos?|cie[- ]?10|cie[- ]?11|sistema)$/i.test(name)) {
       discardedCount += 1;
       state = "WAITING_DIAGNOSIS";
       return;
     }
-    if (!explicit && section !== "diagnosticos" && !codes.length && !isDiagnosticContext(rowText)) {
+    if (!explicit && section !== "diagnosticos" && !codes.length && !isDiagnosticContext(classificationText)) {
       discardedCount += 1;
       return;
     }
@@ -405,7 +415,7 @@ export function parseDiagnosisCandidates({ text = "", section = "diagnosticos", 
       return;
     }
     if (codes.length === 1 && !name) {
-      const nextRow = rows[rowIndex + 1]?.text || "";
+      const nextRow = diagnosisRowForClassification(rows[rowIndex + 1]?.text || "");
       const nextCodes = splitDiagnosticCodes(nextRow);
       const nextIsCodeOnly = nextCodes.length === 1 && /^[A-Z]\d{2,3}(?:\.\d{1,2})?$/i.test(nextRow.trim());
       const codeCountInBlock = splitDiagnosticCodes(text).length;

@@ -57,7 +57,7 @@ assert.match(controller, /const reviewedGroups = analyzedGroups;/, "el guardado 
 assert.match(controller, /expandSegmentedGroupsForSave/, "la persistencia crea una nota por segmento confirmado");
 assert.match(controller, /setFileMultipleNotesMode/, "la revisión actualiza el modo por archivo en el estado central");
 assert.match(controller, /multipleNotesMode/, "el controlador envía el modo explícito al segmentador");
-assert.match(transferIndex, /patientTransferController\.js\?v=20260813-diagnosis-treatment-filter-v1/, "el índice fuerza la carga del controlador publicado");
+assert.match(transferIndex, /patientTransferController\.js\?v=20260813-diagnosis-row-prefix-filter-v2/, "el índice fuerza la carga del controlador publicado");
 assert.match(controller, /clinicalNoteSegmenter\.js\?v=20260810-imported-notes-v1/, "el controlador fuerza la carga del segmentador publicado");
 assert.match(controller, /patientTransferView\.js\?v=20260813-include-all-data-v1/, "el controlador fuerza la carga de la UI de medicamentos");
 assert.match(html, /patient-transfer\.css\?v=20260811-medication-presentation-concentration-ui-v1/, "el CSS de medicamentos usa un marcador de cache nuevo");

@@ -31,5 +31,6 @@
 // deployment marker: 2026-08-13-hugo-receta-emblem-v1
 // deployment marker: 2026-08-13-diagnosis-row-prefix-filter-v2
 // deployment marker: 2026-08-13-user-perspective-preview-v2 (+0.010)
-export const APP_VERSION = "1.979";
+// deployment marker: 2026-08-13-diagnosis-row-prefix-filter-v2-published
+export const APP_VERSION = "1.980";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;
