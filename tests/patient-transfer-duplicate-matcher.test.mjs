@@ -51,6 +51,56 @@ assert.ok(strong.matchedFields.some((field) => field.label === "Fecha de nacimie
 assert.equal(strong.showAlert, true);
 assert.equal(buildPatientMatchExplanation(strong).title, "Posible paciente coincidente");
 
+const nestedExistingPatient = findPossiblePatientMatches({
+  nombre: "Persona Prueba Rivera Soto",
+  nombres: "Persona Prueba",
+  apellidoPaterno: "Rivera",
+  apellidoMaterno: "Soto",
+  expediente: "135-790",
+  fechaNacimiento: "12/03/1998"
+}, [{
+  id: "patient-existing-nested",
+  name: "Persona Prueba Rivera Soto",
+  expediente: "135790",
+  fechaNacimiento: "1998-03-12",
+  patient: {
+    datosInstitucionales: {
+      nombres: "Persona Prueba",
+      apellidoPaterno: "Rivera",
+      apellidoMaterno: "Soto"
+    }
+  }
+}]);
+assert.equal(nestedExistingPatient.length, 1);
+assert.equal(nestedExistingPatient[0].patientId, "patient-existing-nested");
+assert.equal(nestedExistingPatient[0].duplicateEligible, true);
+assert.ok(nestedExistingPatient[0].matchedFields.some((field) => field.label === "Apellido paterno"));
+assert.ok(nestedExistingPatient[0].matchedFields.some((field) => field.label === "Expediente"));
+
+const legacyFullNamePatient = findPossiblePatientMatches({
+  nombre: "Paciente Ejemplo Luna Mora",
+  nombres: "Paciente Ejemplo",
+  apellidoPaterno: "Luna",
+  apellidoMaterno: "Mora",
+  fechaNacimiento: "21/06/2001"
+}, [{
+  id: "patient-existing-legacy-name",
+  name: "Paciente Ejemplo Luna Mora",
+  fechaNacimiento: "2001-06-21",
+  patient: {
+    nombrePaciente: "Paciente Ejemplo Luna Mora"
+  }
+}]);
+assert.equal(legacyFullNamePatient.length, 1);
+assert.equal(legacyFullNamePatient[0].duplicateEligible, true);
+assert.ok(legacyFullNamePatient[0].qualifyingMatchesCount >= 3);
+
+const nestedGenderOnly = findPossiblePatientMatches({ genero: "femenino" }, [{
+  id: "patient-existing-nested-gender-only",
+  patient: { datosInstitucionales: { genero: "femenino" } }
+}]);
+assert.deepEqual(nestedGenderOnly, []);
+
 const conflict = findPossiblePatientMatches({
   nombre: "Ismerai Hernández García",
   apellidoPaterno: "Hernandez",

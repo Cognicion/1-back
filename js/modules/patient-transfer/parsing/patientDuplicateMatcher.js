@@ -39,6 +39,34 @@ function readField(source = {}, ...keys) {
   return "";
 }
 
+function patientFieldSources(source = {}) {
+  const patient = source?.patient && typeof source.patient === "object" ? source.patient : null;
+  return [
+    source,
+    patient,
+    source?.datosInstitucionales,
+    patient?.datosInstitucionales
+  ].filter((item, index, sources) => item && typeof item === "object" && sources.indexOf(item) === index);
+}
+
+function readPatientField(source = {}, ...keys) {
+  for (const fieldSource of patientFieldSources(source)) {
+    const value = readField(fieldSource, ...keys);
+    if (value) return value;
+  }
+  return "";
+}
+
+function containsWholeNamePart(fullName = "", namePart = "") {
+  const normalizedFullName = normalizePatientName(fullName);
+  const normalizedNamePart = normalizePatientName(namePart);
+  return Boolean(
+    normalizedFullName
+    && normalizedNamePart
+    && ` ${normalizedFullName} `.includes(` ${normalizedNamePart} `)
+  );
+}
+
 function same(a, b, normalizer) {
   const left = normalizer(a); const right = normalizer(b);
   return Boolean(left && right && left === right);
@@ -69,25 +97,25 @@ export function buildPatientMatchExplanation(match = {}) {
 export function findPossiblePatientMatches(candidate = {}, existingPatients = []) {
   const candidateData = candidate.values || candidate;
   const fields = (data) => ({
-    name: readField(data, "nombreCompleto", "nombre", "name"),
-    nombres: readField(data, "nombres"),
-    paterno: readField(data, "apellidoPaterno"),
-    materno: readField(data, "apellidoMaterno"),
-    curp: readField(data, "curp"),
-    record: readField(data, "expediente", "numeroExpediente"),
-    birth: readField(data, "fechaNacimiento"),
-    age: readField(data, "edad"),
-    sex: readField(data, "sexo"),
-    gender: readField(data, "genero", "identidadGenero"),
-    institution: readField(data, "institucion", "institucionPaciente"),
-    service: readField(data, "servicio", "servicioInstitucional"),
-    bed: readField(data, "cama")
+    name: readPatientField(data, "nombreCompleto", "nombrePaciente", "displayName", "nombre", "name"),
+    nombres: readPatientField(data, "nombres", "nombreNombres", "primerNombre", "nombrePropio"),
+    paterno: readPatientField(data, "apellidoPaterno", "primerApellido"),
+    materno: readPatientField(data, "apellidoMaterno", "segundoApellido"),
+    curp: readPatientField(data, "curp", "CURP"),
+    record: readPatientField(data, "expediente", "numeroExpediente"),
+    birth: readPatientField(data, "fechaNacimiento", "fecha_nacimiento", "birthDate"),
+    age: readPatientField(data, "edad"),
+    sex: readPatientField(data, "sexo"),
+    gender: readPatientField(data, "genero", "identidadGenero"),
+    institution: readPatientField(data, "institucion", "institucionPaciente"),
+    service: readPatientField(data, "servicio", "servicioInstitucional"),
+    bed: readPatientField(data, "cama")
   });
   const candidateFields = fields(candidateData);
 
   return existingPatients.map((existing) => {
     const data = existing.patient || existing;
-    const current = fields(data);
+    const current = fields(existing);
     const matchedFields = [];
     const conflictingFields = [];
     let score = 0;
@@ -95,6 +123,12 @@ export function findPossiblePatientMatches(candidate = {}, existingPatients = []
     const recordSame = same(candidateFields.record, current.record, normalizeRecordNumber);
     const nameSame = same(candidateFields.name, current.name, normalizePatientName);
     const birthSame = same(candidateFields.birth, current.birth, normalizeBirthDate);
+    if (nameSame && !current.paterno && containsWholeNamePart(current.name, candidateFields.paterno)) {
+      current.paterno = candidateFields.paterno;
+    }
+    if (nameSame && !current.materno && containsWholeNamePart(current.name, candidateFields.materno)) {
+      current.materno = candidateFields.materno;
+    }
     const paternoSame = same(candidateFields.paterno, current.paterno, normalizePatientName);
     const maternoSame = same(candidateFields.materno, current.materno, normalizePatientName);
     const institutionSame = same(candidateFields.institution, current.institution, normalizePatientName);

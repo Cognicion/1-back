@@ -12,7 +12,7 @@ import { construirActualizacionSignosVitalesDesdeNota } from "../../services/sig
 import { claveDiagnosticoPaciente } from "../../services/diagnosticosPaciente.js?v=v160-imported-diagnoses-v1";
 import { listarPacientes } from "../../services/usuarios.js";
 import { withPatientTransferTimeout } from "./patientTransferTimeout.js";
-import { findPossiblePatientMatches, normalizeRecordNumber } from "./parsing/patientDuplicateMatcher.js";
+import { findPossiblePatientMatches, normalizeRecordNumber } from "./parsing/patientDuplicateMatcher.js?v=20260813-duplicate-existing-identity-v1";
 import {
   DUPLICATE_RESOLUTION,
   isDocumentEligibleForPersistence,
