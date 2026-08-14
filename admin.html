@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <title>Administracion | Cognicion</title>
   <link rel="stylesheet" href="css/theme.css">
-  <link rel="stylesheet" href="css/admin.css?v=20260813-user-perspective-preview-v2">
+  <link rel="stylesheet" href="css/admin.css?v=20260814-note-deletion-request-v1">
   <link rel="stylesheet" href="css/clinical-analysis.css">
   <link rel="stylesheet" href="css/reconocimiento-colaborador.css">
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
@@ -540,6 +540,17 @@
   </div>
 </dialog>
 
+<dialog id="dialogoEliminarNotaAdmin" class="dialogo-peligro-admin">
+  <h2>Eliminar nota médica</h2>
+  <p>Esta acción eliminará permanentemente la nota seleccionada del expediente de <strong data-nota-paciente-nombre></strong>.</p>
+  <p>Esta operación no puede deshacerse.</p>
+  <p>¿Desea continuar?</p>
+  <div class="dialogo-peligro-acciones">
+    <button type="button" data-cancelar-eliminacion-nota>Cancelar</button>
+    <button type="button" class="boton-peligro" data-confirmar-eliminacion-nota>Eliminar definitivamente</button>
+  </div>
+</dialog>
+
 <div id="vistaCorroboracionAdmin" class="vista-corroboracion-admin" hidden aria-hidden="true">
   <div class="vista-corroboracion-backdrop" data-cerrar-vista-corroboracion></div>
   <section class="vista-corroboracion-dialog" role="dialog" aria-modal="true" aria-labelledby="vistaCorroboracionTitulo">
@@ -560,7 +571,7 @@
   </section>
 </div>
 
-<script type="module" src="js/admin.js?v=20260813-user-perspective-preview-v2"></script>
+<script type="module" src="js/admin.js?v=20260814-note-deletion-request-v1"></script>
 <script type="module" src="js/reportes.js"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
 </body>

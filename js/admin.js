@@ -3328,6 +3328,7 @@ function detalleSolicitudEliminacionHTML(reporte = {}) {
   };
   const recurso = etiquetas[reporte.recursoTipo] || reporte.recursoTipo || "Registro";
   const esSolicitudPaciente = reporte.recursoTipo === "paciente" && reporte.pacienteUid;
+  const esSolicitudNota = reporte.recursoTipo === "nota_medica" && reporte.pacienteUid && reporte.recursoId;
 
   return `
     <div class="reporte-usuario-detalle">
@@ -3342,6 +3343,7 @@ function detalleSolicitudEliminacionHTML(reporte = {}) {
         <span>Motivo: ${escaparHTML(reporte.motivoSolicitud || "No indicado")}</span>
       </div>
       ${esSolicitudPaciente ? `<button type="button" class="boton-peligro boton-eliminar-paciente-solicitud" onclick="eliminarPacienteDesdeSolicitudAdmin('${escaparHTML(reporte.id)}')">🗑 Eliminar paciente</button>` : ""}
+      ${esSolicitudNota ? `<button type="button" class="boton-peligro boton-eliminar-nota-solicitud" data-eliminar-nota-solicitud="${escaparHTML(reporte.id)}" onclick="eliminarNotaDesdeSolicitudAdmin('${escaparHTML(reporte.id)}')">🗑 Eliminar nota</button>` : ""}
     </div>
   `;
 }
@@ -3355,6 +3357,19 @@ function solicitarConfirmacionEliminacionPacienteAdmin(pacienteNombre = "este pa
     const cerrar = (resultado) => { dialogo.close(); resolve(resultado); };
     dialogo.querySelector("[data-confirmar-eliminacion]").onclick = () => cerrar(true);
     dialogo.querySelector("[data-cancelar-eliminacion]").onclick = () => cerrar(false);
+    dialogo.oncancel = () => cerrar(false);
+  });
+}
+
+function solicitarConfirmacionEliminacionNotaAdmin(pacienteNombre = "este paciente") {
+  const dialogo = document.getElementById("dialogoEliminarNotaAdmin");
+  if (!dialogo) return Promise.resolve(confirm(`Esta acción eliminará permanentemente la nota seleccionada del expediente de ${pacienteNombre}.\n\nEsta operación no puede deshacerse.\n\n¿Desea continuar?`));
+  dialogo.querySelector("[data-nota-paciente-nombre]").textContent = pacienteNombre;
+  dialogo.showModal();
+  return new Promise((resolve) => {
+    const cerrar = (resultado) => { dialogo.close(); resolve(resultado); };
+    dialogo.querySelector("[data-confirmar-eliminacion-nota]").onclick = () => cerrar(true);
+    dialogo.querySelector("[data-cancelar-eliminacion-nota]").onclick = () => cerrar(false);
     dialogo.oncancel = () => cerrar(false);
   });
 }
@@ -3386,6 +3401,42 @@ window.eliminarPacienteDesdeSolicitudAdmin = async function(solicitudId) {
   } catch (error) {
     if (boton) { boton.disabled = false; boton.textContent = "🗑 Eliminar paciente"; }
     alert("No se pudo eliminar el paciente: " + error.message);
+  }
+};
+
+window.eliminarNotaDesdeSolicitudAdmin = async function(solicitudId) {
+  const solicitud = reportesUsuariosAdmin.find((item) => item.id === solicitudId);
+  const uidPaciente = solicitud?.pacienteUid || "";
+  const notaId = solicitud?.recursoId || "";
+  if (!solicitud || !uidPaciente || !notaId || solicitud.recursoTipo !== "nota_medica") return;
+  if (!adminActual || !(await usuarioPuedeAccederAdmin(adminActual)).permitido) {
+    alert("No tienes permisos administrativos para ejecutar esta acción.");
+    return;
+  }
+
+  const nombre = solicitud.pacienteNombre || solicitud.usuarioRegistrado?.nombre || "este paciente";
+  if (!(await solicitarConfirmacionEliminacionNotaAdmin(nombre))) return;
+  const boton = [...document.querySelectorAll("[data-eliminar-nota-solicitud]")]
+    .find((item) => item.dataset.eliminarNotaSolicitud === solicitudId);
+  if (boton) { boton.disabled = true; boton.textContent = "Eliminando…"; }
+
+  try {
+    const eliminar = httpsCallable(await obtenerFunctions(), "eliminarNotaDesdeSolicitud");
+    const respuesta = await eliminar({ solicitudId });
+    const resultado = respuesta?.data || {};
+    reportesUsuariosAdmin = reportesUsuariosAdmin.filter((item) => item.id !== solicitudId);
+    if (Array.isArray(notasPorPaciente[uidPaciente])) {
+      const idsEliminados = new Set([notaId, resultado.notaId, resultado.notaIdOriginal].filter(Boolean));
+      notasPorPaciente[uidPaciente] = notasPorPaciente[uidPaciente]
+        .filter((nota) => !idsEliminados.has(nota.id));
+    }
+    renderizarReportesUsuariosAdmin();
+    renderizarPacientesAdmin();
+    await Promise.all([cargarResumen(), cargarAuditoria()]);
+    alert("Nota eliminada correctamente.");
+  } catch (error) {
+    if (boton) { boton.disabled = false; boton.textContent = "🗑 Eliminar nota"; }
+    alert("No se pudo eliminar la nota: " + error.message);
   }
 };
 

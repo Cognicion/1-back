@@ -177,7 +177,48 @@ const actividades = [
   }
 ];
 
+const programaEvc = [
+  {
+    id: "orientacion",
+    nombre: "Fase 1 · Orientacion y activacion",
+    descripcion: "Primeras sesiones: reducir fatiga, recuperar rutinas y activar atencion basica con apoyo del cuidador.",
+    duracion: "Semanas 1–2",
+    sesion: [
+      { id: "orientacion-dia", titulo: "Orientacion a la fecha y al lugar", detalle: "Conversar sobre fecha, momento del dia, lugar y actividad siguiente. Usar calendario visible.", minutos: 5 },
+      { id: "respiracion", titulo: "Pausa de respiracion", detalle: "Realizar 5 respiraciones lentas antes de comenzar y entre actividades.", minutos: 3 },
+      { id: "busqueda-visual", titulo: "Busqueda visual", detalle: "Completar una ronda corta, priorizando precision y pausas.", minutos: 8, url: "busqueda-visual.html" },
+      { id: "rutina", titulo: "Practica funcional", detalle: "Repetir una tarea cotidiana simple: preparar una bebida, ordenar objetos o seguir una lista de 3 pasos.", minutos: 10 }
+    ]
+  },
+  {
+    id: "atencion-memoria",
+    nombre: "Fase 2 · Atencion y memoria",
+    descripcion: "Aumentar gradualmente el tiempo de trabajo y practicar memoria de trabajo sin perder el control de la fatiga.",
+    duracion: "Semanas 3–4",
+    sesion: [
+      { id: "1-back", titulo: "Memoria de trabajo 1-Back", detalle: "Comenzar con una dificultad baja y detenerse si aparece frustracion o fatiga.", minutos: 8, url: "nback.html" },
+      { id: "stroop", titulo: "Control inhibitorio", detalle: "Realizar una ronda breve de Stroop, dando prioridad a respuestas precisas.", minutos: 8, url: "stroop.html" },
+      { id: "recuerdo", titulo: "Recuerdo con claves", detalle: "Nombrar 3 objetos, esperar 2 minutos y recordarlos con ayuda de categorias.", minutos: 5 },
+      { id: "actividad-funcional", titulo: "Actividad funcional guiada", detalle: "Seguir una receta, lista de compras o secuencia de pasos con descansos programados.", minutos: 12 }
+    ]
+  },
+  {
+    id: "generalizacion",
+    nombre: "Fase 3 · Generalizacion y autonomia",
+    descripcion: "Transferir lo practicado a actividades de la vida diaria, comunicacion y toma de decisiones.",
+    duracion: "Semanas 5–6",
+    sesion: [
+      { id: "go-nogo", titulo: "Control de respuesta", detalle: "Practicar Go / No-Go en una ronda corta y revisar los errores sin penalizar.", minutos: 8, url: "go-nogo.html" },
+      { id: "lenguaje", titulo: "Fluidez y comunicacion", detalle: "Nombrar elementos de una categoria durante un minuto y conversar sobre una actividad del dia.", minutos: 8 },
+      { id: "planificacion", titulo: "Planificar una tarea", detalle: "Elegir una tarea real, dividirla en pasos y marcar cada paso al completarlo.", minutos: 10 },
+      { id: "cierre", titulo: "Revision con cuidador", detalle: "Registrar que fue facil, que costo trabajo y que ajuste se necesita para la proxima sesion.", minutos: 5 }
+    ]
+  }
+];
+
 let filtroActivo = "Todos";
+let faseProgramaEvcActual = programaEvc[0].id;
+const PROGRAMA_EVC_KEY = "cognicion_programa_evc_progreso";
 
 document.addEventListener("DOMContentLoaded", () => {
   inicializarIntro();
@@ -185,6 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderizarActividades();
   configurarBusqueda();
   asegurarPanelTamizajeCognitivo();
+  inicializarProgramaEvc();
 });
 
 onAuthStateChanged(auth, async (user) => {
@@ -578,7 +620,85 @@ function escaparHTML(valor) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
-}function renderizarFiltros() {
+}
+
+function inicializarProgramaEvc() {
+  const selector = document.getElementById("faseProgramaEvc");
+  const tabs = document.getElementById("fasesProgramaEvc");
+  if (!selector || !tabs) return;
+
+  selector.innerHTML = programaEvc.map((fase) => `<option value="${fase.id}">${fase.nombre} · ${fase.duracion}</option>`).join("");
+  tabs.innerHTML = programaEvc.map((fase) => `<button type="button" role="tab" data-fase-evc="${fase.id}" aria-selected="false"><strong>${fase.nombre}</strong><small>${fase.duracion}</small></button>`).join("");
+  selector.addEventListener("change", () => seleccionarFaseEvc(selector.value));
+  tabs.querySelectorAll("[data-fase-evc]").forEach((boton) => boton.addEventListener("click", () => seleccionarFaseEvc(boton.dataset.faseEvc)));
+  document.getElementById("reiniciarSesionEvc")?.addEventListener("click", reiniciarSesionEvc);
+  seleccionarFaseEvc(faseProgramaEvcActual);
+}
+
+function leerProgresoEvc() {
+  try { return JSON.parse(localStorage.getItem(PROGRAMA_EVC_KEY) || "{}"); } catch (_) { return {}; }
+}
+
+function guardarProgresoEvc(progreso) {
+  try { localStorage.setItem(PROGRAMA_EVC_KEY, JSON.stringify(progreso)); } catch (_) { /* El programa sigue funcionando durante la sesion. */ }
+}
+
+function seleccionarFaseEvc(id) {
+  const fase = programaEvc.find((item) => item.id === id) || programaEvc[0];
+  faseProgramaEvcActual = fase.id;
+  const selector = document.getElementById("faseProgramaEvc");
+  if (selector) selector.value = fase.id;
+  document.querySelectorAll("[data-fase-evc]").forEach((boton) => boton.setAttribute("aria-selected", String(boton.dataset.faseEvc === fase.id)));
+  const descripcion = document.getElementById("descripcionFaseEvc");
+  if (descripcion) descripcion.textContent = `${fase.duracion}. ${fase.descripcion}`;
+  const titulo = document.getElementById("tituloSesionEvc");
+  if (titulo) titulo.textContent = `Sesion base · ${fase.nombre.replace(/^Fase \d+ · /, "")}`;
+  renderizarSesionEvc(fase);
+}
+
+function renderizarSesionEvc(fase) {
+  const contenedor = document.getElementById("listaActividadesEvc");
+  if (!contenedor) return;
+  const progreso = leerProgresoEvc();
+  const completadas = new Set(progreso[fase.id] || []);
+  contenedor.innerHTML = fase.sesion.map((actividad) => `
+    <label class="actividad-evc ${completadas.has(actividad.id) ? "completada" : ""}">
+      <input type="checkbox" data-actividad-evc="${actividad.id}" ${completadas.has(actividad.id) ? "checked" : ""}>
+      <span class="actividad-evc-check" aria-hidden="true"></span>
+      <span class="actividad-evc-copy"><strong>${actividad.titulo}</strong><small>${actividad.detalle}</small></span>
+      <span class="actividad-evc-meta">${actividad.minutos} min</span>
+      ${actividad.url ? `<a href="${construirUrlActividadRehabilitacion(actividad.url)}" class="actividad-evc-link">Abrir</a>` : ""}
+    </label>
+  `).join("");
+  contenedor.querySelectorAll("[data-actividad-evc]").forEach((control) => control.addEventListener("change", () => actualizarActividadEvc(fase.id, control)));
+  actualizarProgresoSesionEvc(fase, completadas.size);
+}
+
+function actualizarActividadEvc(faseId, control) {
+  const progreso = leerProgresoEvc();
+  const completadas = new Set(progreso[faseId] || []);
+  if (control.checked) completadas.add(control.dataset.actividadEvc); else completadas.delete(control.dataset.actividadEvc);
+  progreso[faseId] = [...completadas];
+  guardarProgresoEvc(progreso);
+  control.closest(".actividad-evc")?.classList.toggle("completada", control.checked);
+  const fase = programaEvc.find((item) => item.id === faseId);
+  actualizarProgresoSesionEvc(fase, completadas.size);
+}
+
+function actualizarProgresoSesionEvc(fase, completadas) {
+  const etiqueta = document.getElementById("progresoSesionEvc");
+  if (etiqueta && fase) etiqueta.textContent = `${completadas}/${fase.sesion.length} completadas`;
+}
+
+function reiniciarSesionEvc() {
+  const progreso = leerProgresoEvc();
+  delete progreso[faseProgramaEvcActual];
+  guardarProgresoEvc(progreso);
+  seleccionarFaseEvc(faseProgramaEvcActual);
+  mostrarToast("Sesion reiniciada.");
+}
+
+function renderizarFiltros() {
   const contenedor = document.getElementById("filtrosDominios");
   if (!contenedor) return;
 

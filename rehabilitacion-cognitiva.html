@@ -37,6 +37,7 @@
 
   <nav class="nav-rehabilitacion" aria-label="Navegacion principal">
     <a href="dashboard.html">Dashboard</a>
+    <a href="#programaEvc">Programa post-EVC</a>
     <a href="#actividades">Actividades</a>
     <button id="verIntro" type="button">Ver intro nuevamente</button>
   </nav>
@@ -74,6 +75,39 @@
     <aside class="aviso-clinico">
       Este módulo no sustituye una valoración neuropsicológica ni una consulta médica. Los resultados deben interpretarse dentro del contexto clínico.
     </aside>
+  </section>
+
+  <section class="bloque-rehabilitacion programa-evc" id="programaEvc" aria-labelledby="tituloProgramaEvc">
+    <div class="programa-evc-intro">
+      <span class="kicker">Acompañamiento post-EVC</span>
+      <h2 id="tituloProgramaEvc">Programa de rehabilitación por actividades</h2>
+      <p>Una ruta gradual para acompañar a la persona después de un evento vascular cerebral, con sesiones breves, repetición funcional y participación del cuidador.</p>
+      <div class="aviso-clinico aviso-clinico--compacto"><strong>Importante:</strong> es un apoyo complementario. El plan debe ser indicado y ajustado por neurología, rehabilitación, neuropsicología, terapia de lenguaje y terapia ocupacional según las necesidades de cada paciente.</div>
+    </div>
+
+    <div class="programa-evc-controles">
+      <label for="faseProgramaEvc">Fase del programa</label>
+      <select id="faseProgramaEvc" aria-describedby="descripcionFaseEvc"></select>
+      <p id="descripcionFaseEvc"></p>
+    </div>
+
+    <div class="programa-evc-layout">
+      <div class="fases-programa" id="fasesProgramaEvc" role="tablist" aria-label="Fases del programa post-EVC"></div>
+      <div class="sesion-programa">
+        <div class="sesion-programa-header">
+          <div>
+            <span class="kicker">Sesión sugerida</span>
+            <h3 id="tituloSesionEvc"></h3>
+          </div>
+          <span class="progreso-sesion" id="progresoSesionEvc">0/0 completadas</span>
+        </div>
+        <div class="lista-actividades-evc" id="listaActividadesEvc"></div>
+        <div class="programa-evc-footer">
+          <button type="button" class="boton-secundario" id="reiniciarSesionEvc">Reiniciar sesión</button>
+          <a class="boton-principal" href="#actividades">Ver todas las actividades</a>
+        </div>
+      </div>
+    </div>
   </section>
 <section class="bloque-rehabilitacion" id="actividades">
     <div class="seccion-titulo">

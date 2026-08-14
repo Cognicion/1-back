@@ -20,6 +20,8 @@ const adminDb = admin.firestore();
 const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
 const TIPOS_COLABORADOR_VALIDOS = new Set(["colaborador", "destacado", "estrella"]);
 const ROLES_ADMIN_VALIDOS = new Set(["admin", "administrador", "superadmin", "adminprincipal", "administradorprincipal"]);
+const RAICES_NOTA_VALIDAS = new Set(["usuarios", "pacientes", "root"]);
+const COLECCIONES_NOTA_VALIDAS = new Set(["notasMedicas", "notas", "notasClinicas"]);
 
 function normalizarRolAdmin(valor = "") {
   return String(valor || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[\s_-]+/g, "").trim();
@@ -49,6 +51,42 @@ function documentoPerteneceAPaciente(ruta, datos, uidPaciente) {
 
 async function eliminarDocumentoYDescendientes(ref) {
   await adminDb.recursiveDelete(ref);
+}
+
+function resolverReferenciaNotaSolicitud(uidPaciente, recursoId) {
+  const valor = String(recursoId || "").trim();
+  if (!uidPaciente || uidPaciente.includes("/") || !valor) {
+    throw new HttpsError("invalid-argument", "La solicitud no identifica la nota y el paciente.");
+  }
+
+  const partes = valor.split("::");
+  const compuesta = partes.length === 3;
+  if (partes.length !== 1 && !compuesta) {
+    throw new HttpsError("failed-precondition", "El identificador de la nota no es válido.");
+  }
+
+  const raiz = compuesta ? partes[0] : "usuarios";
+  const coleccion = compuesta ? partes[1] : "notasMedicas";
+  const notaId = compuesta ? partes[2] : valor;
+  if (!RAICES_NOTA_VALIDAS.has(raiz) || !COLECCIONES_NOTA_VALIDAS.has(coleccion) || !notaId || notaId.includes("/")) {
+    throw new HttpsError("failed-precondition", "La solicitud apunta a una ubicación de nota no permitida.");
+  }
+
+  const referencia = raiz === "root"
+    ? adminDb.doc(`${coleccion}/${notaId}`)
+    : adminDb.doc(`${raiz}/${uidPaciente}/${coleccion}/${notaId}`);
+  return { referencia, raiz, coleccion, notaId, recursoId: valor };
+}
+
+function notaRaizPertenecePaciente(datos = {}, uidPaciente = "") {
+  return [datos.uidPaciente, datos.idPaciente, datos.pacienteId, datos.pacienteUid]
+    .some((valor) => String(valor || "") === uidPaciente);
+}
+
+async function eliminarSubcoleccionesNota(referencia) {
+  const subcolecciones = await referencia.listCollections();
+  for (const subcoleccion of subcolecciones) await adminDb.recursiveDelete(subcoleccion);
+  return subcolecciones.length;
 }
 
 async function eliminarDocumentosRelacionadosEnColecciones(uidPaciente, resumen) {
@@ -118,6 +156,79 @@ exports.eliminarPacienteDefinitivamente = onCall(async (request) => {
     fechaTexto: new Date().toISOString()
   });
   return { ok: true, ...resumen };
+});
+
+exports.eliminarNotaDesdeSolicitud = onCall(async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
+  const adminUid = request.auth.uid;
+  const solicitudId = String(request.data?.solicitudId || "").trim();
+  if (!solicitudId || solicitudId.includes("/")) {
+    throw new HttpsError("invalid-argument", "Falta una solicitud de eliminación válida.");
+  }
+
+  const adminSnap = await adminDb.doc(`usuarios/${adminUid}`).get();
+  if (adminUid !== ADMIN_UID && (!adminSnap.exists || !datosUsuarioEsAdmin(adminSnap.data()))) {
+    throw new HttpsError("permission-denied", "No tienes permisos administrativos para eliminar notas.");
+  }
+
+  const solicitudRef = adminDb.doc(`reportesUsuarios/${solicitudId}`);
+  const solicitudSnap = await solicitudRef.get();
+  const solicitud = solicitudSnap.exists ? solicitudSnap.data() : null;
+  if (!solicitud || (solicitud.tipo !== "solicitud_eliminacion" && solicitud.categoria !== "solicitud_eliminacion") || solicitud.recursoTipo !== "nota_medica") {
+    throw new HttpsError("failed-precondition", "La solicitud de eliminación no corresponde a una nota médica.");
+  }
+
+  const uidPaciente = String(solicitud.pacienteUid || "").trim();
+  const recursoId = String(solicitud.recursoId || "").trim();
+  const notaObjetivo = resolverReferenciaNotaSolicitud(uidPaciente, recursoId);
+  const notaSnap = await notaObjetivo.referencia.get();
+  if (!notaSnap.exists) throw new HttpsError("not-found", "La nota solicitada ya no existe o no pudo localizarse.");
+  if (notaObjetivo.raiz === "root" && !notaRaizPertenecePaciente(notaSnap.data(), uidPaciente)) {
+    throw new HttpsError("failed-precondition", "La nota indicada no pertenece al paciente de la solicitud.");
+  }
+
+  const pacienteSnap = await adminDb.doc(`usuarios/${uidPaciente}`).get();
+  const paciente = pacienteSnap.exists ? pacienteSnap.data() : {};
+  const nombrePaciente = paciente.nombre || paciente.nombreCompleto || solicitud.pacienteNombre || "Paciente sin nombre";
+  const nota = notaSnap.data() || {};
+  const subcoleccionesEliminadas = await eliminarSubcoleccionesNota(notaObjetivo.referencia);
+  const auditoriaRef = adminDb.collection("auditoria").doc();
+  const batch = adminDb.batch();
+  batch.delete(notaObjetivo.referencia);
+  batch.delete(solicitudRef);
+  batch.set(auditoriaRef, {
+    accion: "Nota médica eliminada definitivamente",
+    modulo: "Panel administracion",
+    descripcion: "El administrador eliminó definitivamente una nota médica a partir de una solicitud válida.",
+    usuarioUid: adminUid,
+    usuarioNombre: request.auth.token?.email || adminUid,
+    usuarioRol: "admin",
+    pacienteUid: uidPaciente,
+    pacienteNombre: nombrePaciente,
+    exito: true,
+    detalles: {
+      solicitudId,
+      notaId: recursoId,
+      notaIdOriginal: notaObjetivo.notaId,
+      coleccion: notaObjetivo.coleccion,
+      raiz: notaObjetivo.raiz,
+      motivo: String(solicitud.motivoSolicitud || "").trim(),
+      estadoNota: nota.estadoNota || nota.estado || "",
+      subcoleccionesEliminadas
+    },
+    fecha: admin.firestore.FieldValue.serverTimestamp(),
+    fechaTexto: new Date().toISOString()
+  });
+  await batch.commit();
+
+  return {
+    ok: true,
+    solicitudId,
+    pacienteUid: uidPaciente,
+    notaId: recursoId,
+    notaIdOriginal: notaObjetivo.notaId,
+    subcoleccionesEliminadas
+  };
 });
 
 exports.actualizarReconocimientoColaborador = onCall(async (request) => {
