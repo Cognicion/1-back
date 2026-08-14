@@ -3,6 +3,7 @@ export * from "./shared/TiposCognitivos";
 export * from "./shared/ModuloCognitivo";
 export * from "./shared/BusEventosSofia";
 export * from "./shared/ProveedorIA";
+export * from "./shared/ConocimientoNombres";
 
 export * from "./percepcion/Percepcion";
 export * from "./atencion/Atencion";

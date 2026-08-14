@@ -1,5 +1,6 @@
 ﻿import { BaseModuloCognitivo } from "../shared/ModuloCognitivo";
 import type { EntradaCognitiva, ResultadoProceso } from "../shared/TiposCognitivos";
+import { separarNombre, type PartesNombre } from "../shared/ConocimientoNombres";
 
 export interface EntradaPercepcion {
   datos: unknown;
@@ -10,6 +11,7 @@ export interface SalidaPercepcion {
   tipo: "senal_perceptiva";
   datos: unknown;
   resumen?: string;
+  nombreDetectado?: PartesNombre;
 }
 
 /**
@@ -47,10 +49,17 @@ export class Percepcion extends BaseModuloCognitivo<EntradaPercepcion, SalidaPer
 
   async procesar(entrada: EntradaCognitiva<EntradaPercepcion>): Promise<ResultadoProceso<SalidaPercepcion>> {
     this.estado = "procesando";
+    const datos = entrada.contenido?.datos ?? entrada.contenido;
+    const textoNombre = typeof datos === "string"
+      ? datos
+      : typeof datos === "object" && datos !== null
+        ? String((datos as Record<string, unknown>).nombreCompleto || (datos as Record<string, unknown>).nombre || "")
+        : "";
     const salida: SalidaPercepcion = {
       tipo: "senal_perceptiva",
-      datos: entrada.contenido?.datos ?? entrada.contenido,
-      resumen: "Normalizar entradas, detectar modalidad y preparar senales cognitivas iniciales."
+      datos,
+      resumen: "Normalizar entradas, detectar modalidad y preparar senales cognitivas iniciales.",
+      ...(textoNombre ? { nombreDetectado: separarNombre(textoNombre) } : {})
     };
     this.estado = "listo";
     return this.crearSalida(salida, { entradaTipo: entrada.tipo });
