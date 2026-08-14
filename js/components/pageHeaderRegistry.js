@@ -15,6 +15,8 @@ export const PAGE_HEADER_REGISTRY = Object.freeze({
   biblioteca: { title: "Biblioteca", description: "Recursos de consulta para tu práctica.", featureCategories: ["biblioteca"] },
   estadistica: { title: "Estadística", description: "Indicadores y reportes de actividad.", featureCategories: ["reportes"] },
   rehabilitacion: { title: "Rehabilitación cognitiva", description: "Ejercicios y seguimiento cognitivo.", featureCategories: ["rehabilitacion"] },
+  "rehabilitacion-cognitiva": { title: "Rehabilitación cognitiva", description: "Ejercicios y seguimiento cognitivo.", featureCategories: ["rehabilitacion"] },
+  "rehabilitacion-evc": { title: "Rehabilitación post-EVC", description: "Evaluación funcional y planificación cognitiva personalizada.", featureCategories: ["rehabilitacion", "pacientes"] },
   sofia: { title: "SOFÍA", description: "Asistente para organizar conocimiento y documentación.", featureCategories: ["sofia"] },
   apuntes: { title: "Mis apuntes", description: "Notas personales, recordatorios y pendientes.", featureCategories: ["apuntes"] },
   configuracion: { title: "Configuración", description: "Preferencias, apariencia y cuenta.", featureCategories: ["configuracion"] },

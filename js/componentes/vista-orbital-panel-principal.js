@@ -6,7 +6,7 @@ const MODULOS_PRINCIPALES_POR_RUTA = new Map([
   ["medico.html", "js/medico.js?v=1.866"],
   ["mi-salud.html", "js/mi-salud.js?v=20260731-admin-access"],
   ["sofia.html", "js/sofia.js?v=20260811-cytochrome-bridge-v1"],
-  ["rehabilitacion-cognitiva.html", "js/rehabilitacion-cognitiva.js"],
+  ["rehabilitacion-cognitiva.html", "js/rehabilitacion-cognitiva.js?v=20260814-evc-plan-v1"],
   ["estadistica.html", "js/estadistica.js?v=20260718-patient-access"],
   ["escalas.html", "js/escalas.js?v=20260716-expediente-fix-2"],
   ["calculadoras-medicas.html", "js/calculadoras-medicas.js"],

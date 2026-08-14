@@ -34,5 +34,6 @@
 // deployment marker: 2026-08-13-diagnosis-row-prefix-filter-v2-published
 // deployment marker: 2026-08-13-diagnosis-context-gate-v1
 // deployment marker: 2026-08-14-note-deletion-request-v1
-export const APP_VERSION = "1.982";
+// deployment marker: 2026-08-14-post-evc-personalized-rehabilitation-v1
+export const APP_VERSION = "1.983";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

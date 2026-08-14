@@ -79,34 +79,19 @@
 
   <section class="bloque-rehabilitacion programa-evc" id="programaEvc" aria-labelledby="tituloProgramaEvc">
     <div class="programa-evc-intro">
-      <span class="kicker">Acompañamiento post-EVC</span>
-      <h2 id="tituloProgramaEvc">Programa de rehabilitación por actividades</h2>
-      <p>Una ruta gradual para acompañar a la persona después de un evento vascular cerebral, con sesiones breves, repetición funcional y participación del cuidador.</p>
-      <div class="aviso-clinico aviso-clinico--compacto"><strong>Importante:</strong> es un apoyo complementario. El plan debe ser indicado y ajustado por neurología, rehabilitación, neuropsicología, terapia de lenguaje y terapia ocupacional según las necesidades de cada paciente.</div>
+      <span class="kicker">Ruta clínica post-EVC</span>
+      <h2 id="tituloProgramaEvc">Evaluación cognitiva y plan personalizado</h2>
+      <p>Abre un espacio específico para personas que tuvieron un evento vascular cerebral. Registra el impacto funcional por dominio, define metas significativas y recibe un borrador de rehabilitación con actividades adaptadas.</p>
+      <ul class="programa-evc-beneficios">
+        <li><strong>6 dominios</strong><span>Atención, memoria, funciones ejecutivas, lenguaje, velocidad de procesamiento y función visuoespacial.</span></li>
+        <li><strong>Metas funcionales</strong><span>Prioriza actividades cotidianas importantes para la persona y su red de apoyo.</span></li>
+        <li><strong>Plan ajustable</strong><span>Adapta duración, apoyos y frecuencia según dificultad observada, fatiga y contexto.</span></li>
+      </ul>
     </div>
-
-    <div class="programa-evc-controles">
-      <label for="faseProgramaEvc">Fase del programa</label>
-      <select id="faseProgramaEvc" aria-describedby="descripcionFaseEvc"></select>
-      <p id="descripcionFaseEvc"></p>
-    </div>
-
-    <div class="programa-evc-layout">
-      <div class="fases-programa" id="fasesProgramaEvc" role="tablist" aria-label="Fases del programa post-EVC"></div>
-      <div class="sesion-programa">
-        <div class="sesion-programa-header">
-          <div>
-            <span class="kicker">Sesión sugerida</span>
-            <h3 id="tituloSesionEvc"></h3>
-          </div>
-          <span class="progreso-sesion" id="progresoSesionEvc">0/0 completadas</span>
-        </div>
-        <div class="lista-actividades-evc" id="listaActividadesEvc"></div>
-        <div class="programa-evc-footer">
-          <button type="button" class="boton-secundario" id="reiniciarSesionEvc">Reiniciar sesión</button>
-          <a class="boton-principal" href="#actividades">Ver todas las actividades</a>
-        </div>
-      </div>
+    <div class="programa-evc-accion">
+      <span class="programa-evc-icono" aria-hidden="true">EVC</span>
+      <p>Perfil orientativo para apoyar la planeación clínica. No reemplaza una valoración neuropsicológica ni la evaluación interdisciplinaria.</p>
+      <a class="boton-principal" href="rehabilitacion-evc.html" data-enlace-rehabilitacion-evc>Evaluar y crear plan</a>
     </div>
   </section>
 <section class="bloque-rehabilitacion" id="actividades">
@@ -147,7 +132,7 @@
 
 <div class="toast-rehabilitacion" id="toastRehabilitacion" role="status" aria-live="polite"></div>
 
-<script type="module" src="js/rehabilitacion-cognitiva.js"></script>
+<script type="module" src="js/rehabilitacion-cognitiva.js?v=20260814-evc-plan-v1"></script>
 <script type="module" src="js/reportes.js"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
 </body>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="biocelular">
+<head>
+  <script src="js/theme-preload.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COGNICIÓN | Rehabilitación cognitiva post-EVC</title>
+  <meta name="description" content="Evaluación funcional de dominios cognitivos y creación de un plan personalizado de rehabilitación post-EVC.">
+  <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+  <link rel="stylesheet" href="css/theme/cognicion-theme.css">
+  <link rel="stylesheet" href="css/rehabilitacion-cognitiva.css">
+  <link rel="stylesheet" href="css/rehabilitacion-evc.css?v=20260814-evc-plan-v1">
+  <script type="module" src="js/services/themeBootstrap.js"></script>
+</head>
+
+<body class="pagina-evc">
+  <header class="topbar-rehabilitacion">
+    <a class="marca-rehabilitacion" href="rehabilitacion-cognitiva.html" data-volver-rehabilitacion aria-label="Volver a rehabilitación cognitiva">
+      <img src="assets/favicon-cognicion.png" alt="COGNICIÓN">
+      <div>
+        <strong>Rehabilitación post-EVC</strong>
+        <span>Evaluar · Priorizar · Acompañar</span>
+      </div>
+    </a>
+    <nav class="nav-rehabilitacion" aria-label="Navegación principal">
+      <a href="#evaluacion">Evaluación</a>
+      <a href="#planEvc">Plan</a>
+      <a href="rehabilitacion-cognitiva.html" data-volver-rehabilitacion>Rehabilitación cognitiva</a>
+      <a href="dashboard.html">Dashboard</a>
+    </nav>
+  </header>
+
+  <main class="rehabilitacion-shell evc-shell">
+    <section class="evc-hero" aria-labelledby="tituloEvc">
+      <div>
+        <span class="kicker">Acompañamiento después de un evento vascular cerebral</span>
+        <h1 id="tituloEvc">Del perfil cognitivo a un plan funcional</h1>
+        <p>Registra dificultades y fortalezas observadas, incorpora una meta importante para la persona y genera un borrador de rehabilitación con actividades de Cognición y estrategias para la vida diaria.</p>
+        <div class="evc-hero-etiquetas" aria-label="Características del flujo">
+          <span>6 dominios cognitivos</span>
+          <span>Metas compartidas</span>
+          <span>Revisión programada</span>
+        </div>
+      </div>
+      <aside class="evc-paciente" aria-live="polite">
+        <span>Contexto actual</span>
+        <strong id="contextoPacienteEvc">Modo general</strong>
+        <small id="detallePacienteEvc">Puedes crear un borrador sin asociarlo a un expediente.</small>
+      </aside>
+    </section>
+
+    <aside class="alerta-urgente-evc" role="note" aria-labelledby="tituloAlertaEvc">
+      <strong id="tituloAlertaEvc">Esta herramienta no es para síntomas agudos</strong>
+      <p>Si aparecen de forma súbita debilidad o adormecimiento de cara, brazo o pierna, dificultad para hablar o comprender, alteración visual, pérdida del equilibrio o cefalea intensa, solicita atención de urgencia. No continúes la sesión.</p>
+    </aside>
+
+    <form id="formEvaluacionEvc" novalidate>
+      <section class="panel-evc" id="evaluacion" aria-labelledby="tituloEvaluacionEvc">
+        <div class="encabezado-panel-evc">
+          <div>
+            <span class="paso-evc">Paso 1</span>
+            <h2 id="tituloEvaluacionEvc">Contexto y dominios cognitivos</h2>
+            <p>Este registro funcional orienta prioridades; no es una escala estandarizada ni establece un diagnóstico.</p>
+          </div>
+          <span class="estado-formulario-evc" id="estadoEvaluacionEvc">Sin evaluar</span>
+        </div>
+
+        <div class="datos-evc-grid">
+          <label>Paciente
+            <input id="nombrePacienteEvc" name="nombrePaciente" type="text" maxlength="160" autocomplete="off" placeholder="Nombre o identificador clínico">
+          </label>
+          <label>Fecha del EVC
+            <input id="fechaEvc" name="fechaEvc" type="date">
+          </label>
+          <label>Fatiga durante tareas cognitivas
+            <select id="fatigaEvc" name="fatiga">
+              <option value="0">No observada</option>
+              <option value="1" selected>Leve</option>
+              <option value="2">Moderada</option>
+              <option value="3">Marcada</option>
+            </select>
+          </label>
+          <label>Apoyo disponible
+            <select id="apoyoEvc" name="apoyo">
+              <option value="disponible">Cuidador o familiar disponible</option>
+              <option value="ocasional" selected>Apoyo ocasional</option>
+              <option value="sin-apoyo">Sin apoyo habitual</option>
+            </select>
+          </label>
+          <label>Días de práctica por semana
+            <select id="diasSemanaEvc" name="diasSemana">
+              <option value="1">1 día</option>
+              <option value="2">2 días</option>
+              <option value="3" selected>3 días</option>
+              <option value="4">4 días</option>
+              <option value="5">5 días</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="leyenda-dificultad-evc" aria-label="Escala funcional orientativa">
+          <span><b>0</b> Sin dificultad</span>
+          <span><b>1</b> Leve</span>
+          <span><b>2</b> Moderada</span>
+          <span><b>3</b> Marcada</span>
+        </div>
+        <div class="dominios-evaluacion-evc" id="dominiosEvaluacionEvc"></div>
+        <p class="error-formulario-evc" id="errorEvaluacionEvc" role="alert"></p>
+      </section>
+
+      <section class="panel-evc" aria-labelledby="tituloMetasEvc">
+        <div class="encabezado-panel-evc">
+          <div>
+            <span class="paso-evc">Paso 2</span>
+            <h2 id="tituloMetasEvc">Meta de la persona y observaciones</h2>
+            <p>Una meta funcional concreta ayuda a transferir el entrenamiento a la vida cotidiana.</p>
+          </div>
+        </div>
+        <div class="metas-evc-grid">
+          <label>¿Qué actividad quiere recuperar o mejorar?
+            <textarea id="metaPrincipalEvc" name="metaPrincipal" maxlength="500" placeholder="Ej. preparar el desayuno con una lista de pasos y mínima ayuda."></textarea>
+          </label>
+          <label>Actividad significativa, rol o interés
+            <textarea id="actividadSignificativaEvc" name="actividadSignificativa" maxlength="300" placeholder="Ej. volver a leer, administrar citas o participar en conversaciones familiares."></textarea>
+          </label>
+          <label class="campo-ancho-evc">Observaciones clínicas y factores que influyen
+            <textarea id="observacionesEvc" name="observaciones" maxlength="1200" placeholder="Comunicación, visión, audición, movilidad, estado de ánimo, sueño, dolor, escolaridad, desempeño previo o apoyos ambientales."></textarea>
+          </label>
+        </div>
+        <label class="confirmacion-evc">
+          <input id="confirmacionEvc" type="checkbox" required>
+          <span>La persona se encuentra clínicamente estable para esta actividad y el resultado será revisado por un profesional.</span>
+        </label>
+        <div class="accion-generar-evc">
+          <p>El plan será un borrador editable para toma de decisiones compartida.</p>
+          <button type="submit" class="boton-principal">Generar plan personalizado</button>
+        </div>
+      </section>
+    </form>
+
+    <section class="panel-evc plan-evc" id="planEvc" aria-labelledby="tituloPlanEvc" hidden>
+      <div class="encabezado-panel-evc">
+        <div>
+          <span class="paso-evc">Paso 3</span>
+          <h2 id="tituloPlanEvc">Borrador de plan personalizado</h2>
+          <p id="fechaPlanEvc"></p>
+        </div>
+        <span class="estado-formulario-evc estado-listo">Listo para revisión</span>
+      </div>
+
+      <article class="meta-plan-evc">
+        <span>Meta funcional prioritaria</span>
+        <strong id="metaPlanEvc"></strong>
+      </article>
+
+      <div class="resumen-plan-evc" id="resumenPlanEvc"></div>
+
+      <section aria-labelledby="tituloPerfilEvc">
+        <div class="subtitulo-plan-evc">
+          <h3 id="tituloPerfilEvc">Perfil de dominios</h3>
+          <p>La barra representa la dificultad funcional registrada, no un percentil ni una puntuación diagnóstica.</p>
+        </div>
+        <div class="perfil-dominios-evc" id="perfilDominiosEvc"></div>
+      </section>
+
+      <section aria-labelledby="tituloPrioridadesEvc">
+        <div class="subtitulo-plan-evc">
+          <h3 id="tituloPrioridadesEvc">Prioridades y objetivos</h3>
+        </div>
+        <div class="prioridades-plan-evc" id="prioridadesPlanEvc"></div>
+      </section>
+
+      <section aria-labelledby="tituloActividadesEvc">
+        <div class="subtitulo-plan-evc">
+          <h3 id="tituloActividadesEvc">Actividades sugeridas</h3>
+          <p>Comienza con pocas actividades, observa tolerancia y ajusta el nivel de ayuda.</p>
+        </div>
+        <div class="actividades-plan-evc" id="actividadesPlanEvc"></div>
+      </section>
+
+      <div class="plan-apoyos-grid">
+        <section aria-labelledby="tituloApoyosEvc">
+          <h3 id="tituloApoyosEvc">Estrategias y apoyos</h3>
+          <ul id="apoyosPlanEvc"></ul>
+        </section>
+        <section class="alertas-plan-evc" id="contenedorAlertasPlanEvc" aria-labelledby="tituloAlertasPlanEvc" hidden>
+          <h3 id="tituloAlertasPlanEvc">Aspectos para valoración profesional</h3>
+          <ul id="alertasPlanEvc"></ul>
+        </section>
+      </div>
+
+      <div class="acciones-plan-evc">
+        <button type="button" id="guardarPlanEvc">Guardar borrador en este dispositivo</button>
+        <button type="button" class="boton-secundario" id="copiarPlanEvc">Copiar resumen</button>
+        <button type="button" class="boton-secundario" id="imprimirPlanEvc">Imprimir</button>
+        <button type="button" class="boton-secundario" id="editarEvaluacionEvc">Editar evaluación</button>
+      </div>
+      <p class="estado-guardado-evc" id="estadoGuardadoEvc" role="status"></p>
+    </section>
+
+    <section class="panel-evc evidencia-evc" aria-labelledby="tituloEvidenciaEvc">
+      <span class="kicker">Fundamento y límites</span>
+      <h2 id="tituloEvidenciaEvc">Cómo debe interpretarse</h2>
+      <p>Las recomendaciones actuales apoyan el tamizaje cognitivo post-EVC, la evaluación con instrumentos válidos cuando se detectan dificultades y la construcción de planes individualizados, orientados a metas y revisados periódicamente. Esta página organiza esos elementos, pero no sustituye instrumentos validados ni el juicio del equipo tratante.</p>
+      <div class="fuentes-evc">
+        <a href="https://www.nice.org.uk/guidance/ng236/chapter/Recommendations" target="_blank" rel="noopener noreferrer">NICE · Stroke rehabilitation in adults</a>
+        <a href="https://www.strokebestpractices.ca/recommendations/vascular-cognitive-impairment/3-cognitive-rehabilitation" target="_blank" rel="noopener noreferrer">Canadian Stroke Best Practices · Cognitive Rehabilitation</a>
+        <a href="https://professional.heart.org/en/science-news/guidelines-for-adult-stroke-rehabilitation-and-recovery/top-things-to-know" target="_blank" rel="noopener noreferrer">AHA/ASA · Adult Stroke Rehabilitation and Recovery</a>
+        <a href="https://www.stroke.org/en/stroke-facts" target="_blank" rel="noopener noreferrer">American Stroke Association · Señales de alarma B.E. F.A.S.T.</a>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast-rehabilitacion" id="toastEvc" role="status" aria-live="polite"></div>
+  <script type="module" src="js/rehabilitacion-evc.js?v=20260814-evc-plan-v1"></script>
+</body>
+</html>
