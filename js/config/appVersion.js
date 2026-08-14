@@ -39,5 +39,6 @@
 // deployment marker: 2026-08-14-post-evc-guided-battery-v2
 // deployment marker: 2026-08-14-patient-name-order-v2
 // deployment marker: 2026-08-14-patient-name-dictionary-v1
-export const APP_VERSION = "1.987";
+// deployment marker: 2026-08-14-note-sections-runtime-v1
+export const APP_VERSION = "1.988";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

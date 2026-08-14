@@ -1,13 +1,13 @@
-import { flattenNormalizedBlocks } from "../docx/docxBlockNormalizer.js";
+import { flattenNormalizedBlocks } from "../docx/docxBlockNormalizer.js?v=20260814-note-sections-runtime-v1";
 import {
   CLINICAL_BOUNDARY_ONLY_ALIASES,
   CLINICAL_HEADING_SEMANTIC_FAMILIES,
   CLINICAL_SECTION_ALIASES,
   CLINICAL_SECTION_KEYS,
   CORE_CLINICAL_SECTION_KEYS
-} from "./clinicalSectionConfig.js";
-import { findFirstBoundary, findSectionStart, normalizeClinicalHeadingWithMap } from "./clinicalBoundaryEngine.js";
-import { parseSubjectiveSection } from "./subjectiveSectionParser.js";
+} from "./clinicalSectionConfig.js?v=20260814-note-sections-runtime-v1";
+import { findFirstBoundary, findSectionStart, normalizeClinicalHeadingWithMap } from "./clinicalBoundaryEngine.js?v=20260814-note-sections-runtime-v1";
+import { parseSubjectiveSection } from "./subjectiveSectionParser.js?v=20260814-note-sections-runtime-v1";
 
 export const SECTION_RULES = CLINICAL_SECTION_ALIASES;
 

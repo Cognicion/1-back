@@ -1,5 +1,5 @@
-import { CLINICAL_SECTION_ALIASES, NOTE_START_ALIASES } from "./clinicalSectionConfig.js";
-import { findFirstBoundary as findSharedFirstBoundary } from "./clinicalBoundaryEngine.js";
+import { CLINICAL_SECTION_ALIASES, NOTE_START_ALIASES } from "./clinicalSectionConfig.js?v=20260814-note-sections-runtime-v1";
+import { findFirstBoundary as findSharedFirstBoundary } from "./clinicalBoundaryEngine.js?v=20260814-note-sections-runtime-v1";
 
 const SUBJECTIVE_BOUNDARY_ALIASES = Object.freeze([
   ...CLINICAL_SECTION_ALIASES.physicalNeurologicalExam,

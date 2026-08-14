@@ -2,13 +2,13 @@ import { getAuthenticatedUserOnce, getUserProfileOnce } from "../../services/aut
 import { TRANSFER_STATUS, resetPatientTransferState, setPatientTransferExecutionState, setPatientTransferFiles, setPatientTransferGroups, setPatientTransferResults, setPatientTransferStatus } from "./patientTransferState.js";
 import { validateTransferDocxFile } from "./docx/docxValidator.js";
 import { calculateDocxHash, calculateNormalizedTextHash } from "./docx/docxHashService.js";
-import { extractDocx } from "./docx/docxExtractor.js";
-import { normalizeDocxBlocks, normalizedBlocksToText } from "./docx/docxBlockNormalizer.js";
+import { extractDocx } from "./docx/docxExtractor.js?v=20260814-note-sections-runtime-v1";
+import { normalizeDocxBlocks, normalizedBlocksToText } from "./docx/docxBlockNormalizer.js?v=20260814-note-sections-runtime-v1";
 import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js?v=20260814-patient-name-dictionary-v1";
 import { resolvePatientIdentity } from "./parsing/patientIdentityResolver.js";
-import { parseClinicalSections } from "./parsing/clinicalSectionParser.js?v=v172-diagnostic-entity-boundaries-v1";
+import { parseClinicalSections } from "./parsing/clinicalSectionParser.js?v=20260814-note-sections-runtime-v1";
 import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js?v=20260813-diagnosis-context-gate-v1";
-import { detectMultipleClinicalNotes, expandSegmentedDocumentsForPersistence, mergeClinicalSegments, segmentClinicalNotes, splitClinicalSegment } from "./parsing/clinicalNoteSegmenter.js?v=20260810-imported-notes-v1";
+import { detectMultipleClinicalNotes, expandSegmentedDocumentsForPersistence, mergeClinicalSegments, segmentClinicalNotes, splitClinicalSegment } from "./parsing/clinicalNoteSegmenter.js?v=20260814-note-sections-runtime-v1";
 import { extractVitalSignsCandidates } from "./parsing/vitalSignsParser.js";
 import { parseNoteMetadata } from "./parsing/noteMetadataParser.js";
 import { preserveManualSubjectiveEdits, updateSubjectiveSegmentValue } from "./state/subjectiveSegmentState.js";

@@ -1,12 +1,12 @@
-  import { normalizedBlocksToText } from "../docx/docxBlockNormalizer.js";
-  import { NOTE_START_ALIASES } from "./clinicalSectionConfig.js";
-  import { normalizeClinicalHeading, parseClinicalSections } from "./clinicalSectionParser.js";
+  import { normalizedBlocksToText } from "../docx/docxBlockNormalizer.js?v=20260814-note-sections-runtime-v1";
+  import { NOTE_START_ALIASES } from "./clinicalSectionConfig.js?v=20260814-note-sections-runtime-v1";
+  import { normalizeClinicalHeading, parseClinicalSections } from "./clinicalSectionParser.js?v=20260814-note-sections-runtime-v1";
   import { assignParsedSubjective } from "../state/subjectiveSegmentState.js";
 
 
 console.info("[patient-transfer] clinical-note-segmenter:loaded", {
   moduleUrl: import.meta.url,
-  buildMarker: "patient-transfer-segmentation-debug-v1"
+  buildMarker: "20260814-note-sections-runtime-v1"
 });
 
   const DATE_PATTERN =  /\b(?:[0-3]?\d[\/-][01]?\d[\/-](?:19|20)?\d{2}|(?:19|20)\d{2}-[01]\d-[0-3]\d)\b/;
