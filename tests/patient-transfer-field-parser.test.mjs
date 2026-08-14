@@ -125,6 +125,18 @@ const tableParsed = parsePatientFields([
 assert.equal(tableParsed.fields.nombre.value, "FILEMON CECILIO ARTEAGA BALTAZAR");
 assert.equal(tableParsed.fields.edad.value, "78");
 
+const structuredNamesFirstFallback = parsePatientFields([{
+  type: "table",
+  rows: [["Nombre completo del paciente: LUCIA BEATRIZ MONTERO SALAS Fecha de nacimiento: 25/05/2002 Edad: 24"]],
+  source: { blockIndex: 2, tableIndex: 0, origin: "body" }
+}], "structured-names-first-fallback");
+const structuredNamesFirstValues = fieldValues(structuredNamesFirstFallback.fields);
+assert.equal(structuredNamesFirstValues.nombre, "LUCIA BEATRIZ MONTERO SALAS");
+assert.equal(structuredNamesFirstValues.nombres, "LUCIA BEATRIZ");
+assert.equal(structuredNamesFirstValues.apellidoPaterno, "MONTERO");
+assert.equal(structuredNamesFirstValues.apellidoMaterno, "SALAS");
+assert.equal(structuredNamesFirstFallback.fields.nombre.nameSplit.sourceFormat, PATIENT_NAME_SOURCE_FORMATS.NAMES_FIRST);
+
 const duplicated = parsePatientFields([
   { type: "paragraph", text: "Nombre completo del paciente: A Edad: 30", source: { blockIndex: 0 } },
   { type: "paragraph", text: "Nombre completo del paciente: B", source: { blockIndex: 1 } }
@@ -255,17 +267,31 @@ const ambiguousName = parsePatientFields([{
 }], "ambiguous-name");
 const ambiguousValues = fieldValues(ambiguousName.fields);
 assert.equal(ambiguousValues.nombre, "ALFA BETA GAMMA DELTA");
-assert.equal(ambiguousValues.nombres, "ALFA BETA GAMMA DELTA");
-assert.equal(ambiguousValues.apellidoPaterno, undefined);
-assert.equal(ambiguousValues.apellidoMaterno, undefined);
-assert.equal(ambiguousName.fields.nombre.nameSplit.ruleApplied, "ambiguous-source-order");
+assert.equal(ambiguousValues.nombres, "ALFA BETA");
+assert.equal(ambiguousValues.apellidoPaterno, "GAMMA");
+assert.equal(ambiguousValues.apellidoMaterno, "DELTA");
+assert.equal(ambiguousName.fields.nombre.nameSplit.ruleApplied, "last-two-surnames");
+assert.equal(ambiguousName.fields.nombre.nameSplit.sourceFormat, PATIENT_NAME_SOURCE_FORMATS.NAMES_FIRST);
 assert.equal(ambiguousName.fields.nombre.nameSplit.requiresReview, true);
+
+const ambiguousFreeText = suggestPatientNameParts("ALFA BETA GAMMA DELTA", {
+  sourceFormat: PATIENT_NAME_SOURCE_FORMATS.UNKNOWN,
+  preserveAmbiguous: true
+});
+assert.equal(ambiguousFreeText.nombres, "ALFA BETA GAMMA DELTA");
+assert.equal(ambiguousFreeText.apellidoPaterno, "");
+assert.equal(ambiguousFreeText.apellidoMaterno, "");
+assert.equal(ambiguousFreeText.ruleApplied, "ambiguous-source-order");
 
 assert.equal(inferStructuredPatientNameFormat("CEGUEDA VALDEZ BRIAN EFRAIN", {
   detectionMethod: "paragraph-multi-label"
 }), PATIENT_NAME_SOURCE_FORMATS.HOSPITAL_SURNAMES_FIRST);
 assert.equal(inferStructuredPatientNameFormat("BRIAN EFRAIN CEGUEDA VALDEZ", {
   detectionMethod: "paragraph-multi-label"
+}), PATIENT_NAME_SOURCE_FORMATS.NAMES_FIRST);
+assert.equal(inferStructuredPatientNameFormat("LUCIA BEATRIZ MONTERO SALAS", {
+  detectionMethod: "table-multi-label",
+  sourceLabel: "nombre completo del paciente"
 }), PATIENT_NAME_SOURCE_FORMATS.NAMES_FIRST);
 assert.equal(inferStructuredPatientNameFormat("CEGUEDA VALDEZ BRIAN EFRAIN"), PATIENT_NAME_SOURCE_FORMATS.UNKNOWN);
 

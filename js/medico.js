@@ -268,8 +268,8 @@ function inicializarImportacionDocxLazy() {
   document.getElementById("btnImportarDocxPaciente")?.addEventListener("click", async () => {
     try {
       if (!traspasoPacientesPromise) {
-        // Marcador histórico de cache: import("./modules/patient-transfer/index.js?v=20260804-segmentation-debug-v1")
-    traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260814-patient-alias-v1");
+        // Marcador de cache del importador documental.
+        traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260814-patient-name-order-v2");
       }
       const modulo = await traspasoPacientesPromise;
       modulo.openPatientTransfer();

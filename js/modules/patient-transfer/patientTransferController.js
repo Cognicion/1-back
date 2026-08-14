@@ -4,7 +4,7 @@ import { validateTransferDocxFile } from "./docx/docxValidator.js";
 import { calculateDocxHash, calculateNormalizedTextHash } from "./docx/docxHashService.js";
 import { extractDocx } from "./docx/docxExtractor.js";
 import { normalizeDocxBlocks, normalizedBlocksToText } from "./docx/docxBlockNormalizer.js";
-import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js?v=20260814-patient-alias-v1";
+import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js?v=20260814-patient-name-order-v2";
 import { resolvePatientIdentity } from "./parsing/patientIdentityResolver.js";
 import { parseClinicalSections } from "./parsing/clinicalSectionParser.js?v=v172-diagnostic-entity-boundaries-v1";
 import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js?v=20260813-diagnosis-context-gate-v1";

@@ -37,5 +37,6 @@
 // deployment marker: 2026-08-14-post-evc-personalized-rehabilitation-v1
 // deployment marker: 2026-08-14-ieca-atc-c09aa-v1
 // deployment marker: 2026-08-14-post-evc-guided-battery-v2
-export const APP_VERSION = "1.985";
+// deployment marker: 2026-08-14-patient-name-order-v2
+export const APP_VERSION = "1.986";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

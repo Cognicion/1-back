@@ -60,6 +60,15 @@ const COMMON_GIVEN_NAMES = new Set([
   "maria"
 ]);
 
+const NAMES_FIRST_STRUCTURED_LABELS = new Set([
+  "nombre completo del paciente",
+  "nombre del paciente",
+  "nombre completo",
+  "paciente",
+  "nombre del usuario",
+  "nombre del derechohabiente"
+]);
+
 const NON_ALIAS_PARENTHETICAL_TERMS = /\b(?:casad[ao]|de\s+solter[ao]|viud[ao]|nacid[ao]|antes|expediente|edad|a(?:n|ñ)os?)\b/i;
 
 function isLikelyPatientAlias(value = "") {
@@ -182,6 +191,10 @@ function hasStructuredNameEvidence(evidence = {}) {
     .includes(String(evidence.detectionMethod || ""));
 }
 
+function hasNamesFirstStructuredLabel(evidence = {}) {
+  return NAMES_FIRST_STRUCTURED_LABELS.has(tokenKey(evidence.sourceLabel));
+}
+
 export function inferStructuredPatientNameFormat(fullName = "", evidence = {}) {
   if (evidence.alreadyStructured) return PATIENT_NAME_SOURCE_FORMATS.ALREADY_STRUCTURED;
   if (!hasStructuredNameEvidence(evidence)) return PATIENT_NAME_SOURCE_FORMATS.UNKNOWN;
@@ -196,6 +209,12 @@ export function inferStructuredPatientNameFormat(fullName = "", evidence = {}) {
   const firstHospitalGivenName = hospitalParts?.nombres?.split(/\s+/)[0] || "";
   if (COMMON_GIVEN_NAMES.has(tokenKey(firstHospitalGivenName))) {
     return PATIENT_NAME_SOURCE_FORMATS.HOSPITAL_SURNAMES_FIRST;
+  }
+  // Un campo etiquetado como nombre completo aporta evidencia estructural de
+  // orden de visualización. Cuando no hay coma ni señal léxica hospitalaria,
+  // se interpreta como NOMBRE(S) + APELLIDOS y se conserva revisión manual.
+  if (hasNamesFirstStructuredLabel(evidence)) {
+    return PATIENT_NAME_SOURCE_FORMATS.NAMES_FIRST;
   }
   return PATIENT_NAME_SOURCE_FORMATS.UNKNOWN;
 }

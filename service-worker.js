@@ -1,4 +1,4 @@
-const CACHE_VERSION = "20260814-patient-alias-v1";
+const CACHE_VERSION = "20260814-patient-name-order-v2";
 const STATIC_CACHE = `cognicion-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `cognicion-runtime-${CACHE_VERSION}`;
 

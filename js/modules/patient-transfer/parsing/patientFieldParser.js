@@ -6,7 +6,7 @@ import {
   PATIENT_NAME_SOURCE_FORMATS,
   splitPatientNameAndAlias,
   suggestPatientNameParts
-} from "./patientNameParser.js?v=20260814-patient-alias-v1";
+} from "./patientNameParser.js?v=20260814-patient-name-order-v2";
 
 const DEBUG_FLAG = "cognicion.debug.patientTransfer";
 const CANONICAL_HPFBA = "Hospital Psiquiátrico Fray Bernardino Álvarez";
