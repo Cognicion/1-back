@@ -3,7 +3,7 @@ import { ClinicalCandidate } from "../core/ClinicalCandidate.js";
 import { ClinicalEvidence } from "../core/ClinicalEvidence.js";
 import { evaluateConfidence, requiresReviewForConfidence } from "../confidence/confidenceEngine.js";
 import { normalizeClinicalComparisonText } from "../normalizers/textNormalizer.js";
-import { normalizeMedicationName, normalizeMedicationPresentation, normalizeMedicationRoute, normalizeMedicationFrequency, parseClinicalQuantity, parseMedicationStrength, parseMedicationSchedules, splitMedicationItems } from "../normalizers/medicationNormalizer.js";
+import { normalizeMedicationName, normalizeMedicationPresentation, normalizeMedicationRoute, normalizeMedicationFrequency, parseClinicalQuantity, parseMedicationStrength, parseMedicationSchedules, splitMedicationItems } from "../normalizers/medicationNormalizer.js?v=20260814-medication-name-boundaries-v1";
 import { clinicalImportLogger } from "../utils/logger.js";
 
 const VERSION = "1.0";

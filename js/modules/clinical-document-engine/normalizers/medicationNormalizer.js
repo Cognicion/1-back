@@ -61,6 +61,13 @@ export function parseMedicationSchedules(value = "") {
   return schedules.filter((item, index, all) => all.findIndex((other) => other.time === item.time && other.quantity === item.quantity) === index);
 }
 
+function hasMedicationNameBoundaries(value = "", start = 0, length = 0) {
+  const wordCharacter = /[\p{L}\p{N}]/u;
+  const previous = start > 0 ? value[start - 1] : "";
+  const next = value[start + length] || "";
+  return (!previous || !wordCharacter.test(previous)) && (!next || !wordCharacter.test(next));
+}
+
 export function splitMedicationItems(text = "", medicationCatalog = []) {
   const source = String(text || "");
   const names = [...new Set(medicationCatalog.flatMap((item) => [
@@ -79,6 +86,10 @@ export function splitMedicationItems(text = "", medicationCatalog = []) {
     const comparableName = normalizeClinicalComparisonText(name);
     let foundIndex = 0;
     while ((foundIndex = comparableSource.indexOf(comparableName, foundIndex)) >= 0) {
+      if (!hasMedicationNameBoundaries(comparableSource, foundIndex, comparableName.length)) {
+        foundIndex += comparableName.length;
+        continue;
+      }
       const prefixStart = Math.max(source.lastIndexOf("\n", foundIndex), source.lastIndexOf(";", foundIndex), source.lastIndexOf(".", foundIndex)) + 1;
       const prefix = source.slice(prefixStart, foundIndex);
       if (/\b(?:antecedente|recibio|recibió|previamente|previo|manejo\s+a\s+base|niega|sin\s+uso\s+de|no\s+usa|no\s+toma|se\s+inicio|inicia|inicio|suspende|suspendio|suspendió|suspender|aumenta|disminuye|cambia)\b/i.test(prefix)) starts.push(prefixStart);
