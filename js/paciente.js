@@ -867,6 +867,66 @@ function listaTratamientosLaboratorio(datos = datosPacienteActual || {}) {
     : ["Sin tratamiento activo registrado"];
 }
 
+function textoFuenteDocxMultilinea(texto, alterno = "Sin apartado documentado en la nota.") {
+  const valor = String(texto || "").trim() || alterno;
+  return escaparHTML(valor).replace(/\r?\n/g, "<br>");
+}
+
+function fechaFuenteDocxNota(nota = {}) {
+  const fecha = nota.fechaNotaInput || nota.fecha || "";
+  const hora = nota.horaNotaInput || "";
+  return [fecha, hora].filter(Boolean).join(" ") || "Fecha clínica sin registro";
+}
+
+async function cargarResumenClinicoFuenteDocx(pacienteId) {
+  if (!pacienteId) return null;
+  try {
+    const snap = await getDocs(collection(db, "usuarios", pacienteId, "notasMedicas"));
+    const notas = snap.docs
+      .map((docNota) => ({ id: docNota.id, ...docNota.data() }))
+      .filter((nota) => nota.importacionDocx?.importMethod === "docx-patient-transfer")
+      .filter((nota) => String(nota.diagnostico || "").trim() || String(nota.tratamiento || "").trim())
+      .sort((a, b) => fechaFuenteDocxNota(b).localeCompare(fechaFuenteDocxNota(a)));
+
+    if (!notas.length) return null;
+    return {
+      origen: "notas_docx_verbatim",
+      requiereValidacionClinica: true,
+      notas: notas.map((nota) => ({
+        id: nota.id,
+        fechaNotaInput: nota.fechaNotaInput || "",
+        horaNotaInput: nota.horaNotaInput || "",
+        diagnostico: nota.diagnostico || "",
+        tratamiento: nota.tratamiento || "",
+        archivoFuente: nota.importacionDocx?.sourceFileName || "Documento fuente preservado"
+      }))
+    };
+  } catch (error) {
+    console.warn("No se pudo cargar el resumen clínico de notas DOCX.", error?.code || error?.message || error);
+    return null;
+  }
+}
+
+function renderizarBloqueFuenteClinicaDocx(datos = datosPacienteActual || {}) {
+  const resumen = datos.importacionDocxResumen;
+  const notas = Array.isArray(resumen?.notas) ? resumen.notas : [];
+  if (!notas.length) return "";
+
+  return `
+    <article class="lab-card lab-card-lista">
+      <span>Diagnóstico y tratamiento fuente DOCX</span>
+      <p class="texto-suave">Texto preservado de las notas importadas. Requiere validación clínica antes de registrarlo como diagnóstico activo o prescripción vigente.</p>
+      ${notas.map((nota) => `
+        <details>
+          <summary>${escaparHTML(fechaFuenteDocxNota(nota))} · ${escaparHTML(nota.archivoFuente)}</summary>
+          <p><strong>Diagnóstico documentado</strong><br>${textoFuenteDocxMultilinea(nota.diagnostico)}</p>
+          <p><strong>Tratamiento documentado</strong><br>${textoFuenteDocxMultilinea(nota.tratamiento)}</p>
+        </details>
+      `).join("")}
+    </article>
+  `;
+}
+
 async function asegurarIndicacionResumenPaciente() {
   const pacienteId = String(uidPaciente || "").trim();
   if (!pacienteId) return;
@@ -1498,6 +1558,7 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
           <span>Tratamiento activo</span>
           <ol>${renderizarListaLab(tratamientos)}</ol>
         </article>
+        ${renderizarBloqueFuenteClinicaDocx(datos)}
         <article class="lab-card lab-card-lista">
           <span>Estudios</span>
           <ul>${renderizarListaLab(estudios)}</ul>
@@ -2955,6 +3016,12 @@ async function cargarDatosPaciente() {
     ponerTexto("correoPaciente", "No tienes acceso autorizado a este expediente");
     document.body.classList.add("bloqueado");
     throw new Error("patient_access_denied");
+  }
+
+  const resumenFuenteDocx = await cargarResumenClinicoFuenteDocx(uidPaciente);
+  if (resumenFuenteDocx) {
+    datos.importacionDocxResumen = resumenFuenteDocx;
+    datosPacienteActual = datos;
   }
 
   console.info("patient:vitals-read", {
