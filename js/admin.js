@@ -452,6 +452,318 @@ function renderizarNotasImportadasCorroboracion(importacion) {
   `;
 }
 
+function obtenerResultadoVistaPrevia(resultados = [], nombreColeccion = "") {
+  return resultados.find((resultado) => resultado.nombre === nombreColeccion) || {
+    nombre: nombreColeccion,
+    registros: [],
+    error: "sin_datos"
+  };
+}
+
+function contarRegistrosVistaPrevia(resultados = [], nombresColecciones = []) {
+  return nombresColecciones.reduce((total, nombreColeccion) => {
+    const resultado = obtenerResultadoVistaPrevia(resultados, nombreColeccion);
+    return total + (Array.isArray(resultado.registros) ? resultado.registros.length : 0);
+  }, 0);
+}
+
+function categoriaRolVistaPrevia(usuario = {}) {
+  if (datosUsuarioSonAdmin(usuario)) return "admin";
+  const rol = normalizarRolAdmin(usuario.rol || usuario.role || usuario.tipoRol || "");
+  if (rol === "paciente") return "paciente";
+  if (rol.includes("psicolog")) return "psicologia";
+  if (usuarioEsProfesionalTipoMedico(usuario.rol || usuario.role || "")) return "profesional";
+  return "usuario";
+}
+
+function resumenFormatosVistaPrevia(usuario = {}) {
+  const catalogoInstitucional = FORMATOS_INSTITUCIONALES.flatMap((formato) => formato.valores || []);
+  const permisosEfectivos = resolverPermisosEfectivosFormatos({
+    usuario,
+    catalogoFormatos: catalogoInstitucional
+  });
+  const formatosEfectivos = permisosEfectivos.formatosPermitidos === "*"
+    ? catalogoInstitucional
+    : permisosEfectivos.formatosPermitidos || [];
+  const formatosManualesAsignados = Array.isArray(usuario.formatosManualesAsignados)
+    ? usuario.formatosManualesAsignados
+    : [];
+  const paquetesAsignadosIds = new Set(Array.isArray(usuario.paquetesFormatosAsignados)
+    ? usuario.paquetesFormatosAsignados
+    : []);
+  const paquetesAsignados = paquetesFormatosAdmin.filter((paquete) => (
+    paquetesAsignadosIds.has(paquete.id) ||
+    (Array.isArray(paquete.asignadoUserUids) && paquete.asignadoUserUids.includes(usuario.id))
+  ));
+  const items = new Map();
+
+  FORMATOS_INSTITUCIONALES.forEach((formato) => {
+    const tieneAcceso = permisosEfectivos.accesoGlobal ||
+      (formato.valores || []).some((formatoId) => formatosEfectivos.includes(formatoId));
+    if (tieneAcceso) {
+      items.set(`institucional:${formato.id}`, {
+        nombre: formato.nombre || formato.id,
+        tipo: "Institucional"
+      });
+    }
+  });
+
+  formatosManualesAsignados.forEach((formatoId) => {
+    const formatoManual = formatosManualesAdmin.find((formato) => formato.id === formatoId);
+    const formatoInstitucional = FORMATOS_INSTITUCIONALES.find((formato) => (
+      formato.id === formatoId || (formato.valores || []).includes(formatoId)
+    ));
+    const claveAsignacion = formatoInstitucional
+      ? `institucional:${formatoInstitucional.id}`
+      : `asignado:${formatoId}`;
+    items.set(claveAsignacion, {
+      nombre: formatoManual?.nombre || formatoInstitucional?.nombre || formatoId,
+      tipo: formatoManual ? "Manual" : formatoInstitucional ? "Institucional" : "Asignado"
+    });
+  });
+
+  paquetesAsignados.forEach((paquete) => {
+    items.set(`paquete:${paquete.id}`, {
+      nombre: paquete.nombre || paquete.id,
+      tipo: "Paquete"
+    });
+  });
+
+  return {
+    accesoGlobal: permisosEfectivos.accesoGlobal === true,
+    cuentaActiva: permisosEfectivos.cuentaActiva !== false,
+    origen: permisosEfectivos.origen || "sin_acceso",
+    items: [...items.values()],
+    total: permisosEfectivos.accesoGlobal
+      ? Math.max(catalogoFormatosParaPaquetesAdmin().length, items.size)
+      : items.size
+  };
+}
+
+function modulosVistaPreviaUsuario(usuario = {}, resultados = [], importacionDocx = null, formatos = {}) {
+  const categoria = categoriaRolVistaPrevia(usuario);
+  const totalAgenda = contarRegistrosVistaPrevia(resultados, ["agenda"]);
+  const totalNotas = contarRegistrosVistaPrevia(resultados, ["notasMedicas", "notasRapidas"]) + (importacionDocx?.totalNotas || 0);
+  const totalSeguimiento = contarRegistrosVistaPrevia(resultados, ["tratamientos", "registrosDiarios"]);
+  const totalEscalas = contarRegistrosVistaPrevia(resultados, ["resultadosEscalas"]);
+  const pacientesAsignados = usuariosAdmin.filter((item) => (
+    normalizarRolAdmin(item.rol) === "paciente" && item.ownerUid === usuario.id
+  )).length;
+  const comunes = [
+    { icono: "RC", nombre: "Rehabilitación cognitiva", descripcion: "Ejercicios de memoria, atención y control ejecutivo.", etiqueta: "Disponible" },
+    { icono: "RESP", nombre: "Asistente de respiración", descripcion: "Guía visual de respiración y regulación fisiológica.", etiqueta: "Disponible" },
+    { icono: "FORO", nombre: "Foro Cognición", descripcion: "Comunidad y espacios de comunicación correspondientes al rol.", etiqueta: "Comunidad" }
+  ];
+
+  if (categoria === "paciente") {
+    return [
+      { icono: "SALUD", nombre: "Mi Salud", descripcion: "Tratamiento, registros diarios y metas de seguimiento.", etiqueta: "Principal", conteo: totalSeguimiento },
+      { icono: "AGENDA", nombre: "Mi agenda", descripcion: "Citas y actividades registradas para la cuenta.", etiqueta: "Paciente", conteo: totalAgenda },
+      { icono: "ESC", nombre: "Escalas y seguimiento", descripcion: "Resultados de escalas y evolución personal.", etiqueta: "Clínico", conteo: totalEscalas },
+      ...comunes
+    ];
+  }
+
+  if (categoria === "profesional" || categoria === "psicologia") {
+    return [
+      { icono: "MED", nombre: categoria === "psicologia" ? "Panel clínico" : "Panel médico", descripcion: "Pacientes, expedientes y herramientas clínicas permitidas para este perfil.", etiqueta: etiquetaRolUsuario(usuario.rol), conteo: pacientesAsignados },
+      { icono: "AGENDA", nombre: "Agenda profesional", descripcion: "Citas y actividades del profesional.", etiqueta: "Clínico", conteo: totalAgenda },
+      { icono: "NOTAS", nombre: "Notas clínicas", descripcion: "Notas asociadas disponibles desde el perfil profesional.", etiqueta: "Clínico", conteo: totalNotas },
+      { icono: "FMT", nombre: "Formatos clínicos", descripcion: "Formatos institucionales, manuales y paquetes asignados.", etiqueta: formatos.accesoGlobal ? "Acceso global" : "Con permiso", conteo: formatos.total || 0 },
+      { icono: "ST", nombre: "Estadística médica", descripcion: "Análisis de variables, escalas, tablas y gráficas.", etiqueta: "Profesional" },
+      { icono: "CLIN", nombre: "Calculadoras y escalas", descripcion: "Instrumentos clínicos y cálculos médicos.", etiqueta: "Profesional" },
+      ...comunes
+    ];
+  }
+
+  if (categoria === "admin") {
+    return [
+      { icono: "ADM", nombre: "Centro de Control", descripcion: "Usuarios, reportes, avisos, formatos y auditoría.", etiqueta: "Admin", conteo: usuariosAdmin.length },
+      { icono: "FMT", nombre: "Formatos clínicos", descripcion: "Catálogo completo y administración de permisos.", etiqueta: "Acceso global", conteo: formatos.total || 0 },
+      { icono: "MED", nombre: "Panel médico", descripcion: "Herramientas clínicas disponibles para perfiles autorizados.", etiqueta: "Admin" },
+      { icono: "ST", nombre: "Estadística médica", descripcion: "Análisis clínico y herramientas de datos.", etiqueta: "Admin" },
+      ...comunes
+    ];
+  }
+
+  return [
+    { icono: "PERFIL", nombre: "Mi perfil", descripcion: "Información básica y configuración de la cuenta.", etiqueta: "Cuenta" },
+    ...comunes
+  ];
+}
+
+function renderizarModuloVistaPrevia(modulo = {}) {
+  const tieneConteo = Number.isFinite(Number(modulo.conteo));
+  return `
+    <article class="vista-previa-modulo">
+      <div class="vista-previa-modulo-top">
+        <span class="vista-previa-modulo-icono">${escaparHTML(modulo.icono || "APP")}</span>
+        <span class="vista-previa-modulo-etiqueta">${escaparHTML(modulo.etiqueta || "Disponible")}</span>
+      </div>
+      <h4>${escaparHTML(modulo.nombre || "Módulo")}</h4>
+      <p>${escaparHTML(modulo.descripcion || "")}</p>
+      ${tieneConteo ? `<strong class="vista-previa-modulo-conteo">${Number(modulo.conteo)} registros visibles</strong>` : ""}
+      <button type="button" disabled aria-disabled="true" title="Las acciones están bloqueadas en vista previa">Abrir · bloqueado en vista previa</button>
+    </article>
+  `;
+}
+
+function resumenRegistroVistaPrevia(registro = {}) {
+  const datos = registro.data || {};
+  return datos.notaRapida || datos.titulo || datos.nombre || datos.archivoNombre || datos.descripcion || "Registro disponible";
+}
+
+function renderizarActividadVistaPrevia(resultado = {}) {
+  if (resultado.error) {
+    return `<p class="admin-muted">No disponible: ${escaparHTML(resultado.error)}</p>`;
+  }
+  if (!resultado.registros?.length) {
+    return "<p class=\"admin-muted\">Sin registros para esta cuenta.</p>";
+  }
+  return `
+    <ul class="vista-previa-actividad-lista">
+      ${resultado.registros.slice(0, 3).map((registro) => `<li>${escaparHTML(resumenRegistroVistaPrevia(registro))}</li>`).join("")}
+    </ul>
+    ${resultado.registros.length > 3 ? `<small>Y ${resultado.registros.length - 3} registros adicionales.</small>` : ""}
+  `;
+}
+
+function renderizarVistaPerspectivaUsuario(usuario = {}, resultados = [], importacionDocx = null) {
+  const formatos = resumenFormatosVistaPrevia(usuario);
+  const modulos = modulosVistaPreviaUsuario(usuario, resultados, importacionDocx, formatos);
+  const nombre = usuario.nombre || usuario.email || "Usuario";
+  const rol = etiquetaRolUsuario(usuario.rol || usuario.role || "sin_rol");
+  const estado = usuario.estado || usuario.status || (usuario.activo === false ? "desactivado" : "activo");
+  const totalRegistros = resultados.reduce((total, resultado) => total + (resultado.registros?.length || 0), 0);
+  const institucion = usuario.institucion || usuario.unidad || usuario.institucionPaciente || "Sin institución registrada";
+
+  return `
+    <section class="vista-previa-usuario-shell" data-vista-previa-usuario>
+      <div class="vista-previa-usuario-cintillo" role="status">
+        <strong>VISTA PREVIA ADMINISTRATIVA · SOLO LECTURA</strong>
+        <span>Perspectiva de ${escaparHTML(nombre)}. La sesión del administrador permanece activa y todas las acciones de la cuenta están bloqueadas.</span>
+      </div>
+
+      <header class="vista-previa-usuario-topbar">
+        <div class="vista-previa-marca">
+          <span class="vista-previa-marca-icono">C</span>
+          <div><strong>COGNICIÓN</strong><small>Plataforma clínica digital</small></div>
+        </div>
+        <div class="vista-previa-identidad">
+          <span>${escaparHTML(rol)}</span>
+          <strong>${escaparHTML(nombre)}</strong>
+          <small>${escaparHTML(usuario.email || "Sin correo")}</small>
+        </div>
+      </header>
+
+      <div class="vista-previa-usuario-layout">
+        <nav class="vista-previa-usuario-nav" aria-label="Pantallas de la vista previa">
+          <button type="button" class="activo" data-vista-previa-pagina="inicio" aria-pressed="true">Inicio</button>
+          <button type="button" data-vista-previa-pagina="perfil" aria-pressed="false">Perfil</button>
+          <button type="button" data-vista-previa-pagina="actividad" aria-pressed="false">Actividad</button>
+          <button type="button" data-vista-previa-pagina="formatos" aria-pressed="false">Formatos y permisos</button>
+          <p><strong>Interacciones bloqueadas</strong><span>Esta navegación solo cambia la pantalla representada dentro de la vista previa.</span></p>
+        </nav>
+
+        <div class="vista-previa-usuario-paginas">
+          <section data-vista-previa-panel="inicio" aria-hidden="false">
+            <div class="vista-previa-hero">
+              <span>PLATAFORMA CLÍNICA DIGITAL</span>
+              <h3>Hola, ${escaparHTML(nombre)}</h3>
+              <p>Esta es la representación administrativa de los módulos visibles de acuerdo con el rol y los permisos actuales de la cuenta.</p>
+            </div>
+            <div class="vista-previa-resumen">
+              <article><span>Rol efectivo</span><strong>${escaparHTML(rol)}</strong></article>
+              <article><span>Estado</span><strong>${escaparHTML(valorCorroboracion(estado))}</strong></article>
+              <article><span>Información asociada</span><strong>${totalRegistros} registros</strong></article>
+              <article><span>Formatos disponibles</span><strong>${formatos.accesoGlobal ? "Acceso global" : formatos.total}</strong></article>
+            </div>
+            <div class="vista-previa-seccion-titulo">
+              <div><span>CENTRO DE TRABAJO</span><h3>Tu espacio de trabajo</h3></div>
+              <small>${modulos.length} módulos visibles para este perfil</small>
+            </div>
+            <div class="vista-previa-modulos-grid">
+              ${modulos.map(renderizarModuloVistaPrevia).join("")}
+            </div>
+          </section>
+
+          <section data-vista-previa-panel="perfil" hidden aria-hidden="true">
+            <div class="vista-previa-seccion-titulo"><div><span>CUENTA</span><h3>Mi perfil</h3></div><small>Vista de datos actuales</small></div>
+            <dl class="vista-previa-perfil-grid">
+              <div><dt>Nombre</dt><dd>${escaparHTML(valorCorroboracion(usuario.nombre))}</dd></div>
+              <div><dt>Correo</dt><dd>${escaparHTML(valorCorroboracion(usuario.email))}</dd></div>
+              <div><dt>Rol</dt><dd>${escaparHTML(rol)}</dd></div>
+              <div><dt>Estado de cuenta</dt><dd>${escaparHTML(valorCorroboracion(estado))}</dd></div>
+              <div><dt>Institución o unidad</dt><dd>${escaparHTML(institucion)}</dd></div>
+              <div><dt>Cédula profesional</dt><dd>${escaparHTML(valorCorroboracion(usuario.cedulaProfesional || usuario.cedula))}</dd></div>
+            </dl>
+            <div class="vista-previa-bloqueo-acciones">
+              <button type="button" disabled aria-disabled="true">Guardar cambios · bloqueado</button>
+              <span>La vista previa nunca modifica el perfil consultado.</span>
+            </div>
+          </section>
+
+          <section data-vista-previa-panel="actividad" hidden aria-hidden="true">
+            <div class="vista-previa-seccion-titulo"><div><span>INFORMACIÓN ASOCIADA</span><h3>Actividad de la cuenta</h3></div><small>${totalRegistros} registros consultados</small></div>
+            <div class="vista-previa-actividad-grid">
+              ${resultados.map((resultado) => `
+                <article>
+                  <header><h4>${escaparHTML(resultado.nombre)}</h4><span>${resultado.registros?.length || 0}</span></header>
+                  ${renderizarActividadVistaPrevia(resultado)}
+                </article>
+              `).join("")}
+              ${importacionDocx ? `
+                <article>
+                  <header><h4>Notas importadas</h4><span>${importacionDocx.totalNotas || 0}</span></header>
+                  <p class="admin-muted">${importacionDocx.error ? `No disponible: ${escaparHTML(importacionDocx.error)}` : `${importacionDocx.pacientes?.length || 0} pacientes asociados a esta importación.`}</p>
+                </article>
+              ` : ""}
+            </div>
+          </section>
+
+          <section data-vista-previa-panel="formatos" hidden aria-hidden="true">
+            <div class="vista-previa-seccion-titulo"><div><span>ACCESO EFECTIVO</span><h3>Formatos y permisos</h3></div><small>${formatos.accesoGlobal ? "Acceso global" : `${formatos.total} asignaciones`}</small></div>
+            <div class="vista-previa-permisos-resumen">
+              <span>Cuenta ${formatos.cuentaActiva ? "activa" : "inactiva"}</span>
+              <span>Origen: ${escaparHTML(formatos.origen)}</span>
+              <span>Solo consulta administrativa</span>
+            </div>
+            <div class="vista-previa-formatos-grid">
+              ${formatos.accesoGlobal ? `<article><strong>Todos los formatos</strong><span>Acceso global por rol administrativo</span></article>` : ""}
+              ${formatos.items.map((formato) => `<article><strong>${escaparHTML(formato.nombre)}</strong><span>${escaparHTML(formato.tipo)}</span></article>`).join("")}
+              ${!formatos.accesoGlobal && !formatos.items.length ? `<p class="admin-muted">Este perfil no tiene formatos asignados.</p>` : ""}
+            </div>
+            <div class="vista-previa-bloqueo-acciones">
+              <button type="button" disabled aria-disabled="true">Crear o editar formato · bloqueado</button>
+              <span>Los permisos mostrados se calcularon con el perfil actual del usuario.</span>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function configurarNavegacionVistaPreviaUsuario(contenedor) {
+  const botones = [...contenedor.querySelectorAll("[data-vista-previa-pagina]")];
+  const paneles = [...contenedor.querySelectorAll("[data-vista-previa-panel]")];
+  botones.forEach((boton) => {
+    boton.addEventListener("click", () => {
+      const pagina = boton.dataset.vistaPreviaPagina;
+      botones.forEach((item) => {
+        const activo = item === boton;
+        item.classList.toggle("activo", activo);
+        item.setAttribute("aria-pressed", String(activo));
+      });
+      paneles.forEach((panel) => {
+        const activo = panel.dataset.vistaPreviaPanel === pagina;
+        panel.hidden = !activo;
+        panel.setAttribute("aria-hidden", String(!activo));
+      });
+    });
+  });
+}
+
 async function abrirVistaUsuarioAdmin(uidUsuario, modo = "corroboracion") {
   const usuario = usuariosAdmin.find((item) => item.id === uidUsuario);
   if (!usuario || uidUsuario === adminActual?.uid) return;
@@ -505,40 +817,39 @@ async function abrirVistaUsuarioAdmin(uidUsuario, modo = "corroboracion") {
       : Promise.resolve(null)
   ]);
 
-  contenido.innerHTML = `
-    ${esVistaPrevia ? `
+  if (esVistaPrevia) {
+    contenido.innerHTML = renderizarVistaPerspectivaUsuario(usuario, resultados, importacionDocx);
+    configurarNavegacionVistaPreviaUsuario(contenido);
+  } else {
+    contenido.innerHTML = `
       <section class="vista-corroboracion-perfil">
-        <h3>Vista previa administrativa</h3>
-        <p class="admin-muted">Esta revisión presenta el perfil y la información asociada disponibles para el administrador. No inicia sesión como el usuario ni permite modificar, eliminar o descargar información.</p>
+        <h3>Perfil</h3>
+        <dl>
+          <dt>Nombre</dt><dd>${escaparHTML(valorCorroboracion(usuario.nombre))}</dd>
+          <dt>Correo</dt><dd>${escaparHTML(valorCorroboracion(usuario.email))}</dd>
+          <dt>Rol</dt><dd>${escaparHTML(valorCorroboracion(usuario.rol))}</dd>
+          <dt>Estado</dt><dd>${escaparHTML(valorCorroboracion(usuario.estado || "activo"))}</dd>
+        </dl>
       </section>
-    ` : ""}
-    <section class="vista-corroboracion-perfil">
-      <h3>Perfil</h3>
-      <dl>
-        <dt>Nombre</dt><dd>${escaparHTML(valorCorroboracion(usuario.nombre))}</dd>
-        <dt>Correo</dt><dd>${escaparHTML(valorCorroboracion(usuario.email))}</dd>
-        <dt>Rol</dt><dd>${escaparHTML(valorCorroboracion(usuario.rol))}</dd>
-        <dt>Estado</dt><dd>${escaparHTML(valorCorroboracion(usuario.estado || "activo"))}</dd>
-      </dl>
-    </section>
-    <section>
-      <h3>Información asociada</h3>
-      <div class="vista-corroboracion-colecciones">
-        ${resultados.map((resultado) => `
-          <article>
-            <h4>${escaparHTML(resultado.nombre)} <span>${resultado.registros.length}</span></h4>
-            ${resultado.error ? `<p class="admin-muted">No disponible: ${escaparHTML(resultado.error)}</p>` : renderizarDocumentosCorroboracion(resultado.registros)}
-          </article>
-        `).join("")}
-      </div>
-    </section>
-    ${importacionDocx ? `
       <section>
-        <h3>Pacientes y notas importadas <span>${importacionDocx.totalNotas || 0} notas · ${importacionDocx.pacientes?.length || 0} pacientes</span></h3>
-        ${renderizarNotasImportadasCorroboracion(importacionDocx)}
+        <h3>Información asociada</h3>
+        <div class="vista-corroboracion-colecciones">
+          ${resultados.map((resultado) => `
+            <article>
+              <h4>${escaparHTML(resultado.nombre)} <span>${resultado.registros.length}</span></h4>
+              ${resultado.error ? `<p class="admin-muted">No disponible: ${escaparHTML(resultado.error)}</p>` : renderizarDocumentosCorroboracion(resultado.registros)}
+            </article>
+          `).join("")}
+        </div>
       </section>
-    ` : ""}
-  `;
+      ${importacionDocx ? `
+        <section>
+          <h3>Pacientes y notas importadas <span>${importacionDocx.totalNotas || 0} notas · ${importacionDocx.pacientes?.length || 0} pacientes</span></h3>
+          ${renderizarNotasImportadasCorroboracion(importacionDocx)}
+        </section>
+      ` : ""}
+    `;
+  }
 
   await registrarAuditoriaAdmin(
     esVistaPrevia ? "consultar_datos_vista_previa_usuario_admin" : "consultar_datos_vista_corroboracion_admin",
@@ -1694,6 +2005,7 @@ function renderizarUsuariosAdmin() {
 
   contenedor.innerHTML = usuarios.map((usuario) => {
     const esAdminActual = usuario.id === ADMIN_UID;
+    const esCuentaActual = usuario.id === adminActual?.uid;
     const rolActual = usuario.rol || "sin_rol";
 
     return `
@@ -1724,9 +2036,9 @@ function renderizarUsuariosAdmin() {
         ${renderizarControlColaboradorAdmin(usuario)}
 
         <div class="paciente-admin-acciones">
-          <button type="button" onclick="abrirVistaPreviaUsuarioAdmin('${usuario.id}')">
-            Vista previa del usuario
-          </button>
+          ${esCuentaActual
+            ? `<button type="button" disabled aria-label="Esta es la cuenta administrativa actual">Cuenta actual</button>`
+            : `<button type="button" aria-label="Ver la página como ${escaparHTML(usuario.nombre || usuario.email || "usuario")} en modo solo lectura" onclick="abrirVistaPreviaUsuarioAdmin('${usuario.id}')">Ver como usuario · solo lectura</button>`}
           <button type="button" ${esAdminActual ? "disabled" : ""} onclick="cambiarRolUsuarioAdmin('${usuario.id}')">
             Cambiar rol
           </button>
