@@ -2,6 +2,26 @@ function limpiarParteNombre(valor) {
   return String(valor ?? "").trim().replace(/\s+/g, " ");
 }
 
+export function normalizarAliasPaciente(valor = "") {
+  return limpiarParteNombre(valor)
+    .replace(/^(?:alias|nombre\s+(?:social|preferido|elegido))\s*[:\-]?\s*/i, "")
+    .replace(/^["'«»“”]+|["'«»“”]+$/g, "")
+    .trim();
+}
+
+export function obtenerAliasPaciente(paciente = {}) {
+  const institucional = paciente.datosInstitucionales || {};
+  return normalizarAliasPaciente(
+    paciente.alias ??
+    paciente.nombreSocial ??
+    paciente.nombrePreferido ??
+    institucional.alias ??
+    institucional.nombreSocial ??
+    institucional.nombrePreferido ??
+    ""
+  );
+}
+
 export function construirNombreCompletoPaciente({
   nombres = "",
   apellidoPaterno = "",
@@ -65,6 +85,7 @@ export function textoBusquedaPaciente(paciente = {}) {
   const institucional = paciente.datosInstitucionales || {};
   return normalizarTextoBusquedaPaciente([
     obtenerNombrePacienteParaMostrar(paciente),
+    obtenerAliasPaciente(paciente),
     paciente.nombre,
     paciente.nombreCompleto,
     paciente.nombrePaciente,

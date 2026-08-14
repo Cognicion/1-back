@@ -1,9 +1,9 @@
 import { db } from "../../firebase.js";
 import { obtenerStorage } from "../../services/firebaseAppService.js";
 import { registrarEventoAuditoria, resumenError } from "../../services/auditoria.js";
-import { obtenerNombrePacienteParaMostrar } from "../../utils/nombresPacientes.js";
-import { DOCX_IMPORT_CONFIG } from "../importacionDocx/docxImportConfig.js";
-import { createTransferredPatient, mergeTransferredPatientFields } from "./integration/patientCreationAdapter.js?v=20260808-persistence-domains-v1";
+import { obtenerNombrePacienteParaMostrar } from "../../utils/nombresPacientes.js?v=20260814-patient-alias-v1";
+import { DOCX_IMPORT_CONFIG } from "../importacionDocx/docxImportConfig.js?v=20260814-patient-alias-v1";
+import { createTransferredPatient, mergeTransferredPatientFields } from "./integration/patientCreationAdapter.js?v=20260814-patient-alias-v1";
 import { buildImportedNotePayload, createTransferredNote, importedNoteHasClinicalContent, importedNoteId } from "./integration/noteCreationAdapter.js?v=20260813-notes-canonical-text-v1";
 import { createImportedDiagnoses, createImportedIndications, createImportedTreatments } from "./integration/clinicalDataImportAdapter.js?v=v163-medications-indications-v1";
 import { runVitalSignsAndDiagnosesIndependently } from "./domainPersistenceIsolation.js?v=v161-imported-diagnoses-isolation-v1";

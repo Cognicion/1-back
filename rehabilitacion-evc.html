@@ -9,7 +9,7 @@
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <link rel="stylesheet" href="css/rehabilitacion-cognitiva.css">
-  <link rel="stylesheet" href="css/rehabilitacion-evc.css?v=20260814-evc-plan-v1">
+  <link rel="stylesheet" href="css/rehabilitacion-evc.css?v=20260814-evc-bateria-v2">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
 
@@ -35,11 +35,11 @@
       <div>
         <span class="kicker">Acompañamiento después de un evento vascular cerebral</span>
         <h1 id="tituloEvc">Del perfil cognitivo a un plan funcional</h1>
-        <p>Registra dificultades y fortalezas observadas, incorpora una meta importante para la persona y genera un borrador de rehabilitación con actividades de Cognición y estrategias para la vida diaria.</p>
+        <p>Aplica seis tareas breves, identifica qué resultados requieren confirmación clínica e incorpora una meta importante para generar un programa domiciliario individualizado y supervisado.</p>
         <div class="evc-hero-etiquetas" aria-label="Características del flujo">
-          <span>6 dominios cognitivos</span>
-          <span>Metas compartidas</span>
-          <span>Revisión programada</span>
+          <span>6 pruebas orientativas</span>
+          <span>Programa de 6 semanas</span>
+          <span>Revisión semanal</span>
         </div>
       </div>
       <aside class="evc-paciente" aria-live="polite">
@@ -59,8 +59,8 @@
         <div class="encabezado-panel-evc">
           <div>
             <span class="paso-evc">Paso 1</span>
-            <h2 id="tituloEvaluacionEvc">Contexto y dominios cognitivos</h2>
-            <p>Este registro funcional orienta prioridades; no es una escala estandarizada ni establece un diagnóstico.</p>
+            <h2 id="tituloEvaluacionEvc">Contexto y batería cognitiva</h2>
+            <p>Completa una tarea por dominio. La batería COGNICIÓN-EVC es orientativa: sus niveles son reglas internas de apoyo y no puntos de corte clínicos, percentiles ni diagnósticos.</p>
           </div>
           <span class="estado-formulario-evc" id="estadoEvaluacionEvc">Sin evaluar</span>
         </div>
@@ -98,12 +98,45 @@
           </label>
         </div>
 
-        <div class="leyenda-dificultad-evc" aria-label="Escala funcional orientativa">
-          <span><b>0</b> Sin dificultad</span>
-          <span><b>1</b> Leve</span>
-          <span><b>2</b> Moderada</span>
-          <span><b>3</b> Marcada</span>
+        <fieldset class="factores-aplicacion-evc">
+          <legend>Factores que pueden interferir hoy</legend>
+          <p>Márcalos para que aparezcan como límites de interpretación, aunque ya estén descritos en el expediente.</p>
+          <div>
+            <label><input type="checkbox" name="factorInterferencia" value="vision"> Visión o campo visual</label>
+            <label><input type="checkbox" name="factorInterferencia" value="motor"> Mano o respuesta motora</label>
+            <label><input type="checkbox" name="factorInterferencia" value="lenguaje"> Lenguaje o comprensión</label>
+            <label><input type="checkbox" name="factorInterferencia" value="audicion"> Audición</label>
+            <label><input type="checkbox" name="factorInterferencia" value="lectura"> Lectura, idioma o escolaridad</label>
+            <label><input type="checkbox" name="factorInterferencia" value="fatiga-dolor"> Fatiga, dolor o sueño</label>
+            <label><input type="checkbox" name="factorInterferencia" value="interrupciones"> Interrupciones o ambiente</label>
+          </div>
+        </fieldset>
+
+        <section class="instrumento-referencia-evc" aria-labelledby="tituloInstrumentoEvc">
+          <div>
+            <span>Escala clínica de referencia</span>
+            <h3 id="tituloInstrumentoEvc">Oxford Cognitive Screen (OCS)</h3>
+            <p>OCS es un tamizaje post-EVC con perfil por dominios. Debe aplicarse con sus materiales oficiales y condiciones de licencia; esta página no reproduce sus reactivos.</p>
+            <a href="https://www.ocs-test.org/" target="_blank" rel="noopener noreferrer">Consultar OCS oficial</a>
+          </div>
+          <label>Registro de aplicación
+            <select id="instrumentoReferenciaEvc" name="instrumentoReferencia">
+              <option value="no-aplicado" selected>No aplicado</option>
+              <option value="ocs-sin-alertas">OCS aplicado · sin alertas registradas</option>
+              <option value="ocs-con-alertas">OCS aplicado · con uno o más dominios alterados</option>
+              <option value="otra-evaluacion">Otra evaluación neuropsicológica disponible</option>
+              <option value="no-evaluable">Tamizaje clínico no evaluable</option>
+            </select>
+          </label>
+        </section>
+
+        <div class="leyenda-dificultad-evc" aria-label="Niveles operativos de apoyo de la batería">
+          <span><b>0</b> Sin apoyo adicional</span>
+          <span><b>1</b> Apoyo ligero</span>
+          <span><b>2</b> Apoyo moderado</span>
+          <span><b>3</b> Apoyo alto</span>
         </div>
+        <p class="nota-bateria-evc">Las tareas deben realizarse en condiciones comparables. Si una tarea no es interpretable por afasia, visión, movilidad u otra barrera, márcala como no evaluable y usa un método adaptado.</p>
         <div class="dominios-evaluacion-evc" id="dominiosEvaluacionEvc"></div>
         <p class="error-formulario-evc" id="errorEvaluacionEvc" role="alert"></p>
       </section>
@@ -178,6 +211,33 @@
         <div class="actividades-plan-evc" id="actividadesPlanEvc"></div>
       </section>
 
+      <section aria-labelledby="tituloProtocoloEvc">
+        <div class="subtitulo-plan-evc">
+          <h3 id="tituloProtocoloEvc">Programa de autorrehabilitación asistida</h3>
+          <p id="alcanceProtocoloEvc"></p>
+        </div>
+        <div class="fases-protocolo-evc" id="fasesProtocoloEvc"></div>
+        <div class="protocolo-detalle-grid">
+          <article>
+            <h4>Estructura de cada sesión</h4>
+            <ol id="estructuraSesionEvc"></ol>
+          </article>
+          <article>
+            <h4>Reglas de progresión</h4>
+            <ul id="progresionPlanEvc"></ul>
+          </article>
+          <article>
+            <h4>Cuándo suspender</h4>
+            <ul id="suspensionPlanEvc"></ul>
+          </article>
+          <article>
+            <h4>Límites de práctica en casa</h4>
+            <ul id="limitesPlanEvc"></ul>
+          </article>
+        </div>
+        <p class="seguimiento-protocolo-evc" id="seguimientoProtocoloEvc"></p>
+      </section>
+
       <div class="plan-apoyos-grid">
         <section aria-labelledby="tituloApoyosEvc">
           <h3 id="tituloApoyosEvc">Estrategias y apoyos</h3>
@@ -201,17 +261,52 @@
     <section class="panel-evc evidencia-evc" aria-labelledby="tituloEvidenciaEvc">
       <span class="kicker">Fundamento y límites</span>
       <h2 id="tituloEvidenciaEvc">Cómo debe interpretarse</h2>
-      <p>Las recomendaciones actuales apoyan el tamizaje cognitivo post-EVC, la evaluación con instrumentos válidos cuando se detectan dificultades y la construcción de planes individualizados, orientados a metas y revisados periódicamente. Esta página organiza esos elementos, pero no sustituye instrumentos validados ni el juicio del equipo tratante.</p>
-      <div class="fuentes-evc">
-        <a href="https://www.nice.org.uk/guidance/ng236/chapter/Recommendations" target="_blank" rel="noopener noreferrer">NICE · Stroke rehabilitation in adults</a>
-        <a href="https://www.strokebestpractices.ca/recommendations/vascular-cognitive-impairment/3-cognitive-rehabilitation" target="_blank" rel="noopener noreferrer">Canadian Stroke Best Practices · Cognitive Rehabilitation</a>
-        <a href="https://professional.heart.org/en/science-news/guidelines-for-adult-stroke-rehabilitation-and-recovery/top-things-to-know" target="_blank" rel="noopener noreferrer">AHA/ASA · Adult Stroke Rehabilitation and Recovery</a>
-        <a href="https://www.stroke.org/en/stroke-facts" target="_blank" rel="noopener noreferrer">American Stroke Association · Señales de alarma B.E. F.A.S.T.</a>
+      <p>La batería digital sirve para organizar una primera observación, no para diagnosticar deterioro cognitivo. La elección de seis semanas, sesiones breves repetidas, ajuste dinámico, transferencia funcional y seguimiento remoto es una síntesis de ensayos y revisiones; no existe un protocolo universal de autorrehabilitación cognitiva aplicable a todas las personas después de un EVC.</p>
+      <div class="evidencia-resumen-evc">
+        <article>
+          <strong>Tamizaje específico post-EVC</strong>
+          <p>OCS identifica perfiles por dominio y puede detectar dificultades que una puntuación cognitiva global no representa bien. Su aplicación clínica requiere los materiales oficiales.</p>
+        </article>
+        <article>
+          <strong>Entrenamiento cognitivo</strong>
+          <p>Los metaanálisis describen beneficios pequeños a moderados, con certeza variable; atención y funciones ejecutivas tienen señales más consistentes que lenguaje o memoria.</p>
+        </article>
+        <article>
+          <strong>Práctica domiciliaria</strong>
+          <p>Los estudios de factibilidad suelen usar 30 minutos, 3–5 días por semana durante 6–8 semanas, con entrenamiento inicial, ajuste de intensidad y contacto clínico.</p>
+        </article>
       </div>
+      <div class="fuentes-evc">
+        <a href="https://pubmed.ncbi.nlm.nih.gov/29541055/" target="_blank" rel="noopener noreferrer">PubMed · OCS frente a MMSE</a>
+        <a href="https://pubmed.ncbi.nlm.nih.gov/35041840/" target="_blank" rel="noopener noreferrer">PubMed · Perfil OCS por dominios</a>
+        <a href="https://pubmed.ncbi.nlm.nih.gov/40503808/" target="_blank" rel="noopener noreferrer">PubMed · Entrenamiento computarizado, metaanálisis 2025</a>
+        <a href="https://pubmed.ncbi.nlm.nih.gov/30006801/" target="_blank" rel="noopener noreferrer">PubMed · Rehabilitación cognitiva, metaanálisis</a>
+        <a href="https://pubmed.ncbi.nlm.nih.gov/38261747/" target="_blank" rel="noopener noreferrer">PubMed · Red de intervenciones cognitivas</a>
+        <a href="https://pubmed.ncbi.nlm.nih.gov/34823545/" target="_blank" rel="noopener noreferrer">PubMed · Rehabilitación virtual en casa</a>
+        <a href="https://pubmed.ncbi.nlm.nih.gov/31174579/" target="_blank" rel="noopener noreferrer">PubMed · Protocolo domiciliario supervisado</a>
+        <a href="https://pubmed.ncbi.nlm.nih.gov/33776878/" target="_blank" rel="noopener noreferrer">PubMed · Entrenamiento ejecutivo de 6 semanas</a>
+      </div>
+      <p class="nota-evidencia-evc">No se recomienda neuroestimulación autoadministrada. Los estudios con tDCS domiciliaria emplean capacitación del cuidador y monitorización remota, y sus resultados cognitivos no justifican convertirla en una indicación autónoma desde esta herramienta.</p>
     </section>
   </main>
 
+  <dialog class="dialog-prueba-evc" id="dialogPruebaEvc" aria-labelledby="tituloDialogPruebaEvc">
+    <div class="dialog-prueba-shell-evc">
+      <header>
+        <div>
+          <span id="pasoDialogPruebaEvc">Batería COGNICIÓN-EVC</span>
+          <h2 id="tituloDialogPruebaEvc">Prueba cognitiva</h2>
+          <p id="descripcionDialogPruebaEvc"></p>
+        </div>
+        <button type="button" class="cerrar-dialog-evc" id="cerrarPruebaEvc" aria-label="Cerrar prueba">×</button>
+      </header>
+      <div class="barra-dialog-prueba-evc" aria-hidden="true"><i id="progresoDialogPruebaEvc"></i></div>
+      <div class="contenido-prueba-evc" id="contenidoPruebaEvc" aria-live="polite"></div>
+      <footer class="acciones-prueba-evc" id="accionesPruebaEvc"></footer>
+    </div>
+  </dialog>
+
   <div class="toast-rehabilitacion" id="toastEvc" role="status" aria-live="polite"></div>
-  <script type="module" src="js/rehabilitacion-evc.js?v=20260814-evc-plan-v1"></script>
+  <script type="module" src="js/rehabilitacion-evc.js?v=20260814-evc-bateria-v2"></script>
 </body>
 </html>

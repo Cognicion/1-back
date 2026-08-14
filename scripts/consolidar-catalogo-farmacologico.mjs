@@ -4,7 +4,7 @@ import { CATALOGO_FARMACOLOGICO_OFICIAL as CATALOGO_ACTUAL } from "../js/data/ca
 
 const RXNORM_VERSION = "03-Aug-2026";
 const RXNORM_API_VERSION = "3.1.354";
-const FECHA_CORTE = "2026-08-11";
+const FECHA_CORTE = "2026-08-14";
 const DESTINO = resolve("js/data/catalogoFarmacologicoUnificado.js");
 
 const FUSIONES_CANONICAS = Object.freeze({
@@ -522,7 +522,7 @@ function codigoRuntime(datos) {
  * Corte de datos: ${FECHA_CORTE}.
  */
 
-import { REGLAS_INTERACCIONES_CLINICAS } from "./reglasClinicasMedicamentosExtendidas.js?v=20260811-pharmacology-files-consolidated-v1";
+import { REGLAS_INTERACCIONES_CLINICAS } from "./reglasClinicasMedicamentosExtendidas.js?v=20260814-ieca-c09aa-v1";
 
 export const CATALOGO_FARMACOLOGICO_METADATA = Object.freeze({
   esquema: "cognicion.catalogo-farmacologico.v2",

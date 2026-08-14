@@ -1,11 +1,12 @@
-import { FIELD_RULES } from "../../importacionDocx/docxImportConfig.js";
+import { FIELD_RULES } from "../../importacionDocx/docxImportConfig.js?v=20260814-patient-alias-v1";
 import {
   buildFullPatientName,
   buildNameFieldsFromExplicitParts,
   inferStructuredPatientNameFormat,
   PATIENT_NAME_SOURCE_FORMATS,
+  splitPatientNameAndAlias,
   suggestPatientNameParts
-} from "./patientNameParser.js?v=v167-enedina-name-diagnosis-boundaries-v1";
+} from "./patientNameParser.js?v=20260814-patient-alias-v1";
 
 const DEBUG_FLAG = "cognicion.debug.patientTransfer";
 const CANONICAL_HPFBA = "Hospital Psiquiátrico Fray Bernardino Álvarez";
@@ -78,7 +79,7 @@ function cleanFieldValue(value = "", fieldKey = "", label = "") {
 }
 
 function parsePatientName(value = "") {
-  return cleanExtractedFieldValue(value);
+  return splitPatientNameAndAlias(cleanExtractedFieldValue(value)).legalName;
 }
 
 function parseBirthDate(value = "") {
@@ -152,6 +153,26 @@ function normalizeValueForField(key, value) {
   if (key === "institucion") return normalizeInstitution(value);
   if (key === "servicio") return parseService(value);
   return cleanExtractedFieldValue(value);
+}
+
+function expandEmbeddedPatientAlias(candidate = {}) {
+  if (candidate.fieldKey !== "nombre") return [candidate];
+  const split = splitPatientNameAndAlias(candidate.rawValue);
+  const nameCandidate = {
+    ...candidate,
+    normalizedValue: split.legalName,
+    ...(split.detected ? { nameAliasRule: split.ruleApplied } : {})
+  };
+  if (!split.detected) return [nameCandidate];
+  return [nameCandidate, {
+    ...candidate,
+    fieldKey: "alias",
+    label: "Alias",
+    rawValue: split.alias,
+    normalizedValue: split.alias,
+    detectionRule: "structured-name-parenthetical-alias",
+    confidence: "alta"
+  }];
 }
 
 function buildLabelMatcher(definitions = PATIENT_FIELD_DEFINITIONS) {
@@ -237,10 +258,10 @@ export function extractAdministrativeField({ text = "", aliases = [], nextFieldA
 
 export function extractLabeledFieldsFromText(text = "", definitions = PATIENT_FIELD_DEFINITIONS) {
   const matches = locateFieldLabels(text, definitions);
-  return matches.map((match, index) => {
+  return matches.flatMap((match, index) => {
     const next = matches[index + 1];
     const rawValue = cleanFieldValue(sliceOriginalByOffsets(text, match.end, next?.start ?? text.length), match.fieldKey, match.label);
-    return {
+    return expandEmbeddedPatientAlias({
       fieldKey: match.fieldKey,
       label: match.label,
       rawValue,
@@ -248,7 +269,7 @@ export function extractLabeledFieldsFromText(text = "", definitions = PATIENT_FI
       start: match.start,
       end: next?.start ?? text.length,
       detectionRule: "multi-label-text"
-    };
+    });
   }).filter((candidate) => candidate.rawValue);
 }
 
@@ -258,7 +279,9 @@ function candidatesFromParagraph(block, sourceFileId = "") {
     sourceType: "paragraph",
     sourceFileId,
     blockIndex: block.source?.blockIndex,
-    detectionRule: "paragraph-multi-label",
+    detectionRule: candidate.detectionRule === "structured-name-parenthetical-alias"
+      ? candidate.detectionRule
+      : "paragraph-multi-label",
     confidence: "alta"
   }));
   if (block.source?.blockIndex <= 8 && !candidates.some((candidate) => candidate.fieldKey === "institucion")) {
@@ -295,7 +318,7 @@ function candidatesFromTable(block, sourceFileId = "") {
       if (!definition) continue;
       const rawValue = cleanFieldValue(row[cellIndex + 1], definition.key, definition.label);
       if (!rawValue) continue;
-      candidates.push({
+      candidates.push(...expandEmbeddedPatientAlias({
         fieldKey: definition.key,
         label: definition.label,
         rawValue,
@@ -308,7 +331,7 @@ function candidatesFromTable(block, sourceFileId = "") {
         cellIndex: cellIndex + 1,
         detectionRule: "table-label-adjacent-cell",
         confidence: "alta"
-      });
+      }));
     }
     for (let cellIndex = 0; cellIndex < row.length; cellIndex += 1) {
       const text = row.slice(cellIndex, cellIndex + 2).join(" ");
@@ -321,7 +344,9 @@ function candidatesFromTable(block, sourceFileId = "") {
           tableIndex: block.source?.tableIndex,
           rowIndex,
           cellIndex,
-          detectionRule: "table-multi-label",
+          detectionRule: candidate.detectionRule === "structured-name-parenthetical-alias"
+            ? candidate.detectionRule
+            : "table-multi-label",
           confidence: "alta"
         });
       });

@@ -4,7 +4,7 @@ import { validateTransferDocxFile } from "./docx/docxValidator.js";
 import { calculateDocxHash, calculateNormalizedTextHash } from "./docx/docxHashService.js";
 import { extractDocx } from "./docx/docxExtractor.js";
 import { normalizeDocxBlocks, normalizedBlocksToText } from "./docx/docxBlockNormalizer.js";
-import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js?v=v168-institution-hpfba-v1";
+import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js?v=20260814-patient-alias-v1";
 import { resolvePatientIdentity } from "./parsing/patientIdentityResolver.js";
 import { parseClinicalSections } from "./parsing/clinicalSectionParser.js?v=v172-diagnostic-entity-boundaries-v1";
 import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js?v=20260813-diagnosis-context-gate-v1";
@@ -17,7 +17,7 @@ import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
 import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter.js";
 import { adaptTreatmentPlan } from "../clinical-document-engine/adapters/treatmentPlanAdapter.js";
 import { resolveMedicationCandidatesAgainstCatalog } from "../clinical-document-engine/resolvers/medicationCatalogResolver.js";
-import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260813-duplicate-existing-identity-v1";
+import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260814-patient-alias-v1";
 import {
   DUPLICATE_DETECTION_STATUS,
   DUPLICATE_RESOLUTION,
@@ -45,7 +45,7 @@ import {
   syncBulkSelectionControls,
   syncPatientNameInputs,
   updateMedicationScheduleUnitVisibility
-} from "./ui/patientTransferView.js?v=20260813-diagnosis-context-gate-v1";
+} from "./ui/patientTransferView.js?v=20260814-patient-alias-v1";
 
 let initialized = false;
 let selectedFiles = [];

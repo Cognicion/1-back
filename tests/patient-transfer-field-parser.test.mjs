@@ -5,6 +5,7 @@ import {
   buildFullPatientName,
   inferStructuredPatientNameFormat,
   PATIENT_NAME_SOURCE_FORMATS,
+  splitPatientNameAndAlias,
   suggestPatientNameParts
 } from "../js/modules/patient-transfer/parsing/patientNameParser.js";
 import { sugerirTipoNota } from "../js/modules/importacionDocx/noteTypeDetector.js";
@@ -295,6 +296,44 @@ assert.equal(sameLineName.value, "Ismerai Hernandez García");
 
 const aliasName = parsePatientFields([{ type: "paragraph", text: "Nombre del derechohabiente: Ana Pérez López Fecha de nacimiento: 01/01/2000", source: { blockIndex: 0 } }], "alias-name");
 assert.equal(fieldValues(aliasName.fields).nombre, "Ana Pérez López");
+
+const optionalAlias = parsePatientFields([
+  {
+    type: "paragraph",
+    text: "Nombre completo del paciente: CARMEN ELENA RIVERA SOTO Fecha de nacimiento: 01/01/2000",
+    source: { blockIndex: 1, origin: "body" }
+  },
+  {
+    type: "paragraph",
+    text: "Nombre completo del paciente: (MATEO) CARMEN ELENA RIVERA SOTO Fecha: 02/01/2026",
+    source: { blockIndex: 30, origin: "body" }
+  },
+  {
+    type: "paragraph",
+    text: "Nombre completo del paciente: CARMEN ELENA RIVERA SOTO (MATEO) Fecha: 03/01/2026",
+    source: { blockIndex: 60, origin: "body" }
+  }
+], "optional-patient-alias");
+const optionalAliasValues = fieldValues(optionalAlias.fields);
+assert.equal(optionalAliasValues.nombre, "CARMEN ELENA RIVERA SOTO");
+assert.equal(optionalAliasValues.nombres, "CARMEN ELENA");
+assert.equal(optionalAliasValues.apellidoPaterno, "RIVERA");
+assert.equal(optionalAliasValues.apellidoMaterno, "SOTO");
+assert.equal(optionalAliasValues.alias, "MATEO");
+assert.equal(optionalAlias.fields.alias.detectionMethod, "structured-name-parenthetical-alias");
+assert.equal(optionalAlias.conflicts.some((conflict) => conflict.key === "nombre"), false);
+
+const explicitSocialName = parsePatientFields([{
+  type: "paragraph",
+  text: "Nombre completo del paciente: CARMEN ELENA RIVERA SOTO Nombre social: MATEO Fecha de nacimiento: 01/01/2000",
+  source: { blockIndex: 1, origin: "body" }
+}], "explicit-social-name");
+assert.equal(fieldValues(explicitSocialName.fields).alias, "MATEO");
+assert.deepEqual(splitPatientNameAndAlias("CARMEN (DE SOLTERA) RIVERA"), {
+  legalName: "CARMEN (DE SOLTERA) RIVERA",
+  alias: "",
+  detected: false
+});
 
 console.log("patient-transfer-field-parser.identity.test.mjs OK");
 

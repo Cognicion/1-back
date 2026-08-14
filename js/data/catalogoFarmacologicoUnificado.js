@@ -6,14 +6,14 @@
  * archivo; las reglas y protocolos clínicos permanecen en módulos separados.
  * Presentaciones enriquecidas con RxNorm 03-Aug-2026 (API 3.1.354)
  * y fuentes regulatorias explícitas para conceptos sin producto RxNorm.
- * Corte de datos: 2026-08-11.
+ * Corte de datos: 2026-08-14.
  */
 
-import { REGLAS_INTERACCIONES_CLINICAS } from "./reglasClinicasMedicamentosExtendidas.js?v=20260811-pharmacology-files-consolidated-v1";
+import { REGLAS_INTERACCIONES_CLINICAS } from "./reglasClinicasMedicamentosExtendidas.js?v=20260814-ieca-c09aa-v1";
 
 export const CATALOGO_FARMACOLOGICO_METADATA = Object.freeze({
   esquema: "cognicion.catalogo-farmacologico.v2",
-  fechaCorte: "2026-08-11",
+  fechaCorte: "2026-08-14",
   rxNormVersion: "03-Aug-2026",
   rxNormApiVersion: "3.1.354",
   fuentePresentaciones: "https://lhncbc.nlm.nih.gov/RxNav/APIs/RxNormAPIs.html"
@@ -765,12 +765,26 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "sraa_aine_riesgo_renal",
         "contraparteIds": [
+          "benazepril",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
+          "fosinopril",
+          "imidapril",
           "lisinopril",
           "losartan",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "sacubitrilo_valsartan",
+          "spirapril",
           "telmisartan",
-          "valsartan"
+          "temocapril",
+          "trandolapril",
+          "valsartan",
+          "zofenopril"
         ]
       },
       {
@@ -1943,6 +1957,291 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "activo": true,
     "estadoContenido": "revision_inicial",
     "actualizadoEn": "2026-08-11"
+  },
+  {
+    "id": "aliskiren",
+    "legacyIds": [],
+    "nombre": "Aliskiren",
+    "genericName": "Aliskiren",
+    "principioActivo": "aliskiren",
+    "principiosActivos": [
+      "Aliskiren",
+      "aliskiren"
+    ],
+    "clasePrincipal": "Inhibidor directo de renina",
+    "clases": [
+      "Inhibidor directo de renina",
+      "inhibidor_renina",
+      "Antihipertensivo"
+    ],
+    "categoriasInteraccion": [
+      "renal",
+      "electrolitica",
+      "cardiovascular",
+      "hiperpotasemia",
+      "hipotension"
+    ],
+    "sinonimos": [
+      "aliskiren",
+      "aliskiren hemifumarato"
+    ],
+    "marcas": [
+      "Tekturna",
+      "Rasilez"
+    ],
+    "especialidades": [
+      "Cardiologia",
+      "Medicina interna",
+      "Nefrologia"
+    ],
+    "presentaciones": [
+      {
+        "id": "aliskiren-tableta-150-mg",
+        "texto": "tabletas de 150 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "150 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=aliskiren",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "aliskiren-tableta-300-mg",
+        "texto": "tabletas de 300 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "300 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=aliskiren",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      }
+    ],
+    "dosisHabitual": "Hipertension: 150 mg cada 24 horas; puede aumentarse a 300 mg cada 24 horas segun respuesta.",
+    "dosisHabituales": [
+      "150 mg",
+      "300 mg"
+    ],
+    "frecuenciasSugeridas": [
+      "cada 24 horas"
+    ],
+    "datosClinicos": {
+      "indicaciones": [
+        "Hipertension"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Uso con IECA o ARA-II en diabetes",
+        "Hipersensibilidad"
+      ],
+      "precauciones": [
+        "Deterioro renal",
+        "Hiperpotasemia",
+        "Hipotension/hipovolemia",
+        "Angioedema",
+        "Uso con inhibidores potentes de P-gp"
+      ],
+      "advertencias": [
+        "Evitar bloqueo dual del SRAA",
+        "Suspender al detectar embarazo",
+        "Vigilar creatinina/eGFR, potasio y presion arterial"
+      ],
+      "monitorizacion": [
+        "Presion arterial",
+        "Creatinina/eGFR",
+        "Potasio",
+        "Angioedema"
+      ],
+      "dosisAdulto": [
+        {
+          "indicationId": "hipertension",
+          "population": "adult",
+          "usualDose": {
+            "text": "150-300 mg cada 24 horas"
+          },
+          "administrationNotes": [
+            "Administrar de forma consistente respecto a los alimentos."
+          ]
+        }
+      ],
+      "dosisPediatrica": [],
+      "embarazo": "Contraindicado por toxicidad fetal asociada al bloqueo del SRAA.",
+      "lactancia": "No se recomienda sin valorar ficha regulatoria y alternativas."
+    },
+    "farmacocinetica": {
+      "mecanismoAccion": "Inhibe directamente la renina y reduce la actividad del sistema renina-angiotensina-aldosterona.",
+      "vidaMedia": "Aproximadamente 24 horas, con acumulacion tras dosis repetidas.",
+      "tiempoConcentracionMaxima": "Aproximadamente 1-3 horas.",
+      "duracionAccion": "Compatible con administracion cada 24 horas.",
+      "metabolismo": "Metabolismo limitado; CYP3A4 participa de forma minoritaria y es sustrato de P-gp.",
+      "eliminacion": "Principalmente fecal como farmaco sin cambios; excrecion renal baja.",
+      "cyp": [
+        "Sustrato CYP3A4 minoritario",
+        "Sustrato P-gp"
+      ],
+      "metabolitosActivos": [
+        "No se reconoce un metabolito activo principal"
+      ]
+    },
+    "efectosAdversos": [
+      "Diarrea",
+      "Hipotension",
+      "Hiperpotasemia",
+      "Deterioro renal",
+      "Angioedema"
+    ],
+    "riesgos": {
+      "potasio": 1,
+      "renal": 1,
+      "hipotension": 1,
+      "embarazo": 2,
+      "angioedema": 1
+    },
+    "interacciones": [
+      "IECA o ARA-II: bloqueo dual del SRAA",
+      "Ciclosporina o itraconazol: aumento de exposicion por P-gp",
+      "Potasio/ahorradores de potasio/AINEs: hiperpotasemia y riesgo renal"
+    ],
+    "interaccionesRelacionadas": [
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_renina",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ara2_renina",
+        "contraparteIds": [
+          "losartan",
+          "sacubitrilo_valsartan",
+          "telmisartan",
+          "valsartan"
+        ]
+      }
+    ],
+    "relacionDiagnosticos": [
+      "I10/hipertension arterial: indicacion",
+      "E11/diabetes: no combinar con IECA o ARA-II",
+      "N18/enfermedad renal cronica: evitar bloqueo dual y vigilar funcion renal/potasio",
+      "O00-O99/embarazo: contraindicado"
+    ],
+    "notas": "Contraparte farmacologica necesaria para resolver de forma reciproca las interacciones de bloqueo dual del SRAA con todos los IECA.",
+    "referencias": [
+      {
+        "id": "who_atc_c09xa02",
+        "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09XA02 aliskiren",
+        "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09XA02&showdescription=no",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "C09XA Renin-inhibitors",
+          "C09XA02 aliskiren"
+        ],
+        "nota": "Clasificacion ATC propia de aliskiren como inhibidor directo de renina; no es un IECA.",
+        "tipo": "clasificacion ATC oficial",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "zestril_smpc_interacciones_ieca",
+        "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+        "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "4.3 Contraindications",
+          "4.4 Special warnings and precautions",
+          "4.5 Interactions",
+          "4.6 Fertility, pregnancy and lactation"
+        ],
+        "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+        "tipo": "ficha tecnica regulatoria",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "ficha_aliskiren",
+        "titulo": "DailyMed: aliskiren tablets",
+        "url": "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=aliskiren",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "Presentations",
+          "Contraindications",
+          "Warnings and Precautions",
+          "Drug Interactions",
+          "Clinical Pharmacology"
+        ],
+        "tipo": "etiquetado oficial FDA/SPL",
+        "confiabilidad": "alta"
+      },
+      "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=aliskiren"
+    ],
+    "fuenteClinica": {
+      "estado": "verificada_local",
+      "fuente": "DailyMed: aliskiren tablets",
+      "fuentes": [
+        {
+          "id": "ficha_aliskiren",
+          "titulo": "DailyMed: aliskiren tablets",
+          "url": "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=aliskiren",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "Presentations",
+            "Contraindications",
+            "Warnings and Precautions",
+            "Drug Interactions",
+            "Clinical Pharmacology"
+          ],
+          "tipo": "etiquetado oficial FDA/SPL",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "zestril_smpc_interacciones_ieca",
+          "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+          "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "4.3 Contraindications",
+            "4.4 Special warnings and precautions",
+            "4.5 Interactions",
+            "4.6 Fertility, pregnancy and lactation"
+          ],
+          "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+          "tipo": "ficha tecnica regulatoria",
+          "confiabilidad": "alta"
+        }
+      ],
+      "paginaSeccion": "DailyMed: aliskiren tablets (https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=aliskiren)",
+      "confianza": "alta para identidad e interacciones de bloqueo SRAA; confirmar producto/pais"
+    },
+    "farmacologia": {
+      "esquema": "cognicion.farmacologia.v1",
+      "id": "aliskiren",
+      "nombreGenerico": "Aliskiren",
+      "estadoFuente": "verificada_local",
+      "fuente": "DailyMed: aliskiren tablets"
+    },
+    "pediatria": null,
+    "origenesCatalogo": [
+      "catalogo_maestro_ieca_atc"
+    ],
+    "activo": true,
+    "estadoContenido": "curado_fuente_regulatoria",
+    "actualizadoEn": "2026-08-14"
   },
   {
     "id": "alopurinol",
@@ -8574,6 +8873,435 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "actualizadoEn": "2026-08-11"
   },
   {
+    "id": "benazepril",
+    "legacyIds": [],
+    "nombre": "Benazepril",
+    "genericName": "Benazepril",
+    "principioActivo": "benazepril",
+    "principiosActivos": [
+      "Benazepril",
+      "benazepril"
+    ],
+    "clasePrincipal": "IECA",
+    "clases": [
+      "IECA",
+      "Inhibidor de la enzima convertidora de angiotensina",
+      "ieca",
+      "Profarmaco IECA"
+    ],
+    "categoriasInteraccion": [
+      "renal",
+      "electrolitica",
+      "cardiovascular",
+      "hiperpotasemia",
+      "hipotension",
+      "angioedema"
+    ],
+    "sinonimos": [
+      "benazepril"
+    ],
+    "marcas": [
+      "Lotensin"
+    ],
+    "especialidades": [
+      "Cardiologia",
+      "Medicina interna",
+      "Nefrologia"
+    ],
+    "presentaciones": [
+      {
+        "id": "benazepril-tableta-5-mg",
+        "texto": "tabletas de 5 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "5 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=e0ddcfbc-c9d8-45b1-9c11-0d1eff8c1e9e&type=display",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "benazepril-tableta-10-mg",
+        "texto": "tabletas de 10 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "10 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=e0ddcfbc-c9d8-45b1-9c11-0d1eff8c1e9e&type=display",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "benazepril-tableta-20-mg",
+        "texto": "tabletas de 20 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "20 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=e0ddcfbc-c9d8-45b1-9c11-0d1eff8c1e9e&type=display",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "benazepril-tableta-40-mg",
+        "texto": "tabletas de 40 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "40 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=e0ddcfbc-c9d8-45b1-9c11-0d1eff8c1e9e&type=display",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      }
+    ],
+    "dosisHabitual": "Hipertension: iniciar habitualmente con 10 mg cada 24 horas, o 5 mg si recibe diuretico; rango usual 20-40 mg al dia.",
+    "dosisHabituales": [
+      "5 mg",
+      "10 mg",
+      "20 mg",
+      "40 mg"
+    ],
+    "frecuenciasSugeridas": [
+      "cada 24 horas",
+      "cada 12 horas"
+    ],
+    "datosClinicos": {
+      "indicaciones": [
+        "Hipertension"
+      ],
+      "contraindicaciones": [
+        "Hipersensibilidad al principio activo o a otro IECA",
+        "Antecedente de angioedema asociado a un IECA o angioedema hereditario/idiopatico",
+        "Embarazo: toxicidad fetal por bloqueo del sistema renina-angiotensina",
+        "Uso concomitante con sacubitrilo/valsartan o dentro de las 36 horas del cambio",
+        "Uso concomitante con aliskiren en diabetes mellitus o deterioro renal significativo"
+      ],
+      "precauciones": [
+        "Hipotension sintomatica, hipovolemia o deplecion de sodio, especialmente con diureticos",
+        "Enfermedad renal, estenosis bilateral de arterias renales o estenosis en rinon unico",
+        "Hiperpotasemia o uso de farmacos/sustitutos de sal que aumentan potasio",
+        "Angioedema de cara, lengua, glotis o intestino: suspender y atender de inmediato",
+        "Tos seca persistente",
+        "Estenosis aortica/mitral o miocardiopatia obstructiva: evitar hipotension excesiva",
+        "Enfermedad vascular del colageno o inmunosupresion: considerar vigilancia hematologica",
+        "Cirugia o anestesia: riesgo de hipotension por bloqueo del SRAA",
+        "Deterioro hepatico o ictericia: suspender y evaluar por riesgo raro de lesion hepatica"
+      ],
+      "advertencias": [
+        "Controlar creatinina/eGFR y potasio antes de iniciar y 1-2 semanas despues de iniciar o titular",
+        "No usar bloqueo dual rutinario del SRAA con ARA-II o aliskiren",
+        "Separar al menos 36 horas de sacubitrilo/valsartan por riesgo de angioedema",
+        "La deshidratacion, los AINEs y los diureticos aumentan el riesgo de lesion renal e hipotension",
+        "Suspender cuanto antes si se detecta embarazo",
+        "La compatibilidad durante lactancia depende del IECA, la edad del lactante y la ficha regulatoria local"
+      ],
+      "monitorizacion": [
+        "Presion arterial y sintomas ortostaticos",
+        "Creatinina y eGFR basales y tras inicio/cambios de dosis",
+        "Potasio serico basal y tras inicio/cambios de dosis",
+        "Tos y cualquier dato de angioedema",
+        "Estado de volumen y sodio si usa diureticos",
+        "Biometria hematica si existe enfermedad vascular del colageno, inmunosupresion o deterioro renal"
+      ],
+      "dosisAdulto": [
+        {
+          "indicationId": "uso_habitual",
+          "population": "adult",
+          "usualDose": {
+            "text": "Hipertension: iniciar habitualmente con 10 mg cada 24 horas, o 5 mg si recibe diuretico; rango usual 20-40 mg al dia."
+          },
+          "administrationNotes": []
+        }
+      ],
+      "dosisPediatrica": [],
+      "embarazo": "Contraindicado. Suspender cuanto antes al detectar embarazo por riesgo de toxicidad fetal, oligohidramnios, deterioro renal y muerte fetal/neonatal.",
+      "lactancia": "La recomendacion depende del principio activo, la edad del lactante y la ficha regulatoria local; confirmar compatibilidad y vigilar hipotension, diuresis y funcion renal del lactante cuando proceda."
+    },
+    "farmacocinetica": {
+      "mecanismoAccion": "Inhibe la enzima convertidora de angiotensina, reduce angiotensina II y aldosterona y aumenta bradicinina.",
+      "vidaMedia": "Benazeprilat: vida media efectiva aproximada de 10-11 horas.",
+      "tiempoConcentracionMaxima": "Benazepril menos de 1 hora; benazeprilat 1-2 horas.",
+      "duracionAccion": "Efecto antihipertensivo compatible con administracion cada 24 horas; individualizar segun respuesta y ficha tecnica.",
+      "metabolismo": "Profarmaco hidrolizado casi por completo a benazeprilat.",
+      "eliminacion": "Renal y biliar/fecal.",
+      "cyp": [
+        "Sin CYP principal clinicamente relevante documentado; revisar ficha especifica"
+      ],
+      "metabolitosActivos": [
+        "Benazeprilat"
+      ]
+    },
+    "efectosAdversos": [
+      "Tos seca",
+      "Mareo e hipotension",
+      "Hiperpotasemia",
+      "Elevacion de creatinina o lesion renal aguda",
+      "Angioedema",
+      "Cefalea",
+      "Nausea",
+      "Rash",
+      "Neutropenia/agranulocitosis rara",
+      "Lesion hepatica colestasica rara"
+    ],
+    "riesgos": {
+      "potasio": 1,
+      "renal": 1,
+      "hipotension": 1,
+      "embarazo": 2,
+      "angioedema": 2
+    },
+    "interacciones": [
+      "Sacubitrilo/valsartan: combinacion contraindicada; separar 36 horas por riesgo de angioedema",
+      "ARA-II o aliskiren: bloqueo dual del SRAA con mayor riesgo de hipotension, hiperpotasemia y lesion renal",
+      "Diureticos ahorradores de potasio, suplementos de potasio, sustitutos de sal, trimetoprim, ciclosporina o heparinas: hiperpotasemia",
+      "AINEs: menor efecto antihipertensivo y mayor riesgo de hiperpotasemia o lesion renal aguda",
+      "Litio: aumento reversible de concentraciones y toxicidad; evitar o monitorizar estrechamente",
+      "Diureticos y otros hipotensores: hipotension aditiva, sobre todo al inicio o con hipovolemia",
+      "Insulina y antidiabeticos: puede potenciar el descenso de glucosa durante las primeras semanas",
+      "Inhibidores mTOR, racecadotrilo, inhibidores DPP-4 o activadores tisulares de plasminogeno: mayor riesgo de angioedema",
+      "Antidepresivos triciclicos, antipsicoticos y anestesicos: hipotension aditiva",
+      "Simpatomimeticos: posible reduccion del efecto antihipertensivo"
+    ],
+    "interaccionesRelacionadas": [
+      {
+        "idRegla": "sraa_aine_riesgo_renal",
+        "contraparteIds": [
+          "acido_acetilsalicilico",
+          "diclofenaco",
+          "ibuprofeno",
+          "ketorolaco",
+          "naproxeno"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_ara2",
+        "contraparteIds": [
+          "losartan",
+          "sacubitrilo_valsartan",
+          "telmisartan",
+          "valsartan"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_renina",
+        "contraparteIds": [
+          "aliskiren"
+        ]
+      },
+      {
+        "idRegla": "litio_ieca_ara",
+        "contraparteIds": [
+          "litio"
+        ]
+      },
+      {
+        "idRegla": "espironolactona_ieca_ara",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona"
+        ]
+      },
+      {
+        "idRegla": "ieca_ieca_duplicidad",
+        "contraparteIds": [
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "ieca_neprilisina_angioedema",
+        "contraparteIds": [
+          "sacubitrilo_valsartan"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona",
+          "furosemida",
+          "hidroclorotiazida"
+        ]
+      },
+      {
+        "idRegla": "ieca_heparina_hiperpotasemia",
+        "contraparteIds": [
+          "enoxaparina",
+          "heparina"
+        ]
+      },
+      {
+        "idRegla": "ieca_dpp4_angioedema",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "ieca_antidiabetico_hipoglucemia",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "fenotiazina_antihipertensivo",
+        "contraparteIds": [
+          "clorpromazina",
+          "flufenazina",
+          "levomepromazina",
+          "mesoridazina",
+          "perfenazina",
+          "periciazina",
+          "pipotiazina",
+          "proclorperazina",
+          "promazina",
+          "tioridazina",
+          "trifluoperazina"
+        ]
+      }
+    ],
+    "relacionDiagnosticos": [
+      "I10/hipertension arterial: indicacion de clase; seleccionar farmaco y dosis segun ficha y contexto",
+      "I50/insuficiencia cardiaca: beneficio segun principio activo, fenotipo y guia vigente",
+      "I13/enfermedad cardiaca y renal hipertensiva: vigilar presion, creatinina/eGFR y potasio",
+      "N18/enfermedad renal cronica o sospecha de estenosis renal: requiere vigilancia renal y electrolitica estrecha",
+      "E11/diabetes con albuminuria o enfermedad renal: considerar beneficio renal segun indicacion y guia",
+      "O00-O99/embarazo: contraindicado por toxicidad fetal renal"
+    ],
+    "notas": "C09AA07: IECA simple. La disponibilidad y las sales comercializadas varian por pais; confirmar ficha tecnica local antes de prescribir.",
+    "referencias": [
+      {
+        "id": "who_atc_c09aa",
+        "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+        "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "C09AA ACE inhibitors, plain"
+        ],
+        "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+        "tipo": "clasificacion ATC oficial",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "zestril_smpc_interacciones_ieca",
+        "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+        "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "4.3 Contraindications",
+          "4.4 Special warnings and precautions",
+          "4.5 Interactions",
+          "4.6 Fertility, pregnancy and lactation"
+        ],
+        "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+        "tipo": "ficha tecnica regulatoria",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "ficha_benazepril",
+        "titulo": "DailyMed: benazepril hydrochloride tablets",
+        "url": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=e0ddcfbc-c9d8-45b1-9c11-0d1eff8c1e9e&type=display",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "Presentaciones",
+          "Indicaciones",
+          "Posologia",
+          "Contraindicaciones",
+          "Interacciones",
+          "Farmacologia clinica"
+        ],
+        "nota": "Fuente de producto consultada para Benazepril. La disponibilidad comercial debe verificarse por pais.",
+        "tipo": "ficha tecnica o documento regulatorio",
+        "confiabilidad": "alta"
+      },
+      "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=e0ddcfbc-c9d8-45b1-9c11-0d1eff8c1e9e&type=display"
+    ],
+    "fuenteClinica": {
+      "estado": "verificada_local",
+      "fuente": "DailyMed: benazepril hydrochloride tablets",
+      "fuentes": [
+        {
+          "id": "who_atc_c09aa",
+          "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+          "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "C09AA ACE inhibitors, plain"
+          ],
+          "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+          "tipo": "clasificacion ATC oficial",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "zestril_smpc_interacciones_ieca",
+          "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+          "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "4.3 Contraindications",
+            "4.4 Special warnings and precautions",
+            "4.5 Interactions",
+            "4.6 Fertility, pregnancy and lactation"
+          ],
+          "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+          "tipo": "ficha tecnica regulatoria",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "ficha_benazepril",
+          "titulo": "DailyMed: benazepril hydrochloride tablets",
+          "url": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=e0ddcfbc-c9d8-45b1-9c11-0d1eff8c1e9e&type=display",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "Presentaciones",
+            "Indicaciones",
+            "Posologia",
+            "Contraindicaciones",
+            "Interacciones",
+            "Farmacologia clinica"
+          ],
+          "nota": "Fuente de producto consultada para Benazepril. La disponibilidad comercial debe verificarse por pais.",
+          "tipo": "ficha tecnica o documento regulatorio",
+          "confiabilidad": "alta"
+        }
+      ],
+      "paginaSeccion": "DailyMed: benazepril hydrochloride tablets (https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=e0ddcfbc-c9d8-45b1-9c11-0d1eff8c1e9e&type=display); WHO ATC C09AA07; ficha de clase IECA",
+      "confianza": "alta para identidad, presentaciones y consideraciones de clase; confirmar producto/pais antes de prescribir"
+    },
+    "farmacologia": {
+      "esquema": "cognicion.farmacologia.v1",
+      "id": "benazepril",
+      "nombreGenerico": "Benazepril",
+      "estadoFuente": "verificada_local",
+      "fuente": "DailyMed: benazepril hydrochloride tablets"
+    },
+    "pediatria": null,
+    "origenesCatalogo": [
+      "catalogo_maestro_ieca_atc"
+    ],
+    "activo": true,
+    "estadoContenido": "curado_fuente_regulatoria",
+    "actualizadoEn": "2026-08-14"
+  },
+  {
     "id": "benztropina",
     "legacyIds": [],
     "nombre": "Benztropina",
@@ -11181,11 +11909,15 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "clases": [
       "IECA",
       "Inhibidor de la enzima convertidora de angiotensina",
-      "ieca"
+      "IECA no profarmaco"
     ],
     "categoriasInteraccion": [
       "renal",
-      "electrolitica"
+      "electrolitica",
+      "cardiovascular",
+      "hiperpotasemia",
+      "hipotension",
+      "angioedema"
     ],
     "sinonimos": [
       "captopril",
@@ -11195,20 +11927,35 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       "Capoten"
     ],
     "especialidades": [
-      "Cardiología"
+      "Cardiología",
+      "Cardiologia",
+      "Medicina interna",
+      "Nefrologia"
     ],
     "presentaciones": [
+      {
+        "id": "captopril-tableta-12-5-mg",
+        "texto": "tabletas de 12.5 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "12.5 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=captopril",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
       {
         "id": "captopril-tableta-25-mg",
         "texto": "tabletas de 25 mg",
         "via": "oral",
         "forma": "tableta",
         "concentracion": "25 mg",
-        "fuente": "catalogo_cognicion_preexistente",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=captopril",
         "rxCui": null,
         "principioActivoPresentado": null,
         "activo": true,
-        "origen": "catalogo_cognicion_preexistente"
+        "origen": "catalogo_maestro_ieca_atc"
       },
       {
         "id": "captopril-tableta-50-mg",
@@ -11216,39 +11963,71 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "via": "oral",
         "forma": "tableta",
         "concentracion": "50 mg",
-        "fuente": "catalogo_cognicion_preexistente",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=captopril",
         "rxCui": null,
         "principioActivoPresentado": null,
         "activo": true,
-        "origen": "catalogo_cognicion_preexistente"
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "captopril-tableta-100-mg",
+        "texto": "tabletas de 100 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "100 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=captopril",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
       }
     ],
-    "dosisHabitual": "Hipertension: 25 mg cada 8-12 h; titular segun respuesta.",
+    "dosisHabitual": "Hipertension: iniciar habitualmente con 25 mg cada 8-12 horas y titular; rango y maximo dependen de indicacion y funcion renal.",
     "dosisHabituales": [
+      "12.5 mg",
       "25 mg",
-      "50 mg"
+      "50 mg",
+      "100 mg"
     ],
-    "frecuenciasSugeridas": [],
+    "frecuenciasSugeridas": [
+      "cada 8 horas",
+      "cada 12 horas"
+    ],
     "datosClinicos": {
       "indicaciones": [
         "Hipertension",
         "Insuficiencia cardiaca",
         "Postinfarto",
-        "Nefropatia diabetica segun etiqueta"
+        "Nefropatia diabetica segun etiqueta",
+        "Disfuncion ventricular izquierda postinfarto"
       ],
       "contraindicaciones": [
         "Hipersensibilidad",
         "Antecedente de angioedema por IECA",
         "Uso con sacubitrilo/valsartan dentro de 36 h",
         "No coadministrar aliskiren en diabetes",
-        "Embarazo"
+        "Embarazo",
+        "Hipersensibilidad al principio activo o a otro IECA",
+        "Antecedente de angioedema asociado a un IECA o angioedema hereditario/idiopatico",
+        "Embarazo: toxicidad fetal por bloqueo del sistema renina-angiotensina",
+        "Uso concomitante con sacubitrilo/valsartan o dentro de las 36 horas del cambio",
+        "Uso concomitante con aliskiren en diabetes mellitus o deterioro renal significativo"
       ],
       "precauciones": [
         "Hipotension",
         "Hiperpotasemia",
         "Deterioro renal/lesion renal aguda",
         "Tos",
-        "Angioedema"
+        "Angioedema",
+        "Hipotension sintomatica, hipovolemia o deplecion de sodio, especialmente con diureticos",
+        "Enfermedad renal, estenosis bilateral de arterias renales o estenosis en rinon unico",
+        "Hiperpotasemia o uso de farmacos/sustitutos de sal que aumentan potasio",
+        "Angioedema de cara, lengua, glotis o intestino: suspender y atender de inmediato",
+        "Tos seca persistente",
+        "Estenosis aortica/mitral o miocardiopatia obstructiva: evitar hipotension excesiva",
+        "Enfermedad vascular del colageno o inmunosupresion: considerar vigilancia hematologica",
+        "Cirugia o anestesia: riesgo de hipotension por bloqueo del SRAA",
+        "Deterioro hepatico o ictericia: suspender y evaluar por riesgo raro de lesion hepatica"
       ],
       "advertencias": [
         "Hipotension",
@@ -11257,16 +12036,36 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "Tos",
         "Angioedema",
         "Embarazo/lactancia: verificar etiqueta vigente y balance beneficio-riesgo.",
-        "Adulto mayor: iniciar bajo, titular lento y vigilar caidas, funcion renal/hepatica, electrolitos o sangrado segun farmaco."
+        "Adulto mayor: iniciar bajo, titular lento y vigilar caidas, funcion renal/hepatica, electrolitos o sangrado segun farmaco.",
+        "Controlar creatinina/eGFR y potasio antes de iniciar y 1-2 semanas despues de iniciar o titular",
+        "No usar bloqueo dual rutinario del SRAA con ARA-II o aliskiren",
+        "Separar al menos 36 horas de sacubitrilo/valsartan por riesgo de angioedema",
+        "La deshidratacion, los AINEs y los diureticos aumentan el riesgo de lesion renal e hipotension",
+        "Suspender cuanto antes si se detecta embarazo",
+        "La compatibilidad durante lactancia depende del IECA, la edad del lactante y la ficha regulatoria local"
       ],
       "monitorizacion": [
         "Presion arterial",
         "Creatinina",
         "eGFR",
         "Potasio",
-        "Angioedema/tos"
+        "Angioedema/tos",
+        "Presion arterial y sintomas ortostaticos",
+        "Creatinina y eGFR basales y tras inicio/cambios de dosis",
+        "Potasio serico basal y tras inicio/cambios de dosis",
+        "Tos y cualquier dato de angioedema",
+        "Estado de volumen y sodio si usa diureticos",
+        "Biometria hematica si existe enfermedad vascular del colageno, inmunosupresion o deterioro renal"
       ],
       "dosisAdulto": [
+        {
+          "indicationId": "uso_habitual",
+          "population": "adult",
+          "usualDose": {
+            "text": "Hipertension: iniciar habitualmente con 25 mg cada 8-12 horas y titular; rango y maximo dependen de indicacion y funcion renal."
+          },
+          "administrationNotes": []
+        },
         {
           "indicationId": "uso_habitual",
           "population": "adult",
@@ -11277,21 +12076,21 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         }
       ],
       "dosisPediatrica": [],
-      "embarazo": null,
-      "lactancia": null
+      "embarazo": "Contraindicado. Suspender cuanto antes al detectar embarazo por riesgo de toxicidad fetal, oligohidramnios, deterioro renal y muerte fetal/neonatal.",
+      "lactancia": "La recomendacion depende del principio activo, la edad del lactante y la ficha regulatoria local; confirmar compatibilidad y vigilar hipotension, diuresis y funcion renal del lactante cuando proceda."
     },
     "farmacocinetica": {
-      "mecanismoAccion": "Inhibe ECA, reduce angiotensina II y aldosterona.",
-      "vidaMedia": "Menor de 2 h; aumenta en insuficiencia renal.",
-      "tiempoConcentracionMaxima": "Concentracion maxima ~1 h.",
-      "duracionAccion": "dato no encontrado en fuente local",
-      "metabolismo": "Formacion de dimeros/disulfuros; no depende de CYP como via principal.",
-      "eliminacion": "Renal, principalmente como captopril y metabolitos disulfuro.",
+      "mecanismoAccion": "Inhibe la enzima convertidora de angiotensina, reduce angiotensina II y aldosterona y aumenta bradicinina.",
+      "vidaMedia": "Menor de 2 horas; aumenta en insuficiencia renal.",
+      "tiempoConcentracionMaxima": "Aproximadamente 1 hora.",
+      "duracionAccion": "Efecto antihipertensivo compatible con administracion cada 24 horas; individualizar segun respuesta y ficha tecnica.",
+      "metabolismo": "Forma dimeros y disulfuros reversibles; no depende de CYP como via principal.",
+      "eliminacion": "Renal, como captopril y metabolitos disulfuro.",
       "cyp": [
-        "Sin CYP principal documentado en etiqueta"
+        "Sin CYP principal clinicamente relevante documentado; revisar ficha especifica"
       ],
       "metabolitosActivos": [
-        "Disulfuros reversibles pueden regenerar captopril"
+        "Disulfuros reversibles que pueden regenerar captopril"
       ]
     },
     "efectosAdversos": [
@@ -11300,18 +12099,38 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       "Hiperpotasemia",
       "Rash",
       "Alteracion del gusto",
-      "Deterioro renal"
+      "Deterioro renal",
+      "Tos seca",
+      "Mareo e hipotension",
+      "Elevacion de creatinina o lesion renal aguda",
+      "Angioedema",
+      "Cefalea",
+      "Nausea",
+      "Neutropenia/agranulocitosis rara",
+      "Lesion hepatica colestasica rara"
     ],
     "riesgos": {
       "potasio": 1,
       "renal": 1,
-      "hipotension": 1
+      "hipotension": 1,
+      "embarazo": 2,
+      "angioedema": 2
     },
     "interacciones": [
       "ARA-II/aliskiren: bloqueo dual SRAA",
       "Espironolactona/potasio: hiperpotasemia",
       "AINEs: lesion renal y menor efecto antihipertensivo",
-      "Litio: toxicidad"
+      "Litio: toxicidad",
+      "Sacubitrilo/valsartan: combinacion contraindicada; separar 36 horas por riesgo de angioedema",
+      "ARA-II o aliskiren: bloqueo dual del SRAA con mayor riesgo de hipotension, hiperpotasemia y lesion renal",
+      "Diureticos ahorradores de potasio, suplementos de potasio, sustitutos de sal, trimetoprim, ciclosporina o heparinas: hiperpotasemia",
+      "AINEs: menor efecto antihipertensivo y mayor riesgo de hiperpotasemia o lesion renal aguda",
+      "Litio: aumento reversible de concentraciones y toxicidad; evitar o monitorizar estrechamente",
+      "Diureticos y otros hipotensores: hipotension aditiva, sobre todo al inicio o con hipovolemia",
+      "Insulina y antidiabeticos: puede potenciar el descenso de glucosa durante las primeras semanas",
+      "Inhibidores mTOR, racecadotrilo, inhibidores DPP-4 o activadores tisulares de plasminogeno: mayor riesgo de angioedema",
+      "Antidepresivos triciclicos, antipsicoticos y anestesicos: hipotension aditiva",
+      "Simpatomimeticos: posible reduccion del efecto antihipertensivo"
     ],
     "interaccionesRelacionadas": [
       {
@@ -11328,8 +12147,15 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "bloqueo_dual_sraa_ieca_ara2",
         "contraparteIds": [
           "losartan",
+          "sacubitrilo_valsartan",
           "telmisartan",
           "valsartan"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_renina",
+        "contraparteIds": [
+          "aliskiren"
         ]
       },
       {
@@ -11341,7 +12167,64 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "espironolactona_ieca_ara",
         "contraparteIds": [
+          "eplerenona",
           "espironolactona"
+        ]
+      },
+      {
+        "idRegla": "ieca_ieca_duplicidad",
+        "contraparteIds": [
+          "benazepril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "ieca_neprilisina_angioedema",
+        "contraparteIds": [
+          "sacubitrilo_valsartan"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona",
+          "furosemida",
+          "hidroclorotiazida"
+        ]
+      },
+      {
+        "idRegla": "ieca_heparina_hiperpotasemia",
+        "contraparteIds": [
+          "enoxaparina",
+          "heparina"
+        ]
+      },
+      {
+        "idRegla": "ieca_dpp4_angioedema",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "ieca_antidiabetico_hipoglucemia",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
         ]
       },
       {
@@ -11362,9 +12245,15 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       }
     ],
     "relacionDiagnosticos": [
-      "I13/enfermedad renal/cardiaca hipertensiva: precaucion renal, electrolitica y hemodinamica"
+      "I13/enfermedad renal/cardiaca hipertensiva: precaucion renal, electrolitica y hemodinamica",
+      "I10/hipertension arterial: indicacion de clase; seleccionar farmaco y dosis segun ficha y contexto",
+      "I50/insuficiencia cardiaca: beneficio segun principio activo, fenotipo y guia vigente",
+      "I13/enfermedad cardiaca y renal hipertensiva: vigilar presion, creatinina/eGFR y potasio",
+      "N18/enfermedad renal cronica o sospecha de estenosis renal: requiere vigilancia renal y electrolitica estrecha",
+      "E11/diabetes con albuminuria o enfermedad renal: considerar beneficio renal segun indicacion y guia",
+      "O00-O99/embarazo: contraindicado por toxicidad fetal renal"
     ],
-    "notas": "IECA de acción corta; vigilar hipotensión, potasio y función renal.",
+    "notas": "IECA de acción corta; vigilar hipotensión, potasio y función renal. C09AA01: IECA simple. La disponibilidad y las sales comercializadas varian por pais; confirmar ficha tecnica local antes de prescribir.",
     "referencias": [
       {
         "id": "dailymed_captopril",
@@ -11383,11 +12272,39 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "tipo": "etiquetado oficial FDA/SPL",
         "confiabilidad": "alta; confirmar producto y presentacion comercial especificos antes de prescribir"
       },
-      "catalogo_cognicion_preexistente"
+      "catalogo_cognicion_preexistente",
+      {
+        "id": "who_atc_c09aa",
+        "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+        "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "C09AA ACE inhibitors, plain"
+        ],
+        "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+        "tipo": "clasificacion ATC oficial",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "zestril_smpc_interacciones_ieca",
+        "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+        "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "4.3 Contraindications",
+          "4.4 Special warnings and precautions",
+          "4.5 Interactions",
+          "4.6 Fertility, pregnancy and lactation"
+        ],
+        "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+        "tipo": "ficha tecnica regulatoria",
+        "confiabilidad": "alta"
+      },
+      "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=captopril"
     ],
     "fuenteClinica": {
       "estado": "verificada_local",
-      "fuente": "DailyMed",
+      "fuente": "DailyMed: captopril tablets",
       "fuentes": [
         {
           "id": "dailymed_captopril",
@@ -11405,177 +12322,53 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "nota": "Etiqueta oficial consultada para datos de farmacologia, seguridad y dosificacion.",
           "tipo": "etiquetado oficial FDA/SPL",
           "confiabilidad": "alta; confirmar producto y presentacion comercial especificos antes de prescribir"
+        },
+        {
+          "id": "who_atc_c09aa",
+          "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+          "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "C09AA ACE inhibitors, plain"
+          ],
+          "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+          "tipo": "clasificacion ATC oficial",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "zestril_smpc_interacciones_ieca",
+          "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+          "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "4.3 Contraindications",
+            "4.4 Special warnings and precautions",
+            "4.5 Interactions",
+            "4.6 Fertility, pregnancy and lactation"
+          ],
+          "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+          "tipo": "ficha tecnica regulatoria",
+          "confiabilidad": "alta"
         }
       ],
-      "paginaSeccion": "DailyMed / U.S. National Library of Medicine (https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=captopril): Indications and Usage, Dosage and Administration, Contraindications, Warnings and Precautions, Drug Interactions, Clinical Pharmacology",
-      "confianza": "moderada-alta para seed oficial; requiere revision por producto/pais antes de uso clinico"
+      "paginaSeccion": "DailyMed: captopril tablets (https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=captopril); WHO ATC C09AA01; ficha de clase IECA",
+      "confianza": "alta para identidad, presentaciones y consideraciones de clase; confirmar producto/pais antes de prescribir"
     },
     "farmacologia": {
       "esquema": "cognicion.farmacologia.v1",
-      "grupoFarmacologico": "IECA",
-      "principioActivoNormalizado": "captopril",
-      "nombresComerciales": [
-        "Capoten"
-      ],
-      "sinonimos": [
-        "captopril",
-        "capoten"
-      ],
-      "presentaciones": [
-        {
-          "formaFarmaceutica": "tableta",
-          "concentracion": "12.5",
-          "unidad": "mg",
-          "via": "oral",
-          "marca": "",
-          "fuente": "DailyMed",
-          "comercial": false
-        },
-        {
-          "formaFarmaceutica": "tableta",
-          "concentracion": "25",
-          "unidad": "mg",
-          "via": "oral",
-          "marca": "",
-          "fuente": "DailyMed",
-          "comercial": false
-        },
-        {
-          "formaFarmaceutica": "tableta",
-          "concentracion": "50",
-          "unidad": "mg",
-          "via": "oral",
-          "marca": "",
-          "fuente": "DailyMed",
-          "comercial": false
-        },
-        {
-          "formaFarmaceutica": "tableta",
-          "concentracion": "100",
-          "unidad": "mg",
-          "via": "oral",
-          "marca": "",
-          "fuente": "DailyMed",
-          "comercial": false
-        }
-      ],
-      "indicaciones": [
-        "Hipertension",
-        "Insuficiencia cardiaca",
-        "Postinfarto",
-        "Nefropatia diabetica segun etiqueta"
-      ],
-      "contraindicacionesAbsolutas": [
-        "Hipersensibilidad",
-        "Antecedente de angioedema por IECA",
-        "Uso con sacubitrilo/valsartan dentro de 36 h",
-        "No coadministrar aliskiren en diabetes",
-        "Embarazo"
-      ],
-      "contraindicacionesRelativas": [
-        "Estenosis de arteria renal",
-        "Hipovolemia",
-        "Enfermedad renal",
-        "Hiperpotasemia"
-      ],
-      "precauciones": [
-        "Hipotension",
-        "Hiperpotasemia",
-        "Deterioro renal/lesion renal aguda",
-        "Tos",
-        "Angioedema"
-      ],
-      "cyp": [
-        "Sin CYP principal documentado en etiqueta"
-      ],
-      "metabolitosActivos": [
-        "Disulfuros reversibles pueden regenerar captopril"
-      ],
-      "interaccionesMedicamento": [
-        "ARA-II/aliskiren: bloqueo dual SRAA",
-        "Espironolactona/potasio: hiperpotasemia",
-        "AINEs: lesion renal y menor efecto antihipertensivo",
-        "Litio: toxicidad"
-      ],
-      "interaccionesDiagnostico": [
-        "I13/enfermedad renal/cardiaca hipertensiva: precaucion renal, electrolitica y hemodinamica"
-      ],
-      "efectosAdversos": [
-        "Tos",
-        "Hipotension",
-        "Hiperpotasemia",
-        "Rash",
-        "Alteracion del gusto",
-        "Deterioro renal"
-      ],
-      "vigilancia": [
-        "Presion arterial",
-        "Creatinina",
-        "eGFR",
-        "Potasio",
-        "Angioedema/tos"
-      ],
-      "laboratorios": [
-        "Creatinina",
-        "eGFR",
-        "Potasio"
-      ],
-      "fuentes": [
-        {
-          "id": "dailymed_captopril",
-          "titulo": "DailyMed / U.S. National Library of Medicine",
-          "url": "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=captopril",
-          "fechaConsulta": "2026-07-15",
-          "secciones": [
-            "Indications and Usage",
-            "Dosage and Administration",
-            "Contraindications",
-            "Warnings and Precautions",
-            "Drug Interactions",
-            "Clinical Pharmacology"
-          ],
-          "nota": "Etiqueta oficial consultada para datos de farmacologia, seguridad y dosificacion.",
-          "tipo": "etiquetado oficial FDA/SPL",
-          "confiabilidad": "alta; confirmar producto y presentacion comercial especificos antes de prescribir"
-        }
-      ],
-      "mecanismoAccion": "Inhibe ECA, reduce angiotensina II y aldosterona.",
-      "tiempoConcentracionMaxima": "Concentracion maxima ~1 h.",
-      "duracionEfecto": "dato no encontrado en fuente local",
-      "viaEliminacion": "Renal, principalmente como captopril y metabolitos disulfuro.",
-      "embarazoLactancia": [
-        "Embarazo/lactancia: verificar etiqueta vigente y balance beneficio-riesgo."
-      ],
-      "advertenciasGeriatricas": [
-        "Adulto mayor: iniciar bajo, titular lento y vigilar caidas, funcion renal/hepatica, electrolitos o sangrado segun farmaco."
-      ],
-      "advertenciasPediatricas": [],
-      "confianza": "moderada-alta para seed oficial; requiere revision por producto/pais antes de uso clinico",
       "id": "captopril",
       "nombreGenerico": "Captopril",
-      "claseFarmacologica": "IECA",
-      "subclase": "Inhibidor de la enzima convertidora de angiotensina",
-      "dosisHabitual": "Hipertension: 25 mg cada 8-12 h; titular segun respuesta.",
-      "rangoDosis": "25-150 mg/dia en dosis divididas; maximos dependen de indicacion.",
-      "vidaMedia": "Menor de 2 h; aumenta en insuficiencia renal.",
-      "metabolismo": "Formacion de dimeros/disulfuros; no depende de CYP como via principal.",
-      "dosisGeriatria": "Iniciar en el extremo bajo del rango cuando aplique; individualizar por fragilidad, funcion renal/hepatica e interacciones.",
-      "dosisPediatrica": "dato no encontrado en fuente local",
-      "ajusteRenal": "Revisar funcion renal y ficha especifica antes de ajustar.",
-      "ajusteHepatico": "Revisar funcion hepatica y ficha especifica antes de ajustar.",
-      "tmax": "Concentracion maxima ~1 h.",
-      "eliminacion": "Renal, principalmente como captopril y metabolitos disulfuro.",
-      "fuentePrincipal": "DailyMed",
       "estadoFuente": "verificada_local",
-      "fechaRevision": "2026-07-15"
+      "fuente": "DailyMed: captopril tablets"
     },
     "pediatria": null,
     "origenesCatalogo": [
-      "catalogo_suplementario"
+      "catalogo_suplementario",
+      "catalogo_maestro_ieca_atc"
     ],
     "activo": true,
-    "estadoContenido": "revision_inicial",
-    "actualizadoEn": "2026-08-11"
+    "estadoContenido": "curado_fuente_regulatoria",
+    "actualizadoEn": "2026-08-14"
   },
   {
     "id": "carbamazepina",
@@ -13798,6 +14591,423 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "activo": true,
     "estadoContenido": "revision_inicial",
     "actualizadoEn": "2026-08-11"
+  },
+  {
+    "id": "cilazapril",
+    "legacyIds": [],
+    "nombre": "Cilazapril",
+    "genericName": "Cilazapril",
+    "principioActivo": "cilazapril",
+    "principiosActivos": [
+      "Cilazapril",
+      "cilazapril"
+    ],
+    "clasePrincipal": "IECA",
+    "clases": [
+      "IECA",
+      "Inhibidor de la enzima convertidora de angiotensina",
+      "ieca",
+      "Profarmaco IECA"
+    ],
+    "categoriasInteraccion": [
+      "renal",
+      "electrolitica",
+      "cardiovascular",
+      "hiperpotasemia",
+      "hipotension",
+      "angioedema"
+    ],
+    "sinonimos": [
+      "cilazapril"
+    ],
+    "marcas": [
+      "Inhibace",
+      "Zapril"
+    ],
+    "especialidades": [
+      "Cardiologia",
+      "Medicina interna",
+      "Nefrologia"
+    ],
+    "presentaciones": [
+      {
+        "id": "cilazapril-tableta-0-5-mg",
+        "texto": "tabletas de 0.5 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "0.5 mg",
+        "fuente": "https://www.medsafe.govt.nz/profs/datasheet/z/zapriltab.pdf",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "cilazapril-tableta-2-5-mg",
+        "texto": "tabletas de 2.5 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "2.5 mg",
+        "fuente": "https://www.medsafe.govt.nz/profs/datasheet/z/zapriltab.pdf",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "cilazapril-tableta-5-mg",
+        "texto": "tabletas de 5 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "5 mg",
+        "fuente": "https://www.medsafe.govt.nz/profs/datasheet/z/zapriltab.pdf",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      }
+    ],
+    "dosisHabitual": "Hipertension: iniciar habitualmente con 1 mg cada 24 horas; mantenimiento usual 2.5-5 mg cada 24 horas, con dosis menor en hipovolemia o deterioro renal.",
+    "dosisHabituales": [
+      "0.5 mg",
+      "2.5 mg",
+      "5 mg"
+    ],
+    "frecuenciasSugeridas": [
+      "cada 24 horas"
+    ],
+    "datosClinicos": {
+      "indicaciones": [
+        "Hipertension",
+        "Insuficiencia cardiaca segun producto/pais"
+      ],
+      "contraindicaciones": [
+        "Hipersensibilidad al principio activo o a otro IECA",
+        "Antecedente de angioedema asociado a un IECA o angioedema hereditario/idiopatico",
+        "Embarazo: toxicidad fetal por bloqueo del sistema renina-angiotensina",
+        "Uso concomitante con sacubitrilo/valsartan o dentro de las 36 horas del cambio",
+        "Uso concomitante con aliskiren en diabetes mellitus o deterioro renal significativo"
+      ],
+      "precauciones": [
+        "Hipotension sintomatica, hipovolemia o deplecion de sodio, especialmente con diureticos",
+        "Enfermedad renal, estenosis bilateral de arterias renales o estenosis en rinon unico",
+        "Hiperpotasemia o uso de farmacos/sustitutos de sal que aumentan potasio",
+        "Angioedema de cara, lengua, glotis o intestino: suspender y atender de inmediato",
+        "Tos seca persistente",
+        "Estenosis aortica/mitral o miocardiopatia obstructiva: evitar hipotension excesiva",
+        "Enfermedad vascular del colageno o inmunosupresion: considerar vigilancia hematologica",
+        "Cirugia o anestesia: riesgo de hipotension por bloqueo del SRAA",
+        "Deterioro hepatico o ictericia: suspender y evaluar por riesgo raro de lesion hepatica"
+      ],
+      "advertencias": [
+        "Controlar creatinina/eGFR y potasio antes de iniciar y 1-2 semanas despues de iniciar o titular",
+        "No usar bloqueo dual rutinario del SRAA con ARA-II o aliskiren",
+        "Separar al menos 36 horas de sacubitrilo/valsartan por riesgo de angioedema",
+        "La deshidratacion, los AINEs y los diureticos aumentan el riesgo de lesion renal e hipotension",
+        "Suspender cuanto antes si se detecta embarazo",
+        "La compatibilidad durante lactancia depende del IECA, la edad del lactante y la ficha regulatoria local"
+      ],
+      "monitorizacion": [
+        "Presion arterial y sintomas ortostaticos",
+        "Creatinina y eGFR basales y tras inicio/cambios de dosis",
+        "Potasio serico basal y tras inicio/cambios de dosis",
+        "Tos y cualquier dato de angioedema",
+        "Estado de volumen y sodio si usa diureticos",
+        "Biometria hematica si existe enfermedad vascular del colageno, inmunosupresion o deterioro renal"
+      ],
+      "dosisAdulto": [
+        {
+          "indicationId": "uso_habitual",
+          "population": "adult",
+          "usualDose": {
+            "text": "Hipertension: iniciar habitualmente con 1 mg cada 24 horas; mantenimiento usual 2.5-5 mg cada 24 horas, con dosis menor en hipovolemia o deterioro renal."
+          },
+          "administrationNotes": []
+        }
+      ],
+      "dosisPediatrica": [],
+      "embarazo": "Contraindicado. Suspender cuanto antes al detectar embarazo por riesgo de toxicidad fetal, oligohidramnios, deterioro renal y muerte fetal/neonatal.",
+      "lactancia": "La recomendacion depende del principio activo, la edad del lactante y la ficha regulatoria local; confirmar compatibilidad y vigilar hipotension, diuresis y funcion renal del lactante cuando proceda."
+    },
+    "farmacocinetica": {
+      "mecanismoAccion": "Inhibe la enzima convertidora de angiotensina, reduce angiotensina II y aldosterona y aumenta bradicinina.",
+      "vidaMedia": "Cilazaprilat: vida media efectiva aproximada de 9 horas, con fase terminal prolongada por union a ECA.",
+      "tiempoConcentracionMaxima": "Cilazaprilat alcanza el maximo aproximadamente a las 2 horas.",
+      "duracionAccion": "Efecto antihipertensivo compatible con administracion cada 24 horas; individualizar segun respuesta y ficha tecnica.",
+      "metabolismo": "Profarmaco hidrolizado a cilazaprilat.",
+      "eliminacion": "Principalmente renal.",
+      "cyp": [
+        "Sin CYP principal clinicamente relevante documentado; revisar ficha especifica"
+      ],
+      "metabolitosActivos": [
+        "Cilazaprilat"
+      ]
+    },
+    "efectosAdversos": [
+      "Tos seca",
+      "Mareo e hipotension",
+      "Hiperpotasemia",
+      "Elevacion de creatinina o lesion renal aguda",
+      "Angioedema",
+      "Cefalea",
+      "Nausea",
+      "Rash",
+      "Neutropenia/agranulocitosis rara",
+      "Lesion hepatica colestasica rara"
+    ],
+    "riesgos": {
+      "potasio": 1,
+      "renal": 1,
+      "hipotension": 1,
+      "embarazo": 2,
+      "angioedema": 2
+    },
+    "interacciones": [
+      "Sacubitrilo/valsartan: combinacion contraindicada; separar 36 horas por riesgo de angioedema",
+      "ARA-II o aliskiren: bloqueo dual del SRAA con mayor riesgo de hipotension, hiperpotasemia y lesion renal",
+      "Diureticos ahorradores de potasio, suplementos de potasio, sustitutos de sal, trimetoprim, ciclosporina o heparinas: hiperpotasemia",
+      "AINEs: menor efecto antihipertensivo y mayor riesgo de hiperpotasemia o lesion renal aguda",
+      "Litio: aumento reversible de concentraciones y toxicidad; evitar o monitorizar estrechamente",
+      "Diureticos y otros hipotensores: hipotension aditiva, sobre todo al inicio o con hipovolemia",
+      "Insulina y antidiabeticos: puede potenciar el descenso de glucosa durante las primeras semanas",
+      "Inhibidores mTOR, racecadotrilo, inhibidores DPP-4 o activadores tisulares de plasminogeno: mayor riesgo de angioedema",
+      "Antidepresivos triciclicos, antipsicoticos y anestesicos: hipotension aditiva",
+      "Simpatomimeticos: posible reduccion del efecto antihipertensivo"
+    ],
+    "interaccionesRelacionadas": [
+      {
+        "idRegla": "sraa_aine_riesgo_renal",
+        "contraparteIds": [
+          "acido_acetilsalicilico",
+          "diclofenaco",
+          "ibuprofeno",
+          "ketorolaco",
+          "naproxeno"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_ara2",
+        "contraparteIds": [
+          "losartan",
+          "sacubitrilo_valsartan",
+          "telmisartan",
+          "valsartan"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_renina",
+        "contraparteIds": [
+          "aliskiren"
+        ]
+      },
+      {
+        "idRegla": "litio_ieca_ara",
+        "contraparteIds": [
+          "litio"
+        ]
+      },
+      {
+        "idRegla": "espironolactona_ieca_ara",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona"
+        ]
+      },
+      {
+        "idRegla": "ieca_ieca_duplicidad",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "ieca_neprilisina_angioedema",
+        "contraparteIds": [
+          "sacubitrilo_valsartan"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona",
+          "furosemida",
+          "hidroclorotiazida"
+        ]
+      },
+      {
+        "idRegla": "ieca_heparina_hiperpotasemia",
+        "contraparteIds": [
+          "enoxaparina",
+          "heparina"
+        ]
+      },
+      {
+        "idRegla": "ieca_dpp4_angioedema",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "ieca_antidiabetico_hipoglucemia",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "fenotiazina_antihipertensivo",
+        "contraparteIds": [
+          "clorpromazina",
+          "flufenazina",
+          "levomepromazina",
+          "mesoridazina",
+          "perfenazina",
+          "periciazina",
+          "pipotiazina",
+          "proclorperazina",
+          "promazina",
+          "tioridazina",
+          "trifluoperazina"
+        ]
+      }
+    ],
+    "relacionDiagnosticos": [
+      "I10/hipertension arterial: indicacion de clase; seleccionar farmaco y dosis segun ficha y contexto",
+      "I50/insuficiencia cardiaca: beneficio segun principio activo, fenotipo y guia vigente",
+      "I13/enfermedad cardiaca y renal hipertensiva: vigilar presion, creatinina/eGFR y potasio",
+      "N18/enfermedad renal cronica o sospecha de estenosis renal: requiere vigilancia renal y electrolitica estrecha",
+      "E11/diabetes con albuminuria o enfermedad renal: considerar beneficio renal segun indicacion y guia",
+      "O00-O99/embarazo: contraindicado por toxicidad fetal renal"
+    ],
+    "notas": "C09AA08: IECA simple. La disponibilidad y las sales comercializadas varian por pais; confirmar ficha tecnica local antes de prescribir.",
+    "referencias": [
+      {
+        "id": "who_atc_c09aa",
+        "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+        "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "C09AA ACE inhibitors, plain"
+        ],
+        "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+        "tipo": "clasificacion ATC oficial",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "zestril_smpc_interacciones_ieca",
+        "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+        "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "4.3 Contraindications",
+          "4.4 Special warnings and precautions",
+          "4.5 Interactions",
+          "4.6 Fertility, pregnancy and lactation"
+        ],
+        "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+        "tipo": "ficha tecnica regulatoria",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "ficha_cilazapril",
+        "titulo": "Medsafe New Zealand: Zapril Data Sheet",
+        "url": "https://www.medsafe.govt.nz/profs/datasheet/z/zapriltab.pdf",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "Presentaciones",
+          "Indicaciones",
+          "Posologia",
+          "Contraindicaciones",
+          "Interacciones",
+          "Farmacologia clinica"
+        ],
+        "nota": "Fuente de producto consultada para Cilazapril. La disponibilidad comercial debe verificarse por pais.",
+        "tipo": "ficha tecnica o documento regulatorio",
+        "confiabilidad": "alta"
+      },
+      "https://www.medsafe.govt.nz/profs/datasheet/z/zapriltab.pdf"
+    ],
+    "fuenteClinica": {
+      "estado": "verificada_local",
+      "fuente": "Medsafe New Zealand: Zapril Data Sheet",
+      "fuentes": [
+        {
+          "id": "who_atc_c09aa",
+          "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+          "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "C09AA ACE inhibitors, plain"
+          ],
+          "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+          "tipo": "clasificacion ATC oficial",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "zestril_smpc_interacciones_ieca",
+          "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+          "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "4.3 Contraindications",
+            "4.4 Special warnings and precautions",
+            "4.5 Interactions",
+            "4.6 Fertility, pregnancy and lactation"
+          ],
+          "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+          "tipo": "ficha tecnica regulatoria",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "ficha_cilazapril",
+          "titulo": "Medsafe New Zealand: Zapril Data Sheet",
+          "url": "https://www.medsafe.govt.nz/profs/datasheet/z/zapriltab.pdf",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "Presentaciones",
+            "Indicaciones",
+            "Posologia",
+            "Contraindicaciones",
+            "Interacciones",
+            "Farmacologia clinica"
+          ],
+          "nota": "Fuente de producto consultada para Cilazapril. La disponibilidad comercial debe verificarse por pais.",
+          "tipo": "ficha tecnica o documento regulatorio",
+          "confiabilidad": "alta"
+        }
+      ],
+      "paginaSeccion": "Medsafe New Zealand: Zapril Data Sheet (https://www.medsafe.govt.nz/profs/datasheet/z/zapriltab.pdf); WHO ATC C09AA08; ficha de clase IECA",
+      "confianza": "alta para identidad, presentaciones y consideraciones de clase; confirmar producto/pais antes de prescribir"
+    },
+    "farmacologia": {
+      "esquema": "cognicion.farmacologia.v1",
+      "id": "cilazapril",
+      "nombreGenerico": "Cilazapril",
+      "estadoFuente": "verificada_local",
+      "fuente": "Medsafe New Zealand: Zapril Data Sheet"
+    },
+    "pediatria": null,
+    "origenesCatalogo": [
+      "catalogo_maestro_ieca_atc"
+    ],
+    "activo": true,
+    "estadoContenido": "curado_fuente_regulatoria",
+    "actualizadoEn": "2026-08-14"
   },
   {
     "id": "cimetidina",
@@ -17138,22 +18348,37 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "fenotiazina_antihipertensivo",
         "contraparteIds": [
           "atenolol",
+          "benazepril",
           "bisoprolol",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
+          "eplerenona",
           "espironolactona",
+          "fosinopril",
           "furosemida",
           "hidroclorotiazida",
+          "imidapril",
           "isosorbida",
           "lisinopril",
           "losartan",
           "metoprolol",
+          "moexipril",
           "nebivolol",
           "nitroglicerina",
+          "perindopril",
           "pindolol",
+          "quinapril",
+          "ramipril",
+          "sacubitrilo_valsartan",
           "sotalol",
+          "spirapril",
           "telmisartan",
-          "valsartan"
+          "temocapril",
+          "trandolapril",
+          "valsartan",
+          "zofenopril"
         ]
       },
       {
@@ -19295,6 +20520,412 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "activo": true,
     "estadoContenido": "revision_inicial",
     "actualizadoEn": "2026-08-11"
+  },
+  {
+    "id": "delapril",
+    "legacyIds": [],
+    "nombre": "Delapril",
+    "genericName": "Delapril",
+    "principioActivo": "delapril",
+    "principiosActivos": [
+      "Delapril",
+      "delapril"
+    ],
+    "clasePrincipal": "IECA",
+    "clases": [
+      "IECA",
+      "Inhibidor de la enzima convertidora de angiotensina",
+      "ieca",
+      "Profarmaco IECA"
+    ],
+    "categoriasInteraccion": [
+      "renal",
+      "electrolitica",
+      "cardiovascular",
+      "hiperpotasemia",
+      "hipotension",
+      "angioedema"
+    ],
+    "sinonimos": [
+      "delapril",
+      "delapril clorhidrato"
+    ],
+    "marcas": [
+      "Adecut",
+      "Delaket"
+    ],
+    "especialidades": [
+      "Cardiologia",
+      "Medicina interna",
+      "Nefrologia"
+    ],
+    "presentaciones": [
+      {
+        "id": "delapril-tableta-15-mg",
+        "texto": "tabletas de 15 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "15 mg",
+        "fuente": "https://www.gazzettaufficiale.it/atto/vediMenuHTML?atto.codiceRedazionale=092A0964&atto.dataPubblicazioneGazzetta=1992-03-03&tipoSerie=serie_generale&tipoVigenza=originario",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "delapril-tableta-30-mg",
+        "texto": "tabletas de 30 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "30 mg",
+        "fuente": "https://www.gazzettaufficiale.it/atto/vediMenuHTML?atto.codiceRedazionale=092A0964&atto.dataPubblicazioneGazzetta=1992-03-03&tipoSerie=serie_generale&tipoVigenza=originario",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      }
+    ],
+    "dosisHabitual": "Hipertension: dosis total habitual de 30 mg al dia, con esquemas dependientes del producto; confirmar ficha tecnica local.",
+    "dosisHabituales": [
+      "15 mg",
+      "30 mg"
+    ],
+    "frecuenciasSugeridas": [
+      "cada 24 horas",
+      "cada 12 horas"
+    ],
+    "datosClinicos": {
+      "indicaciones": [
+        "Hipertension"
+      ],
+      "contraindicaciones": [
+        "Hipersensibilidad al principio activo o a otro IECA",
+        "Antecedente de angioedema asociado a un IECA o angioedema hereditario/idiopatico",
+        "Embarazo: toxicidad fetal por bloqueo del sistema renina-angiotensina",
+        "Uso concomitante con sacubitrilo/valsartan o dentro de las 36 horas del cambio",
+        "Uso concomitante con aliskiren en diabetes mellitus o deterioro renal significativo"
+      ],
+      "precauciones": [
+        "Hipotension sintomatica, hipovolemia o deplecion de sodio, especialmente con diureticos",
+        "Enfermedad renal, estenosis bilateral de arterias renales o estenosis en rinon unico",
+        "Hiperpotasemia o uso de farmacos/sustitutos de sal que aumentan potasio",
+        "Angioedema de cara, lengua, glotis o intestino: suspender y atender de inmediato",
+        "Tos seca persistente",
+        "Estenosis aortica/mitral o miocardiopatia obstructiva: evitar hipotension excesiva",
+        "Enfermedad vascular del colageno o inmunosupresion: considerar vigilancia hematologica",
+        "Cirugia o anestesia: riesgo de hipotension por bloqueo del SRAA",
+        "Deterioro hepatico o ictericia: suspender y evaluar por riesgo raro de lesion hepatica"
+      ],
+      "advertencias": [
+        "Controlar creatinina/eGFR y potasio antes de iniciar y 1-2 semanas despues de iniciar o titular",
+        "No usar bloqueo dual rutinario del SRAA con ARA-II o aliskiren",
+        "Separar al menos 36 horas de sacubitrilo/valsartan por riesgo de angioedema",
+        "La deshidratacion, los AINEs y los diureticos aumentan el riesgo de lesion renal e hipotension",
+        "Suspender cuanto antes si se detecta embarazo",
+        "La compatibilidad durante lactancia depende del IECA, la edad del lactante y la ficha regulatoria local"
+      ],
+      "monitorizacion": [
+        "Presion arterial y sintomas ortostaticos",
+        "Creatinina y eGFR basales y tras inicio/cambios de dosis",
+        "Potasio serico basal y tras inicio/cambios de dosis",
+        "Tos y cualquier dato de angioedema",
+        "Estado de volumen y sodio si usa diureticos",
+        "Biometria hematica si existe enfermedad vascular del colageno, inmunosupresion o deterioro renal"
+      ],
+      "dosisAdulto": [
+        {
+          "indicationId": "uso_habitual",
+          "population": "adult",
+          "usualDose": {
+            "text": "Hipertension: dosis total habitual de 30 mg al dia, con esquemas dependientes del producto; confirmar ficha tecnica local."
+          },
+          "administrationNotes": []
+        }
+      ],
+      "dosisPediatrica": [],
+      "embarazo": "Contraindicado. Suspender cuanto antes al detectar embarazo por riesgo de toxicidad fetal, oligohidramnios, deterioro renal y muerte fetal/neonatal.",
+      "lactancia": "La recomendacion depende del principio activo, la edad del lactante y la ficha regulatoria local; confirmar compatibilidad y vigilar hipotension, diuresis y funcion renal del lactante cuando proceda."
+    },
+    "farmacocinetica": {
+      "mecanismoAccion": "Inhibe la enzima convertidora de angiotensina, reduce angiotensina II y aldosterona y aumenta bradicinina.",
+      "vidaMedia": "Los metabolitos diacidos activos presentan una fase de eliminacion mas prolongada que delapril; verificar ficha especifica.",
+      "tiempoConcentracionMaxima": "Los metabolitos activos alcanzan concentraciones maximas en las primeras horas.",
+      "duracionAccion": "Efecto antihipertensivo compatible con administracion cada 24 horas; individualizar segun respuesta y ficha tecnica.",
+      "metabolismo": "Profarmaco convertido a metabolitos diacidos activos, incluido delapril-diacido.",
+      "eliminacion": "Renal y fecal segun metabolito.",
+      "cyp": [
+        "Sin CYP principal clinicamente relevante documentado; revisar ficha especifica"
+      ],
+      "metabolitosActivos": [
+        "Delapril-diacido (M-I)",
+        "5-hidroxidelapril-diacido (M-III)"
+      ]
+    },
+    "efectosAdversos": [
+      "Tos seca",
+      "Mareo e hipotension",
+      "Hiperpotasemia",
+      "Elevacion de creatinina o lesion renal aguda",
+      "Angioedema",
+      "Cefalea",
+      "Nausea",
+      "Rash",
+      "Neutropenia/agranulocitosis rara",
+      "Lesion hepatica colestasica rara"
+    ],
+    "riesgos": {
+      "potasio": 1,
+      "renal": 1,
+      "hipotension": 1,
+      "embarazo": 2,
+      "angioedema": 2
+    },
+    "interacciones": [
+      "Sacubitrilo/valsartan: combinacion contraindicada; separar 36 horas por riesgo de angioedema",
+      "ARA-II o aliskiren: bloqueo dual del SRAA con mayor riesgo de hipotension, hiperpotasemia y lesion renal",
+      "Diureticos ahorradores de potasio, suplementos de potasio, sustitutos de sal, trimetoprim, ciclosporina o heparinas: hiperpotasemia",
+      "AINEs: menor efecto antihipertensivo y mayor riesgo de hiperpotasemia o lesion renal aguda",
+      "Litio: aumento reversible de concentraciones y toxicidad; evitar o monitorizar estrechamente",
+      "Diureticos y otros hipotensores: hipotension aditiva, sobre todo al inicio o con hipovolemia",
+      "Insulina y antidiabeticos: puede potenciar el descenso de glucosa durante las primeras semanas",
+      "Inhibidores mTOR, racecadotrilo, inhibidores DPP-4 o activadores tisulares de plasminogeno: mayor riesgo de angioedema",
+      "Antidepresivos triciclicos, antipsicoticos y anestesicos: hipotension aditiva",
+      "Simpatomimeticos: posible reduccion del efecto antihipertensivo"
+    ],
+    "interaccionesRelacionadas": [
+      {
+        "idRegla": "sraa_aine_riesgo_renal",
+        "contraparteIds": [
+          "acido_acetilsalicilico",
+          "diclofenaco",
+          "ibuprofeno",
+          "ketorolaco",
+          "naproxeno"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_ara2",
+        "contraparteIds": [
+          "losartan",
+          "sacubitrilo_valsartan",
+          "telmisartan",
+          "valsartan"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_renina",
+        "contraparteIds": [
+          "aliskiren"
+        ]
+      },
+      {
+        "idRegla": "litio_ieca_ara",
+        "contraparteIds": [
+          "litio"
+        ]
+      },
+      {
+        "idRegla": "espironolactona_ieca_ara",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona"
+        ]
+      },
+      {
+        "idRegla": "ieca_ieca_duplicidad",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "ieca_neprilisina_angioedema",
+        "contraparteIds": [
+          "sacubitrilo_valsartan"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona",
+          "furosemida",
+          "hidroclorotiazida"
+        ]
+      },
+      {
+        "idRegla": "ieca_heparina_hiperpotasemia",
+        "contraparteIds": [
+          "enoxaparina",
+          "heparina"
+        ]
+      },
+      {
+        "idRegla": "ieca_dpp4_angioedema",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "ieca_antidiabetico_hipoglucemia",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "fenotiazina_antihipertensivo",
+        "contraparteIds": [
+          "clorpromazina",
+          "flufenazina",
+          "levomepromazina",
+          "mesoridazina",
+          "perfenazina",
+          "periciazina",
+          "pipotiazina",
+          "proclorperazina",
+          "promazina",
+          "tioridazina",
+          "trifluoperazina"
+        ]
+      }
+    ],
+    "relacionDiagnosticos": [
+      "I10/hipertension arterial: indicacion de clase; seleccionar farmaco y dosis segun ficha y contexto",
+      "I50/insuficiencia cardiaca: beneficio segun principio activo, fenotipo y guia vigente",
+      "I13/enfermedad cardiaca y renal hipertensiva: vigilar presion, creatinina/eGFR y potasio",
+      "N18/enfermedad renal cronica o sospecha de estenosis renal: requiere vigilancia renal y electrolitica estrecha",
+      "E11/diabetes con albuminuria o enfermedad renal: considerar beneficio renal segun indicacion y guia",
+      "O00-O99/embarazo: contraindicado por toxicidad fetal renal"
+    ],
+    "notas": "C09AA12: IECA simple. La disponibilidad y las sales comercializadas varian por pais; confirmar ficha tecnica local antes de prescribir.",
+    "referencias": [
+      {
+        "id": "who_atc_c09aa",
+        "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+        "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "C09AA ACE inhibitors, plain"
+        ],
+        "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+        "tipo": "clasificacion ATC oficial",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "zestril_smpc_interacciones_ieca",
+        "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+        "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "4.3 Contraindications",
+          "4.4 Special warnings and precautions",
+          "4.5 Interactions",
+          "4.6 Fertility, pregnancy and lactation"
+        ],
+        "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+        "tipo": "ficha tecnica regulatoria",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "ficha_delapril",
+        "titulo": "Gazzetta Ufficiale della Repubblica Italiana: autorizacion de delapril",
+        "url": "https://www.gazzettaufficiale.it/atto/vediMenuHTML?atto.codiceRedazionale=092A0964&atto.dataPubblicazioneGazzetta=1992-03-03&tipoSerie=serie_generale&tipoVigenza=originario",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "Presentaciones",
+          "Indicaciones",
+          "Posologia",
+          "Contraindicaciones",
+          "Interacciones",
+          "Farmacologia clinica"
+        ],
+        "nota": "Fuente de producto consultada para Delapril. La disponibilidad comercial debe verificarse por pais.",
+        "tipo": "ficha tecnica o documento regulatorio",
+        "confiabilidad": "moderada-alta para identidad y presentaciones; confirmar ficha regulatoria local para posologia"
+      },
+      "https://www.gazzettaufficiale.it/atto/vediMenuHTML?atto.codiceRedazionale=092A0964&atto.dataPubblicazioneGazzetta=1992-03-03&tipoSerie=serie_generale&tipoVigenza=originario"
+    ],
+    "fuenteClinica": {
+      "estado": "verificada_local",
+      "fuente": "Gazzetta Ufficiale della Repubblica Italiana: autorizacion de delapril",
+      "fuentes": [
+        {
+          "id": "who_atc_c09aa",
+          "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+          "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "C09AA ACE inhibitors, plain"
+          ],
+          "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+          "tipo": "clasificacion ATC oficial",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "zestril_smpc_interacciones_ieca",
+          "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+          "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "4.3 Contraindications",
+            "4.4 Special warnings and precautions",
+            "4.5 Interactions",
+            "4.6 Fertility, pregnancy and lactation"
+          ],
+          "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+          "tipo": "ficha tecnica regulatoria",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "ficha_delapril",
+          "titulo": "Gazzetta Ufficiale della Repubblica Italiana: autorizacion de delapril",
+          "url": "https://www.gazzettaufficiale.it/atto/vediMenuHTML?atto.codiceRedazionale=092A0964&atto.dataPubblicazioneGazzetta=1992-03-03&tipoSerie=serie_generale&tipoVigenza=originario",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "Presentaciones",
+            "Indicaciones",
+            "Posologia",
+            "Contraindicaciones",
+            "Interacciones",
+            "Farmacologia clinica"
+          ],
+          "nota": "Fuente de producto consultada para Delapril. La disponibilidad comercial debe verificarse por pais.",
+          "tipo": "ficha tecnica o documento regulatorio",
+          "confiabilidad": "moderada-alta para identidad y presentaciones; confirmar ficha regulatoria local para posologia"
+        }
+      ],
+      "paginaSeccion": "Gazzetta Ufficiale della Repubblica Italiana: autorizacion de delapril (https://www.gazzettaufficiale.it/atto/vediMenuHTML?atto.codiceRedazionale=092A0964&atto.dataPubblicazioneGazzetta=1992-03-03&tipoSerie=serie_generale&tipoVigenza=originario); WHO ATC C09AA12; ficha de clase IECA",
+      "confianza": "moderada-alta para identidad y presentaciones; confirmar ficha regulatoria local para posologia"
+    },
+    "farmacologia": {
+      "esquema": "cognicion.farmacologia.v1",
+      "id": "delapril",
+      "nombreGenerico": "Delapril",
+      "estadoFuente": "verificada_local",
+      "fuente": "Gazzetta Ufficiale della Repubblica Italiana: autorizacion de delapril"
+    },
+    "pediatria": null,
+    "origenesCatalogo": [
+      "catalogo_maestro_ieca_atc"
+    ],
+    "activo": true,
+    "estadoContenido": "curado_fuente_regulatoria",
+    "actualizadoEn": "2026-08-14"
   },
   {
     "id": "desipramina",
@@ -21480,12 +23111,26 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "sraa_aine_riesgo_renal",
         "contraparteIds": [
+          "benazepril",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
+          "fosinopril",
+          "imidapril",
           "lisinopril",
           "losartan",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "sacubitrilo_valsartan",
+          "spirapril",
           "telmisartan",
-          "valsartan"
+          "temocapril",
+          "trandolapril",
+          "valsartan",
+          "zofenopril"
         ]
       },
       {
@@ -24677,36 +26322,67 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "clases": [
       "IECA",
       "Profarmaco IECA",
-      "ieca"
+      "Inhibidor de la enzima convertidora de angiotensina"
     ],
     "categoriasInteraccion": [
       "renal",
-      "electrolitica"
+      "electrolitica",
+      "cardiovascular",
+      "hiperpotasemia",
+      "hipotension",
+      "angioedema"
     ],
     "sinonimos": [
       "enalapril",
       "enalapril maleato"
     ],
     "marcas": [
-      "Vasotec"
+      "Vasotec",
+      "Renitec"
     ],
     "especialidades": [
       "Cardiología",
       "Medicina interna",
-      "Nefrología"
+      "Nefrología",
+      "Cardiologia",
+      "Nefrologia"
     ],
     "presentaciones": [
+      {
+        "id": "enalapril-solucion-oral-1-mg-ml",
+        "texto": "solucion oral de 1 mg/mL",
+        "via": "oral",
+        "forma": "solucion oral",
+        "concentracion": "1 mg/mL",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=enalapril",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "enalapril-tableta-2-5-mg",
+        "texto": "tabletas de 2.5 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "2.5 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=enalapril",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
       {
         "id": "enalapril-tableta-5-mg",
         "texto": "tabletas de 5 mg",
         "via": "oral",
         "forma": "tableta",
         "concentracion": "5 mg",
-        "fuente": "catalogo_cognicion_preexistente",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=enalapril",
         "rxCui": null,
         "principioActivoPresentado": null,
         "activo": true,
-        "origen": "catalogo_cognicion_preexistente"
+        "origen": "catalogo_maestro_ieca_atc"
       },
       {
         "id": "enalapril-tableta-10-mg",
@@ -24714,11 +26390,11 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "via": "oral",
         "forma": "tableta",
         "concentracion": "10 mg",
-        "fuente": "catalogo_cognicion_preexistente",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=enalapril",
         "rxCui": null,
         "principioActivoPresentado": null,
         "activo": true,
-        "origen": "catalogo_cognicion_preexistente"
+        "origen": "catalogo_maestro_ieca_atc"
       },
       {
         "id": "enalapril-tableta-20-mg",
@@ -24726,20 +26402,25 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "via": "oral",
         "forma": "tableta",
         "concentracion": "20 mg",
-        "fuente": "catalogo_cognicion_preexistente",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=enalapril",
         "rxCui": null,
         "principioActivoPresentado": null,
         "activo": true,
-        "origen": "catalogo_cognicion_preexistente"
+        "origen": "catalogo_maestro_ieca_atc"
       }
     ],
-    "dosisHabitual": "5-40 mg/dia por via oral en una o dos tomas segun indicacion.",
+    "dosisHabitual": "Hipertension: 5-40 mg al dia en una o dos tomas; iniciar mas bajo con diuretico, hipovolemia o deterioro renal.",
     "dosisHabituales": [
+      "2.5 mg",
       "5 mg",
       "10 mg",
-      "20 mg"
+      "20 mg",
+      "1 mg/mL"
     ],
-    "frecuenciasSugeridas": [],
+    "frecuenciasSugeridas": [
+      "cada 24 horas",
+      "cada 12 horas"
+    ],
     "datosClinicos": {
       "indicaciones": [
         "Hipertension",
@@ -24750,26 +26431,60 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "Angioedema por IECA",
         "Uso con sacubitrilo/valsartan dentro de 36 h",
         "No aliskiren en diabetes",
-        "Embarazo"
+        "Embarazo",
+        "Hipersensibilidad al principio activo o a otro IECA",
+        "Antecedente de angioedema asociado a un IECA o angioedema hereditario/idiopatico",
+        "Embarazo: toxicidad fetal por bloqueo del sistema renina-angiotensina",
+        "Uso concomitante con sacubitrilo/valsartan o dentro de las 36 horas del cambio",
+        "Uso concomitante con aliskiren en diabetes mellitus o deterioro renal significativo"
       ],
       "precauciones": [
         "Hipotension",
         "Hiperpotasemia",
-        "Deterioro renal"
+        "Deterioro renal",
+        "Hipotension sintomatica, hipovolemia o deplecion de sodio, especialmente con diureticos",
+        "Enfermedad renal, estenosis bilateral de arterias renales o estenosis en rinon unico",
+        "Hiperpotasemia o uso de farmacos/sustitutos de sal que aumentan potasio",
+        "Angioedema de cara, lengua, glotis o intestino: suspender y atender de inmediato",
+        "Tos seca persistente",
+        "Estenosis aortica/mitral o miocardiopatia obstructiva: evitar hipotension excesiva",
+        "Enfermedad vascular del colageno o inmunosupresion: considerar vigilancia hematologica",
+        "Cirugia o anestesia: riesgo de hipotension por bloqueo del SRAA",
+        "Deterioro hepatico o ictericia: suspender y evaluar por riesgo raro de lesion hepatica"
       ],
       "advertencias": [
         "Hipotension",
         "Hiperpotasemia",
         "Deterioro renal",
         "Embarazo/lactancia: verificar etiqueta vigente y balance beneficio-riesgo.",
-        "Adulto mayor: iniciar bajo, titular lento y vigilar caidas, funcion renal/hepatica, electrolitos o sangrado segun farmaco."
+        "Adulto mayor: iniciar bajo, titular lento y vigilar caidas, funcion renal/hepatica, electrolitos o sangrado segun farmaco.",
+        "Controlar creatinina/eGFR y potasio antes de iniciar y 1-2 semanas despues de iniciar o titular",
+        "No usar bloqueo dual rutinario del SRAA con ARA-II o aliskiren",
+        "Separar al menos 36 horas de sacubitrilo/valsartan por riesgo de angioedema",
+        "La deshidratacion, los AINEs y los diureticos aumentan el riesgo de lesion renal e hipotension",
+        "Suspender cuanto antes si se detecta embarazo",
+        "La compatibilidad durante lactancia depende del IECA, la edad del lactante y la ficha regulatoria local"
       ],
       "monitorizacion": [
         "Presion arterial",
         "Creatinina/eGFR",
-        "Potasio"
+        "Potasio",
+        "Presion arterial y sintomas ortostaticos",
+        "Creatinina y eGFR basales y tras inicio/cambios de dosis",
+        "Potasio serico basal y tras inicio/cambios de dosis",
+        "Tos y cualquier dato de angioedema",
+        "Estado de volumen y sodio si usa diureticos",
+        "Biometria hematica si existe enfermedad vascular del colageno, inmunosupresion o deterioro renal"
       ],
       "dosisAdulto": [
+        {
+          "indicationId": "uso_habitual",
+          "population": "adult",
+          "usualDose": {
+            "text": "Hipertension: 5-40 mg al dia en una o dos tomas; iniciar mas bajo con diuretico, hipovolemia o deterioro renal."
+          },
+          "administrationNotes": []
+        },
         {
           "indicationId": "uso_habitual",
           "population": "adult",
@@ -24780,18 +26495,18 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         }
       ],
       "dosisPediatrica": [],
-      "embarazo": null,
-      "lactancia": null
+      "embarazo": "Contraindicado. Suspender cuanto antes al detectar embarazo por riesgo de toxicidad fetal, oligohidramnios, deterioro renal y muerte fetal/neonatal.",
+      "lactancia": "La recomendacion depende del principio activo, la edad del lactante y la ficha regulatoria local; confirmar compatibilidad y vigilar hipotension, diuresis y funcion renal del lactante cuando proceda."
     },
     "farmacocinetica": {
-      "mecanismoAccion": "Profarmaco convertido a enalaprilat, inhibidor de ECA.",
-      "vidaMedia": "Enalaprilat tiene vida media efectiva de acumulacion ~11 h.",
-      "tiempoConcentracionMaxima": "Enalapril ~1 h; enalaprilat ~3-4 h.",
-      "duracionAccion": "dato no encontrado en fuente local",
-      "metabolismo": "Hidrolisis hepatica a enalaprilat.",
-      "eliminacion": "Renal.",
+      "mecanismoAccion": "Inhibe la enzima convertidora de angiotensina, reduce angiotensina II y aldosterona y aumenta bradicinina.",
+      "vidaMedia": "Enalaprilat: vida media efectiva de acumulacion aproximada de 11 horas.",
+      "tiempoConcentracionMaxima": "Enalapril aproximadamente 1 hora; enalaprilat 3-4 horas.",
+      "duracionAccion": "Efecto antihipertensivo compatible con administracion cada 24 horas; individualizar segun respuesta y ficha tecnica.",
+      "metabolismo": "Profarmaco hidrolizado a enalaprilat.",
+      "eliminacion": "Principalmente renal.",
       "cyp": [
-        "Sin CYP principal"
+        "Sin CYP principal clinicamente relevante documentado; revisar ficha especifica"
       ],
       "metabolitosActivos": [
         "Enalaprilat"
@@ -24801,19 +26516,39 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       "Tos",
       "Hipotension",
       "Hiperpotasemia",
-      "Deterioro renal"
+      "Deterioro renal",
+      "Tos seca",
+      "Mareo e hipotension",
+      "Elevacion de creatinina o lesion renal aguda",
+      "Angioedema",
+      "Cefalea",
+      "Nausea",
+      "Rash",
+      "Neutropenia/agranulocitosis rara",
+      "Lesion hepatica colestasica rara"
     ],
     "riesgos": {
       "potasio": 1,
       "embarazo": 2,
       "renal": 1,
-      "hipotension": 1
+      "hipotension": 1,
+      "angioedema": 2
     },
     "interacciones": [
       "ARA-II/aliskiren",
       "Potasio/espironolactona",
       "AINEs",
-      "Litio"
+      "Litio",
+      "Sacubitrilo/valsartan: combinacion contraindicada; separar 36 horas por riesgo de angioedema",
+      "ARA-II o aliskiren: bloqueo dual del SRAA con mayor riesgo de hipotension, hiperpotasemia y lesion renal",
+      "Diureticos ahorradores de potasio, suplementos de potasio, sustitutos de sal, trimetoprim, ciclosporina o heparinas: hiperpotasemia",
+      "AINEs: menor efecto antihipertensivo y mayor riesgo de hiperpotasemia o lesion renal aguda",
+      "Litio: aumento reversible de concentraciones y toxicidad; evitar o monitorizar estrechamente",
+      "Diureticos y otros hipotensores: hipotension aditiva, sobre todo al inicio o con hipovolemia",
+      "Insulina y antidiabeticos: puede potenciar el descenso de glucosa durante las primeras semanas",
+      "Inhibidores mTOR, racecadotrilo, inhibidores DPP-4 o activadores tisulares de plasminogeno: mayor riesgo de angioedema",
+      "Antidepresivos triciclicos, antipsicoticos y anestesicos: hipotension aditiva",
+      "Simpatomimeticos: posible reduccion del efecto antihipertensivo"
     ],
     "interaccionesRelacionadas": [
       {
@@ -24830,8 +26565,15 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "bloqueo_dual_sraa_ieca_ara2",
         "contraparteIds": [
           "losartan",
+          "sacubitrilo_valsartan",
           "telmisartan",
           "valsartan"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_renina",
+        "contraparteIds": [
+          "aliskiren"
         ]
       },
       {
@@ -24843,7 +26585,64 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "espironolactona_ieca_ara",
         "contraparteIds": [
+          "eplerenona",
           "espironolactona"
+        ]
+      },
+      {
+        "idRegla": "ieca_ieca_duplicidad",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "ieca_neprilisina_angioedema",
+        "contraparteIds": [
+          "sacubitrilo_valsartan"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona",
+          "furosemida",
+          "hidroclorotiazida"
+        ]
+      },
+      {
+        "idRegla": "ieca_heparina_hiperpotasemia",
+        "contraparteIds": [
+          "enoxaparina",
+          "heparina"
+        ]
+      },
+      {
+        "idRegla": "ieca_dpp4_angioedema",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "ieca_antidiabetico_hipoglucemia",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
         ]
       },
       {
@@ -24863,8 +26662,15 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       }
     ],
-    "relacionDiagnosticos": [],
-    "notas": "Antihipertensivo; vigilar presión arterial, potasio y función renal.",
+    "relacionDiagnosticos": [
+      "I10/hipertension arterial: indicacion de clase; seleccionar farmaco y dosis segun ficha y contexto",
+      "I50/insuficiencia cardiaca: beneficio segun principio activo, fenotipo y guia vigente",
+      "I13/enfermedad cardiaca y renal hipertensiva: vigilar presion, creatinina/eGFR y potasio",
+      "N18/enfermedad renal cronica o sospecha de estenosis renal: requiere vigilancia renal y electrolitica estrecha",
+      "E11/diabetes con albuminuria o enfermedad renal: considerar beneficio renal segun indicacion y guia",
+      "O00-O99/embarazo: contraindicado por toxicidad fetal renal"
+    ],
+    "notas": "Antihipertensivo; vigilar presión arterial, potasio y función renal. C09AA02: IECA simple. La disponibilidad y las sales comercializadas varian por pais; confirmar ficha tecnica local antes de prescribir.",
     "referencias": [
       {
         "id": "dailymed_enalapril",
@@ -24883,11 +26689,39 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "tipo": "etiquetado oficial FDA/SPL",
         "confiabilidad": "alta; confirmar producto y presentacion comercial especificos antes de prescribir"
       },
-      "catalogo_cognicion_preexistente"
+      "catalogo_cognicion_preexistente",
+      {
+        "id": "who_atc_c09aa",
+        "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+        "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "C09AA ACE inhibitors, plain"
+        ],
+        "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+        "tipo": "clasificacion ATC oficial",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "zestril_smpc_interacciones_ieca",
+        "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+        "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "4.3 Contraindications",
+          "4.4 Special warnings and precautions",
+          "4.5 Interactions",
+          "4.6 Fertility, pregnancy and lactation"
+        ],
+        "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+        "tipo": "ficha tecnica regulatoria",
+        "confiabilidad": "alta"
+      },
+      "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=enalapril"
     ],
     "fuenteClinica": {
       "estado": "verificada_local",
-      "fuente": "DailyMed",
+      "fuente": "DailyMed: enalapril maleate",
       "fuentes": [
         {
           "id": "dailymed_enalapril",
@@ -24905,162 +26739,53 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "nota": "Etiqueta oficial consultada para datos de farmacologia, seguridad y dosificacion.",
           "tipo": "etiquetado oficial FDA/SPL",
           "confiabilidad": "alta; confirmar producto y presentacion comercial especificos antes de prescribir"
+        },
+        {
+          "id": "who_atc_c09aa",
+          "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+          "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "C09AA ACE inhibitors, plain"
+          ],
+          "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+          "tipo": "clasificacion ATC oficial",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "zestril_smpc_interacciones_ieca",
+          "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+          "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "4.3 Contraindications",
+            "4.4 Special warnings and precautions",
+            "4.5 Interactions",
+            "4.6 Fertility, pregnancy and lactation"
+          ],
+          "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+          "tipo": "ficha tecnica regulatoria",
+          "confiabilidad": "alta"
         }
       ],
-      "paginaSeccion": "DailyMed / U.S. National Library of Medicine (https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=enalapril): Indications and Usage, Dosage and Administration, Contraindications, Warnings and Precautions, Drug Interactions, Clinical Pharmacology",
-      "confianza": "moderada-alta para seed oficial; requiere revision por producto/pais antes de uso clinico"
+      "paginaSeccion": "DailyMed: enalapril maleate (https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=enalapril); WHO ATC C09AA02; ficha de clase IECA",
+      "confianza": "alta para identidad, presentaciones y consideraciones de clase; confirmar producto/pais antes de prescribir"
     },
     "farmacologia": {
       "esquema": "cognicion.farmacologia.v1",
-      "grupoFarmacologico": "IECA",
-      "principioActivoNormalizado": "enalapril",
-      "nombresComerciales": [
-        "Vasotec"
-      ],
-      "sinonimos": [
-        "enalapril",
-        "enalapril maleato"
-      ],
-      "presentaciones": [
-        {
-          "formaFarmaceutica": "tableta",
-          "concentracion": "2.5",
-          "unidad": "mg",
-          "via": "oral",
-          "marca": "",
-          "fuente": "DailyMed",
-          "comercial": false
-        },
-        {
-          "formaFarmaceutica": "tableta",
-          "concentracion": "5",
-          "unidad": "mg",
-          "via": "oral",
-          "marca": "",
-          "fuente": "DailyMed",
-          "comercial": false
-        },
-        {
-          "formaFarmaceutica": "tableta",
-          "concentracion": "10",
-          "unidad": "mg",
-          "via": "oral",
-          "marca": "",
-          "fuente": "DailyMed",
-          "comercial": false
-        },
-        {
-          "formaFarmaceutica": "tableta",
-          "concentracion": "20",
-          "unidad": "mg",
-          "via": "oral",
-          "marca": "",
-          "fuente": "DailyMed",
-          "comercial": false
-        }
-      ],
-      "indicaciones": [
-        "Hipertension",
-        "Insuficiencia cardiaca",
-        "Disfuncion ventricular izquierda asintomatica"
-      ],
-      "contraindicacionesAbsolutas": [
-        "Angioedema por IECA",
-        "Uso con sacubitrilo/valsartan dentro de 36 h",
-        "No aliskiren en diabetes",
-        "Embarazo"
-      ],
-      "contraindicacionesRelativas": [],
-      "precauciones": [
-        "Hipotension",
-        "Hiperpotasemia",
-        "Deterioro renal"
-      ],
-      "cyp": [
-        "Sin CYP principal"
-      ],
-      "metabolitosActivos": [
-        "Enalaprilat"
-      ],
-      "interaccionesMedicamento": [
-        "ARA-II/aliskiren",
-        "Potasio/espironolactona",
-        "AINEs",
-        "Litio"
-      ],
-      "interaccionesDiagnostico": [],
-      "efectosAdversos": [
-        "Tos",
-        "Hipotension",
-        "Hiperpotasemia",
-        "Deterioro renal"
-      ],
-      "vigilancia": [
-        "Presion arterial",
-        "Creatinina/eGFR",
-        "Potasio"
-      ],
-      "laboratorios": [
-        "Creatinina",
-        "eGFR",
-        "Potasio"
-      ],
-      "fuentes": [
-        {
-          "id": "dailymed_enalapril",
-          "titulo": "DailyMed / U.S. National Library of Medicine",
-          "url": "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=enalapril",
-          "fechaConsulta": "2026-07-15",
-          "secciones": [
-            "Indications and Usage",
-            "Dosage and Administration",
-            "Contraindications",
-            "Warnings and Precautions",
-            "Drug Interactions",
-            "Clinical Pharmacology"
-          ],
-          "nota": "Etiqueta oficial consultada para datos de farmacologia, seguridad y dosificacion.",
-          "tipo": "etiquetado oficial FDA/SPL",
-          "confiabilidad": "alta; confirmar producto y presentacion comercial especificos antes de prescribir"
-        }
-      ],
-      "mecanismoAccion": "Profarmaco convertido a enalaprilat, inhibidor de ECA.",
-      "tiempoConcentracionMaxima": "Enalapril ~1 h; enalaprilat ~3-4 h.",
-      "duracionEfecto": "dato no encontrado en fuente local",
-      "viaEliminacion": "Renal.",
-      "embarazoLactancia": [
-        "Embarazo/lactancia: verificar etiqueta vigente y balance beneficio-riesgo."
-      ],
-      "advertenciasGeriatricas": [
-        "Adulto mayor: iniciar bajo, titular lento y vigilar caidas, funcion renal/hepatica, electrolitos o sangrado segun farmaco."
-      ],
-      "advertenciasPediatricas": [],
-      "confianza": "moderada-alta para seed oficial; requiere revision por producto/pais antes de uso clinico",
       "id": "enalapril",
       "nombreGenerico": "Enalapril",
-      "claseFarmacologica": "IECA",
-      "subclase": "Profarmaco IECA",
-      "dosisHabitual": "5-40 mg/dia por via oral en una o dos tomas segun indicacion.",
-      "rangoDosis": "2.5-40 mg/dia.",
-      "vidaMedia": "Enalaprilat tiene vida media efectiva de acumulacion ~11 h.",
-      "metabolismo": "Hidrolisis hepatica a enalaprilat.",
-      "dosisGeriatria": "Iniciar en el extremo bajo del rango cuando aplique; individualizar por fragilidad, funcion renal/hepatica e interacciones.",
-      "dosisPediatrica": "dato no encontrado en fuente local",
-      "ajusteRenal": "Revisar funcion renal y ficha especifica antes de ajustar.",
-      "ajusteHepatico": "Revisar funcion hepatica y ficha especifica antes de ajustar.",
-      "tmax": "Enalapril ~1 h; enalaprilat ~3-4 h.",
-      "eliminacion": "Renal.",
-      "fuentePrincipal": "DailyMed",
       "estadoFuente": "verificada_local",
-      "fechaRevision": "2026-07-15"
+      "fuente": "DailyMed: enalapril maleate"
     },
     "pediatria": null,
     "origenesCatalogo": [
-      "catalogo_suplementario"
+      "catalogo_suplementario",
+      "catalogo_maestro_ieca_atc"
     ],
     "activo": true,
-    "estadoContenido": "revision_inicial",
-    "actualizadoEn": "2026-08-11"
+    "estadoContenido": "curado_fuente_regulatoria",
+    "actualizadoEn": "2026-08-14"
   },
   {
     "id": "enoxaparina",
@@ -25183,6 +26908,27 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "carbamazepina_induccion_enzimatica",
         "contraparteIds": [
           "carbamazepina"
+        ]
+      },
+      {
+        "idRegla": "ieca_heparina_hiperpotasemia",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
         ]
       },
       {
@@ -25698,9 +27444,15 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     ],
     "clasePrincipal": "Antagonista de aldosterona",
     "clases": [
-      "Antagonista de aldosterona"
+      "Antagonista de aldosterona",
+      "diuretico",
+      "ahorrador_potasio"
     ],
-    "categoriasInteraccion": [],
+    "categoriasInteraccion": [
+      "renal",
+      "electrolitica",
+      "hiperpotasemia"
+    ],
     "sinonimos": [],
     "marcas": [],
     "especialidades": [
@@ -25772,8 +27524,85 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     },
     "efectosAdversos": [],
     "riesgos": {},
-    "interacciones": [],
-    "interaccionesRelacionadas": [],
+    "interacciones": [
+      "IECA/ARA-II: mayor riesgo de hiperpotasemia y deterioro renal"
+    ],
+    "interaccionesRelacionadas": [
+      {
+        "idRegla": "litio_diuretico",
+        "contraparteIds": [
+          "litio"
+        ]
+      },
+      {
+        "idRegla": "litio_deshidratante",
+        "contraparteIds": [
+          "litio"
+        ]
+      },
+      {
+        "idRegla": "espironolactona_ieca_ara",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "losartan",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "sacubitrilo_valsartan",
+          "spirapril",
+          "telmisartan",
+          "temocapril",
+          "trandolapril",
+          "valsartan",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "fenotiazina_antihipertensivo",
+        "contraparteIds": [
+          "clorpromazina",
+          "flufenazina",
+          "levomepromazina",
+          "mesoridazina",
+          "perfenazina",
+          "periciazina",
+          "pipotiazina",
+          "proclorperazina",
+          "promazina",
+          "tioridazina",
+          "trifluoperazina"
+        ]
+      }
+    ],
     "relacionDiagnosticos": [],
     "notas": "Menor efecto antiandrogénico que espironolactona; vigilar potasio.",
     "referencias": [
@@ -25801,7 +27630,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     ],
     "activo": true,
     "estadoContenido": "revision_inicial",
-    "actualizadoEn": "2026-08-11"
+    "actualizadoEn": "2026-08-14"
   },
   {
     "id": "eritromicina",
@@ -27176,12 +29005,47 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "espironolactona_ieca_ara",
         "contraparteIds": [
+          "benazepril",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
+          "fosinopril",
+          "imidapril",
           "lisinopril",
           "losartan",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "sacubitrilo_valsartan",
+          "spirapril",
           "telmisartan",
-          "valsartan"
+          "temocapril",
+          "trandolapril",
+          "valsartan",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
         ]
       },
       {
@@ -30474,22 +32338,37 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "fenotiazina_antihipertensivo",
         "contraparteIds": [
           "atenolol",
+          "benazepril",
           "bisoprolol",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
+          "eplerenona",
           "espironolactona",
+          "fosinopril",
           "furosemida",
           "hidroclorotiazida",
+          "imidapril",
           "isosorbida",
           "lisinopril",
           "losartan",
           "metoprolol",
+          "moexipril",
           "nebivolol",
           "nitroglicerina",
+          "perindopril",
           "pindolol",
+          "quinapril",
+          "ramipril",
+          "sacubitrilo_valsartan",
           "sotalol",
+          "spirapril",
           "telmisartan",
-          "valsartan"
+          "temocapril",
+          "trandolapril",
+          "valsartan",
+          "zofenopril"
         ]
       },
       {
@@ -32978,6 +34857,423 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "actualizadoEn": "2026-08-11"
   },
   {
+    "id": "fosinopril",
+    "legacyIds": [],
+    "nombre": "Fosinopril",
+    "genericName": "Fosinopril",
+    "principioActivo": "fosinopril",
+    "principiosActivos": [
+      "Fosinopril",
+      "fosinopril"
+    ],
+    "clasePrincipal": "IECA",
+    "clases": [
+      "IECA",
+      "Inhibidor de la enzima convertidora de angiotensina",
+      "ieca",
+      "Profarmaco IECA"
+    ],
+    "categoriasInteraccion": [
+      "renal",
+      "electrolitica",
+      "cardiovascular",
+      "hiperpotasemia",
+      "hipotension",
+      "angioedema"
+    ],
+    "sinonimos": [
+      "fosinopril",
+      "fosinopril sodico"
+    ],
+    "marcas": [
+      "Monopril"
+    ],
+    "especialidades": [
+      "Cardiologia",
+      "Medicina interna",
+      "Nefrologia"
+    ],
+    "presentaciones": [
+      {
+        "id": "fosinopril-tableta-10-mg",
+        "texto": "tabletas de 10 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "10 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/downloadpdffile.cfm?setId=2f122ad0-f9c2-4c90-a94b-072354b876b5",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "fosinopril-tableta-20-mg",
+        "texto": "tabletas de 20 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "20 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/downloadpdffile.cfm?setId=2f122ad0-f9c2-4c90-a94b-072354b876b5",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "fosinopril-tableta-40-mg",
+        "texto": "tabletas de 40 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "40 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/downloadpdffile.cfm?setId=2f122ad0-f9c2-4c90-a94b-072354b876b5",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      }
+    ],
+    "dosisHabitual": "Hipertension: iniciar con 10 mg cada 24 horas; rango usual 20-40 mg cada 24 horas.",
+    "dosisHabituales": [
+      "10 mg",
+      "20 mg",
+      "40 mg"
+    ],
+    "frecuenciasSugeridas": [
+      "cada 24 horas"
+    ],
+    "datosClinicos": {
+      "indicaciones": [
+        "Hipertension",
+        "Insuficiencia cardiaca como tratamiento complementario"
+      ],
+      "contraindicaciones": [
+        "Hipersensibilidad al principio activo o a otro IECA",
+        "Antecedente de angioedema asociado a un IECA o angioedema hereditario/idiopatico",
+        "Embarazo: toxicidad fetal por bloqueo del sistema renina-angiotensina",
+        "Uso concomitante con sacubitrilo/valsartan o dentro de las 36 horas del cambio",
+        "Uso concomitante con aliskiren en diabetes mellitus o deterioro renal significativo"
+      ],
+      "precauciones": [
+        "Hipotension sintomatica, hipovolemia o deplecion de sodio, especialmente con diureticos",
+        "Enfermedad renal, estenosis bilateral de arterias renales o estenosis en rinon unico",
+        "Hiperpotasemia o uso de farmacos/sustitutos de sal que aumentan potasio",
+        "Angioedema de cara, lengua, glotis o intestino: suspender y atender de inmediato",
+        "Tos seca persistente",
+        "Estenosis aortica/mitral o miocardiopatia obstructiva: evitar hipotension excesiva",
+        "Enfermedad vascular del colageno o inmunosupresion: considerar vigilancia hematologica",
+        "Cirugia o anestesia: riesgo de hipotension por bloqueo del SRAA",
+        "Deterioro hepatico o ictericia: suspender y evaluar por riesgo raro de lesion hepatica"
+      ],
+      "advertencias": [
+        "Controlar creatinina/eGFR y potasio antes de iniciar y 1-2 semanas despues de iniciar o titular",
+        "No usar bloqueo dual rutinario del SRAA con ARA-II o aliskiren",
+        "Separar al menos 36 horas de sacubitrilo/valsartan por riesgo de angioedema",
+        "La deshidratacion, los AINEs y los diureticos aumentan el riesgo de lesion renal e hipotension",
+        "Suspender cuanto antes si se detecta embarazo",
+        "La compatibilidad durante lactancia depende del IECA, la edad del lactante y la ficha regulatoria local"
+      ],
+      "monitorizacion": [
+        "Presion arterial y sintomas ortostaticos",
+        "Creatinina y eGFR basales y tras inicio/cambios de dosis",
+        "Potasio serico basal y tras inicio/cambios de dosis",
+        "Tos y cualquier dato de angioedema",
+        "Estado de volumen y sodio si usa diureticos",
+        "Biometria hematica si existe enfermedad vascular del colageno, inmunosupresion o deterioro renal"
+      ],
+      "dosisAdulto": [
+        {
+          "indicationId": "uso_habitual",
+          "population": "adult",
+          "usualDose": {
+            "text": "Hipertension: iniciar con 10 mg cada 24 horas; rango usual 20-40 mg cada 24 horas."
+          },
+          "administrationNotes": []
+        }
+      ],
+      "dosisPediatrica": [],
+      "embarazo": "Contraindicado. Suspender cuanto antes al detectar embarazo por riesgo de toxicidad fetal, oligohidramnios, deterioro renal y muerte fetal/neonatal.",
+      "lactancia": "La recomendacion depende del principio activo, la edad del lactante y la ficha regulatoria local; confirmar compatibilidad y vigilar hipotension, diuresis y funcion renal del lactante cuando proceda."
+    },
+    "farmacocinetica": {
+      "mecanismoAccion": "Inhibe la enzima convertidora de angiotensina, reduce angiotensina II y aldosterona y aumenta bradicinina.",
+      "vidaMedia": "Fosinoprilat: vida media efectiva aproximada de 12 horas.",
+      "tiempoConcentracionMaxima": "Fosinoprilat alcanza el maximo aproximadamente a las 3 horas.",
+      "duracionAccion": "Efecto antihipertensivo compatible con administracion cada 24 horas; individualizar segun respuesta y ficha tecnica.",
+      "metabolismo": "Profarmaco hidrolizado a fosinoprilat; tambien presenta metabolismo hepatico.",
+      "eliminacion": "Eliminacion compensatoria renal y hepatobiliar.",
+      "cyp": [
+        "Sin CYP principal clinicamente relevante documentado; revisar ficha especifica"
+      ],
+      "metabolitosActivos": [
+        "Fosinoprilat"
+      ]
+    },
+    "efectosAdversos": [
+      "Tos seca",
+      "Mareo e hipotension",
+      "Hiperpotasemia",
+      "Elevacion de creatinina o lesion renal aguda",
+      "Angioedema",
+      "Cefalea",
+      "Nausea",
+      "Rash",
+      "Neutropenia/agranulocitosis rara",
+      "Lesion hepatica colestasica rara"
+    ],
+    "riesgos": {
+      "potasio": 1,
+      "renal": 1,
+      "hipotension": 1,
+      "embarazo": 2,
+      "angioedema": 2
+    },
+    "interacciones": [
+      "Sacubitrilo/valsartan: combinacion contraindicada; separar 36 horas por riesgo de angioedema",
+      "ARA-II o aliskiren: bloqueo dual del SRAA con mayor riesgo de hipotension, hiperpotasemia y lesion renal",
+      "Diureticos ahorradores de potasio, suplementos de potasio, sustitutos de sal, trimetoprim, ciclosporina o heparinas: hiperpotasemia",
+      "AINEs: menor efecto antihipertensivo y mayor riesgo de hiperpotasemia o lesion renal aguda",
+      "Litio: aumento reversible de concentraciones y toxicidad; evitar o monitorizar estrechamente",
+      "Diureticos y otros hipotensores: hipotension aditiva, sobre todo al inicio o con hipovolemia",
+      "Insulina y antidiabeticos: puede potenciar el descenso de glucosa durante las primeras semanas",
+      "Inhibidores mTOR, racecadotrilo, inhibidores DPP-4 o activadores tisulares de plasminogeno: mayor riesgo de angioedema",
+      "Antidepresivos triciclicos, antipsicoticos y anestesicos: hipotension aditiva",
+      "Simpatomimeticos: posible reduccion del efecto antihipertensivo"
+    ],
+    "interaccionesRelacionadas": [
+      {
+        "idRegla": "sraa_aine_riesgo_renal",
+        "contraparteIds": [
+          "acido_acetilsalicilico",
+          "diclofenaco",
+          "ibuprofeno",
+          "ketorolaco",
+          "naproxeno"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_ara2",
+        "contraparteIds": [
+          "losartan",
+          "sacubitrilo_valsartan",
+          "telmisartan",
+          "valsartan"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_renina",
+        "contraparteIds": [
+          "aliskiren"
+        ]
+      },
+      {
+        "idRegla": "litio_ieca_ara",
+        "contraparteIds": [
+          "litio"
+        ]
+      },
+      {
+        "idRegla": "espironolactona_ieca_ara",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona"
+        ]
+      },
+      {
+        "idRegla": "ieca_ieca_duplicidad",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "ieca_neprilisina_angioedema",
+        "contraparteIds": [
+          "sacubitrilo_valsartan"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona",
+          "furosemida",
+          "hidroclorotiazida"
+        ]
+      },
+      {
+        "idRegla": "ieca_heparina_hiperpotasemia",
+        "contraparteIds": [
+          "enoxaparina",
+          "heparina"
+        ]
+      },
+      {
+        "idRegla": "ieca_dpp4_angioedema",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "ieca_antidiabetico_hipoglucemia",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "fenotiazina_antihipertensivo",
+        "contraparteIds": [
+          "clorpromazina",
+          "flufenazina",
+          "levomepromazina",
+          "mesoridazina",
+          "perfenazina",
+          "periciazina",
+          "pipotiazina",
+          "proclorperazina",
+          "promazina",
+          "tioridazina",
+          "trifluoperazina"
+        ]
+      }
+    ],
+    "relacionDiagnosticos": [
+      "I10/hipertension arterial: indicacion de clase; seleccionar farmaco y dosis segun ficha y contexto",
+      "I50/insuficiencia cardiaca: beneficio segun principio activo, fenotipo y guia vigente",
+      "I13/enfermedad cardiaca y renal hipertensiva: vigilar presion, creatinina/eGFR y potasio",
+      "N18/enfermedad renal cronica o sospecha de estenosis renal: requiere vigilancia renal y electrolitica estrecha",
+      "E11/diabetes con albuminuria o enfermedad renal: considerar beneficio renal segun indicacion y guia",
+      "O00-O99/embarazo: contraindicado por toxicidad fetal renal"
+    ],
+    "notas": "C09AA09: IECA simple. La disponibilidad y las sales comercializadas varian por pais; confirmar ficha tecnica local antes de prescribir.",
+    "referencias": [
+      {
+        "id": "who_atc_c09aa",
+        "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+        "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "C09AA ACE inhibitors, plain"
+        ],
+        "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+        "tipo": "clasificacion ATC oficial",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "zestril_smpc_interacciones_ieca",
+        "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+        "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "4.3 Contraindications",
+          "4.4 Special warnings and precautions",
+          "4.5 Interactions",
+          "4.6 Fertility, pregnancy and lactation"
+        ],
+        "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+        "tipo": "ficha tecnica regulatoria",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "ficha_fosinopril",
+        "titulo": "DailyMed: fosinopril sodium tablets",
+        "url": "https://dailymed.nlm.nih.gov/dailymed/downloadpdffile.cfm?setId=2f122ad0-f9c2-4c90-a94b-072354b876b5",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "Presentaciones",
+          "Indicaciones",
+          "Posologia",
+          "Contraindicaciones",
+          "Interacciones",
+          "Farmacologia clinica"
+        ],
+        "nota": "Fuente de producto consultada para Fosinopril. La disponibilidad comercial debe verificarse por pais.",
+        "tipo": "ficha tecnica o documento regulatorio",
+        "confiabilidad": "alta"
+      },
+      "https://dailymed.nlm.nih.gov/dailymed/downloadpdffile.cfm?setId=2f122ad0-f9c2-4c90-a94b-072354b876b5"
+    ],
+    "fuenteClinica": {
+      "estado": "verificada_local",
+      "fuente": "DailyMed: fosinopril sodium tablets",
+      "fuentes": [
+        {
+          "id": "who_atc_c09aa",
+          "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+          "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "C09AA ACE inhibitors, plain"
+          ],
+          "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+          "tipo": "clasificacion ATC oficial",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "zestril_smpc_interacciones_ieca",
+          "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+          "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "4.3 Contraindications",
+            "4.4 Special warnings and precautions",
+            "4.5 Interactions",
+            "4.6 Fertility, pregnancy and lactation"
+          ],
+          "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+          "tipo": "ficha tecnica regulatoria",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "ficha_fosinopril",
+          "titulo": "DailyMed: fosinopril sodium tablets",
+          "url": "https://dailymed.nlm.nih.gov/dailymed/downloadpdffile.cfm?setId=2f122ad0-f9c2-4c90-a94b-072354b876b5",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "Presentaciones",
+            "Indicaciones",
+            "Posologia",
+            "Contraindicaciones",
+            "Interacciones",
+            "Farmacologia clinica"
+          ],
+          "nota": "Fuente de producto consultada para Fosinopril. La disponibilidad comercial debe verificarse por pais.",
+          "tipo": "ficha tecnica o documento regulatorio",
+          "confiabilidad": "alta"
+        }
+      ],
+      "paginaSeccion": "DailyMed: fosinopril sodium tablets (https://dailymed.nlm.nih.gov/dailymed/downloadpdffile.cfm?setId=2f122ad0-f9c2-4c90-a94b-072354b876b5); WHO ATC C09AA09; ficha de clase IECA",
+      "confianza": "alta para identidad, presentaciones y consideraciones de clase; confirmar producto/pais antes de prescribir"
+    },
+    "farmacologia": {
+      "esquema": "cognicion.farmacologia.v1",
+      "id": "fosinopril",
+      "nombreGenerico": "Fosinopril",
+      "estadoFuente": "verificada_local",
+      "fuente": "DailyMed: fosinopril sodium tablets"
+    },
+    "pediatria": null,
+    "origenesCatalogo": [
+      "catalogo_maestro_ieca_atc"
+    ],
+    "activo": true,
+    "estadoContenido": "curado_fuente_regulatoria",
+    "actualizadoEn": "2026-08-14"
+  },
+  {
     "id": "furosemida",
     "legacyIds": [],
     "nombre": "Furosemida",
@@ -33126,6 +35422,27 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "litio_deshidratante",
         "contraparteIds": [
           "litio"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
         ]
       },
       {
@@ -35674,6 +37991,27 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       },
       {
+        "idRegla": "ieca_heparina_hiperpotasemia",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
         "idRegla": "fenobarbital_inductor_sustrato",
         "contraparteIds": [
           "fenobarbital"
@@ -35971,6 +38309,27 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "litio_deshidratante",
         "contraparteIds": [
           "litio"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
         ]
       },
       {
@@ -37349,12 +39708,26 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "sraa_aine_riesgo_renal",
         "contraparteIds": [
+          "benazepril",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
+          "fosinopril",
+          "imidapril",
           "lisinopril",
           "losartan",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "sacubitrilo_valsartan",
+          "spirapril",
           "telmisartan",
-          "valsartan"
+          "temocapril",
+          "trandolapril",
+          "valsartan",
+          "zofenopril"
         ]
       },
       {
@@ -38199,6 +40572,422 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "activo": true,
     "estadoContenido": "revision_inicial",
     "actualizadoEn": "2026-08-11"
+  },
+  {
+    "id": "imidapril",
+    "legacyIds": [],
+    "nombre": "Imidapril",
+    "genericName": "Imidapril",
+    "principioActivo": "imidapril",
+    "principiosActivos": [
+      "Imidapril",
+      "imidapril"
+    ],
+    "clasePrincipal": "IECA",
+    "clases": [
+      "IECA",
+      "Inhibidor de la enzima convertidora de angiotensina",
+      "ieca",
+      "Profarmaco IECA"
+    ],
+    "categoriasInteraccion": [
+      "renal",
+      "electrolitica",
+      "cardiovascular",
+      "hiperpotasemia",
+      "hipotension",
+      "angioedema"
+    ],
+    "sinonimos": [
+      "imidapril",
+      "imidapril clorhidrato"
+    ],
+    "marcas": [
+      "Tanatril"
+    ],
+    "especialidades": [
+      "Cardiologia",
+      "Medicina interna",
+      "Nefrologia"
+    ],
+    "presentaciones": [
+      {
+        "id": "imidapril-tableta-5-mg",
+        "texto": "tabletas de 5 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "5 mg",
+        "fuente": "https://www.medicines.org.uk/emc/product/13185/smpc",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "imidapril-tableta-10-mg",
+        "texto": "tabletas de 10 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "10 mg",
+        "fuente": "https://www.medicines.org.uk/emc/product/13185/smpc",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "imidapril-tableta-20-mg",
+        "texto": "tabletas de 20 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "20 mg",
+        "fuente": "https://www.medicines.org.uk/emc/product/13185/smpc",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      }
+    ],
+    "dosisHabitual": "Hipertension: iniciar habitualmente con 5 mg cada 24 horas; dosis usual 10 mg y maximo 20 mg cada 24 horas segun ficha.",
+    "dosisHabituales": [
+      "5 mg",
+      "10 mg",
+      "20 mg"
+    ],
+    "frecuenciasSugeridas": [
+      "cada 24 horas"
+    ],
+    "datosClinicos": {
+      "indicaciones": [
+        "Hipertension"
+      ],
+      "contraindicaciones": [
+        "Hipersensibilidad al principio activo o a otro IECA",
+        "Antecedente de angioedema asociado a un IECA o angioedema hereditario/idiopatico",
+        "Embarazo: toxicidad fetal por bloqueo del sistema renina-angiotensina",
+        "Uso concomitante con sacubitrilo/valsartan o dentro de las 36 horas del cambio",
+        "Uso concomitante con aliskiren en diabetes mellitus o deterioro renal significativo"
+      ],
+      "precauciones": [
+        "Hipotension sintomatica, hipovolemia o deplecion de sodio, especialmente con diureticos",
+        "Enfermedad renal, estenosis bilateral de arterias renales o estenosis en rinon unico",
+        "Hiperpotasemia o uso de farmacos/sustitutos de sal que aumentan potasio",
+        "Angioedema de cara, lengua, glotis o intestino: suspender y atender de inmediato",
+        "Tos seca persistente",
+        "Estenosis aortica/mitral o miocardiopatia obstructiva: evitar hipotension excesiva",
+        "Enfermedad vascular del colageno o inmunosupresion: considerar vigilancia hematologica",
+        "Cirugia o anestesia: riesgo de hipotension por bloqueo del SRAA",
+        "Deterioro hepatico o ictericia: suspender y evaluar por riesgo raro de lesion hepatica"
+      ],
+      "advertencias": [
+        "Controlar creatinina/eGFR y potasio antes de iniciar y 1-2 semanas despues de iniciar o titular",
+        "No usar bloqueo dual rutinario del SRAA con ARA-II o aliskiren",
+        "Separar al menos 36 horas de sacubitrilo/valsartan por riesgo de angioedema",
+        "La deshidratacion, los AINEs y los diureticos aumentan el riesgo de lesion renal e hipotension",
+        "Suspender cuanto antes si se detecta embarazo",
+        "La compatibilidad durante lactancia depende del IECA, la edad del lactante y la ficha regulatoria local"
+      ],
+      "monitorizacion": [
+        "Presion arterial y sintomas ortostaticos",
+        "Creatinina y eGFR basales y tras inicio/cambios de dosis",
+        "Potasio serico basal y tras inicio/cambios de dosis",
+        "Tos y cualquier dato de angioedema",
+        "Estado de volumen y sodio si usa diureticos",
+        "Biometria hematica si existe enfermedad vascular del colageno, inmunosupresion o deterioro renal"
+      ],
+      "dosisAdulto": [
+        {
+          "indicationId": "uso_habitual",
+          "population": "adult",
+          "usualDose": {
+            "text": "Hipertension: iniciar habitualmente con 5 mg cada 24 horas; dosis usual 10 mg y maximo 20 mg cada 24 horas segun ficha."
+          },
+          "administrationNotes": []
+        }
+      ],
+      "dosisPediatrica": [],
+      "embarazo": "Contraindicado. Suspender cuanto antes al detectar embarazo por riesgo de toxicidad fetal, oligohidramnios, deterioro renal y muerte fetal/neonatal.",
+      "lactancia": "La recomendacion depende del principio activo, la edad del lactante y la ficha regulatoria local; confirmar compatibilidad y vigilar hipotension, diuresis y funcion renal del lactante cuando proceda."
+    },
+    "farmacocinetica": {
+      "mecanismoAccion": "Inhibe la enzima convertidora de angiotensina, reduce angiotensina II y aldosterona y aumenta bradicinina.",
+      "vidaMedia": "Imidaprilat presenta una fase terminal prolongada compatible con dosificacion cada 24 horas.",
+      "tiempoConcentracionMaxima": "Imidaprilat alcanza el maximo en las primeras horas despues de la dosis.",
+      "duracionAccion": "Efecto antihipertensivo compatible con administracion cada 24 horas; individualizar segun respuesta y ficha tecnica.",
+      "metabolismo": "Profarmaco hidrolizado a imidaprilat.",
+      "eliminacion": "Principalmente renal; ajustar segun ficha en deterioro renal.",
+      "cyp": [
+        "Sin CYP principal clinicamente relevante documentado; revisar ficha especifica"
+      ],
+      "metabolitosActivos": [
+        "Imidaprilat"
+      ]
+    },
+    "efectosAdversos": [
+      "Tos seca",
+      "Mareo e hipotension",
+      "Hiperpotasemia",
+      "Elevacion de creatinina o lesion renal aguda",
+      "Angioedema",
+      "Cefalea",
+      "Nausea",
+      "Rash",
+      "Neutropenia/agranulocitosis rara",
+      "Lesion hepatica colestasica rara"
+    ],
+    "riesgos": {
+      "potasio": 1,
+      "renal": 1,
+      "hipotension": 1,
+      "embarazo": 2,
+      "angioedema": 2
+    },
+    "interacciones": [
+      "Sacubitrilo/valsartan: combinacion contraindicada; separar 36 horas por riesgo de angioedema",
+      "ARA-II o aliskiren: bloqueo dual del SRAA con mayor riesgo de hipotension, hiperpotasemia y lesion renal",
+      "Diureticos ahorradores de potasio, suplementos de potasio, sustitutos de sal, trimetoprim, ciclosporina o heparinas: hiperpotasemia",
+      "AINEs: menor efecto antihipertensivo y mayor riesgo de hiperpotasemia o lesion renal aguda",
+      "Litio: aumento reversible de concentraciones y toxicidad; evitar o monitorizar estrechamente",
+      "Diureticos y otros hipotensores: hipotension aditiva, sobre todo al inicio o con hipovolemia",
+      "Insulina y antidiabeticos: puede potenciar el descenso de glucosa durante las primeras semanas",
+      "Inhibidores mTOR, racecadotrilo, inhibidores DPP-4 o activadores tisulares de plasminogeno: mayor riesgo de angioedema",
+      "Antidepresivos triciclicos, antipsicoticos y anestesicos: hipotension aditiva",
+      "Simpatomimeticos: posible reduccion del efecto antihipertensivo"
+    ],
+    "interaccionesRelacionadas": [
+      {
+        "idRegla": "sraa_aine_riesgo_renal",
+        "contraparteIds": [
+          "acido_acetilsalicilico",
+          "diclofenaco",
+          "ibuprofeno",
+          "ketorolaco",
+          "naproxeno"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_ara2",
+        "contraparteIds": [
+          "losartan",
+          "sacubitrilo_valsartan",
+          "telmisartan",
+          "valsartan"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_renina",
+        "contraparteIds": [
+          "aliskiren"
+        ]
+      },
+      {
+        "idRegla": "litio_ieca_ara",
+        "contraparteIds": [
+          "litio"
+        ]
+      },
+      {
+        "idRegla": "espironolactona_ieca_ara",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona"
+        ]
+      },
+      {
+        "idRegla": "ieca_ieca_duplicidad",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "ieca_neprilisina_angioedema",
+        "contraparteIds": [
+          "sacubitrilo_valsartan"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona",
+          "furosemida",
+          "hidroclorotiazida"
+        ]
+      },
+      {
+        "idRegla": "ieca_heparina_hiperpotasemia",
+        "contraparteIds": [
+          "enoxaparina",
+          "heparina"
+        ]
+      },
+      {
+        "idRegla": "ieca_dpp4_angioedema",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "ieca_antidiabetico_hipoglucemia",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "fenotiazina_antihipertensivo",
+        "contraparteIds": [
+          "clorpromazina",
+          "flufenazina",
+          "levomepromazina",
+          "mesoridazina",
+          "perfenazina",
+          "periciazina",
+          "pipotiazina",
+          "proclorperazina",
+          "promazina",
+          "tioridazina",
+          "trifluoperazina"
+        ]
+      }
+    ],
+    "relacionDiagnosticos": [
+      "I10/hipertension arterial: indicacion de clase; seleccionar farmaco y dosis segun ficha y contexto",
+      "I50/insuficiencia cardiaca: beneficio segun principio activo, fenotipo y guia vigente",
+      "I13/enfermedad cardiaca y renal hipertensiva: vigilar presion, creatinina/eGFR y potasio",
+      "N18/enfermedad renal cronica o sospecha de estenosis renal: requiere vigilancia renal y electrolitica estrecha",
+      "E11/diabetes con albuminuria o enfermedad renal: considerar beneficio renal segun indicacion y guia",
+      "O00-O99/embarazo: contraindicado por toxicidad fetal renal"
+    ],
+    "notas": "C09AA16: IECA simple. La disponibilidad y las sales comercializadas varian por pais; confirmar ficha tecnica local antes de prescribir.",
+    "referencias": [
+      {
+        "id": "who_atc_c09aa",
+        "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+        "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "C09AA ACE inhibitors, plain"
+        ],
+        "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+        "tipo": "clasificacion ATC oficial",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "zestril_smpc_interacciones_ieca",
+        "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+        "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "4.3 Contraindications",
+          "4.4 Special warnings and precautions",
+          "4.5 Interactions",
+          "4.6 Fertility, pregnancy and lactation"
+        ],
+        "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+        "tipo": "ficha tecnica regulatoria",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "ficha_imidapril",
+        "titulo": "Tanatril tablets - electronic Medicines Compendium",
+        "url": "https://www.medicines.org.uk/emc/product/13185/smpc",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "Presentaciones",
+          "Indicaciones",
+          "Posologia",
+          "Contraindicaciones",
+          "Interacciones",
+          "Farmacologia clinica"
+        ],
+        "nota": "Fuente de producto consultada para Imidapril. La disponibilidad comercial debe verificarse por pais.",
+        "tipo": "ficha tecnica o documento regulatorio",
+        "confiabilidad": "moderada-alta; confirmar ficha del producto y mercado"
+      },
+      "https://www.medicines.org.uk/emc/product/13185/smpc"
+    ],
+    "fuenteClinica": {
+      "estado": "verificada_local",
+      "fuente": "Tanatril tablets - electronic Medicines Compendium",
+      "fuentes": [
+        {
+          "id": "who_atc_c09aa",
+          "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+          "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "C09AA ACE inhibitors, plain"
+          ],
+          "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+          "tipo": "clasificacion ATC oficial",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "zestril_smpc_interacciones_ieca",
+          "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+          "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "4.3 Contraindications",
+            "4.4 Special warnings and precautions",
+            "4.5 Interactions",
+            "4.6 Fertility, pregnancy and lactation"
+          ],
+          "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+          "tipo": "ficha tecnica regulatoria",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "ficha_imidapril",
+          "titulo": "Tanatril tablets - electronic Medicines Compendium",
+          "url": "https://www.medicines.org.uk/emc/product/13185/smpc",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "Presentaciones",
+            "Indicaciones",
+            "Posologia",
+            "Contraindicaciones",
+            "Interacciones",
+            "Farmacologia clinica"
+          ],
+          "nota": "Fuente de producto consultada para Imidapril. La disponibilidad comercial debe verificarse por pais.",
+          "tipo": "ficha tecnica o documento regulatorio",
+          "confiabilidad": "moderada-alta; confirmar ficha del producto y mercado"
+        }
+      ],
+      "paginaSeccion": "Tanatril tablets - electronic Medicines Compendium (https://www.medicines.org.uk/emc/product/13185/smpc); WHO ATC C09AA16; ficha de clase IECA",
+      "confianza": "moderada-alta; confirmar ficha del producto y mercado"
+    },
+    "farmacologia": {
+      "esquema": "cognicion.farmacologia.v1",
+      "id": "imidapril",
+      "nombreGenerico": "Imidapril",
+      "estadoFuente": "verificada_local",
+      "fuente": "Tanatril tablets - electronic Medicines Compendium"
+    },
+    "pediatria": null,
+    "origenesCatalogo": [
+      "catalogo_maestro_ieca_atc"
+    ],
+    "activo": true,
+    "estadoContenido": "curado_fuente_regulatoria",
+    "actualizadoEn": "2026-08-14"
   },
   {
     "id": "imipramina",
@@ -40435,12 +43224,26 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "sraa_aine_riesgo_renal",
         "contraparteIds": [
+          "benazepril",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
+          "fosinopril",
+          "imidapril",
           "lisinopril",
           "losartan",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "sacubitrilo_valsartan",
+          "spirapril",
           "telmisartan",
-          "valsartan"
+          "temocapril",
+          "trandolapril",
+          "valsartan",
+          "zofenopril"
         ]
       },
       {
@@ -43312,22 +46115,37 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "fenotiazina_antihipertensivo",
         "contraparteIds": [
           "atenolol",
+          "benazepril",
           "bisoprolol",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
+          "eplerenona",
           "espironolactona",
+          "fosinopril",
           "furosemida",
           "hidroclorotiazida",
+          "imidapril",
           "isosorbida",
           "lisinopril",
           "losartan",
           "metoprolol",
+          "moexipril",
           "nebivolol",
           "nitroglicerina",
+          "perindopril",
           "pindolol",
+          "quinapril",
+          "ramipril",
+          "sacubitrilo_valsartan",
           "sotalol",
+          "spirapril",
           "telmisartan",
-          "valsartan"
+          "temocapril",
+          "trandolapril",
+          "valsartan",
+          "zofenopril"
         ]
       },
       {
@@ -43588,9 +46406,13 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     ],
     "clasePrincipal": "Inhibidor DPP-4",
     "clases": [
-      "Inhibidor DPP-4"
+      "Inhibidor DPP-4",
+      "inhibidor_dpp4",
+      "antidiabetico"
     ],
-    "categoriasInteraccion": [],
+    "categoriasInteraccion": [
+      "metabolica"
+    ],
     "sinonimos": [],
     "marcas": [],
     "especialidades": [
@@ -43649,8 +46471,53 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     },
     "efectosAdversos": [],
     "riesgos": {},
-    "interacciones": [],
-    "interaccionesRelacionadas": [],
+    "interacciones": [
+      "IECA: se ha descrito mayor riesgo de angioedema; vigilar"
+    ],
+    "interaccionesRelacionadas": [
+      {
+        "idRegla": "ieca_dpp4_angioedema",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "ieca_antidiabetico_hipoglucemia",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      }
+    ],
     "relacionDiagnosticos": [],
     "notas": "No suele requerir ajuste renal.",
     "referencias": [
@@ -43678,7 +46545,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     ],
     "activo": true,
     "estadoContenido": "revision_inicial",
-    "actualizadoEn": "2026-08-11"
+    "actualizadoEn": "2026-08-14"
   },
   {
     "id": "linezolid",
@@ -44211,34 +47078,78 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "clases": [
       "IECA",
       "IECA no profarmaco",
-      "ieca"
+      "Inhibidor de la enzima convertidora de angiotensina"
     ],
     "categoriasInteraccion": [
       "renal",
-      "electrolitica"
+      "electrolitica",
+      "cardiovascular",
+      "hiperpotasemia",
+      "hipotension",
+      "angioedema"
     ],
     "sinonimos": [
       "lisinopril"
     ],
     "marcas": [
       "Prinivil",
-      "Zestril"
+      "Zestril",
+      "Qbrelis"
     ],
     "especialidades": [
-      "Cardiología"
+      "Cardiología",
+      "Cardiologia",
+      "Medicina interna",
+      "Nefrologia"
     ],
     "presentaciones": [
+      {
+        "id": "lisinopril-solucion-oral-1-mg-ml",
+        "texto": "solucion oral de 1 mg/mL",
+        "via": "oral",
+        "forma": "solucion oral",
+        "concentracion": "1 mg/mL",
+        "fuente": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "lisinopril-tableta-2-5-mg",
+        "texto": "tabletas de 2.5 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "2.5 mg",
+        "fuente": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "lisinopril-tableta-5-mg",
+        "texto": "tabletas de 5 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "5 mg",
+        "fuente": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
       {
         "id": "lisinopril-tableta-10-mg",
         "texto": "tabletas de 10 mg",
         "via": "oral",
         "forma": "tableta",
         "concentracion": "10 mg",
-        "fuente": "catalogo_cognicion_preexistente",
+        "fuente": "https://www.medicines.org.uk/emc/product/3269/smpc",
         "rxCui": null,
         "principioActivoPresentado": null,
         "activo": true,
-        "origen": "catalogo_cognicion_preexistente"
+        "origen": "catalogo_maestro_ieca_atc"
       },
       {
         "id": "lisinopril-tableta-20-mg",
@@ -44246,17 +47157,46 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "via": "oral",
         "forma": "tableta",
         "concentracion": "20 mg",
-        "fuente": "catalogo_cognicion_preexistente",
+        "fuente": "https://www.medicines.org.uk/emc/product/3269/smpc",
         "rxCui": null,
         "principioActivoPresentado": null,
         "activo": true,
-        "origen": "catalogo_cognicion_preexistente"
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "lisinopril-tableta-30-mg",
+        "texto": "tabletas de 30 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "30 mg",
+        "fuente": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "lisinopril-tableta-40-mg",
+        "texto": "tabletas de 40 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "40 mg",
+        "fuente": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
       }
     ],
-    "dosisHabitual": "10-40 mg cada 24 h segun indicacion.",
+    "dosisHabitual": "Hipertension: 10 mg cada 24 horas, con rango habitual de 10-40 mg cada 24 horas; individualizar por indicacion y funcion renal.",
     "dosisHabituales": [
+      "2.5 mg",
+      "5 mg",
       "10 mg",
-      "20 mg"
+      "20 mg",
+      "30 mg",
+      "40 mg",
+      "1 mg/mL"
     ],
     "frecuenciasSugeridas": [
       "cada 24 horas"
@@ -44265,32 +47205,67 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       "indicaciones": [
         "Hipertension",
         "Insuficiencia cardiaca",
-        "Postinfarto"
+        "Postinfarto",
+        "Infarto agudo de miocardio en pacientes seleccionados"
       ],
       "contraindicaciones": [
         "Angioedema por IECA",
         "Uso con sacubitrilo/valsartan dentro de 36 h",
         "No aliskiren en diabetes",
-        "Embarazo"
+        "Embarazo",
+        "Hipersensibilidad al principio activo o a otro IECA",
+        "Antecedente de angioedema asociado a un IECA o angioedema hereditario/idiopatico",
+        "Embarazo: toxicidad fetal por bloqueo del sistema renina-angiotensina",
+        "Uso concomitante con sacubitrilo/valsartan o dentro de las 36 horas del cambio",
+        "Uso concomitante con aliskiren en diabetes mellitus o deterioro renal significativo"
       ],
       "precauciones": [
         "Hipotension",
         "Hiperpotasemia",
-        "Deterioro renal"
+        "Deterioro renal",
+        "Hipotension sintomatica, hipovolemia o deplecion de sodio, especialmente con diureticos",
+        "Enfermedad renal, estenosis bilateral de arterias renales o estenosis en rinon unico",
+        "Hiperpotasemia o uso de farmacos/sustitutos de sal que aumentan potasio",
+        "Angioedema de cara, lengua, glotis o intestino: suspender y atender de inmediato",
+        "Tos seca persistente",
+        "Estenosis aortica/mitral o miocardiopatia obstructiva: evitar hipotension excesiva",
+        "Enfermedad vascular del colageno o inmunosupresion: considerar vigilancia hematologica",
+        "Cirugia o anestesia: riesgo de hipotension por bloqueo del SRAA",
+        "Deterioro hepatico o ictericia: suspender y evaluar por riesgo raro de lesion hepatica"
       ],
       "advertencias": [
         "Hipotension",
         "Hiperpotasemia",
         "Deterioro renal",
         "Embarazo/lactancia: verificar etiqueta vigente y balance beneficio-riesgo.",
-        "Adulto mayor: iniciar bajo, titular lento y vigilar caidas, funcion renal/hepatica, electrolitos o sangrado segun farmaco."
+        "Adulto mayor: iniciar bajo, titular lento y vigilar caidas, funcion renal/hepatica, electrolitos o sangrado segun farmaco.",
+        "Controlar creatinina/eGFR y potasio antes de iniciar y 1-2 semanas despues de iniciar o titular",
+        "No usar bloqueo dual rutinario del SRAA con ARA-II o aliskiren",
+        "Separar al menos 36 horas de sacubitrilo/valsartan por riesgo de angioedema",
+        "La deshidratacion, los AINEs y los diureticos aumentan el riesgo de lesion renal e hipotension",
+        "Suspender cuanto antes si se detecta embarazo",
+        "La compatibilidad durante lactancia depende del IECA, la edad del lactante y la ficha regulatoria local"
       ],
       "monitorizacion": [
         "Presion arterial",
         "Creatinina/eGFR",
-        "Potasio"
+        "Potasio",
+        "Presion arterial y sintomas ortostaticos",
+        "Creatinina y eGFR basales y tras inicio/cambios de dosis",
+        "Potasio serico basal y tras inicio/cambios de dosis",
+        "Tos y cualquier dato de angioedema",
+        "Estado de volumen y sodio si usa diureticos",
+        "Biometria hematica si existe enfermedad vascular del colageno, inmunosupresion o deterioro renal"
       ],
       "dosisAdulto": [
+        {
+          "indicationId": "uso_habitual",
+          "population": "adult",
+          "usualDose": {
+            "text": "Hipertension: 10 mg cada 24 horas, con rango habitual de 10-40 mg cada 24 horas; individualizar por indicacion y funcion renal."
+          },
+          "administrationNotes": []
+        },
         {
           "indicationId": "uso_habitual",
           "population": "adult",
@@ -44301,39 +47276,60 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         }
       ],
       "dosisPediatrica": [],
-      "embarazo": null,
-      "lactancia": null
+      "embarazo": "Contraindicado. Suspender cuanto antes al detectar embarazo por riesgo de toxicidad fetal, oligohidramnios, deterioro renal y muerte fetal/neonatal.",
+      "lactancia": "La recomendacion depende del principio activo, la edad del lactante y la ficha regulatoria local; confirmar compatibilidad y vigilar hipotension, diuresis y funcion renal del lactante cuando proceda."
     },
     "farmacocinetica": {
-      "mecanismoAccion": "Ver etiqueta/ficha tecnica especifica.",
-      "vidaMedia": "~12 h.",
-      "tiempoConcentracionMaxima": "~7 h.",
-      "duracionAccion": "dato no encontrado en fuente local",
+      "mecanismoAccion": "Inhibe la enzima convertidora de angiotensina, reduce angiotensina II y aldosterona y aumenta bradicinina.",
+      "vidaMedia": "Vida media efectiva aproximada de 12 horas.",
+      "tiempoConcentracionMaxima": "Aproximadamente 7 horas.",
+      "duracionAccion": "Efecto antihipertensivo compatible con administracion cada 24 horas; individualizar segun respuesta y ficha tecnica.",
       "metabolismo": "No se metaboliza de forma significativa.",
       "eliminacion": "Renal sin cambios.",
       "cyp": [
-        "Sin CYP principal"
+        "Sin CYP principal clinicamente relevante documentado; revisar ficha especifica"
       ],
       "metabolitosActivos": [
-        "No"
+        "No forma metabolitos activos"
       ]
     },
     "efectosAdversos": [
       "Tos",
       "Mareo",
       "Hipotension",
-      "Hiperpotasemia"
+      "Hiperpotasemia",
+      "Tos seca",
+      "Mareo e hipotension",
+      "Elevacion de creatinina o lesion renal aguda",
+      "Angioedema",
+      "Cefalea",
+      "Nausea",
+      "Rash",
+      "Neutropenia/agranulocitosis rara",
+      "Lesion hepatica colestasica rara"
     ],
     "riesgos": {
       "potasio": 1,
       "renal": 1,
-      "hipotension": 1
+      "hipotension": 1,
+      "embarazo": 2,
+      "angioedema": 2
     },
     "interacciones": [
       "ARA-II/aliskiren",
       "AINEs",
       "Potasio/espironolactona",
-      "Litio"
+      "Litio",
+      "Sacubitrilo/valsartan: combinacion contraindicada; separar 36 horas por riesgo de angioedema",
+      "ARA-II o aliskiren: bloqueo dual del SRAA con mayor riesgo de hipotension, hiperpotasemia y lesion renal",
+      "Diureticos ahorradores de potasio, suplementos de potasio, sustitutos de sal, trimetoprim, ciclosporina o heparinas: hiperpotasemia",
+      "AINEs: menor efecto antihipertensivo y mayor riesgo de hiperpotasemia o lesion renal aguda",
+      "Litio: aumento reversible de concentraciones y toxicidad; evitar o monitorizar estrechamente",
+      "Diureticos y otros hipotensores: hipotension aditiva, sobre todo al inicio o con hipovolemia",
+      "Insulina y antidiabeticos: puede potenciar el descenso de glucosa durante las primeras semanas",
+      "Inhibidores mTOR, racecadotrilo, inhibidores DPP-4 o activadores tisulares de plasminogeno: mayor riesgo de angioedema",
+      "Antidepresivos triciclicos, antipsicoticos y anestesicos: hipotension aditiva",
+      "Simpatomimeticos: posible reduccion del efecto antihipertensivo"
     ],
     "interaccionesRelacionadas": [
       {
@@ -44350,8 +47346,15 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "bloqueo_dual_sraa_ieca_ara2",
         "contraparteIds": [
           "losartan",
+          "sacubitrilo_valsartan",
           "telmisartan",
           "valsartan"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_renina",
+        "contraparteIds": [
+          "aliskiren"
         ]
       },
       {
@@ -44363,7 +47366,64 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "espironolactona_ieca_ara",
         "contraparteIds": [
+          "eplerenona",
           "espironolactona"
+        ]
+      },
+      {
+        "idRegla": "ieca_ieca_duplicidad",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "ieca_neprilisina_angioedema",
+        "contraparteIds": [
+          "sacubitrilo_valsartan"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona",
+          "furosemida",
+          "hidroclorotiazida"
+        ]
+      },
+      {
+        "idRegla": "ieca_heparina_hiperpotasemia",
+        "contraparteIds": [
+          "enoxaparina",
+          "heparina"
+        ]
+      },
+      {
+        "idRegla": "ieca_dpp4_angioedema",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "ieca_antidiabetico_hipoglucemia",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
         ]
       },
       {
@@ -44383,8 +47443,15 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         ]
       }
     ],
-    "relacionDiagnosticos": [],
-    "notas": "IECA; ajustar según respuesta y función renal.",
+    "relacionDiagnosticos": [
+      "I10/hipertension arterial: indicacion de clase; seleccionar farmaco y dosis segun ficha y contexto",
+      "I50/insuficiencia cardiaca: beneficio segun principio activo, fenotipo y guia vigente",
+      "I13/enfermedad cardiaca y renal hipertensiva: vigilar presion, creatinina/eGFR y potasio",
+      "N18/enfermedad renal cronica o sospecha de estenosis renal: requiere vigilancia renal y electrolitica estrecha",
+      "E11/diabetes con albuminuria o enfermedad renal: considerar beneficio renal segun indicacion y guia",
+      "O00-O99/embarazo: contraindicado por toxicidad fetal renal"
+    ],
+    "notas": "IECA; ajustar según respuesta y función renal. C09AA03: IECA simple. La disponibilidad y las sales comercializadas varian por pais; confirmar ficha tecnica local antes de prescribir.",
     "referencias": [
       {
         "id": "dailymed_lisinopril",
@@ -44403,11 +47470,39 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "tipo": "etiquetado oficial FDA/SPL",
         "confiabilidad": "alta; confirmar producto y presentacion comercial especificos antes de prescribir"
       },
-      "catalogo_cognicion_preexistente"
+      "catalogo_cognicion_preexistente",
+      {
+        "id": "who_atc_c09aa",
+        "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+        "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "C09AA ACE inhibitors, plain"
+        ],
+        "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+        "tipo": "clasificacion ATC oficial",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "zestril_smpc_interacciones_ieca",
+        "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+        "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "4.3 Contraindications",
+          "4.4 Special warnings and precautions",
+          "4.5 Interactions",
+          "4.6 Fertility, pregnancy and lactation"
+        ],
+        "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+        "tipo": "ficha tecnica regulatoria",
+        "confiabilidad": "alta"
+      },
+      "https://www.medicines.org.uk/emc/product/3269/smpc"
     ],
     "fuenteClinica": {
       "estado": "verificada_local",
-      "fuente": "DailyMed",
+      "fuente": "Zestril 20 mg tablets - Summary of Product Characteristics",
       "fuentes": [
         {
           "id": "dailymed_lisinopril",
@@ -44425,162 +47520,53 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
           "nota": "Etiqueta oficial consultada para datos de farmacologia, seguridad y dosificacion.",
           "tipo": "etiquetado oficial FDA/SPL",
           "confiabilidad": "alta; confirmar producto y presentacion comercial especificos antes de prescribir"
+        },
+        {
+          "id": "who_atc_c09aa",
+          "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+          "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "C09AA ACE inhibitors, plain"
+          ],
+          "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+          "tipo": "clasificacion ATC oficial",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "zestril_smpc_interacciones_ieca",
+          "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+          "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "4.3 Contraindications",
+            "4.4 Special warnings and precautions",
+            "4.5 Interactions",
+            "4.6 Fertility, pregnancy and lactation"
+          ],
+          "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+          "tipo": "ficha tecnica regulatoria",
+          "confiabilidad": "alta"
         }
       ],
-      "paginaSeccion": "DailyMed / U.S. National Library of Medicine (https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=lisinopril): Indications and Usage, Dosage and Administration, Contraindications, Warnings and Precautions, Drug Interactions, Clinical Pharmacology",
-      "confianza": "moderada-alta para seed oficial; requiere revision por producto/pais antes de uso clinico"
+      "paginaSeccion": "Zestril 20 mg tablets - Summary of Product Characteristics (https://www.medicines.org.uk/emc/product/3269/smpc); WHO ATC C09AA03; ficha de clase IECA",
+      "confianza": "alta para identidad, presentaciones y consideraciones de clase; confirmar producto/pais antes de prescribir"
     },
     "farmacologia": {
       "esquema": "cognicion.farmacologia.v1",
-      "grupoFarmacologico": "IECA",
-      "principioActivoNormalizado": "lisinopril",
-      "nombresComerciales": [
-        "Prinivil",
-        "Zestril"
-      ],
-      "sinonimos": [
-        "lisinopril"
-      ],
-      "presentaciones": [
-        {
-          "formaFarmaceutica": "tableta",
-          "concentracion": "5",
-          "unidad": "mg",
-          "via": "oral",
-          "marca": "",
-          "fuente": "DailyMed",
-          "comercial": false
-        },
-        {
-          "formaFarmaceutica": "tableta",
-          "concentracion": "10",
-          "unidad": "mg",
-          "via": "oral",
-          "marca": "",
-          "fuente": "DailyMed",
-          "comercial": false
-        },
-        {
-          "formaFarmaceutica": "tableta",
-          "concentracion": "20",
-          "unidad": "mg",
-          "via": "oral",
-          "marca": "",
-          "fuente": "DailyMed",
-          "comercial": false
-        },
-        {
-          "formaFarmaceutica": "tableta",
-          "concentracion": "40",
-          "unidad": "mg",
-          "via": "oral",
-          "marca": "",
-          "fuente": "DailyMed",
-          "comercial": false
-        }
-      ],
-      "indicaciones": [
-        "Hipertension",
-        "Insuficiencia cardiaca",
-        "Postinfarto"
-      ],
-      "contraindicacionesAbsolutas": [
-        "Angioedema por IECA",
-        "Uso con sacubitrilo/valsartan dentro de 36 h",
-        "No aliskiren en diabetes",
-        "Embarazo"
-      ],
-      "contraindicacionesRelativas": [],
-      "precauciones": [
-        "Hipotension",
-        "Hiperpotasemia",
-        "Deterioro renal"
-      ],
-      "cyp": [
-        "Sin CYP principal"
-      ],
-      "metabolitosActivos": [
-        "No"
-      ],
-      "interaccionesMedicamento": [
-        "ARA-II/aliskiren",
-        "AINEs",
-        "Potasio/espironolactona",
-        "Litio"
-      ],
-      "interaccionesDiagnostico": [],
-      "efectosAdversos": [
-        "Tos",
-        "Mareo",
-        "Hipotension",
-        "Hiperpotasemia"
-      ],
-      "vigilancia": [
-        "Presion arterial",
-        "Creatinina/eGFR",
-        "Potasio"
-      ],
-      "laboratorios": [
-        "Creatinina",
-        "eGFR",
-        "Potasio"
-      ],
-      "fuentes": [
-        {
-          "id": "dailymed_lisinopril",
-          "titulo": "DailyMed / U.S. National Library of Medicine",
-          "url": "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=lisinopril",
-          "fechaConsulta": "2026-07-15",
-          "secciones": [
-            "Indications and Usage",
-            "Dosage and Administration",
-            "Contraindications",
-            "Warnings and Precautions",
-            "Drug Interactions",
-            "Clinical Pharmacology"
-          ],
-          "nota": "Etiqueta oficial consultada para datos de farmacologia, seguridad y dosificacion.",
-          "tipo": "etiquetado oficial FDA/SPL",
-          "confiabilidad": "alta; confirmar producto y presentacion comercial especificos antes de prescribir"
-        }
-      ],
-      "mecanismoAccion": "Ver etiqueta/ficha tecnica especifica.",
-      "tiempoConcentracionMaxima": "~7 h.",
-      "duracionEfecto": "dato no encontrado en fuente local",
-      "viaEliminacion": "Renal sin cambios.",
-      "embarazoLactancia": [
-        "Embarazo/lactancia: verificar etiqueta vigente y balance beneficio-riesgo."
-      ],
-      "advertenciasGeriatricas": [
-        "Adulto mayor: iniciar bajo, titular lento y vigilar caidas, funcion renal/hepatica, electrolitos o sangrado segun farmaco."
-      ],
-      "advertenciasPediatricas": [],
-      "confianza": "moderada-alta para seed oficial; requiere revision por producto/pais antes de uso clinico",
       "id": "lisinopril",
       "nombreGenerico": "Lisinopril",
-      "claseFarmacologica": "IECA",
-      "subclase": "IECA no profarmaco",
-      "dosisHabitual": "10-40 mg cada 24 h segun indicacion.",
-      "rangoDosis": "2.5-40 mg/dia.",
-      "vidaMedia": "~12 h.",
-      "metabolismo": "No se metaboliza de forma significativa.",
-      "dosisGeriatria": "Iniciar en el extremo bajo del rango cuando aplique; individualizar por fragilidad, funcion renal/hepatica e interacciones.",
-      "dosisPediatrica": "dato no encontrado en fuente local",
-      "ajusteRenal": "Revisar funcion renal y ficha especifica antes de ajustar.",
-      "ajusteHepatico": "Revisar funcion hepatica y ficha especifica antes de ajustar.",
-      "tmax": "~7 h.",
-      "eliminacion": "Renal sin cambios.",
-      "fuentePrincipal": "DailyMed",
       "estadoFuente": "verificada_local",
-      "fechaRevision": "2026-07-15"
+      "fuente": "Zestril 20 mg tablets - Summary of Product Characteristics"
     },
     "pediatria": null,
     "origenesCatalogo": [
-      "catalogo_suplementario"
+      "catalogo_suplementario",
+      "catalogo_maestro_ieca_atc"
     ],
     "activo": true,
-    "estadoContenido": "revision_inicial",
-    "actualizadoEn": "2026-08-11"
+    "estadoContenido": "curado_fuente_regulatoria",
+    "actualizadoEn": "2026-08-14"
   },
   {
     "id": "litio",
@@ -44730,6 +47716,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "litio_diuretico",
         "contraparteIds": [
+          "eplerenona",
           "espironolactona",
           "furosemida",
           "hidroclorotiazida"
@@ -44738,17 +47725,32 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "litio_ieca_ara",
         "contraparteIds": [
+          "benazepril",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
+          "fosinopril",
+          "imidapril",
           "lisinopril",
           "losartan",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "sacubitrilo_valsartan",
+          "spirapril",
           "telmisartan",
-          "valsartan"
+          "temocapril",
+          "trandolapril",
+          "valsartan",
+          "zofenopril"
         ]
       },
       {
         "idRegla": "litio_deshidratante",
         "contraparteIds": [
+          "eplerenona",
           "espironolactona",
           "furosemida",
           "hidroclorotiazida"
@@ -45880,9 +48882,28 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "bloqueo_dual_sraa_ieca_ara2",
         "contraparteIds": [
+          "benazepril",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
-          "lisinopril"
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ara2_renina",
+        "contraparteIds": [
+          "aliskiren"
         ]
       },
       {
@@ -45894,6 +48915,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "espironolactona_ieca_ara",
         "contraparteIds": [
+          "eplerenona",
           "espironolactona"
         ]
       },
@@ -47983,22 +51005,37 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "fenotiazina_antihipertensivo",
         "contraparteIds": [
           "atenolol",
+          "benazepril",
           "bisoprolol",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
+          "eplerenona",
           "espironolactona",
+          "fosinopril",
           "furosemida",
           "hidroclorotiazida",
+          "imidapril",
           "isosorbida",
           "lisinopril",
           "losartan",
           "metoprolol",
+          "moexipril",
           "nebivolol",
           "nitroglicerina",
+          "perindopril",
           "pindolol",
+          "quinapril",
+          "ramipril",
+          "sacubitrilo_valsartan",
           "sotalol",
+          "spirapril",
           "telmisartan",
-          "valsartan"
+          "temocapril",
+          "trandolapril",
+          "valsartan",
+          "zofenopril"
         ]
       },
       {
@@ -52088,6 +55125,412 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "actualizadoEn": "2026-08-11"
   },
   {
+    "id": "moexipril",
+    "legacyIds": [],
+    "nombre": "Moexipril",
+    "genericName": "Moexipril",
+    "principioActivo": "moexipril",
+    "principiosActivos": [
+      "Moexipril",
+      "moexipril"
+    ],
+    "clasePrincipal": "IECA",
+    "clases": [
+      "IECA",
+      "Inhibidor de la enzima convertidora de angiotensina",
+      "ieca",
+      "Profarmaco IECA"
+    ],
+    "categoriasInteraccion": [
+      "renal",
+      "electrolitica",
+      "cardiovascular",
+      "hiperpotasemia",
+      "hipotension",
+      "angioedema"
+    ],
+    "sinonimos": [
+      "moexipril",
+      "moexipril clorhidrato"
+    ],
+    "marcas": [
+      "Univasc"
+    ],
+    "especialidades": [
+      "Cardiologia",
+      "Medicina interna",
+      "Nefrologia"
+    ],
+    "presentaciones": [
+      {
+        "id": "moexipril-tableta-7-5-mg",
+        "texto": "tabletas de 7.5 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "7.5 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=baac91ad-f8ee-4694-89f8-5c47a8eda39a&version=12",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "moexipril-tableta-15-mg",
+        "texto": "tabletas de 15 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "15 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=baac91ad-f8ee-4694-89f8-5c47a8eda39a&version=12",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      }
+    ],
+    "dosisHabitual": "Hipertension: 7.5 mg cada 24 horas inicialmente, una hora antes de alimentos; rango total 7.5-30 mg al dia en una o dos tomas.",
+    "dosisHabituales": [
+      "7.5 mg",
+      "15 mg"
+    ],
+    "frecuenciasSugeridas": [
+      "cada 24 horas",
+      "cada 12 horas"
+    ],
+    "datosClinicos": {
+      "indicaciones": [
+        "Hipertension"
+      ],
+      "contraindicaciones": [
+        "Hipersensibilidad al principio activo o a otro IECA",
+        "Antecedente de angioedema asociado a un IECA o angioedema hereditario/idiopatico",
+        "Embarazo: toxicidad fetal por bloqueo del sistema renina-angiotensina",
+        "Uso concomitante con sacubitrilo/valsartan o dentro de las 36 horas del cambio",
+        "Uso concomitante con aliskiren en diabetes mellitus o deterioro renal significativo"
+      ],
+      "precauciones": [
+        "Hipotension sintomatica, hipovolemia o deplecion de sodio, especialmente con diureticos",
+        "Enfermedad renal, estenosis bilateral de arterias renales o estenosis en rinon unico",
+        "Hiperpotasemia o uso de farmacos/sustitutos de sal que aumentan potasio",
+        "Angioedema de cara, lengua, glotis o intestino: suspender y atender de inmediato",
+        "Tos seca persistente",
+        "Estenosis aortica/mitral o miocardiopatia obstructiva: evitar hipotension excesiva",
+        "Enfermedad vascular del colageno o inmunosupresion: considerar vigilancia hematologica",
+        "Cirugia o anestesia: riesgo de hipotension por bloqueo del SRAA",
+        "Deterioro hepatico o ictericia: suspender y evaluar por riesgo raro de lesion hepatica"
+      ],
+      "advertencias": [
+        "Controlar creatinina/eGFR y potasio antes de iniciar y 1-2 semanas despues de iniciar o titular",
+        "No usar bloqueo dual rutinario del SRAA con ARA-II o aliskiren",
+        "Separar al menos 36 horas de sacubitrilo/valsartan por riesgo de angioedema",
+        "La deshidratacion, los AINEs y los diureticos aumentan el riesgo de lesion renal e hipotension",
+        "Suspender cuanto antes si se detecta embarazo",
+        "La compatibilidad durante lactancia depende del IECA, la edad del lactante y la ficha regulatoria local"
+      ],
+      "monitorizacion": [
+        "Presion arterial y sintomas ortostaticos",
+        "Creatinina y eGFR basales y tras inicio/cambios de dosis",
+        "Potasio serico basal y tras inicio/cambios de dosis",
+        "Tos y cualquier dato de angioedema",
+        "Estado de volumen y sodio si usa diureticos",
+        "Biometria hematica si existe enfermedad vascular del colageno, inmunosupresion o deterioro renal"
+      ],
+      "dosisAdulto": [
+        {
+          "indicationId": "uso_habitual",
+          "population": "adult",
+          "usualDose": {
+            "text": "Hipertension: 7.5 mg cada 24 horas inicialmente, una hora antes de alimentos; rango total 7.5-30 mg al dia en una o dos tomas."
+          },
+          "administrationNotes": [
+            "Administrar una hora antes de los alimentos; la comida reduce la biodisponibilidad."
+          ]
+        }
+      ],
+      "dosisPediatrica": [],
+      "embarazo": "Contraindicado. Suspender cuanto antes al detectar embarazo por riesgo de toxicidad fetal, oligohidramnios, deterioro renal y muerte fetal/neonatal.",
+      "lactancia": "La recomendacion depende del principio activo, la edad del lactante y la ficha regulatoria local; confirmar compatibilidad y vigilar hipotension, diuresis y funcion renal del lactante cuando proceda."
+    },
+    "farmacocinetica": {
+      "mecanismoAccion": "Inhibe la enzima convertidora de angiotensina, reduce angiotensina II y aldosterona y aumenta bradicinina.",
+      "vidaMedia": "Moexiprilat: vida media efectiva aproximada de 2-9 horas.",
+      "tiempoConcentracionMaxima": "Moexiprilat aproximadamente 1.5 horas en ayuno.",
+      "duracionAccion": "Efecto antihipertensivo compatible con administracion cada 24 horas; individualizar segun respuesta y ficha tecnica.",
+      "metabolismo": "Profarmaco hidrolizado a moexiprilat; la comida reduce su exposicion.",
+      "eliminacion": "Renal y fecal.",
+      "cyp": [
+        "Sin CYP principal clinicamente relevante documentado; revisar ficha especifica"
+      ],
+      "metabolitosActivos": [
+        "Moexiprilat"
+      ]
+    },
+    "efectosAdversos": [
+      "Tos seca",
+      "Mareo e hipotension",
+      "Hiperpotasemia",
+      "Elevacion de creatinina o lesion renal aguda",
+      "Angioedema",
+      "Cefalea",
+      "Nausea",
+      "Rash",
+      "Neutropenia/agranulocitosis rara",
+      "Lesion hepatica colestasica rara"
+    ],
+    "riesgos": {
+      "potasio": 1,
+      "renal": 1,
+      "hipotension": 1,
+      "embarazo": 2,
+      "angioedema": 2
+    },
+    "interacciones": [
+      "Sacubitrilo/valsartan: combinacion contraindicada; separar 36 horas por riesgo de angioedema",
+      "ARA-II o aliskiren: bloqueo dual del SRAA con mayor riesgo de hipotension, hiperpotasemia y lesion renal",
+      "Diureticos ahorradores de potasio, suplementos de potasio, sustitutos de sal, trimetoprim, ciclosporina o heparinas: hiperpotasemia",
+      "AINEs: menor efecto antihipertensivo y mayor riesgo de hiperpotasemia o lesion renal aguda",
+      "Litio: aumento reversible de concentraciones y toxicidad; evitar o monitorizar estrechamente",
+      "Diureticos y otros hipotensores: hipotension aditiva, sobre todo al inicio o con hipovolemia",
+      "Insulina y antidiabeticos: puede potenciar el descenso de glucosa durante las primeras semanas",
+      "Inhibidores mTOR, racecadotrilo, inhibidores DPP-4 o activadores tisulares de plasminogeno: mayor riesgo de angioedema",
+      "Antidepresivos triciclicos, antipsicoticos y anestesicos: hipotension aditiva",
+      "Simpatomimeticos: posible reduccion del efecto antihipertensivo"
+    ],
+    "interaccionesRelacionadas": [
+      {
+        "idRegla": "sraa_aine_riesgo_renal",
+        "contraparteIds": [
+          "acido_acetilsalicilico",
+          "diclofenaco",
+          "ibuprofeno",
+          "ketorolaco",
+          "naproxeno"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_ara2",
+        "contraparteIds": [
+          "losartan",
+          "sacubitrilo_valsartan",
+          "telmisartan",
+          "valsartan"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_renina",
+        "contraparteIds": [
+          "aliskiren"
+        ]
+      },
+      {
+        "idRegla": "litio_ieca_ara",
+        "contraparteIds": [
+          "litio"
+        ]
+      },
+      {
+        "idRegla": "espironolactona_ieca_ara",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona"
+        ]
+      },
+      {
+        "idRegla": "ieca_ieca_duplicidad",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "ieca_neprilisina_angioedema",
+        "contraparteIds": [
+          "sacubitrilo_valsartan"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona",
+          "furosemida",
+          "hidroclorotiazida"
+        ]
+      },
+      {
+        "idRegla": "ieca_heparina_hiperpotasemia",
+        "contraparteIds": [
+          "enoxaparina",
+          "heparina"
+        ]
+      },
+      {
+        "idRegla": "ieca_dpp4_angioedema",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "ieca_antidiabetico_hipoglucemia",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "fenotiazina_antihipertensivo",
+        "contraparteIds": [
+          "clorpromazina",
+          "flufenazina",
+          "levomepromazina",
+          "mesoridazina",
+          "perfenazina",
+          "periciazina",
+          "pipotiazina",
+          "proclorperazina",
+          "promazina",
+          "tioridazina",
+          "trifluoperazina"
+        ]
+      }
+    ],
+    "relacionDiagnosticos": [
+      "I10/hipertension arterial: indicacion de clase; seleccionar farmaco y dosis segun ficha y contexto",
+      "I50/insuficiencia cardiaca: beneficio segun principio activo, fenotipo y guia vigente",
+      "I13/enfermedad cardiaca y renal hipertensiva: vigilar presion, creatinina/eGFR y potasio",
+      "N18/enfermedad renal cronica o sospecha de estenosis renal: requiere vigilancia renal y electrolitica estrecha",
+      "E11/diabetes con albuminuria o enfermedad renal: considerar beneficio renal segun indicacion y guia",
+      "O00-O99/embarazo: contraindicado por toxicidad fetal renal"
+    ],
+    "notas": "C09AA13: IECA simple. La disponibilidad y las sales comercializadas varian por pais; confirmar ficha tecnica local antes de prescribir.",
+    "referencias": [
+      {
+        "id": "who_atc_c09aa",
+        "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+        "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "C09AA ACE inhibitors, plain"
+        ],
+        "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+        "tipo": "clasificacion ATC oficial",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "zestril_smpc_interacciones_ieca",
+        "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+        "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "4.3 Contraindications",
+          "4.4 Special warnings and precautions",
+          "4.5 Interactions",
+          "4.6 Fertility, pregnancy and lactation"
+        ],
+        "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+        "tipo": "ficha tecnica regulatoria",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "ficha_moexipril",
+        "titulo": "DailyMed: moexipril hydrochloride tablets",
+        "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=baac91ad-f8ee-4694-89f8-5c47a8eda39a&version=12",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "Presentaciones",
+          "Indicaciones",
+          "Posologia",
+          "Contraindicaciones",
+          "Interacciones",
+          "Farmacologia clinica"
+        ],
+        "nota": "Fuente de producto consultada para Moexipril. La disponibilidad comercial debe verificarse por pais.",
+        "tipo": "ficha tecnica o documento regulatorio",
+        "confiabilidad": "alta"
+      },
+      "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=baac91ad-f8ee-4694-89f8-5c47a8eda39a&version=12"
+    ],
+    "fuenteClinica": {
+      "estado": "verificada_local",
+      "fuente": "DailyMed: moexipril hydrochloride tablets",
+      "fuentes": [
+        {
+          "id": "who_atc_c09aa",
+          "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+          "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "C09AA ACE inhibitors, plain"
+          ],
+          "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+          "tipo": "clasificacion ATC oficial",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "zestril_smpc_interacciones_ieca",
+          "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+          "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "4.3 Contraindications",
+            "4.4 Special warnings and precautions",
+            "4.5 Interactions",
+            "4.6 Fertility, pregnancy and lactation"
+          ],
+          "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+          "tipo": "ficha tecnica regulatoria",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "ficha_moexipril",
+          "titulo": "DailyMed: moexipril hydrochloride tablets",
+          "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=baac91ad-f8ee-4694-89f8-5c47a8eda39a&version=12",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "Presentaciones",
+            "Indicaciones",
+            "Posologia",
+            "Contraindicaciones",
+            "Interacciones",
+            "Farmacologia clinica"
+          ],
+          "nota": "Fuente de producto consultada para Moexipril. La disponibilidad comercial debe verificarse por pais.",
+          "tipo": "ficha tecnica o documento regulatorio",
+          "confiabilidad": "alta"
+        }
+      ],
+      "paginaSeccion": "DailyMed: moexipril hydrochloride tablets (https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=baac91ad-f8ee-4694-89f8-5c47a8eda39a&version=12); WHO ATC C09AA13; ficha de clase IECA",
+      "confianza": "alta para identidad, presentaciones y consideraciones de clase; confirmar producto/pais antes de prescribir"
+    },
+    "farmacologia": {
+      "esquema": "cognicion.farmacologia.v1",
+      "id": "moexipril",
+      "nombreGenerico": "Moexipril",
+      "estadoFuente": "verificada_local",
+      "fuente": "DailyMed: moexipril hydrochloride tablets"
+    },
+    "pediatria": null,
+    "origenesCatalogo": [
+      "catalogo_maestro_ieca_atc"
+    ],
+    "activo": true,
+    "estadoContenido": "curado_fuente_regulatoria",
+    "actualizadoEn": "2026-08-14"
+  },
+  {
     "id": "molindona",
     "legacyIds": [],
     "nombre": "Molindona",
@@ -54223,12 +57666,26 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "sraa_aine_riesgo_renal",
         "contraparteIds": [
+          "benazepril",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
+          "fosinopril",
+          "imidapril",
           "lisinopril",
           "losartan",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "sacubitrilo_valsartan",
+          "spirapril",
           "telmisartan",
-          "valsartan"
+          "temocapril",
+          "trandolapril",
+          "valsartan",
+          "zofenopril"
         ]
       },
       {
@@ -60671,22 +64128,37 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "fenotiazina_antihipertensivo",
         "contraparteIds": [
           "atenolol",
+          "benazepril",
           "bisoprolol",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
+          "eplerenona",
           "espironolactona",
+          "fosinopril",
           "furosemida",
           "hidroclorotiazida",
+          "imidapril",
           "isosorbida",
           "lisinopril",
           "losartan",
           "metoprolol",
+          "moexipril",
           "nebivolol",
           "nitroglicerina",
+          "perindopril",
           "pindolol",
+          "quinapril",
+          "ramipril",
+          "sacubitrilo_valsartan",
           "sotalol",
+          "spirapril",
           "telmisartan",
-          "valsartan"
+          "temocapril",
+          "trandolapril",
+          "valsartan",
+          "zofenopril"
         ]
       },
       {
@@ -61277,22 +64749,37 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "fenotiazina_antihipertensivo",
         "contraparteIds": [
           "atenolol",
+          "benazepril",
           "bisoprolol",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
+          "eplerenona",
           "espironolactona",
+          "fosinopril",
           "furosemida",
           "hidroclorotiazida",
+          "imidapril",
           "isosorbida",
           "lisinopril",
           "losartan",
           "metoprolol",
+          "moexipril",
           "nebivolol",
           "nitroglicerina",
+          "perindopril",
           "pindolol",
+          "quinapril",
+          "ramipril",
+          "sacubitrilo_valsartan",
           "sotalol",
+          "spirapril",
           "telmisartan",
-          "valsartan"
+          "temocapril",
+          "trandolapril",
+          "valsartan",
+          "zofenopril"
         ]
       },
       {
@@ -61415,6 +64902,465 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "activo": true,
     "estadoContenido": "revision_inicial",
     "actualizadoEn": "2026-08-11"
+  },
+  {
+    "id": "perindopril",
+    "legacyIds": [],
+    "nombre": "Perindopril",
+    "genericName": "Perindopril",
+    "principioActivo": "perindopril",
+    "principiosActivos": [
+      "Perindopril",
+      "perindopril"
+    ],
+    "clasePrincipal": "IECA",
+    "clases": [
+      "IECA",
+      "Inhibidor de la enzima convertidora de angiotensina",
+      "ieca",
+      "Profarmaco IECA"
+    ],
+    "categoriasInteraccion": [
+      "renal",
+      "electrolitica",
+      "cardiovascular",
+      "hiperpotasemia",
+      "hipotension",
+      "angioedema"
+    ],
+    "sinonimos": [
+      "perindopril",
+      "perindopril erbumina",
+      "perindopril arginina"
+    ],
+    "marcas": [
+      "Aceon",
+      "Coversyl"
+    ],
+    "especialidades": [
+      "Cardiologia",
+      "Medicina interna",
+      "Nefrologia"
+    ],
+    "presentaciones": [
+      {
+        "id": "perindopril-tableta-2-mg",
+        "texto": "tabletas de 2 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "2 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=fbb31482-9ac8-48c6-b814-5d467f22051b",
+        "rxCui": null,
+        "principioActivoPresentado": "perindopril erbumina",
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "perindopril-tableta-2-5-mg",
+        "texto": "tabletas de 2.5 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "2.5 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=fbb31482-9ac8-48c6-b814-5d467f22051b",
+        "rxCui": null,
+        "principioActivoPresentado": "perindopril arginina",
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "perindopril-tableta-4-mg",
+        "texto": "tabletas de 4 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "4 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=fbb31482-9ac8-48c6-b814-5d467f22051b",
+        "rxCui": null,
+        "principioActivoPresentado": "perindopril erbumina",
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "perindopril-tableta-5-mg",
+        "texto": "tabletas de 5 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "5 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=fbb31482-9ac8-48c6-b814-5d467f22051b",
+        "rxCui": null,
+        "principioActivoPresentado": "perindopril arginina",
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "perindopril-tableta-8-mg",
+        "texto": "tabletas de 8 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "8 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=fbb31482-9ac8-48c6-b814-5d467f22051b",
+        "rxCui": null,
+        "principioActivoPresentado": "perindopril erbumina",
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "perindopril-tableta-10-mg",
+        "texto": "tabletas de 10 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "10 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=fbb31482-9ac8-48c6-b814-5d467f22051b",
+        "rxCui": null,
+        "principioActivoPresentado": "perindopril arginina",
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      }
+    ],
+    "dosisHabitual": "La dosis depende de la sal: perindopril erbumina suele iniciar en 4 mg cada 24 horas y titular hasta 8 mg; confirmar equivalencia con perindopril arginina en la ficha del producto.",
+    "dosisHabituales": [
+      "2 mg",
+      "4 mg",
+      "8 mg",
+      "2.5 mg",
+      "5 mg",
+      "10 mg"
+    ],
+    "frecuenciasSugeridas": [
+      "cada 24 horas"
+    ],
+    "datosClinicos": {
+      "indicaciones": [
+        "Hipertension",
+        "Enfermedad coronaria estable segun producto",
+        "Insuficiencia cardiaca segun producto/pais"
+      ],
+      "contraindicaciones": [
+        "Hipersensibilidad al principio activo o a otro IECA",
+        "Antecedente de angioedema asociado a un IECA o angioedema hereditario/idiopatico",
+        "Embarazo: toxicidad fetal por bloqueo del sistema renina-angiotensina",
+        "Uso concomitante con sacubitrilo/valsartan o dentro de las 36 horas del cambio",
+        "Uso concomitante con aliskiren en diabetes mellitus o deterioro renal significativo"
+      ],
+      "precauciones": [
+        "Hipotension sintomatica, hipovolemia o deplecion de sodio, especialmente con diureticos",
+        "Enfermedad renal, estenosis bilateral de arterias renales o estenosis en rinon unico",
+        "Hiperpotasemia o uso de farmacos/sustitutos de sal que aumentan potasio",
+        "Angioedema de cara, lengua, glotis o intestino: suspender y atender de inmediato",
+        "Tos seca persistente",
+        "Estenosis aortica/mitral o miocardiopatia obstructiva: evitar hipotension excesiva",
+        "Enfermedad vascular del colageno o inmunosupresion: considerar vigilancia hematologica",
+        "Cirugia o anestesia: riesgo de hipotension por bloqueo del SRAA",
+        "Deterioro hepatico o ictericia: suspender y evaluar por riesgo raro de lesion hepatica"
+      ],
+      "advertencias": [
+        "Controlar creatinina/eGFR y potasio antes de iniciar y 1-2 semanas despues de iniciar o titular",
+        "No usar bloqueo dual rutinario del SRAA con ARA-II o aliskiren",
+        "Separar al menos 36 horas de sacubitrilo/valsartan por riesgo de angioedema",
+        "La deshidratacion, los AINEs y los diureticos aumentan el riesgo de lesion renal e hipotension",
+        "Suspender cuanto antes si se detecta embarazo",
+        "La compatibilidad durante lactancia depende del IECA, la edad del lactante y la ficha regulatoria local"
+      ],
+      "monitorizacion": [
+        "Presion arterial y sintomas ortostaticos",
+        "Creatinina y eGFR basales y tras inicio/cambios de dosis",
+        "Potasio serico basal y tras inicio/cambios de dosis",
+        "Tos y cualquier dato de angioedema",
+        "Estado de volumen y sodio si usa diureticos",
+        "Biometria hematica si existe enfermedad vascular del colageno, inmunosupresion o deterioro renal"
+      ],
+      "dosisAdulto": [
+        {
+          "indicationId": "uso_habitual",
+          "population": "adult",
+          "usualDose": {
+            "text": "La dosis depende de la sal: perindopril erbumina suele iniciar en 4 mg cada 24 horas y titular hasta 8 mg; confirmar equivalencia con perindopril arginina en la ficha del producto."
+          },
+          "administrationNotes": []
+        }
+      ],
+      "dosisPediatrica": [],
+      "embarazo": "Contraindicado. Suspender cuanto antes al detectar embarazo por riesgo de toxicidad fetal, oligohidramnios, deterioro renal y muerte fetal/neonatal.",
+      "lactancia": "La recomendacion depende del principio activo, la edad del lactante y la ficha regulatoria local; confirmar compatibilidad y vigilar hipotension, diuresis y funcion renal del lactante cuando proceda."
+    },
+    "farmacocinetica": {
+      "mecanismoAccion": "Inhibe la enzima convertidora de angiotensina, reduce angiotensina II y aldosterona y aumenta bradicinina.",
+      "vidaMedia": "Perindoprilat: vida media efectiva aproximada de 25 horas.",
+      "tiempoConcentracionMaxima": "Perindopril aproximadamente 1 hora; perindoprilat 3-4 horas.",
+      "duracionAccion": "Efecto antihipertensivo compatible con administracion cada 24 horas; individualizar segun respuesta y ficha tecnica.",
+      "metabolismo": "Profarmaco hidrolizado a perindoprilat y otros metabolitos inactivos.",
+      "eliminacion": "Predominantemente renal como perindoprilat.",
+      "cyp": [
+        "Sin CYP principal clinicamente relevante documentado; revisar ficha especifica"
+      ],
+      "metabolitosActivos": [
+        "Perindoprilat"
+      ]
+    },
+    "efectosAdversos": [
+      "Tos seca",
+      "Mareo e hipotension",
+      "Hiperpotasemia",
+      "Elevacion de creatinina o lesion renal aguda",
+      "Angioedema",
+      "Cefalea",
+      "Nausea",
+      "Rash",
+      "Neutropenia/agranulocitosis rara",
+      "Lesion hepatica colestasica rara"
+    ],
+    "riesgos": {
+      "potasio": 1,
+      "renal": 1,
+      "hipotension": 1,
+      "embarazo": 2,
+      "angioedema": 2
+    },
+    "interacciones": [
+      "Sacubitrilo/valsartan: combinacion contraindicada; separar 36 horas por riesgo de angioedema",
+      "ARA-II o aliskiren: bloqueo dual del SRAA con mayor riesgo de hipotension, hiperpotasemia y lesion renal",
+      "Diureticos ahorradores de potasio, suplementos de potasio, sustitutos de sal, trimetoprim, ciclosporina o heparinas: hiperpotasemia",
+      "AINEs: menor efecto antihipertensivo y mayor riesgo de hiperpotasemia o lesion renal aguda",
+      "Litio: aumento reversible de concentraciones y toxicidad; evitar o monitorizar estrechamente",
+      "Diureticos y otros hipotensores: hipotension aditiva, sobre todo al inicio o con hipovolemia",
+      "Insulina y antidiabeticos: puede potenciar el descenso de glucosa durante las primeras semanas",
+      "Inhibidores mTOR, racecadotrilo, inhibidores DPP-4 o activadores tisulares de plasminogeno: mayor riesgo de angioedema",
+      "Antidepresivos triciclicos, antipsicoticos y anestesicos: hipotension aditiva",
+      "Simpatomimeticos: posible reduccion del efecto antihipertensivo"
+    ],
+    "interaccionesRelacionadas": [
+      {
+        "idRegla": "sraa_aine_riesgo_renal",
+        "contraparteIds": [
+          "acido_acetilsalicilico",
+          "diclofenaco",
+          "ibuprofeno",
+          "ketorolaco",
+          "naproxeno"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_ara2",
+        "contraparteIds": [
+          "losartan",
+          "sacubitrilo_valsartan",
+          "telmisartan",
+          "valsartan"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_renina",
+        "contraparteIds": [
+          "aliskiren"
+        ]
+      },
+      {
+        "idRegla": "litio_ieca_ara",
+        "contraparteIds": [
+          "litio"
+        ]
+      },
+      {
+        "idRegla": "espironolactona_ieca_ara",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona"
+        ]
+      },
+      {
+        "idRegla": "ieca_ieca_duplicidad",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "ieca_neprilisina_angioedema",
+        "contraparteIds": [
+          "sacubitrilo_valsartan"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona",
+          "furosemida",
+          "hidroclorotiazida"
+        ]
+      },
+      {
+        "idRegla": "ieca_heparina_hiperpotasemia",
+        "contraparteIds": [
+          "enoxaparina",
+          "heparina"
+        ]
+      },
+      {
+        "idRegla": "ieca_dpp4_angioedema",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "ieca_antidiabetico_hipoglucemia",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "fenotiazina_antihipertensivo",
+        "contraparteIds": [
+          "clorpromazina",
+          "flufenazina",
+          "levomepromazina",
+          "mesoridazina",
+          "perfenazina",
+          "periciazina",
+          "pipotiazina",
+          "proclorperazina",
+          "promazina",
+          "tioridazina",
+          "trifluoperazina"
+        ]
+      }
+    ],
+    "relacionDiagnosticos": [
+      "I10/hipertension arterial: indicacion de clase; seleccionar farmaco y dosis segun ficha y contexto",
+      "I50/insuficiencia cardiaca: beneficio segun principio activo, fenotipo y guia vigente",
+      "I13/enfermedad cardiaca y renal hipertensiva: vigilar presion, creatinina/eGFR y potasio",
+      "N18/enfermedad renal cronica o sospecha de estenosis renal: requiere vigilancia renal y electrolitica estrecha",
+      "E11/diabetes con albuminuria o enfermedad renal: considerar beneficio renal segun indicacion y guia",
+      "O00-O99/embarazo: contraindicado por toxicidad fetal renal"
+    ],
+    "notas": "C09AA04: IECA simple. La disponibilidad y las sales comercializadas varian por pais; confirmar ficha tecnica local antes de prescribir.",
+    "referencias": [
+      {
+        "id": "who_atc_c09aa",
+        "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+        "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "C09AA ACE inhibitors, plain"
+        ],
+        "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+        "tipo": "clasificacion ATC oficial",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "zestril_smpc_interacciones_ieca",
+        "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+        "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "4.3 Contraindications",
+          "4.4 Special warnings and precautions",
+          "4.5 Interactions",
+          "4.6 Fertility, pregnancy and lactation"
+        ],
+        "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+        "tipo": "ficha tecnica regulatoria",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "ficha_perindopril",
+        "titulo": "DailyMed: perindopril erbumine tablets",
+        "url": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=fbb31482-9ac8-48c6-b814-5d467f22051b",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "Presentaciones",
+          "Indicaciones",
+          "Posologia",
+          "Contraindicaciones",
+          "Interacciones",
+          "Farmacologia clinica"
+        ],
+        "nota": "Fuente de producto consultada para Perindopril. La disponibilidad comercial debe verificarse por pais.",
+        "tipo": "ficha tecnica o documento regulatorio",
+        "confiabilidad": "alta"
+      },
+      "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=fbb31482-9ac8-48c6-b814-5d467f22051b"
+    ],
+    "fuenteClinica": {
+      "estado": "verificada_local",
+      "fuente": "DailyMed: perindopril erbumine tablets",
+      "fuentes": [
+        {
+          "id": "who_atc_c09aa",
+          "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+          "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "C09AA ACE inhibitors, plain"
+          ],
+          "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+          "tipo": "clasificacion ATC oficial",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "zestril_smpc_interacciones_ieca",
+          "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+          "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "4.3 Contraindications",
+            "4.4 Special warnings and precautions",
+            "4.5 Interactions",
+            "4.6 Fertility, pregnancy and lactation"
+          ],
+          "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+          "tipo": "ficha tecnica regulatoria",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "ficha_perindopril",
+          "titulo": "DailyMed: perindopril erbumine tablets",
+          "url": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=fbb31482-9ac8-48c6-b814-5d467f22051b",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "Presentaciones",
+            "Indicaciones",
+            "Posologia",
+            "Contraindicaciones",
+            "Interacciones",
+            "Farmacologia clinica"
+          ],
+          "nota": "Fuente de producto consultada para Perindopril. La disponibilidad comercial debe verificarse por pais.",
+          "tipo": "ficha tecnica o documento regulatorio",
+          "confiabilidad": "alta"
+        }
+      ],
+      "paginaSeccion": "DailyMed: perindopril erbumine tablets (https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=fbb31482-9ac8-48c6-b814-5d467f22051b); WHO ATC C09AA04; ficha de clase IECA",
+      "confianza": "alta para identidad, presentaciones y consideraciones de clase; confirmar producto/pais antes de prescribir"
+    },
+    "farmacologia": {
+      "esquema": "cognicion.farmacologia.v1",
+      "id": "perindopril",
+      "nombreGenerico": "Perindopril",
+      "estadoFuente": "verificada_local",
+      "fuente": "DailyMed: perindopril erbumine tablets"
+    },
+    "pediatria": null,
+    "origenesCatalogo": [
+      "catalogo_maestro_ieca_atc"
+    ],
+    "activo": true,
+    "estadoContenido": "curado_fuente_regulatoria",
+    "actualizadoEn": "2026-08-14"
   },
   {
     "id": "pimozida",
@@ -62670,22 +66616,37 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "fenotiazina_antihipertensivo",
         "contraparteIds": [
           "atenolol",
+          "benazepril",
           "bisoprolol",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
+          "eplerenona",
           "espironolactona",
+          "fosinopril",
           "furosemida",
           "hidroclorotiazida",
+          "imidapril",
           "isosorbida",
           "lisinopril",
           "losartan",
           "metoprolol",
+          "moexipril",
           "nebivolol",
           "nitroglicerina",
+          "perindopril",
           "pindolol",
+          "quinapril",
+          "ramipril",
+          "sacubitrilo_valsartan",
           "sotalol",
+          "spirapril",
           "telmisartan",
-          "valsartan"
+          "temocapril",
+          "trandolapril",
+          "valsartan",
+          "zofenopril"
         ]
       },
       {
@@ -65190,22 +69151,37 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "fenotiazina_antihipertensivo",
         "contraparteIds": [
           "atenolol",
+          "benazepril",
           "bisoprolol",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
+          "eplerenona",
           "espironolactona",
+          "fosinopril",
           "furosemida",
           "hidroclorotiazida",
+          "imidapril",
           "isosorbida",
           "lisinopril",
           "losartan",
           "metoprolol",
+          "moexipril",
           "nebivolol",
           "nitroglicerina",
+          "perindopril",
           "pindolol",
+          "quinapril",
+          "ramipril",
+          "sacubitrilo_valsartan",
           "sotalol",
+          "spirapril",
           "telmisartan",
-          "valsartan"
+          "temocapril",
+          "trandolapril",
+          "valsartan",
+          "zofenopril"
         ]
       },
       {
@@ -65809,22 +69785,37 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "fenotiazina_antihipertensivo",
         "contraparteIds": [
           "atenolol",
+          "benazepril",
           "bisoprolol",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
+          "eplerenona",
           "espironolactona",
+          "fosinopril",
           "furosemida",
           "hidroclorotiazida",
+          "imidapril",
           "isosorbida",
           "lisinopril",
           "losartan",
           "metoprolol",
+          "moexipril",
           "nebivolol",
           "nitroglicerina",
+          "perindopril",
           "pindolol",
+          "quinapril",
+          "ramipril",
+          "sacubitrilo_valsartan",
           "sotalol",
+          "spirapril",
           "telmisartan",
-          "valsartan"
+          "temocapril",
+          "trandolapril",
+          "valsartan",
+          "zofenopril"
         ]
       },
       {
@@ -67410,6 +71401,436 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "actualizadoEn": "2026-08-11"
   },
   {
+    "id": "quinapril",
+    "legacyIds": [],
+    "nombre": "Quinapril",
+    "genericName": "Quinapril",
+    "principioActivo": "quinapril",
+    "principiosActivos": [
+      "Quinapril",
+      "quinapril"
+    ],
+    "clasePrincipal": "IECA",
+    "clases": [
+      "IECA",
+      "Inhibidor de la enzima convertidora de angiotensina",
+      "ieca",
+      "Profarmaco IECA"
+    ],
+    "categoriasInteraccion": [
+      "renal",
+      "electrolitica",
+      "cardiovascular",
+      "hiperpotasemia",
+      "hipotension",
+      "angioedema"
+    ],
+    "sinonimos": [
+      "quinapril"
+    ],
+    "marcas": [
+      "Accupril"
+    ],
+    "especialidades": [
+      "Cardiologia",
+      "Medicina interna",
+      "Nefrologia"
+    ],
+    "presentaciones": [
+      {
+        "id": "quinapril-tableta-5-mg",
+        "texto": "tabletas de 5 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "5 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=8ded0773-3aec-4e89-9836-d22a5a84abf0",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "quinapril-tableta-10-mg",
+        "texto": "tabletas de 10 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "10 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=8ded0773-3aec-4e89-9836-d22a5a84abf0",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "quinapril-tableta-20-mg",
+        "texto": "tabletas de 20 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "20 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=8ded0773-3aec-4e89-9836-d22a5a84abf0",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "quinapril-tableta-40-mg",
+        "texto": "tabletas de 40 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "40 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=8ded0773-3aec-4e89-9836-d22a5a84abf0",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      }
+    ],
+    "dosisHabitual": "Hipertension: iniciar con 10-20 mg cada 24 horas; rango total habitual 20-80 mg al dia en una o dos tomas.",
+    "dosisHabituales": [
+      "5 mg",
+      "10 mg",
+      "20 mg",
+      "40 mg"
+    ],
+    "frecuenciasSugeridas": [
+      "cada 24 horas",
+      "cada 12 horas"
+    ],
+    "datosClinicos": {
+      "indicaciones": [
+        "Hipertension",
+        "Insuficiencia cardiaca como tratamiento complementario segun etiqueta"
+      ],
+      "contraindicaciones": [
+        "Hipersensibilidad al principio activo o a otro IECA",
+        "Antecedente de angioedema asociado a un IECA o angioedema hereditario/idiopatico",
+        "Embarazo: toxicidad fetal por bloqueo del sistema renina-angiotensina",
+        "Uso concomitante con sacubitrilo/valsartan o dentro de las 36 horas del cambio",
+        "Uso concomitante con aliskiren en diabetes mellitus o deterioro renal significativo"
+      ],
+      "precauciones": [
+        "Hipotension sintomatica, hipovolemia o deplecion de sodio, especialmente con diureticos",
+        "Enfermedad renal, estenosis bilateral de arterias renales o estenosis en rinon unico",
+        "Hiperpotasemia o uso de farmacos/sustitutos de sal que aumentan potasio",
+        "Angioedema de cara, lengua, glotis o intestino: suspender y atender de inmediato",
+        "Tos seca persistente",
+        "Estenosis aortica/mitral o miocardiopatia obstructiva: evitar hipotension excesiva",
+        "Enfermedad vascular del colageno o inmunosupresion: considerar vigilancia hematologica",
+        "Cirugia o anestesia: riesgo de hipotension por bloqueo del SRAA",
+        "Deterioro hepatico o ictericia: suspender y evaluar por riesgo raro de lesion hepatica"
+      ],
+      "advertencias": [
+        "Controlar creatinina/eGFR y potasio antes de iniciar y 1-2 semanas despues de iniciar o titular",
+        "No usar bloqueo dual rutinario del SRAA con ARA-II o aliskiren",
+        "Separar al menos 36 horas de sacubitrilo/valsartan por riesgo de angioedema",
+        "La deshidratacion, los AINEs y los diureticos aumentan el riesgo de lesion renal e hipotension",
+        "Suspender cuanto antes si se detecta embarazo",
+        "La compatibilidad durante lactancia depende del IECA, la edad del lactante y la ficha regulatoria local"
+      ],
+      "monitorizacion": [
+        "Presion arterial y sintomas ortostaticos",
+        "Creatinina y eGFR basales y tras inicio/cambios de dosis",
+        "Potasio serico basal y tras inicio/cambios de dosis",
+        "Tos y cualquier dato de angioedema",
+        "Estado de volumen y sodio si usa diureticos",
+        "Biometria hematica si existe enfermedad vascular del colageno, inmunosupresion o deterioro renal"
+      ],
+      "dosisAdulto": [
+        {
+          "indicationId": "uso_habitual",
+          "population": "adult",
+          "usualDose": {
+            "text": "Hipertension: iniciar con 10-20 mg cada 24 horas; rango total habitual 20-80 mg al dia en una o dos tomas."
+          },
+          "administrationNotes": []
+        }
+      ],
+      "dosisPediatrica": [],
+      "embarazo": "Contraindicado. Suspender cuanto antes al detectar embarazo por riesgo de toxicidad fetal, oligohidramnios, deterioro renal y muerte fetal/neonatal.",
+      "lactancia": "La recomendacion depende del principio activo, la edad del lactante y la ficha regulatoria local; confirmar compatibilidad y vigilar hipotension, diuresis y funcion renal del lactante cuando proceda."
+    },
+    "farmacocinetica": {
+      "mecanismoAccion": "Inhibe la enzima convertidora de angiotensina, reduce angiotensina II y aldosterona y aumenta bradicinina.",
+      "vidaMedia": "Quinaprilat: vida media efectiva aproximada de 3 horas, con fase terminal prolongada cercana a 25 horas.",
+      "tiempoConcentracionMaxima": "Quinapril aproximadamente 1 hora; quinaprilat cerca de 2 horas.",
+      "duracionAccion": "Efecto antihipertensivo compatible con administracion cada 24 horas; individualizar segun respuesta y ficha tecnica.",
+      "metabolismo": "Profarmaco desesterificado a quinaprilat.",
+      "eliminacion": "Principalmente renal; una fraccion por via fecal.",
+      "cyp": [
+        "Sin CYP principal clinicamente relevante documentado; revisar ficha especifica"
+      ],
+      "metabolitosActivos": [
+        "Quinaprilat"
+      ]
+    },
+    "efectosAdversos": [
+      "Tos seca",
+      "Mareo e hipotension",
+      "Hiperpotasemia",
+      "Elevacion de creatinina o lesion renal aguda",
+      "Angioedema",
+      "Cefalea",
+      "Nausea",
+      "Rash",
+      "Neutropenia/agranulocitosis rara",
+      "Lesion hepatica colestasica rara"
+    ],
+    "riesgos": {
+      "potasio": 1,
+      "renal": 1,
+      "hipotension": 1,
+      "embarazo": 2,
+      "angioedema": 2
+    },
+    "interacciones": [
+      "Sacubitrilo/valsartan: combinacion contraindicada; separar 36 horas por riesgo de angioedema",
+      "ARA-II o aliskiren: bloqueo dual del SRAA con mayor riesgo de hipotension, hiperpotasemia y lesion renal",
+      "Diureticos ahorradores de potasio, suplementos de potasio, sustitutos de sal, trimetoprim, ciclosporina o heparinas: hiperpotasemia",
+      "AINEs: menor efecto antihipertensivo y mayor riesgo de hiperpotasemia o lesion renal aguda",
+      "Litio: aumento reversible de concentraciones y toxicidad; evitar o monitorizar estrechamente",
+      "Diureticos y otros hipotensores: hipotension aditiva, sobre todo al inicio o con hipovolemia",
+      "Insulina y antidiabeticos: puede potenciar el descenso de glucosa durante las primeras semanas",
+      "Inhibidores mTOR, racecadotrilo, inhibidores DPP-4 o activadores tisulares de plasminogeno: mayor riesgo de angioedema",
+      "Antidepresivos triciclicos, antipsicoticos y anestesicos: hipotension aditiva",
+      "Simpatomimeticos: posible reduccion del efecto antihipertensivo"
+    ],
+    "interaccionesRelacionadas": [
+      {
+        "idRegla": "sraa_aine_riesgo_renal",
+        "contraparteIds": [
+          "acido_acetilsalicilico",
+          "diclofenaco",
+          "ibuprofeno",
+          "ketorolaco",
+          "naproxeno"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_ara2",
+        "contraparteIds": [
+          "losartan",
+          "sacubitrilo_valsartan",
+          "telmisartan",
+          "valsartan"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_renina",
+        "contraparteIds": [
+          "aliskiren"
+        ]
+      },
+      {
+        "idRegla": "litio_ieca_ara",
+        "contraparteIds": [
+          "litio"
+        ]
+      },
+      {
+        "idRegla": "espironolactona_ieca_ara",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona"
+        ]
+      },
+      {
+        "idRegla": "ieca_ieca_duplicidad",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "ieca_neprilisina_angioedema",
+        "contraparteIds": [
+          "sacubitrilo_valsartan"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona",
+          "furosemida",
+          "hidroclorotiazida"
+        ]
+      },
+      {
+        "idRegla": "ieca_heparina_hiperpotasemia",
+        "contraparteIds": [
+          "enoxaparina",
+          "heparina"
+        ]
+      },
+      {
+        "idRegla": "ieca_dpp4_angioedema",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "ieca_antidiabetico_hipoglucemia",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "fenotiazina_antihipertensivo",
+        "contraparteIds": [
+          "clorpromazina",
+          "flufenazina",
+          "levomepromazina",
+          "mesoridazina",
+          "perfenazina",
+          "periciazina",
+          "pipotiazina",
+          "proclorperazina",
+          "promazina",
+          "tioridazina",
+          "trifluoperazina"
+        ]
+      }
+    ],
+    "relacionDiagnosticos": [
+      "I10/hipertension arterial: indicacion de clase; seleccionar farmaco y dosis segun ficha y contexto",
+      "I50/insuficiencia cardiaca: beneficio segun principio activo, fenotipo y guia vigente",
+      "I13/enfermedad cardiaca y renal hipertensiva: vigilar presion, creatinina/eGFR y potasio",
+      "N18/enfermedad renal cronica o sospecha de estenosis renal: requiere vigilancia renal y electrolitica estrecha",
+      "E11/diabetes con albuminuria o enfermedad renal: considerar beneficio renal segun indicacion y guia",
+      "O00-O99/embarazo: contraindicado por toxicidad fetal renal"
+    ],
+    "notas": "C09AA06: IECA simple. La disponibilidad y las sales comercializadas varian por pais; confirmar ficha tecnica local antes de prescribir.",
+    "referencias": [
+      {
+        "id": "who_atc_c09aa",
+        "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+        "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "C09AA ACE inhibitors, plain"
+        ],
+        "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+        "tipo": "clasificacion ATC oficial",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "zestril_smpc_interacciones_ieca",
+        "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+        "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "4.3 Contraindications",
+          "4.4 Special warnings and precautions",
+          "4.5 Interactions",
+          "4.6 Fertility, pregnancy and lactation"
+        ],
+        "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+        "tipo": "ficha tecnica regulatoria",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "ficha_quinapril",
+        "titulo": "DailyMed: quinapril hydrochloride tablets",
+        "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=8ded0773-3aec-4e89-9836-d22a5a84abf0",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "Presentaciones",
+          "Indicaciones",
+          "Posologia",
+          "Contraindicaciones",
+          "Interacciones",
+          "Farmacologia clinica"
+        ],
+        "nota": "Fuente de producto consultada para Quinapril. La disponibilidad comercial debe verificarse por pais.",
+        "tipo": "ficha tecnica o documento regulatorio",
+        "confiabilidad": "alta"
+      },
+      "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=8ded0773-3aec-4e89-9836-d22a5a84abf0"
+    ],
+    "fuenteClinica": {
+      "estado": "verificada_local",
+      "fuente": "DailyMed: quinapril hydrochloride tablets",
+      "fuentes": [
+        {
+          "id": "who_atc_c09aa",
+          "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+          "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "C09AA ACE inhibitors, plain"
+          ],
+          "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+          "tipo": "clasificacion ATC oficial",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "zestril_smpc_interacciones_ieca",
+          "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+          "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "4.3 Contraindications",
+            "4.4 Special warnings and precautions",
+            "4.5 Interactions",
+            "4.6 Fertility, pregnancy and lactation"
+          ],
+          "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+          "tipo": "ficha tecnica regulatoria",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "ficha_quinapril",
+          "titulo": "DailyMed: quinapril hydrochloride tablets",
+          "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=8ded0773-3aec-4e89-9836-d22a5a84abf0",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "Presentaciones",
+            "Indicaciones",
+            "Posologia",
+            "Contraindicaciones",
+            "Interacciones",
+            "Farmacologia clinica"
+          ],
+          "nota": "Fuente de producto consultada para Quinapril. La disponibilidad comercial debe verificarse por pais.",
+          "tipo": "ficha tecnica o documento regulatorio",
+          "confiabilidad": "alta"
+        }
+      ],
+      "paginaSeccion": "DailyMed: quinapril hydrochloride tablets (https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=8ded0773-3aec-4e89-9836-d22a5a84abf0); WHO ATC C09AA06; ficha de clase IECA",
+      "confianza": "alta para identidad, presentaciones y consideraciones de clase; confirmar producto/pais antes de prescribir"
+    },
+    "farmacologia": {
+      "esquema": "cognicion.farmacologia.v1",
+      "id": "quinapril",
+      "nombreGenerico": "Quinapril",
+      "estadoFuente": "verificada_local",
+      "fuente": "DailyMed: quinapril hydrochloride tablets"
+    },
+    "pediatria": null,
+    "origenesCatalogo": [
+      "catalogo_maestro_ieca_atc"
+    ],
+    "activo": true,
+    "estadoContenido": "curado_fuente_regulatoria",
+    "actualizadoEn": "2026-08-14"
+  },
+  {
     "id": "quinidina",
     "legacyIds": [],
     "nombre": "Quinidina",
@@ -67841,6 +72262,437 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "activo": true,
     "estadoContenido": "revision_inicial",
     "actualizadoEn": "2026-08-11"
+  },
+  {
+    "id": "ramipril",
+    "legacyIds": [],
+    "nombre": "Ramipril",
+    "genericName": "Ramipril",
+    "principioActivo": "ramipril",
+    "principiosActivos": [
+      "Ramipril",
+      "ramipril"
+    ],
+    "clasePrincipal": "IECA",
+    "clases": [
+      "IECA",
+      "Inhibidor de la enzima convertidora de angiotensina",
+      "ieca",
+      "Profarmaco IECA"
+    ],
+    "categoriasInteraccion": [
+      "renal",
+      "electrolitica",
+      "cardiovascular",
+      "hiperpotasemia",
+      "hipotension",
+      "angioedema"
+    ],
+    "sinonimos": [
+      "ramipril"
+    ],
+    "marcas": [
+      "Altace",
+      "Tritace"
+    ],
+    "especialidades": [
+      "Cardiologia",
+      "Medicina interna",
+      "Nefrologia"
+    ],
+    "presentaciones": [
+      {
+        "id": "ramipril-capsula-1-25-mg",
+        "texto": "capsulas de 1.25 mg",
+        "via": "oral",
+        "forma": "capsula",
+        "concentracion": "1.25 mg",
+        "fuente": "https://www.dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=d5c58fb5-b415-4567-9790-55631705c5cd&type=display",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "ramipril-capsula-2-5-mg",
+        "texto": "capsulas de 2.5 mg",
+        "via": "oral",
+        "forma": "capsula",
+        "concentracion": "2.5 mg",
+        "fuente": "https://www.dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=d5c58fb5-b415-4567-9790-55631705c5cd&type=display",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "ramipril-capsula-5-mg",
+        "texto": "capsulas de 5 mg",
+        "via": "oral",
+        "forma": "capsula",
+        "concentracion": "5 mg",
+        "fuente": "https://www.dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=d5c58fb5-b415-4567-9790-55631705c5cd&type=display",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "ramipril-capsula-10-mg",
+        "texto": "capsulas de 10 mg",
+        "via": "oral",
+        "forma": "capsula",
+        "concentracion": "10 mg",
+        "fuente": "https://www.dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=d5c58fb5-b415-4567-9790-55631705c5cd&type=display",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      }
+    ],
+    "dosisHabitual": "Hipertension: iniciar habitualmente con 2.5 mg cada 24 horas; rango usual 2.5-10 mg al dia, con ajustes por indicacion, diuretico y funcion renal.",
+    "dosisHabituales": [
+      "1.25 mg",
+      "2.5 mg",
+      "5 mg",
+      "10 mg"
+    ],
+    "frecuenciasSugeridas": [
+      "cada 24 horas"
+    ],
+    "datosClinicos": {
+      "indicaciones": [
+        "Hipertension",
+        "Reduccion de riesgo cardiovascular en pacientes seleccionados",
+        "Insuficiencia cardiaca postinfarto segun etiqueta"
+      ],
+      "contraindicaciones": [
+        "Hipersensibilidad al principio activo o a otro IECA",
+        "Antecedente de angioedema asociado a un IECA o angioedema hereditario/idiopatico",
+        "Embarazo: toxicidad fetal por bloqueo del sistema renina-angiotensina",
+        "Uso concomitante con sacubitrilo/valsartan o dentro de las 36 horas del cambio",
+        "Uso concomitante con aliskiren en diabetes mellitus o deterioro renal significativo"
+      ],
+      "precauciones": [
+        "Hipotension sintomatica, hipovolemia o deplecion de sodio, especialmente con diureticos",
+        "Enfermedad renal, estenosis bilateral de arterias renales o estenosis en rinon unico",
+        "Hiperpotasemia o uso de farmacos/sustitutos de sal que aumentan potasio",
+        "Angioedema de cara, lengua, glotis o intestino: suspender y atender de inmediato",
+        "Tos seca persistente",
+        "Estenosis aortica/mitral o miocardiopatia obstructiva: evitar hipotension excesiva",
+        "Enfermedad vascular del colageno o inmunosupresion: considerar vigilancia hematologica",
+        "Cirugia o anestesia: riesgo de hipotension por bloqueo del SRAA",
+        "Deterioro hepatico o ictericia: suspender y evaluar por riesgo raro de lesion hepatica"
+      ],
+      "advertencias": [
+        "Controlar creatinina/eGFR y potasio antes de iniciar y 1-2 semanas despues de iniciar o titular",
+        "No usar bloqueo dual rutinario del SRAA con ARA-II o aliskiren",
+        "Separar al menos 36 horas de sacubitrilo/valsartan por riesgo de angioedema",
+        "La deshidratacion, los AINEs y los diureticos aumentan el riesgo de lesion renal e hipotension",
+        "Suspender cuanto antes si se detecta embarazo",
+        "La compatibilidad durante lactancia depende del IECA, la edad del lactante y la ficha regulatoria local"
+      ],
+      "monitorizacion": [
+        "Presion arterial y sintomas ortostaticos",
+        "Creatinina y eGFR basales y tras inicio/cambios de dosis",
+        "Potasio serico basal y tras inicio/cambios de dosis",
+        "Tos y cualquier dato de angioedema",
+        "Estado de volumen y sodio si usa diureticos",
+        "Biometria hematica si existe enfermedad vascular del colageno, inmunosupresion o deterioro renal"
+      ],
+      "dosisAdulto": [
+        {
+          "indicationId": "uso_habitual",
+          "population": "adult",
+          "usualDose": {
+            "text": "Hipertension: iniciar habitualmente con 2.5 mg cada 24 horas; rango usual 2.5-10 mg al dia, con ajustes por indicacion, diuretico y funcion renal."
+          },
+          "administrationNotes": []
+        }
+      ],
+      "dosisPediatrica": [],
+      "embarazo": "Contraindicado. Suspender cuanto antes al detectar embarazo por riesgo de toxicidad fetal, oligohidramnios, deterioro renal y muerte fetal/neonatal.",
+      "lactancia": "La recomendacion depende del principio activo, la edad del lactante y la ficha regulatoria local; confirmar compatibilidad y vigilar hipotension, diuresis y funcion renal del lactante cuando proceda."
+    },
+    "farmacocinetica": {
+      "mecanismoAccion": "Inhibe la enzima convertidora de angiotensina, reduce angiotensina II y aldosterona y aumenta bradicinina.",
+      "vidaMedia": "Ramiprilat: fase efectiva aproximada de 13-17 horas y fase terminal prolongada.",
+      "tiempoConcentracionMaxima": "Ramipril aproximadamente 1 hora; ramiprilat 2-4 horas.",
+      "duracionAccion": "Efecto antihipertensivo compatible con administracion cada 24 horas; individualizar segun respuesta y ficha tecnica.",
+      "metabolismo": "Profarmaco hidrolizado a ramiprilat; tambien forma metabolitos inactivos.",
+      "eliminacion": "Renal y fecal.",
+      "cyp": [
+        "Sin CYP principal clinicamente relevante documentado; revisar ficha especifica"
+      ],
+      "metabolitosActivos": [
+        "Ramiprilat"
+      ]
+    },
+    "efectosAdversos": [
+      "Tos seca",
+      "Mareo e hipotension",
+      "Hiperpotasemia",
+      "Elevacion de creatinina o lesion renal aguda",
+      "Angioedema",
+      "Cefalea",
+      "Nausea",
+      "Rash",
+      "Neutropenia/agranulocitosis rara",
+      "Lesion hepatica colestasica rara"
+    ],
+    "riesgos": {
+      "potasio": 1,
+      "renal": 1,
+      "hipotension": 1,
+      "embarazo": 2,
+      "angioedema": 2
+    },
+    "interacciones": [
+      "Sacubitrilo/valsartan: combinacion contraindicada; separar 36 horas por riesgo de angioedema",
+      "ARA-II o aliskiren: bloqueo dual del SRAA con mayor riesgo de hipotension, hiperpotasemia y lesion renal",
+      "Diureticos ahorradores de potasio, suplementos de potasio, sustitutos de sal, trimetoprim, ciclosporina o heparinas: hiperpotasemia",
+      "AINEs: menor efecto antihipertensivo y mayor riesgo de hiperpotasemia o lesion renal aguda",
+      "Litio: aumento reversible de concentraciones y toxicidad; evitar o monitorizar estrechamente",
+      "Diureticos y otros hipotensores: hipotension aditiva, sobre todo al inicio o con hipovolemia",
+      "Insulina y antidiabeticos: puede potenciar el descenso de glucosa durante las primeras semanas",
+      "Inhibidores mTOR, racecadotrilo, inhibidores DPP-4 o activadores tisulares de plasminogeno: mayor riesgo de angioedema",
+      "Antidepresivos triciclicos, antipsicoticos y anestesicos: hipotension aditiva",
+      "Simpatomimeticos: posible reduccion del efecto antihipertensivo"
+    ],
+    "interaccionesRelacionadas": [
+      {
+        "idRegla": "sraa_aine_riesgo_renal",
+        "contraparteIds": [
+          "acido_acetilsalicilico",
+          "diclofenaco",
+          "ibuprofeno",
+          "ketorolaco",
+          "naproxeno"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_ara2",
+        "contraparteIds": [
+          "losartan",
+          "sacubitrilo_valsartan",
+          "telmisartan",
+          "valsartan"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_renina",
+        "contraparteIds": [
+          "aliskiren"
+        ]
+      },
+      {
+        "idRegla": "litio_ieca_ara",
+        "contraparteIds": [
+          "litio"
+        ]
+      },
+      {
+        "idRegla": "espironolactona_ieca_ara",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona"
+        ]
+      },
+      {
+        "idRegla": "ieca_ieca_duplicidad",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "ieca_neprilisina_angioedema",
+        "contraparteIds": [
+          "sacubitrilo_valsartan"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona",
+          "furosemida",
+          "hidroclorotiazida"
+        ]
+      },
+      {
+        "idRegla": "ieca_heparina_hiperpotasemia",
+        "contraparteIds": [
+          "enoxaparina",
+          "heparina"
+        ]
+      },
+      {
+        "idRegla": "ieca_dpp4_angioedema",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "ieca_antidiabetico_hipoglucemia",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "fenotiazina_antihipertensivo",
+        "contraparteIds": [
+          "clorpromazina",
+          "flufenazina",
+          "levomepromazina",
+          "mesoridazina",
+          "perfenazina",
+          "periciazina",
+          "pipotiazina",
+          "proclorperazina",
+          "promazina",
+          "tioridazina",
+          "trifluoperazina"
+        ]
+      }
+    ],
+    "relacionDiagnosticos": [
+      "I10/hipertension arterial: indicacion de clase; seleccionar farmaco y dosis segun ficha y contexto",
+      "I50/insuficiencia cardiaca: beneficio segun principio activo, fenotipo y guia vigente",
+      "I13/enfermedad cardiaca y renal hipertensiva: vigilar presion, creatinina/eGFR y potasio",
+      "N18/enfermedad renal cronica o sospecha de estenosis renal: requiere vigilancia renal y electrolitica estrecha",
+      "E11/diabetes con albuminuria o enfermedad renal: considerar beneficio renal segun indicacion y guia",
+      "O00-O99/embarazo: contraindicado por toxicidad fetal renal"
+    ],
+    "notas": "C09AA05: IECA simple. La disponibilidad y las sales comercializadas varian por pais; confirmar ficha tecnica local antes de prescribir.",
+    "referencias": [
+      {
+        "id": "who_atc_c09aa",
+        "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+        "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "C09AA ACE inhibitors, plain"
+        ],
+        "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+        "tipo": "clasificacion ATC oficial",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "zestril_smpc_interacciones_ieca",
+        "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+        "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "4.3 Contraindications",
+          "4.4 Special warnings and precautions",
+          "4.5 Interactions",
+          "4.6 Fertility, pregnancy and lactation"
+        ],
+        "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+        "tipo": "ficha tecnica regulatoria",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "ficha_ramipril",
+        "titulo": "DailyMed: ramipril capsules",
+        "url": "https://www.dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=d5c58fb5-b415-4567-9790-55631705c5cd&type=display",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "Presentaciones",
+          "Indicaciones",
+          "Posologia",
+          "Contraindicaciones",
+          "Interacciones",
+          "Farmacologia clinica"
+        ],
+        "nota": "Fuente de producto consultada para Ramipril. La disponibilidad comercial debe verificarse por pais.",
+        "tipo": "ficha tecnica o documento regulatorio",
+        "confiabilidad": "alta"
+      },
+      "https://www.dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=d5c58fb5-b415-4567-9790-55631705c5cd&type=display"
+    ],
+    "fuenteClinica": {
+      "estado": "verificada_local",
+      "fuente": "DailyMed: ramipril capsules",
+      "fuentes": [
+        {
+          "id": "who_atc_c09aa",
+          "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+          "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "C09AA ACE inhibitors, plain"
+          ],
+          "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+          "tipo": "clasificacion ATC oficial",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "zestril_smpc_interacciones_ieca",
+          "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+          "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "4.3 Contraindications",
+            "4.4 Special warnings and precautions",
+            "4.5 Interactions",
+            "4.6 Fertility, pregnancy and lactation"
+          ],
+          "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+          "tipo": "ficha tecnica regulatoria",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "ficha_ramipril",
+          "titulo": "DailyMed: ramipril capsules",
+          "url": "https://www.dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=d5c58fb5-b415-4567-9790-55631705c5cd&type=display",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "Presentaciones",
+            "Indicaciones",
+            "Posologia",
+            "Contraindicaciones",
+            "Interacciones",
+            "Farmacologia clinica"
+          ],
+          "nota": "Fuente de producto consultada para Ramipril. La disponibilidad comercial debe verificarse por pais.",
+          "tipo": "ficha tecnica o documento regulatorio",
+          "confiabilidad": "alta"
+        }
+      ],
+      "paginaSeccion": "DailyMed: ramipril capsules (https://www.dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=d5c58fb5-b415-4567-9790-55631705c5cd&type=display); WHO ATC C09AA05; ficha de clase IECA",
+      "confianza": "alta para identidad, presentaciones y consideraciones de clase; confirmar producto/pais antes de prescribir"
+    },
+    "farmacologia": {
+      "esquema": "cognicion.farmacologia.v1",
+      "id": "ramipril",
+      "nombreGenerico": "Ramipril",
+      "estadoFuente": "verificada_local",
+      "fuente": "DailyMed: ramipril capsules"
+    },
+    "pediatria": null,
+    "origenesCatalogo": [
+      "catalogo_maestro_ieca_atc"
+    ],
+    "activo": true,
+    "estadoContenido": "curado_fuente_regulatoria",
+    "actualizadoEn": "2026-08-14"
   },
   {
     "id": "repaglinida",
@@ -70527,15 +75379,33 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "principiosActivos": [
       "Sacubitrilo",
       "valsartán",
-      "sacubitrilo/valsartan"
+      "sacubitrilo/valsartan",
+      "valsartan"
     ],
     "clasePrincipal": "ARNI",
     "clases": [
-      "ARNI"
+      "ARNI",
+      "Inhibidor de neprilisina y ARA-II",
+      "inhibidor_neprilisina",
+      "ara2",
+      "antihipertensivo"
     ],
-    "categoriasInteraccion": [],
-    "sinonimos": [],
-    "marcas": [],
+    "categoriasInteraccion": [
+      "renal",
+      "electrolitica",
+      "cardiovascular",
+      "hiperpotasemia",
+      "hipotension",
+      "angioedema"
+    ],
+    "sinonimos": [
+      "sacubitrilo valsartan",
+      "sacubitril valsartan",
+      "sacubitrilo/valsartan"
+    ],
+    "marcas": [
+      "Entresto"
+    ],
     "especialidades": [
       "Cardiología"
     ],
@@ -70618,8 +75488,98 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     },
     "efectosAdversos": [],
     "riesgos": {},
-    "interacciones": [],
-    "interaccionesRelacionadas": [],
+    "interacciones": [
+      "IECA: contraindicados durante el uso y dentro de las 36 horas del cambio por riesgo de angioedema"
+    ],
+    "interaccionesRelacionadas": [
+      {
+        "idRegla": "sraa_aine_riesgo_renal",
+        "contraparteIds": [
+          "acido_acetilsalicilico",
+          "diclofenaco",
+          "ibuprofeno",
+          "ketorolaco",
+          "naproxeno"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_ara2",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ara2_renina",
+        "contraparteIds": [
+          "aliskiren"
+        ]
+      },
+      {
+        "idRegla": "litio_ieca_ara",
+        "contraparteIds": [
+          "litio"
+        ]
+      },
+      {
+        "idRegla": "espironolactona_ieca_ara",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona"
+        ]
+      },
+      {
+        "idRegla": "ieca_neprilisina_angioedema",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "fenotiazina_antihipertensivo",
+        "contraparteIds": [
+          "clorpromazina",
+          "flufenazina",
+          "levomepromazina",
+          "mesoridazina",
+          "perfenazina",
+          "periciazina",
+          "pipotiazina",
+          "proclorperazina",
+          "promazina",
+          "tioridazina",
+          "trifluoperazina"
+        ]
+      }
+    ],
     "relacionDiagnosticos": [],
     "notas": "No combinar con IECA; requiere periodo de lavado por riesgo de angioedema.",
     "referencias": [
@@ -70647,7 +75607,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     ],
     "activo": true,
     "estadoContenido": "revision_inicial",
-    "actualizadoEn": "2026-08-11"
+    "actualizadoEn": "2026-08-14"
   },
   {
     "id": "salbutamol",
@@ -73116,9 +78076,13 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     ],
     "clasePrincipal": "Inhibidor DPP-4",
     "clases": [
-      "Inhibidor DPP-4"
+      "Inhibidor DPP-4",
+      "inhibidor_dpp4",
+      "antidiabetico"
     ],
-    "categoriasInteraccion": [],
+    "categoriasInteraccion": [
+      "metabolica"
+    ],
     "sinonimos": [],
     "marcas": [],
     "especialidades": [
@@ -73177,8 +78141,53 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     },
     "efectosAdversos": [],
     "riesgos": {},
-    "interacciones": [],
-    "interaccionesRelacionadas": [],
+    "interacciones": [
+      "IECA: se ha descrito mayor riesgo de angioedema; vigilar"
+    ],
+    "interaccionesRelacionadas": [
+      {
+        "idRegla": "ieca_dpp4_angioedema",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "ieca_antidiabetico_hipoglucemia",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      }
+    ],
     "relacionDiagnosticos": [],
     "notas": "Vigilar función renal y pancreatitis si hay síntomas.",
     "referencias": [
@@ -73206,7 +78215,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     ],
     "activo": true,
     "estadoContenido": "revision_inicial",
-    "actualizadoEn": "2026-08-11"
+    "actualizadoEn": "2026-08-14"
   },
   {
     "id": "sotalol",
@@ -73819,6 +78828,397 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "activo": true,
     "estadoContenido": "revision_inicial",
     "actualizadoEn": "2026-08-11"
+  },
+  {
+    "id": "spirapril",
+    "legacyIds": [],
+    "nombre": "Spirapril",
+    "genericName": "Spirapril",
+    "principioActivo": "spirapril",
+    "principiosActivos": [
+      "Spirapril",
+      "spirapril"
+    ],
+    "clasePrincipal": "IECA",
+    "clases": [
+      "IECA",
+      "Inhibidor de la enzima convertidora de angiotensina",
+      "ieca",
+      "Profarmaco IECA"
+    ],
+    "categoriasInteraccion": [
+      "renal",
+      "electrolitica",
+      "cardiovascular",
+      "hiperpotasemia",
+      "hipotension",
+      "angioedema"
+    ],
+    "sinonimos": [
+      "spirapril",
+      "spirapril clorhidrato"
+    ],
+    "marcas": [
+      "Quadropril",
+      "Renormax"
+    ],
+    "especialidades": [
+      "Cardiologia",
+      "Medicina interna",
+      "Nefrologia"
+    ],
+    "presentaciones": [
+      {
+        "id": "spirapril-tableta-6-mg",
+        "texto": "tabletas de 6 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "6 mg",
+        "fuente": "https://botplusweb.farmaceuticos.com/documentos/2002/11/6/14333.pdf",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      }
+    ],
+    "dosisHabitual": "Hipertension: 6 mg cada 24 horas en fichas disponibles; individualizar y confirmar la presentacion autorizada local.",
+    "dosisHabituales": [
+      "6 mg"
+    ],
+    "frecuenciasSugeridas": [
+      "cada 24 horas"
+    ],
+    "datosClinicos": {
+      "indicaciones": [
+        "Hipertension"
+      ],
+      "contraindicaciones": [
+        "Hipersensibilidad al principio activo o a otro IECA",
+        "Antecedente de angioedema asociado a un IECA o angioedema hereditario/idiopatico",
+        "Embarazo: toxicidad fetal por bloqueo del sistema renina-angiotensina",
+        "Uso concomitante con sacubitrilo/valsartan o dentro de las 36 horas del cambio",
+        "Uso concomitante con aliskiren en diabetes mellitus o deterioro renal significativo"
+      ],
+      "precauciones": [
+        "Hipotension sintomatica, hipovolemia o deplecion de sodio, especialmente con diureticos",
+        "Enfermedad renal, estenosis bilateral de arterias renales o estenosis en rinon unico",
+        "Hiperpotasemia o uso de farmacos/sustitutos de sal que aumentan potasio",
+        "Angioedema de cara, lengua, glotis o intestino: suspender y atender de inmediato",
+        "Tos seca persistente",
+        "Estenosis aortica/mitral o miocardiopatia obstructiva: evitar hipotension excesiva",
+        "Enfermedad vascular del colageno o inmunosupresion: considerar vigilancia hematologica",
+        "Cirugia o anestesia: riesgo de hipotension por bloqueo del SRAA",
+        "Deterioro hepatico o ictericia: suspender y evaluar por riesgo raro de lesion hepatica"
+      ],
+      "advertencias": [
+        "Controlar creatinina/eGFR y potasio antes de iniciar y 1-2 semanas despues de iniciar o titular",
+        "No usar bloqueo dual rutinario del SRAA con ARA-II o aliskiren",
+        "Separar al menos 36 horas de sacubitrilo/valsartan por riesgo de angioedema",
+        "La deshidratacion, los AINEs y los diureticos aumentan el riesgo de lesion renal e hipotension",
+        "Suspender cuanto antes si se detecta embarazo",
+        "La compatibilidad durante lactancia depende del IECA, la edad del lactante y la ficha regulatoria local"
+      ],
+      "monitorizacion": [
+        "Presion arterial y sintomas ortostaticos",
+        "Creatinina y eGFR basales y tras inicio/cambios de dosis",
+        "Potasio serico basal y tras inicio/cambios de dosis",
+        "Tos y cualquier dato de angioedema",
+        "Estado de volumen y sodio si usa diureticos",
+        "Biometria hematica si existe enfermedad vascular del colageno, inmunosupresion o deterioro renal"
+      ],
+      "dosisAdulto": [
+        {
+          "indicationId": "uso_habitual",
+          "population": "adult",
+          "usualDose": {
+            "text": "Hipertension: 6 mg cada 24 horas en fichas disponibles; individualizar y confirmar la presentacion autorizada local."
+          },
+          "administrationNotes": []
+        }
+      ],
+      "dosisPediatrica": [],
+      "embarazo": "Contraindicado. Suspender cuanto antes al detectar embarazo por riesgo de toxicidad fetal, oligohidramnios, deterioro renal y muerte fetal/neonatal.",
+      "lactancia": "La recomendacion depende del principio activo, la edad del lactante y la ficha regulatoria local; confirmar compatibilidad y vigilar hipotension, diuresis y funcion renal del lactante cuando proceda."
+    },
+    "farmacocinetica": {
+      "mecanismoAccion": "Inhibe la enzima convertidora de angiotensina, reduce angiotensina II y aldosterona y aumenta bradicinina.",
+      "vidaMedia": "Spiraprilat presenta una fase terminal prolongada; verificar el valor del producto autorizado local.",
+      "tiempoConcentracionMaxima": "Spiraprilat suele alcanzar el maximo en las primeras horas tras la dosis.",
+      "duracionAccion": "Efecto antihipertensivo compatible con administracion cada 24 horas; individualizar segun respuesta y ficha tecnica.",
+      "metabolismo": "Profarmaco hidrolizado a spiraprilat.",
+      "eliminacion": "Renal y hepatobiliar; ajustar segun ficha en deterioro organico.",
+      "cyp": [
+        "Sin CYP principal clinicamente relevante documentado; revisar ficha especifica"
+      ],
+      "metabolitosActivos": [
+        "Spiraprilat"
+      ]
+    },
+    "efectosAdversos": [
+      "Tos seca",
+      "Mareo e hipotension",
+      "Hiperpotasemia",
+      "Elevacion de creatinina o lesion renal aguda",
+      "Angioedema",
+      "Cefalea",
+      "Nausea",
+      "Rash",
+      "Neutropenia/agranulocitosis rara",
+      "Lesion hepatica colestasica rara"
+    ],
+    "riesgos": {
+      "potasio": 1,
+      "renal": 1,
+      "hipotension": 1,
+      "embarazo": 2,
+      "angioedema": 2
+    },
+    "interacciones": [
+      "Sacubitrilo/valsartan: combinacion contraindicada; separar 36 horas por riesgo de angioedema",
+      "ARA-II o aliskiren: bloqueo dual del SRAA con mayor riesgo de hipotension, hiperpotasemia y lesion renal",
+      "Diureticos ahorradores de potasio, suplementos de potasio, sustitutos de sal, trimetoprim, ciclosporina o heparinas: hiperpotasemia",
+      "AINEs: menor efecto antihipertensivo y mayor riesgo de hiperpotasemia o lesion renal aguda",
+      "Litio: aumento reversible de concentraciones y toxicidad; evitar o monitorizar estrechamente",
+      "Diureticos y otros hipotensores: hipotension aditiva, sobre todo al inicio o con hipovolemia",
+      "Insulina y antidiabeticos: puede potenciar el descenso de glucosa durante las primeras semanas",
+      "Inhibidores mTOR, racecadotrilo, inhibidores DPP-4 o activadores tisulares de plasminogeno: mayor riesgo de angioedema",
+      "Antidepresivos triciclicos, antipsicoticos y anestesicos: hipotension aditiva",
+      "Simpatomimeticos: posible reduccion del efecto antihipertensivo"
+    ],
+    "interaccionesRelacionadas": [
+      {
+        "idRegla": "sraa_aine_riesgo_renal",
+        "contraparteIds": [
+          "acido_acetilsalicilico",
+          "diclofenaco",
+          "ibuprofeno",
+          "ketorolaco",
+          "naproxeno"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_ara2",
+        "contraparteIds": [
+          "losartan",
+          "sacubitrilo_valsartan",
+          "telmisartan",
+          "valsartan"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_renina",
+        "contraparteIds": [
+          "aliskiren"
+        ]
+      },
+      {
+        "idRegla": "litio_ieca_ara",
+        "contraparteIds": [
+          "litio"
+        ]
+      },
+      {
+        "idRegla": "espironolactona_ieca_ara",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona"
+        ]
+      },
+      {
+        "idRegla": "ieca_ieca_duplicidad",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "ieca_neprilisina_angioedema",
+        "contraparteIds": [
+          "sacubitrilo_valsartan"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona",
+          "furosemida",
+          "hidroclorotiazida"
+        ]
+      },
+      {
+        "idRegla": "ieca_heparina_hiperpotasemia",
+        "contraparteIds": [
+          "enoxaparina",
+          "heparina"
+        ]
+      },
+      {
+        "idRegla": "ieca_dpp4_angioedema",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "ieca_antidiabetico_hipoglucemia",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "fenotiazina_antihipertensivo",
+        "contraparteIds": [
+          "clorpromazina",
+          "flufenazina",
+          "levomepromazina",
+          "mesoridazina",
+          "perfenazina",
+          "periciazina",
+          "pipotiazina",
+          "proclorperazina",
+          "promazina",
+          "tioridazina",
+          "trifluoperazina"
+        ]
+      }
+    ],
+    "relacionDiagnosticos": [
+      "I10/hipertension arterial: indicacion de clase; seleccionar farmaco y dosis segun ficha y contexto",
+      "I50/insuficiencia cardiaca: beneficio segun principio activo, fenotipo y guia vigente",
+      "I13/enfermedad cardiaca y renal hipertensiva: vigilar presion, creatinina/eGFR y potasio",
+      "N18/enfermedad renal cronica o sospecha de estenosis renal: requiere vigilancia renal y electrolitica estrecha",
+      "E11/diabetes con albuminuria o enfermedad renal: considerar beneficio renal segun indicacion y guia",
+      "O00-O99/embarazo: contraindicado por toxicidad fetal renal"
+    ],
+    "notas": "C09AA11: IECA simple. La disponibilidad y las sales comercializadas varian por pais; confirmar ficha tecnica local antes de prescribir.",
+    "referencias": [
+      {
+        "id": "who_atc_c09aa",
+        "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+        "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "C09AA ACE inhibitors, plain"
+        ],
+        "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+        "tipo": "clasificacion ATC oficial",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "zestril_smpc_interacciones_ieca",
+        "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+        "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "4.3 Contraindications",
+          "4.4 Special warnings and precautions",
+          "4.5 Interactions",
+          "4.6 Fertility, pregnancy and lactation"
+        ],
+        "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+        "tipo": "ficha tecnica regulatoria",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "ficha_spirapril",
+        "titulo": "Bot PLUS: ficha profesional de spirapril",
+        "url": "https://botplusweb.farmaceuticos.com/documentos/2002/11/6/14333.pdf",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "Presentaciones",
+          "Indicaciones",
+          "Posologia",
+          "Contraindicaciones",
+          "Interacciones",
+          "Farmacologia clinica"
+        ],
+        "nota": "Fuente de producto consultada para Spirapril. La disponibilidad comercial debe verificarse por pais.",
+        "tipo": "ficha tecnica o documento regulatorio",
+        "confiabilidad": "moderada; presentacion e identidad verificadas, confirmar ficha regulatoria local"
+      },
+      "https://botplusweb.farmaceuticos.com/documentos/2002/11/6/14333.pdf"
+    ],
+    "fuenteClinica": {
+      "estado": "verificada_local",
+      "fuente": "Bot PLUS: ficha profesional de spirapril",
+      "fuentes": [
+        {
+          "id": "who_atc_c09aa",
+          "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+          "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "C09AA ACE inhibitors, plain"
+          ],
+          "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+          "tipo": "clasificacion ATC oficial",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "zestril_smpc_interacciones_ieca",
+          "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+          "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "4.3 Contraindications",
+            "4.4 Special warnings and precautions",
+            "4.5 Interactions",
+            "4.6 Fertility, pregnancy and lactation"
+          ],
+          "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+          "tipo": "ficha tecnica regulatoria",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "ficha_spirapril",
+          "titulo": "Bot PLUS: ficha profesional de spirapril",
+          "url": "https://botplusweb.farmaceuticos.com/documentos/2002/11/6/14333.pdf",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "Presentaciones",
+            "Indicaciones",
+            "Posologia",
+            "Contraindicaciones",
+            "Interacciones",
+            "Farmacologia clinica"
+          ],
+          "nota": "Fuente de producto consultada para Spirapril. La disponibilidad comercial debe verificarse por pais.",
+          "tipo": "ficha tecnica o documento regulatorio",
+          "confiabilidad": "moderada; presentacion e identidad verificadas, confirmar ficha regulatoria local"
+        }
+      ],
+      "paginaSeccion": "Bot PLUS: ficha profesional de spirapril (https://botplusweb.farmaceuticos.com/documentos/2002/11/6/14333.pdf); WHO ATC C09AA11; ficha de clase IECA",
+      "confianza": "moderada; presentacion e identidad verificadas, confirmar ficha regulatoria local"
+    },
+    "farmacologia": {
+      "esquema": "cognicion.farmacologia.v1",
+      "id": "spirapril",
+      "nombreGenerico": "Spirapril",
+      "estadoFuente": "verificada_local",
+      "fuente": "Bot PLUS: ficha profesional de spirapril"
+    },
+    "pediatria": null,
+    "origenesCatalogo": [
+      "catalogo_maestro_ieca_atc"
+    ],
+    "activo": true,
+    "estadoContenido": "curado_fuente_regulatoria",
+    "actualizadoEn": "2026-08-14"
   },
   {
     "id": "sulfato_ferroso",
@@ -75458,9 +80858,28 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "bloqueo_dual_sraa_ieca_ara2",
         "contraparteIds": [
+          "benazepril",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
-          "lisinopril"
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ara2_renina",
+        "contraparteIds": [
+          "aliskiren"
         ]
       },
       {
@@ -75472,6 +80891,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "espironolactona_ieca_ara",
         "contraparteIds": [
+          "eplerenona",
           "espironolactona"
         ]
       },
@@ -75677,6 +81097,423 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "activo": true,
     "estadoContenido": "revision_inicial",
     "actualizadoEn": "2026-08-11"
+  },
+  {
+    "id": "temocapril",
+    "legacyIds": [],
+    "nombre": "Temocapril",
+    "genericName": "Temocapril",
+    "principioActivo": "temocapril",
+    "principiosActivos": [
+      "Temocapril",
+      "temocapril"
+    ],
+    "clasePrincipal": "IECA",
+    "clases": [
+      "IECA",
+      "Inhibidor de la enzima convertidora de angiotensina",
+      "ieca",
+      "Profarmaco IECA"
+    ],
+    "categoriasInteraccion": [
+      "renal",
+      "electrolitica",
+      "cardiovascular",
+      "hiperpotasemia",
+      "hipotension",
+      "angioedema"
+    ],
+    "sinonimos": [
+      "temocapril",
+      "temocapril clorhidrato"
+    ],
+    "marcas": [
+      "Acecol",
+      "Temocapril"
+    ],
+    "especialidades": [
+      "Cardiologia",
+      "Medicina interna",
+      "Nefrologia"
+    ],
+    "presentaciones": [
+      {
+        "id": "temocapril-tableta-1-mg",
+        "texto": "tabletas de 1 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "1 mg",
+        "fuente": "https://image.packageinsert.jp/pdf.php?mode=1&yjcode=2144009F1123",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "temocapril-tableta-2-mg",
+        "texto": "tabletas de 2 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "2 mg",
+        "fuente": "https://image.packageinsert.jp/pdf.php?mode=1&yjcode=2144009F1123",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "temocapril-tableta-4-mg",
+        "texto": "tabletas de 4 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "4 mg",
+        "fuente": "https://image.packageinsert.jp/pdf.php?mode=1&yjcode=2144009F1123",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      }
+    ],
+    "dosisHabitual": "Hipertension: frecuentemente 2-4 mg cada 24 horas; confirmar ficha japonesa/local y ajustar a funcion renal/hepatica.",
+    "dosisHabituales": [
+      "1 mg",
+      "2 mg",
+      "4 mg"
+    ],
+    "frecuenciasSugeridas": [
+      "cada 24 horas"
+    ],
+    "datosClinicos": {
+      "indicaciones": [
+        "Hipertension"
+      ],
+      "contraindicaciones": [
+        "Hipersensibilidad al principio activo o a otro IECA",
+        "Antecedente de angioedema asociado a un IECA o angioedema hereditario/idiopatico",
+        "Embarazo: toxicidad fetal por bloqueo del sistema renina-angiotensina",
+        "Uso concomitante con sacubitrilo/valsartan o dentro de las 36 horas del cambio",
+        "Uso concomitante con aliskiren en diabetes mellitus o deterioro renal significativo"
+      ],
+      "precauciones": [
+        "Hipotension sintomatica, hipovolemia o deplecion de sodio, especialmente con diureticos",
+        "Enfermedad renal, estenosis bilateral de arterias renales o estenosis en rinon unico",
+        "Hiperpotasemia o uso de farmacos/sustitutos de sal que aumentan potasio",
+        "Angioedema de cara, lengua, glotis o intestino: suspender y atender de inmediato",
+        "Tos seca persistente",
+        "Estenosis aortica/mitral o miocardiopatia obstructiva: evitar hipotension excesiva",
+        "Enfermedad vascular del colageno o inmunosupresion: considerar vigilancia hematologica",
+        "Cirugia o anestesia: riesgo de hipotension por bloqueo del SRAA",
+        "Deterioro hepatico o ictericia: suspender y evaluar por riesgo raro de lesion hepatica"
+      ],
+      "advertencias": [
+        "Controlar creatinina/eGFR y potasio antes de iniciar y 1-2 semanas despues de iniciar o titular",
+        "No usar bloqueo dual rutinario del SRAA con ARA-II o aliskiren",
+        "Separar al menos 36 horas de sacubitrilo/valsartan por riesgo de angioedema",
+        "La deshidratacion, los AINEs y los diureticos aumentan el riesgo de lesion renal e hipotension",
+        "Suspender cuanto antes si se detecta embarazo",
+        "La compatibilidad durante lactancia depende del IECA, la edad del lactante y la ficha regulatoria local"
+      ],
+      "monitorizacion": [
+        "Presion arterial y sintomas ortostaticos",
+        "Creatinina y eGFR basales y tras inicio/cambios de dosis",
+        "Potasio serico basal y tras inicio/cambios de dosis",
+        "Tos y cualquier dato de angioedema",
+        "Estado de volumen y sodio si usa diureticos",
+        "Biometria hematica si existe enfermedad vascular del colageno, inmunosupresion o deterioro renal"
+      ],
+      "dosisAdulto": [
+        {
+          "indicationId": "uso_habitual",
+          "population": "adult",
+          "usualDose": {
+            "text": "Hipertension: frecuentemente 2-4 mg cada 24 horas; confirmar ficha japonesa/local y ajustar a funcion renal/hepatica."
+          },
+          "administrationNotes": []
+        }
+      ],
+      "dosisPediatrica": [],
+      "embarazo": "Contraindicado. Suspender cuanto antes al detectar embarazo por riesgo de toxicidad fetal, oligohidramnios, deterioro renal y muerte fetal/neonatal.",
+      "lactancia": "La recomendacion depende del principio activo, la edad del lactante y la ficha regulatoria local; confirmar compatibilidad y vigilar hipotension, diuresis y funcion renal del lactante cuando proceda."
+    },
+    "farmacocinetica": {
+      "mecanismoAccion": "Inhibe la enzima convertidora de angiotensina, reduce angiotensina II y aldosterona y aumenta bradicinina.",
+      "vidaMedia": "Temocaprilat tiene una fase terminal prolongada compatible con dosificacion cada 24 horas.",
+      "tiempoConcentracionMaxima": "Temocaprilat alcanza el maximo en las primeras horas tras la administracion.",
+      "duracionAccion": "Efecto antihipertensivo compatible con administracion cada 24 horas; individualizar segun respuesta y ficha tecnica.",
+      "metabolismo": "Profarmaco hidrolizado a temocaprilat.",
+      "eliminacion": "Renal y biliar, caracteristica relevante frente a IECA predominantemente renales.",
+      "cyp": [
+        "Sin CYP principal clinicamente relevante documentado; revisar ficha especifica"
+      ],
+      "metabolitosActivos": [
+        "Temocaprilat"
+      ]
+    },
+    "efectosAdversos": [
+      "Tos seca",
+      "Mareo e hipotension",
+      "Hiperpotasemia",
+      "Elevacion de creatinina o lesion renal aguda",
+      "Angioedema",
+      "Cefalea",
+      "Nausea",
+      "Rash",
+      "Neutropenia/agranulocitosis rara",
+      "Lesion hepatica colestasica rara"
+    ],
+    "riesgos": {
+      "potasio": 1,
+      "renal": 1,
+      "hipotension": 1,
+      "embarazo": 2,
+      "angioedema": 2
+    },
+    "interacciones": [
+      "Sacubitrilo/valsartan: combinacion contraindicada; separar 36 horas por riesgo de angioedema",
+      "ARA-II o aliskiren: bloqueo dual del SRAA con mayor riesgo de hipotension, hiperpotasemia y lesion renal",
+      "Diureticos ahorradores de potasio, suplementos de potasio, sustitutos de sal, trimetoprim, ciclosporina o heparinas: hiperpotasemia",
+      "AINEs: menor efecto antihipertensivo y mayor riesgo de hiperpotasemia o lesion renal aguda",
+      "Litio: aumento reversible de concentraciones y toxicidad; evitar o monitorizar estrechamente",
+      "Diureticos y otros hipotensores: hipotension aditiva, sobre todo al inicio o con hipovolemia",
+      "Insulina y antidiabeticos: puede potenciar el descenso de glucosa durante las primeras semanas",
+      "Inhibidores mTOR, racecadotrilo, inhibidores DPP-4 o activadores tisulares de plasminogeno: mayor riesgo de angioedema",
+      "Antidepresivos triciclicos, antipsicoticos y anestesicos: hipotension aditiva",
+      "Simpatomimeticos: posible reduccion del efecto antihipertensivo"
+    ],
+    "interaccionesRelacionadas": [
+      {
+        "idRegla": "sraa_aine_riesgo_renal",
+        "contraparteIds": [
+          "acido_acetilsalicilico",
+          "diclofenaco",
+          "ibuprofeno",
+          "ketorolaco",
+          "naproxeno"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_ara2",
+        "contraparteIds": [
+          "losartan",
+          "sacubitrilo_valsartan",
+          "telmisartan",
+          "valsartan"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_renina",
+        "contraparteIds": [
+          "aliskiren"
+        ]
+      },
+      {
+        "idRegla": "litio_ieca_ara",
+        "contraparteIds": [
+          "litio"
+        ]
+      },
+      {
+        "idRegla": "espironolactona_ieca_ara",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona"
+        ]
+      },
+      {
+        "idRegla": "ieca_ieca_duplicidad",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "ieca_neprilisina_angioedema",
+        "contraparteIds": [
+          "sacubitrilo_valsartan"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona",
+          "furosemida",
+          "hidroclorotiazida"
+        ]
+      },
+      {
+        "idRegla": "ieca_heparina_hiperpotasemia",
+        "contraparteIds": [
+          "enoxaparina",
+          "heparina"
+        ]
+      },
+      {
+        "idRegla": "ieca_dpp4_angioedema",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "ieca_antidiabetico_hipoglucemia",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "fenotiazina_antihipertensivo",
+        "contraparteIds": [
+          "clorpromazina",
+          "flufenazina",
+          "levomepromazina",
+          "mesoridazina",
+          "perfenazina",
+          "periciazina",
+          "pipotiazina",
+          "proclorperazina",
+          "promazina",
+          "tioridazina",
+          "trifluoperazina"
+        ]
+      }
+    ],
+    "relacionDiagnosticos": [
+      "I10/hipertension arterial: indicacion de clase; seleccionar farmaco y dosis segun ficha y contexto",
+      "I50/insuficiencia cardiaca: beneficio segun principio activo, fenotipo y guia vigente",
+      "I13/enfermedad cardiaca y renal hipertensiva: vigilar presion, creatinina/eGFR y potasio",
+      "N18/enfermedad renal cronica o sospecha de estenosis renal: requiere vigilancia renal y electrolitica estrecha",
+      "E11/diabetes con albuminuria o enfermedad renal: considerar beneficio renal segun indicacion y guia",
+      "O00-O99/embarazo: contraindicado por toxicidad fetal renal"
+    ],
+    "notas": "C09AA14: IECA simple. La disponibilidad y las sales comercializadas varian por pais; confirmar ficha tecnica local antes de prescribir.",
+    "referencias": [
+      {
+        "id": "who_atc_c09aa",
+        "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+        "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "C09AA ACE inhibitors, plain"
+        ],
+        "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+        "tipo": "clasificacion ATC oficial",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "zestril_smpc_interacciones_ieca",
+        "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+        "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "4.3 Contraindications",
+          "4.4 Special warnings and precautions",
+          "4.5 Interactions",
+          "4.6 Fertility, pregnancy and lactation"
+        ],
+        "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+        "tipo": "ficha tecnica regulatoria",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "ficha_temocapril",
+        "titulo": "Japan package insert: temocapril hydrochloride tablets",
+        "url": "https://image.packageinsert.jp/pdf.php?mode=1&yjcode=2144009F1123",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "Presentaciones",
+          "Indicaciones",
+          "Posologia",
+          "Contraindicaciones",
+          "Interacciones",
+          "Farmacologia clinica"
+        ],
+        "nota": "Fuente de producto consultada para Temocapril. La disponibilidad comercial debe verificarse por pais.",
+        "tipo": "ficha tecnica o documento regulatorio",
+        "confiabilidad": "moderada-alta; documento regulatorio en japones, confirmar ficha local"
+      },
+      "https://image.packageinsert.jp/pdf.php?mode=1&yjcode=2144009F1123"
+    ],
+    "fuenteClinica": {
+      "estado": "verificada_local",
+      "fuente": "Japan package insert: temocapril hydrochloride tablets",
+      "fuentes": [
+        {
+          "id": "who_atc_c09aa",
+          "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+          "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "C09AA ACE inhibitors, plain"
+          ],
+          "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+          "tipo": "clasificacion ATC oficial",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "zestril_smpc_interacciones_ieca",
+          "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+          "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "4.3 Contraindications",
+            "4.4 Special warnings and precautions",
+            "4.5 Interactions",
+            "4.6 Fertility, pregnancy and lactation"
+          ],
+          "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+          "tipo": "ficha tecnica regulatoria",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "ficha_temocapril",
+          "titulo": "Japan package insert: temocapril hydrochloride tablets",
+          "url": "https://image.packageinsert.jp/pdf.php?mode=1&yjcode=2144009F1123",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "Presentaciones",
+            "Indicaciones",
+            "Posologia",
+            "Contraindicaciones",
+            "Interacciones",
+            "Farmacologia clinica"
+          ],
+          "nota": "Fuente de producto consultada para Temocapril. La disponibilidad comercial debe verificarse por pais.",
+          "tipo": "ficha tecnica o documento regulatorio",
+          "confiabilidad": "moderada-alta; documento regulatorio en japones, confirmar ficha local"
+        }
+      ],
+      "paginaSeccion": "Japan package insert: temocapril hydrochloride tablets (https://image.packageinsert.jp/pdf.php?mode=1&yjcode=2144009F1123); WHO ATC C09AA14; ficha de clase IECA",
+      "confianza": "moderada-alta; documento regulatorio en japones, confirmar ficha local"
+    },
+    "farmacologia": {
+      "esquema": "cognicion.farmacologia.v1",
+      "id": "temocapril",
+      "nombreGenerico": "Temocapril",
+      "estadoFuente": "verificada_local",
+      "fuente": "Japan package insert: temocapril hydrochloride tablets"
+    },
+    "pediatria": null,
+    "origenesCatalogo": [
+      "catalogo_maestro_ieca_atc"
+    ],
+    "activo": true,
+    "estadoContenido": "curado_fuente_regulatoria",
+    "actualizadoEn": "2026-08-14"
   },
   {
     "id": "teofilina",
@@ -76806,22 +82643,37 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "fenotiazina_antihipertensivo",
         "contraparteIds": [
           "atenolol",
+          "benazepril",
           "bisoprolol",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
+          "eplerenona",
           "espironolactona",
+          "fosinopril",
           "furosemida",
           "hidroclorotiazida",
+          "imidapril",
           "isosorbida",
           "lisinopril",
           "losartan",
           "metoprolol",
+          "moexipril",
           "nebivolol",
           "nitroglicerina",
+          "perindopril",
           "pindolol",
+          "quinapril",
+          "ramipril",
+          "sacubitrilo_valsartan",
           "sotalol",
+          "spirapril",
           "telmisartan",
-          "valsartan"
+          "temocapril",
+          "trandolapril",
+          "valsartan",
+          "zofenopril"
         ]
       },
       {
@@ -78868,6 +84720,423 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "actualizadoEn": "2026-08-11"
   },
   {
+    "id": "trandolapril",
+    "legacyIds": [],
+    "nombre": "Trandolapril",
+    "genericName": "Trandolapril",
+    "principioActivo": "trandolapril",
+    "principiosActivos": [
+      "Trandolapril",
+      "trandolapril"
+    ],
+    "clasePrincipal": "IECA",
+    "clases": [
+      "IECA",
+      "Inhibidor de la enzima convertidora de angiotensina",
+      "ieca",
+      "Profarmaco IECA"
+    ],
+    "categoriasInteraccion": [
+      "renal",
+      "electrolitica",
+      "cardiovascular",
+      "hiperpotasemia",
+      "hipotension",
+      "angioedema"
+    ],
+    "sinonimos": [
+      "trandolapril"
+    ],
+    "marcas": [
+      "Mavik",
+      "Gopten"
+    ],
+    "especialidades": [
+      "Cardiologia",
+      "Medicina interna",
+      "Nefrologia"
+    ],
+    "presentaciones": [
+      {
+        "id": "trandolapril-tableta-1-mg",
+        "texto": "tabletas de 1 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "1 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=6f25ed16-e5e9-4170-b4b4-3b460887779e",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "trandolapril-tableta-2-mg",
+        "texto": "tabletas de 2 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "2 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=6f25ed16-e5e9-4170-b4b4-3b460887779e",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "trandolapril-tableta-4-mg",
+        "texto": "tabletas de 4 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "4 mg",
+        "fuente": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=6f25ed16-e5e9-4170-b4b4-3b460887779e",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      }
+    ],
+    "dosisHabitual": "Hipertension: iniciar habitualmente con 1 mg cada 24 horas; rango usual 2-4 mg cada 24 horas.",
+    "dosisHabituales": [
+      "1 mg",
+      "2 mg",
+      "4 mg"
+    ],
+    "frecuenciasSugeridas": [
+      "cada 24 horas"
+    ],
+    "datosClinicos": {
+      "indicaciones": [
+        "Hipertension",
+        "Disfuncion ventricular izquierda posterior a infarto de miocardio segun etiqueta"
+      ],
+      "contraindicaciones": [
+        "Hipersensibilidad al principio activo o a otro IECA",
+        "Antecedente de angioedema asociado a un IECA o angioedema hereditario/idiopatico",
+        "Embarazo: toxicidad fetal por bloqueo del sistema renina-angiotensina",
+        "Uso concomitante con sacubitrilo/valsartan o dentro de las 36 horas del cambio",
+        "Uso concomitante con aliskiren en diabetes mellitus o deterioro renal significativo"
+      ],
+      "precauciones": [
+        "Hipotension sintomatica, hipovolemia o deplecion de sodio, especialmente con diureticos",
+        "Enfermedad renal, estenosis bilateral de arterias renales o estenosis en rinon unico",
+        "Hiperpotasemia o uso de farmacos/sustitutos de sal que aumentan potasio",
+        "Angioedema de cara, lengua, glotis o intestino: suspender y atender de inmediato",
+        "Tos seca persistente",
+        "Estenosis aortica/mitral o miocardiopatia obstructiva: evitar hipotension excesiva",
+        "Enfermedad vascular del colageno o inmunosupresion: considerar vigilancia hematologica",
+        "Cirugia o anestesia: riesgo de hipotension por bloqueo del SRAA",
+        "Deterioro hepatico o ictericia: suspender y evaluar por riesgo raro de lesion hepatica"
+      ],
+      "advertencias": [
+        "Controlar creatinina/eGFR y potasio antes de iniciar y 1-2 semanas despues de iniciar o titular",
+        "No usar bloqueo dual rutinario del SRAA con ARA-II o aliskiren",
+        "Separar al menos 36 horas de sacubitrilo/valsartan por riesgo de angioedema",
+        "La deshidratacion, los AINEs y los diureticos aumentan el riesgo de lesion renal e hipotension",
+        "Suspender cuanto antes si se detecta embarazo",
+        "La compatibilidad durante lactancia depende del IECA, la edad del lactante y la ficha regulatoria local"
+      ],
+      "monitorizacion": [
+        "Presion arterial y sintomas ortostaticos",
+        "Creatinina y eGFR basales y tras inicio/cambios de dosis",
+        "Potasio serico basal y tras inicio/cambios de dosis",
+        "Tos y cualquier dato de angioedema",
+        "Estado de volumen y sodio si usa diureticos",
+        "Biometria hematica si existe enfermedad vascular del colageno, inmunosupresion o deterioro renal"
+      ],
+      "dosisAdulto": [
+        {
+          "indicationId": "uso_habitual",
+          "population": "adult",
+          "usualDose": {
+            "text": "Hipertension: iniciar habitualmente con 1 mg cada 24 horas; rango usual 2-4 mg cada 24 horas."
+          },
+          "administrationNotes": []
+        }
+      ],
+      "dosisPediatrica": [],
+      "embarazo": "Contraindicado. Suspender cuanto antes al detectar embarazo por riesgo de toxicidad fetal, oligohidramnios, deterioro renal y muerte fetal/neonatal.",
+      "lactancia": "La recomendacion depende del principio activo, la edad del lactante y la ficha regulatoria local; confirmar compatibilidad y vigilar hipotension, diuresis y funcion renal del lactante cuando proceda."
+    },
+    "farmacocinetica": {
+      "mecanismoAccion": "Inhibe la enzima convertidora de angiotensina, reduce angiotensina II y aldosterona y aumenta bradicinina.",
+      "vidaMedia": "Trandolaprilat: vida media efectiva aproximada de 10 horas y fase terminal de 16-24 horas.",
+      "tiempoConcentracionMaxima": "Trandolapril aproximadamente 1 hora; trandolaprilat 4-10 horas.",
+      "duracionAccion": "Efecto antihipertensivo compatible con administracion cada 24 horas; individualizar segun respuesta y ficha tecnica.",
+      "metabolismo": "Profarmaco hidrolizado a trandolaprilat.",
+      "eliminacion": "Renal y fecal.",
+      "cyp": [
+        "Sin CYP principal clinicamente relevante documentado; revisar ficha especifica"
+      ],
+      "metabolitosActivos": [
+        "Trandolaprilat"
+      ]
+    },
+    "efectosAdversos": [
+      "Tos seca",
+      "Mareo e hipotension",
+      "Hiperpotasemia",
+      "Elevacion de creatinina o lesion renal aguda",
+      "Angioedema",
+      "Cefalea",
+      "Nausea",
+      "Rash",
+      "Neutropenia/agranulocitosis rara",
+      "Lesion hepatica colestasica rara"
+    ],
+    "riesgos": {
+      "potasio": 1,
+      "renal": 1,
+      "hipotension": 1,
+      "embarazo": 2,
+      "angioedema": 2
+    },
+    "interacciones": [
+      "Sacubitrilo/valsartan: combinacion contraindicada; separar 36 horas por riesgo de angioedema",
+      "ARA-II o aliskiren: bloqueo dual del SRAA con mayor riesgo de hipotension, hiperpotasemia y lesion renal",
+      "Diureticos ahorradores de potasio, suplementos de potasio, sustitutos de sal, trimetoprim, ciclosporina o heparinas: hiperpotasemia",
+      "AINEs: menor efecto antihipertensivo y mayor riesgo de hiperpotasemia o lesion renal aguda",
+      "Litio: aumento reversible de concentraciones y toxicidad; evitar o monitorizar estrechamente",
+      "Diureticos y otros hipotensores: hipotension aditiva, sobre todo al inicio o con hipovolemia",
+      "Insulina y antidiabeticos: puede potenciar el descenso de glucosa durante las primeras semanas",
+      "Inhibidores mTOR, racecadotrilo, inhibidores DPP-4 o activadores tisulares de plasminogeno: mayor riesgo de angioedema",
+      "Antidepresivos triciclicos, antipsicoticos y anestesicos: hipotension aditiva",
+      "Simpatomimeticos: posible reduccion del efecto antihipertensivo"
+    ],
+    "interaccionesRelacionadas": [
+      {
+        "idRegla": "sraa_aine_riesgo_renal",
+        "contraparteIds": [
+          "acido_acetilsalicilico",
+          "diclofenaco",
+          "ibuprofeno",
+          "ketorolaco",
+          "naproxeno"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_ara2",
+        "contraparteIds": [
+          "losartan",
+          "sacubitrilo_valsartan",
+          "telmisartan",
+          "valsartan"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_renina",
+        "contraparteIds": [
+          "aliskiren"
+        ]
+      },
+      {
+        "idRegla": "litio_ieca_ara",
+        "contraparteIds": [
+          "litio"
+        ]
+      },
+      {
+        "idRegla": "espironolactona_ieca_ara",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona"
+        ]
+      },
+      {
+        "idRegla": "ieca_ieca_duplicidad",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "ieca_neprilisina_angioedema",
+        "contraparteIds": [
+          "sacubitrilo_valsartan"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona",
+          "furosemida",
+          "hidroclorotiazida"
+        ]
+      },
+      {
+        "idRegla": "ieca_heparina_hiperpotasemia",
+        "contraparteIds": [
+          "enoxaparina",
+          "heparina"
+        ]
+      },
+      {
+        "idRegla": "ieca_dpp4_angioedema",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "ieca_antidiabetico_hipoglucemia",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "fenotiazina_antihipertensivo",
+        "contraparteIds": [
+          "clorpromazina",
+          "flufenazina",
+          "levomepromazina",
+          "mesoridazina",
+          "perfenazina",
+          "periciazina",
+          "pipotiazina",
+          "proclorperazina",
+          "promazina",
+          "tioridazina",
+          "trifluoperazina"
+        ]
+      }
+    ],
+    "relacionDiagnosticos": [
+      "I10/hipertension arterial: indicacion de clase; seleccionar farmaco y dosis segun ficha y contexto",
+      "I50/insuficiencia cardiaca: beneficio segun principio activo, fenotipo y guia vigente",
+      "I13/enfermedad cardiaca y renal hipertensiva: vigilar presion, creatinina/eGFR y potasio",
+      "N18/enfermedad renal cronica o sospecha de estenosis renal: requiere vigilancia renal y electrolitica estrecha",
+      "E11/diabetes con albuminuria o enfermedad renal: considerar beneficio renal segun indicacion y guia",
+      "O00-O99/embarazo: contraindicado por toxicidad fetal renal"
+    ],
+    "notas": "C09AA10: IECA simple. La disponibilidad y las sales comercializadas varian por pais; confirmar ficha tecnica local antes de prescribir.",
+    "referencias": [
+      {
+        "id": "who_atc_c09aa",
+        "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+        "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "C09AA ACE inhibitors, plain"
+        ],
+        "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+        "tipo": "clasificacion ATC oficial",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "zestril_smpc_interacciones_ieca",
+        "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+        "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "4.3 Contraindications",
+          "4.4 Special warnings and precautions",
+          "4.5 Interactions",
+          "4.6 Fertility, pregnancy and lactation"
+        ],
+        "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+        "tipo": "ficha tecnica regulatoria",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "ficha_trandolapril",
+        "titulo": "DailyMed: trandolapril tablets",
+        "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=6f25ed16-e5e9-4170-b4b4-3b460887779e",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "Presentaciones",
+          "Indicaciones",
+          "Posologia",
+          "Contraindicaciones",
+          "Interacciones",
+          "Farmacologia clinica"
+        ],
+        "nota": "Fuente de producto consultada para Trandolapril. La disponibilidad comercial debe verificarse por pais.",
+        "tipo": "ficha tecnica o documento regulatorio",
+        "confiabilidad": "alta"
+      },
+      "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=6f25ed16-e5e9-4170-b4b4-3b460887779e"
+    ],
+    "fuenteClinica": {
+      "estado": "verificada_local",
+      "fuente": "DailyMed: trandolapril tablets",
+      "fuentes": [
+        {
+          "id": "who_atc_c09aa",
+          "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+          "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "C09AA ACE inhibitors, plain"
+          ],
+          "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+          "tipo": "clasificacion ATC oficial",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "zestril_smpc_interacciones_ieca",
+          "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+          "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "4.3 Contraindications",
+            "4.4 Special warnings and precautions",
+            "4.5 Interactions",
+            "4.6 Fertility, pregnancy and lactation"
+          ],
+          "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+          "tipo": "ficha tecnica regulatoria",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "ficha_trandolapril",
+          "titulo": "DailyMed: trandolapril tablets",
+          "url": "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=6f25ed16-e5e9-4170-b4b4-3b460887779e",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "Presentaciones",
+            "Indicaciones",
+            "Posologia",
+            "Contraindicaciones",
+            "Interacciones",
+            "Farmacologia clinica"
+          ],
+          "nota": "Fuente de producto consultada para Trandolapril. La disponibilidad comercial debe verificarse por pais.",
+          "tipo": "ficha tecnica o documento regulatorio",
+          "confiabilidad": "alta"
+        }
+      ],
+      "paginaSeccion": "DailyMed: trandolapril tablets (https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=6f25ed16-e5e9-4170-b4b4-3b460887779e); WHO ATC C09AA10; ficha de clase IECA",
+      "confianza": "alta para identidad, presentaciones y consideraciones de clase; confirmar producto/pais antes de prescribir"
+    },
+    "farmacologia": {
+      "esquema": "cognicion.farmacologia.v1",
+      "id": "trandolapril",
+      "nombreGenerico": "Trandolapril",
+      "estadoFuente": "verificada_local",
+      "fuente": "DailyMed: trandolapril tablets"
+    },
+    "pediatria": null,
+    "origenesCatalogo": [
+      "catalogo_maestro_ieca_atc"
+    ],
+    "activo": true,
+    "estadoContenido": "curado_fuente_regulatoria",
+    "actualizadoEn": "2026-08-14"
+  },
+  {
     "id": "tranilcipromina",
     "legacyIds": [],
     "nombre": "Tranilcipromina",
@@ -80137,22 +86406,37 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
         "idRegla": "fenotiazina_antihipertensivo",
         "contraparteIds": [
           "atenolol",
+          "benazepril",
           "bisoprolol",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
+          "eplerenona",
           "espironolactona",
+          "fosinopril",
           "furosemida",
           "hidroclorotiazida",
+          "imidapril",
           "isosorbida",
           "lisinopril",
           "losartan",
           "metoprolol",
+          "moexipril",
           "nebivolol",
           "nitroglicerina",
+          "perindopril",
           "pindolol",
+          "quinapril",
+          "ramipril",
+          "sacubitrilo_valsartan",
           "sotalol",
+          "spirapril",
           "telmisartan",
-          "valsartan"
+          "temocapril",
+          "trandolapril",
+          "valsartan",
+          "zofenopril"
         ]
       },
       {
@@ -81088,9 +87372,28 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "bloqueo_dual_sraa_ieca_ara2",
         "contraparteIds": [
+          "benazepril",
           "captopril",
+          "cilazapril",
+          "delapril",
           "enalapril",
-          "lisinopril"
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril",
+          "zofenopril"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ara2_renina",
+        "contraparteIds": [
+          "aliskiren"
         ]
       },
       {
@@ -81102,6 +87405,7 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
       {
         "idRegla": "espironolactona_ieca_ara",
         "contraparteIds": [
+          "eplerenona",
           "espironolactona"
         ]
       },
@@ -83028,6 +89332,437 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "activo": true,
     "estadoContenido": "revision_inicial",
     "actualizadoEn": "2026-08-11"
+  },
+  {
+    "id": "zofenopril",
+    "legacyIds": [],
+    "nombre": "Zofenopril",
+    "genericName": "Zofenopril",
+    "principioActivo": "zofenopril",
+    "principiosActivos": [
+      "Zofenopril",
+      "zofenopril"
+    ],
+    "clasePrincipal": "IECA",
+    "clases": [
+      "IECA",
+      "Inhibidor de la enzima convertidora de angiotensina",
+      "ieca",
+      "Profarmaco IECA"
+    ],
+    "categoriasInteraccion": [
+      "renal",
+      "electrolitica",
+      "cardiovascular",
+      "hiperpotasemia",
+      "hipotension",
+      "angioedema"
+    ],
+    "sinonimos": [
+      "zofenopril",
+      "zofenopril calcio"
+    ],
+    "marcas": [
+      "Zofenil",
+      "Zopranol"
+    ],
+    "especialidades": [
+      "Cardiologia",
+      "Medicina interna",
+      "Nefrologia"
+    ],
+    "presentaciones": [
+      {
+        "id": "zofenopril-tableta-7-5-mg",
+        "texto": "tabletas de 7.5 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "7.5 mg",
+        "fuente": "https://cima.aemps.es/cima/dochtml/ft/62678/FT_62678.html",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "zofenopril-tableta-15-mg",
+        "texto": "tabletas de 15 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "15 mg",
+        "fuente": "https://cima.aemps.es/cima/dochtml/ft/62678/FT_62678.html",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "zofenopril-tableta-30-mg",
+        "texto": "tabletas de 30 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "30 mg",
+        "fuente": "https://cima.aemps.es/cima/dochtml/ft/62678/FT_62678.html",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      },
+      {
+        "id": "zofenopril-tableta-60-mg",
+        "texto": "tabletas de 60 mg",
+        "via": "oral",
+        "forma": "tableta",
+        "concentracion": "60 mg",
+        "fuente": "https://cima.aemps.es/cima/dochtml/ft/62678/FT_62678.html",
+        "rxCui": null,
+        "principioActivoPresentado": null,
+        "activo": true,
+        "origen": "catalogo_maestro_ieca_atc"
+      }
+    ],
+    "dosisHabitual": "Hipertension: iniciar habitualmente con 15 mg cada 24 horas y titular a 30 mg; maximo habitual 60 mg al dia segun ficha.",
+    "dosisHabituales": [
+      "7.5 mg",
+      "15 mg",
+      "30 mg",
+      "60 mg"
+    ],
+    "frecuenciasSugeridas": [
+      "cada 24 horas"
+    ],
+    "datosClinicos": {
+      "indicaciones": [
+        "Hipertension",
+        "Infarto agudo de miocardio en pacientes seleccionados segun ficha"
+      ],
+      "contraindicaciones": [
+        "Hipersensibilidad al principio activo o a otro IECA",
+        "Antecedente de angioedema asociado a un IECA o angioedema hereditario/idiopatico",
+        "Embarazo: toxicidad fetal por bloqueo del sistema renina-angiotensina",
+        "Uso concomitante con sacubitrilo/valsartan o dentro de las 36 horas del cambio",
+        "Uso concomitante con aliskiren en diabetes mellitus o deterioro renal significativo"
+      ],
+      "precauciones": [
+        "Hipotension sintomatica, hipovolemia o deplecion de sodio, especialmente con diureticos",
+        "Enfermedad renal, estenosis bilateral de arterias renales o estenosis en rinon unico",
+        "Hiperpotasemia o uso de farmacos/sustitutos de sal que aumentan potasio",
+        "Angioedema de cara, lengua, glotis o intestino: suspender y atender de inmediato",
+        "Tos seca persistente",
+        "Estenosis aortica/mitral o miocardiopatia obstructiva: evitar hipotension excesiva",
+        "Enfermedad vascular del colageno o inmunosupresion: considerar vigilancia hematologica",
+        "Cirugia o anestesia: riesgo de hipotension por bloqueo del SRAA",
+        "Deterioro hepatico o ictericia: suspender y evaluar por riesgo raro de lesion hepatica"
+      ],
+      "advertencias": [
+        "Controlar creatinina/eGFR y potasio antes de iniciar y 1-2 semanas despues de iniciar o titular",
+        "No usar bloqueo dual rutinario del SRAA con ARA-II o aliskiren",
+        "Separar al menos 36 horas de sacubitrilo/valsartan por riesgo de angioedema",
+        "La deshidratacion, los AINEs y los diureticos aumentan el riesgo de lesion renal e hipotension",
+        "Suspender cuanto antes si se detecta embarazo",
+        "La compatibilidad durante lactancia depende del IECA, la edad del lactante y la ficha regulatoria local"
+      ],
+      "monitorizacion": [
+        "Presion arterial y sintomas ortostaticos",
+        "Creatinina y eGFR basales y tras inicio/cambios de dosis",
+        "Potasio serico basal y tras inicio/cambios de dosis",
+        "Tos y cualquier dato de angioedema",
+        "Estado de volumen y sodio si usa diureticos",
+        "Biometria hematica si existe enfermedad vascular del colageno, inmunosupresion o deterioro renal"
+      ],
+      "dosisAdulto": [
+        {
+          "indicationId": "uso_habitual",
+          "population": "adult",
+          "usualDose": {
+            "text": "Hipertension: iniciar habitualmente con 15 mg cada 24 horas y titular a 30 mg; maximo habitual 60 mg al dia segun ficha."
+          },
+          "administrationNotes": []
+        }
+      ],
+      "dosisPediatrica": [],
+      "embarazo": "Contraindicado. Suspender cuanto antes al detectar embarazo por riesgo de toxicidad fetal, oligohidramnios, deterioro renal y muerte fetal/neonatal.",
+      "lactancia": "La recomendacion depende del principio activo, la edad del lactante y la ficha regulatoria local; confirmar compatibilidad y vigilar hipotension, diuresis y funcion renal del lactante cuando proceda."
+    },
+    "farmacocinetica": {
+      "mecanismoAccion": "Inhibe la enzima convertidora de angiotensina, reduce angiotensina II y aldosterona y aumenta bradicinina.",
+      "vidaMedia": "Zofenoprilat presenta eliminacion suficiente para dosificacion cada 24 horas; verificar parametro exacto del producto.",
+      "tiempoConcentracionMaxima": "Zofenoprilat alcanza el maximo aproximadamente 1.5 horas despues de la dosis.",
+      "duracionAccion": "Efecto antihipertensivo compatible con administracion cada 24 horas; individualizar segun respuesta y ficha tecnica.",
+      "metabolismo": "Profarmaco lipofilo hidrolizado a zofenoprilat; contiene grupo sulfhidrilo.",
+      "eliminacion": "Renal y fecal.",
+      "cyp": [
+        "Sin CYP principal clinicamente relevante documentado; revisar ficha especifica"
+      ],
+      "metabolitosActivos": [
+        "Zofenoprilat"
+      ]
+    },
+    "efectosAdversos": [
+      "Tos seca",
+      "Mareo e hipotension",
+      "Hiperpotasemia",
+      "Elevacion de creatinina o lesion renal aguda",
+      "Angioedema",
+      "Cefalea",
+      "Nausea",
+      "Rash",
+      "Neutropenia/agranulocitosis rara",
+      "Lesion hepatica colestasica rara"
+    ],
+    "riesgos": {
+      "potasio": 1,
+      "renal": 1,
+      "hipotension": 1,
+      "embarazo": 2,
+      "angioedema": 2
+    },
+    "interacciones": [
+      "Sacubitrilo/valsartan: combinacion contraindicada; separar 36 horas por riesgo de angioedema",
+      "ARA-II o aliskiren: bloqueo dual del SRAA con mayor riesgo de hipotension, hiperpotasemia y lesion renal",
+      "Diureticos ahorradores de potasio, suplementos de potasio, sustitutos de sal, trimetoprim, ciclosporina o heparinas: hiperpotasemia",
+      "AINEs: menor efecto antihipertensivo y mayor riesgo de hiperpotasemia o lesion renal aguda",
+      "Litio: aumento reversible de concentraciones y toxicidad; evitar o monitorizar estrechamente",
+      "Diureticos y otros hipotensores: hipotension aditiva, sobre todo al inicio o con hipovolemia",
+      "Insulina y antidiabeticos: puede potenciar el descenso de glucosa durante las primeras semanas",
+      "Inhibidores mTOR, racecadotrilo, inhibidores DPP-4 o activadores tisulares de plasminogeno: mayor riesgo de angioedema",
+      "Antidepresivos triciclicos, antipsicoticos y anestesicos: hipotension aditiva",
+      "Simpatomimeticos: posible reduccion del efecto antihipertensivo"
+    ],
+    "interaccionesRelacionadas": [
+      {
+        "idRegla": "sraa_aine_riesgo_renal",
+        "contraparteIds": [
+          "acido_acetilsalicilico",
+          "diclofenaco",
+          "ibuprofeno",
+          "ketorolaco",
+          "naproxeno"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_ara2",
+        "contraparteIds": [
+          "losartan",
+          "sacubitrilo_valsartan",
+          "telmisartan",
+          "valsartan"
+        ]
+      },
+      {
+        "idRegla": "bloqueo_dual_sraa_ieca_renina",
+        "contraparteIds": [
+          "aliskiren"
+        ]
+      },
+      {
+        "idRegla": "litio_ieca_ara",
+        "contraparteIds": [
+          "litio"
+        ]
+      },
+      {
+        "idRegla": "espironolactona_ieca_ara",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona"
+        ]
+      },
+      {
+        "idRegla": "ieca_ieca_duplicidad",
+        "contraparteIds": [
+          "benazepril",
+          "captopril",
+          "cilazapril",
+          "delapril",
+          "enalapril",
+          "fosinopril",
+          "imidapril",
+          "lisinopril",
+          "moexipril",
+          "perindopril",
+          "quinapril",
+          "ramipril",
+          "spirapril",
+          "temocapril",
+          "trandolapril"
+        ]
+      },
+      {
+        "idRegla": "ieca_neprilisina_angioedema",
+        "contraparteIds": [
+          "sacubitrilo_valsartan"
+        ]
+      },
+      {
+        "idRegla": "ieca_diuretico_hipotension",
+        "contraparteIds": [
+          "eplerenona",
+          "espironolactona",
+          "furosemida",
+          "hidroclorotiazida"
+        ]
+      },
+      {
+        "idRegla": "ieca_heparina_hiperpotasemia",
+        "contraparteIds": [
+          "enoxaparina",
+          "heparina"
+        ]
+      },
+      {
+        "idRegla": "ieca_dpp4_angioedema",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "ieca_antidiabetico_hipoglucemia",
+        "contraparteIds": [
+          "linagliptina",
+          "sitagliptina"
+        ]
+      },
+      {
+        "idRegla": "fenotiazina_antihipertensivo",
+        "contraparteIds": [
+          "clorpromazina",
+          "flufenazina",
+          "levomepromazina",
+          "mesoridazina",
+          "perfenazina",
+          "periciazina",
+          "pipotiazina",
+          "proclorperazina",
+          "promazina",
+          "tioridazina",
+          "trifluoperazina"
+        ]
+      }
+    ],
+    "relacionDiagnosticos": [
+      "I10/hipertension arterial: indicacion de clase; seleccionar farmaco y dosis segun ficha y contexto",
+      "I50/insuficiencia cardiaca: beneficio segun principio activo, fenotipo y guia vigente",
+      "I13/enfermedad cardiaca y renal hipertensiva: vigilar presion, creatinina/eGFR y potasio",
+      "N18/enfermedad renal cronica o sospecha de estenosis renal: requiere vigilancia renal y electrolitica estrecha",
+      "E11/diabetes con albuminuria o enfermedad renal: considerar beneficio renal segun indicacion y guia",
+      "O00-O99/embarazo: contraindicado por toxicidad fetal renal"
+    ],
+    "notas": "C09AA15: IECA simple. La disponibilidad y las sales comercializadas varian por pais; confirmar ficha tecnica local antes de prescribir.",
+    "referencias": [
+      {
+        "id": "who_atc_c09aa",
+        "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+        "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "C09AA ACE inhibitors, plain"
+        ],
+        "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+        "tipo": "clasificacion ATC oficial",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "zestril_smpc_interacciones_ieca",
+        "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+        "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "4.3 Contraindications",
+          "4.4 Special warnings and precautions",
+          "4.5 Interactions",
+          "4.6 Fertility, pregnancy and lactation"
+        ],
+        "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+        "tipo": "ficha tecnica regulatoria",
+        "confiabilidad": "alta"
+      },
+      {
+        "id": "ficha_zofenopril",
+        "titulo": "AEMPS CIMA: ficha tecnica de zofenopril",
+        "url": "https://cima.aemps.es/cima/dochtml/ft/62678/FT_62678.html",
+        "fechaConsulta": "2026-08-14",
+        "secciones": [
+          "Presentaciones",
+          "Indicaciones",
+          "Posologia",
+          "Contraindicaciones",
+          "Interacciones",
+          "Farmacologia clinica"
+        ],
+        "nota": "Fuente de producto consultada para Zofenopril. La disponibilidad comercial debe verificarse por pais.",
+        "tipo": "ficha tecnica o documento regulatorio",
+        "confiabilidad": "alta"
+      },
+      "https://cima.aemps.es/cima/dochtml/ft/62678/FT_62678.html"
+    ],
+    "fuenteClinica": {
+      "estado": "verificada_local",
+      "fuente": "AEMPS CIMA: ficha tecnica de zofenopril",
+      "fuentes": [
+        {
+          "id": "who_atc_c09aa",
+          "titulo": "WHO Collaborating Centre for Drug Statistics Methodology: C09AA ACE inhibitors, plain",
+          "url": "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "C09AA ACE inhibitors, plain"
+          ],
+          "nota": "Universo de principios activos IECA simples usado para comprobar cobertura.",
+          "tipo": "clasificacion ATC oficial",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "zestril_smpc_interacciones_ieca",
+          "titulo": "Zestril 20 mg tablets - Summary of Product Characteristics",
+          "url": "https://www.medicines.org.uk/emc/product/3269/smpc",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "4.3 Contraindications",
+            "4.4 Special warnings and precautions",
+            "4.5 Interactions",
+            "4.6 Fertility, pregnancy and lactation"
+          ],
+          "nota": "Fuente regulatoria de clase para contraindicaciones, vigilancia e interacciones de IECA.",
+          "tipo": "ficha tecnica regulatoria",
+          "confiabilidad": "alta"
+        },
+        {
+          "id": "ficha_zofenopril",
+          "titulo": "AEMPS CIMA: ficha tecnica de zofenopril",
+          "url": "https://cima.aemps.es/cima/dochtml/ft/62678/FT_62678.html",
+          "fechaConsulta": "2026-08-14",
+          "secciones": [
+            "Presentaciones",
+            "Indicaciones",
+            "Posologia",
+            "Contraindicaciones",
+            "Interacciones",
+            "Farmacologia clinica"
+          ],
+          "nota": "Fuente de producto consultada para Zofenopril. La disponibilidad comercial debe verificarse por pais.",
+          "tipo": "ficha tecnica o documento regulatorio",
+          "confiabilidad": "alta"
+        }
+      ],
+      "paginaSeccion": "AEMPS CIMA: ficha tecnica de zofenopril (https://cima.aemps.es/cima/dochtml/ft/62678/FT_62678.html); WHO ATC C09AA15; ficha de clase IECA",
+      "confianza": "alta para identidad, presentaciones y consideraciones de clase; confirmar producto/pais antes de prescribir"
+    },
+    "farmacologia": {
+      "esquema": "cognicion.farmacologia.v1",
+      "id": "zofenopril",
+      "nombreGenerico": "Zofenopril",
+      "estadoFuente": "verificada_local",
+      "fuente": "AEMPS CIMA: ficha tecnica de zofenopril"
+    },
+    "pediatria": null,
+    "origenesCatalogo": [
+      "catalogo_maestro_ieca_atc"
+    ],
+    "activo": true,
+    "estadoContenido": "curado_fuente_regulatoria",
+    "actualizadoEn": "2026-08-14"
   },
   {
     "id": "zolpidem",

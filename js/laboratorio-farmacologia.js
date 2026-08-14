@@ -1,4 +1,4 @@
-import { COBERTURA_FARMACOLOGICA, MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES, medicamentoPorTexto } from "./data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-files-consolidated-v1";
+import { COBERTURA_FARMACOLOGICA, MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES, medicamentoPorTexto } from "./data/catalogoFarmacologicoUnificado.js?v=20260814-ieca-c09aa-v1";
 import { CIE10 } from "./data/catalogoDiagnosticos.js?v=20260813-cie10-cd-v1";
 import {
   evaluarMedicamentosPaciente,

@@ -1,4 +1,8 @@
-import { construirNombreCompletoPaciente, normalizarTextoBusquedaPaciente } from "../../../utils/nombresPacientes.js";
+import {
+  construirNombreCompletoPaciente,
+  normalizarAliasPaciente,
+  normalizarTextoBusquedaPaciente
+} from "../../../utils/nombresPacientes.js?v=20260814-patient-alias-v1";
 
 export const NAME_PARTICLES = Object.freeze([
   "de",
@@ -40,6 +44,7 @@ const COMMON_GIVEN_NAMES = new Set([
   "ana",
   "antonio",
   "brian",
+  "carmen",
   "carlos",
   "cecilio",
   "efrain",
@@ -54,6 +59,46 @@ const COMMON_GIVEN_NAMES = new Set([
   "luis",
   "maria"
 ]);
+
+const NON_ALIAS_PARENTHETICAL_TERMS = /\b(?:casad[ao]|de\s+solter[ao]|viud[ao]|nacid[ao]|antes|expediente|edad|a(?:n|ñ)os?)\b/i;
+
+function isLikelyPatientAlias(value = "") {
+  const alias = normalizarAliasPaciente(value);
+  const tokens = alias.split(/\s+/).filter(Boolean);
+  return Boolean(
+    alias
+    && tokens.length <= 4
+    && !NON_ALIAS_PARENTHETICAL_TERMS.test(alias)
+    && !/\d/.test(alias)
+    && /^[\p{L}][\p{L}'’.-]*(?:\s+[\p{L}][\p{L}'’.-]*)*$/u.test(alias)
+  );
+}
+
+/**
+ * Separa un alias explícito situado entre paréntesis al inicio o al final de
+ * un campo estructurado de nombre. Los paréntesis internos se conservan para
+ * no reinterpretar nombres libres sin evidencia suficiente.
+ */
+export function splitPatientNameAndAlias(value = "") {
+  const originalValue = cleanName(value);
+  const startMatch = originalValue.match(/^\(([^()]+)\)\s+(.+)$/u);
+  const endMatch = originalValue.match(/^(.+?)\s+\(([^()]+)\)$/u);
+  const aliasCandidate = startMatch?.[1] || endMatch?.[2] || "";
+  const legalName = cleanName(startMatch?.[2] || endMatch?.[1] || originalValue);
+  const alias = normalizarAliasPaciente(aliasCandidate);
+  const legalTokenCount = legalName.split(/\s+/).filter(Boolean).length;
+
+  if (!aliasCandidate || legalTokenCount < 2 || !isLikelyPatientAlias(alias)) {
+    return { legalName: originalValue, alias: "", detected: false };
+  }
+
+  return {
+    legalName,
+    alias,
+    detected: true,
+    ruleApplied: "structured-parenthetical-alias"
+  };
+}
 
 function cleanName(value = "") {
   return String(value || "").trim().replace(/\s+/g, " ");

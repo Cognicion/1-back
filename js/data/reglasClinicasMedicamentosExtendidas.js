@@ -435,6 +435,120 @@ const INTERACCIONES_EXTRA = [
 
 INTERACCIONES_EXTRA.push(
   {
+    id: "ieca_ieca_duplicidad",
+    clasesA: ["ieca"],
+    clasesB: ["ieca"],
+    severidad: "moderada",
+    titulo: "Duplicidad terapéutica: IECA + IECA",
+    mecanismo: "Dos inhibidores de la ECA producen un bloqueo farmacológico redundante del mismo sistema.",
+    efecto: "No suele aportar beneficio adicional y puede aumentar hipotensión, hiperpotasemia, deterioro renal, tos o angioedema.",
+    recomendacion: "Evitar la duplicidad. Confirmar conciliación farmacológica y conservar un solo IECA salvo justificación especializada excepcional.",
+    categoria: "duplicidad_terapeutica",
+    tipoInteraccion: "farmacodinamica",
+    evidencia: "regla_de_clase",
+    fuentes: [
+      "WHO ATC/DDD C09AA: los medicamentos implicados pertenecen a la misma clase de inhibidores de la ECA.",
+      "https://atcddd.fhi.no/atc_ddd_index/?code=C09AA&showdescription=no"
+    ]
+  },
+  {
+    id: "ieca_neprilisina_angioedema",
+    clasesA: ["ieca"],
+    ingredientesB: ["sacubitrilo_valsartan"],
+    clasesB: ["inhibidor_neprilisina"],
+    severidad: "critica",
+    titulo: "IECA + sacubitrilo/valsartán: combinación contraindicada",
+    mecanismo: "La inhibición simultánea o temporalmente próxima de ECA y neprilisina aumenta la acumulación de péptidos vasoactivos, incluida bradicinina.",
+    efecto: "Aumenta de forma clínicamente relevante el riesgo de angioedema, incluida obstrucción de la vía aérea.",
+    recomendacion: "No coadministrar. Respetar un intervalo mínimo de 36 horas entre la última dosis de un IECA y sacubitrilo/valsartán, y viceversa.",
+    parametrosVigilancia: ["Edema de cara/labios/lengua", "Disnea/estridor", "Intervalo de lavado de 36 horas"],
+    categoria: "angioedema",
+    tipoInteraccion: "farmacodinamica",
+    evidencia: "contraindicacion_en_ficha_tecnica",
+    confianza: "alta",
+    requiereJustificacion: true,
+    fuentes: [
+      "Zestril SmPC, secciones 4.3 y 4.5: contraindicación con sacubitrilo/valsartán y separación mínima de 36 horas.",
+      "https://www.medicines.org.uk/emc/product/3269/smpc"
+    ]
+  },
+  {
+    id: "ieca_diuretico_hipotension",
+    clasesA: ["ieca"],
+    clasesB: ["diuretico"],
+    severidad: "moderada",
+    titulo: "IECA + diurético: hipotensión por depleción de volumen",
+    mecanismo: "La depleción de sodio o volumen inducida por el diurético aumenta la respuesta hipotensora al inicio o titulación del IECA.",
+    efecto: "Puede producir hipotensión sintomática, mareo, síncope y deterioro renal, especialmente tras la primera dosis.",
+    recomendacion: "Revisar hidratación, sodio, presión arterial y función renal; considerar inicio con dosis menor y ajustar el diurético solo según el contexto clínico.",
+    parametrosVigilancia: ["Presión arterial sentado/de pie", "Estado de volumen", "Sodio", "Creatinina/eGFR"],
+    categoria: "cardiovascular",
+    tipoInteraccion: "farmacodinamica",
+    evidencia: "documentada_en_etiquetado",
+    confianza: "alta",
+    fuentes: [
+      "Zestril SmPC, sección 4.5: los pacientes que reciben diuréticos pueden presentar una reducción excesiva de la presión arterial al iniciar lisinopril.",
+      "https://www.medicines.org.uk/emc/product/3269/smpc"
+    ]
+  },
+  {
+    id: "ieca_heparina_hiperpotasemia",
+    clasesA: ["ieca"],
+    ingredientesB: ["heparina", "enoxaparina"],
+    severidad: "moderada",
+    titulo: "IECA + heparina: riesgo de hiperpotasemia",
+    mecanismo: "Los IECA reducen aldosterona y las heparinas pueden suprimir adicionalmente su producción, disminuyendo la excreción renal de potasio.",
+    efecto: "Puede aumentar el potasio sérico, sobre todo en diabetes, enfermedad renal, edad avanzada o tratamientos prolongados.",
+    recomendacion: "Vigilar potasio y función renal; intensificar control si existen otros fármacos que eleven potasio.",
+    parametrosVigilancia: ["Potasio", "Creatinina", "eGFR", "ECG si hiperpotasemia"],
+    categoria: "electrolitica",
+    tipoInteraccion: "farmacodinamica",
+    evidencia: "documentada_en_ficha_tecnica",
+    confianza: "moderada-alta",
+    fuentes: [
+      "Zestril SmPC, sección 4.5: heparina figura entre los medicamentos que pueden elevar potasio durante tratamiento con IECA.",
+      "https://www.medicines.org.uk/emc/product/3269/smpc"
+    ]
+  },
+  {
+    id: "ieca_dpp4_angioedema",
+    clasesA: ["ieca"],
+    clasesB: ["inhibidor_dpp4"],
+    severidad: "moderada",
+    titulo: "IECA + inhibidor DPP-4: mayor riesgo de angioedema",
+    mecanismo: "La inhibición de ECA y DPP-4 puede reducir vías complementarias de degradación de péptidos vasoactivos.",
+    efecto: "Puede aumentar el riesgo de angioedema en comparación con el uso aislado.",
+    recomendacion: "Educar sobre edema de labios, lengua o cara y dificultad respiratoria; suspender y atender de inmediato si aparecen.",
+    parametrosVigilancia: ["Edema de cara/labios/lengua", "Disnea/estridor"],
+    categoria: "angioedema",
+    tipoInteraccion: "farmacodinamica",
+    evidencia: "documentada_en_ficha_tecnica",
+    confianza: "moderada",
+    fuentes: [
+      "Zestril SmPC, sección 4.5: los inhibidores de DPP-4 pueden aumentar el riesgo de angioedema con IECA.",
+      "https://www.medicines.org.uk/emc/product/3269/smpc"
+    ]
+  },
+  {
+    id: "ieca_antidiabetico_hipoglucemia",
+    clasesA: ["ieca"],
+    clasesB: ["antidiabetico"],
+    severidad: "moderada",
+    titulo: "IECA + antidiabético: posible potenciación de hipoglucemia",
+    mecanismo: "Los IECA pueden aumentar la sensibilidad a la insulina y potenciar el efecto hipoglucemiante, especialmente al inicio del tratamiento combinado.",
+    efecto: "Puede aumentar episodios de hipoglucemia durante las primeras semanas en pacientes susceptibles.",
+    recomendacion: "Reforzar autocontrol de glucosa al iniciar o titular y ajustar el antidiabético únicamente según resultados y valoración clínica.",
+    parametrosVigilancia: ["Glucosa capilar", "Síntomas de hipoglucemia", "Función renal"],
+    categoria: "metabolica",
+    tipoInteraccion: "farmacodinamica",
+    evidencia: "documentada_en_ficha_tecnica",
+    confianza: "moderada",
+    fuentes: [
+      "Zestril SmPC, sección 4.5: la combinación con insulina o antidiabéticos orales puede intensificar el descenso de glucosa, especialmente durante las primeras semanas.",
+      "https://www.medicines.org.uk/emc/product/3269/smpc"
+    ]
+  },
+  {
     id: "serotoninergico_serotoninergico",
     clasesA: ["serotoninergico"],
     clasesB: ["serotoninergico"],

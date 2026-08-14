@@ -19,7 +19,7 @@ import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { crearTratamiento } from "./services/tratamientos.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
-import { construirNombreCompletoPaciente } from "./utils/nombresPacientes.js";
+import { construirNombreCompletoPaciente, normalizarAliasPaciente } from "./utils/nombresPacientes.js?v=20260814-patient-alias-v1";
 
 let uidMedico = "";
 let medicoActualDatos = {};
@@ -376,6 +376,7 @@ function actualizarDatosPersonalesDraftNuevo() {
   const nombres = document.getElementById("nombresPaciente")?.value || "";
   const apellidoPaterno = document.getElementById("apellidoPaternoPaciente")?.value || "";
   const apellidoMaterno = document.getElementById("apellidoMaternoPaciente")?.value || "";
+  const alias = normalizarAliasPaciente(document.getElementById("aliasPaciente")?.value || "");
   const nombreCompleto = construirNombreCompletoPaciente({ nombres, apellidoPaterno, apellidoMaterno });
   nuevoPacienteDraft.datosPersonales = {
     ...(nuevoPacienteDraft.datosPersonales || {}),
@@ -384,6 +385,7 @@ function actualizarDatosPersonalesDraftNuevo() {
     nombres: nombres.trim().replace(/\s+/g, " "),
     apellidoPaterno: apellidoPaterno.trim().replace(/\s+/g, " "),
     apellidoMaterno: apellidoMaterno.trim().replace(/\s+/g, " "),
+    alias,
     nombreEstructurado: true,
     fechaNacimiento: document.getElementById("fechaNacimiento")?.value || "",
     edadManual: valorEdadManual(),
@@ -576,6 +578,7 @@ window.guardarPacienteNuevo = async function() {
   const nombres = document.getElementById("nombresPaciente")?.value || "";
   const apellidoPaterno = document.getElementById("apellidoPaternoPaciente")?.value || "";
   const apellidoMaterno = document.getElementById("apellidoMaternoPaciente")?.value || "";
+  const alias = normalizarAliasPaciente(document.getElementById("aliasPaciente")?.value || "");
   const nombreCompleto = construirNombreCompletoPaciente({ nombres, apellidoPaterno, apellidoMaterno });
   if (document.getElementById("nombre")) document.getElementById("nombre").value = nombreCompleto;
   actualizarDatosPersonalesDraftNuevo();
@@ -605,6 +608,7 @@ window.guardarPacienteNuevo = async function() {
     nombres: nombres.trim().replace(/\s+/g, " "),
     apellidoPaterno: apellidoPaterno.trim().replace(/\s+/g, " "),
     apellidoMaterno: apellidoMaterno.trim().replace(/\s+/g, " "),
+    alias,
     nombreEstructurado: true,
     expedienteCognicion,
     fechaNacimiento,
@@ -641,6 +645,7 @@ window.guardarPacienteNuevo = async function() {
       nombres: nombres.trim().replace(/\s+/g, " "),
       apellidoPaterno: apellidoPaterno.trim().replace(/\s+/g, " "),
       apellidoMaterno: apellidoMaterno.trim().replace(/\s+/g, " "),
+      alias,
       expedienteCognicion,
       tipoPaciente,
       institucionPaciente,

@@ -1,5 +1,5 @@
 import { actualizarUsuario, crearPacienteProvisional, obtenerUsuario } from "../../../services/usuarios.js";
-import { construirNombreCompletoPaciente } from "../../../utils/nombresPacientes.js";
+import { construirNombreCompletoPaciente, normalizarAliasPaciente } from "../../../utils/nombresPacientes.js?v=20260814-patient-alias-v1";
 import { normalizeRecordNumber } from "../parsing/patientDuplicateMatcher.js";
 
 function normalizeImportedDate(value = "") {
@@ -26,6 +26,7 @@ export function buildPatientPayload(fields = {}, user = {}) {
   const nombres = String(fields.nombres || "").trim().replace(/\s+/g, " ");
   const apellidoPaterno = String(fields.apellidoPaterno || "").trim().replace(/\s+/g, " ");
   const apellidoMaterno = String(fields.apellidoMaterno || "").trim().replace(/\s+/g, " ");
+  const alias = normalizarAliasPaciente(fields.alias);
   const name = construirNombreCompletoPaciente({ nombres, apellidoPaterno, apellidoMaterno }) || fields.nombre || "Paciente importado sin nombre";
   const expediente = normalizeRecordNumber(fields.expediente || fields.numeroExpediente);
   const fechaNacimiento = normalizeImportedDate(fields.fechaNacimiento);
@@ -35,6 +36,7 @@ export function buildPatientPayload(fields = {}, user = {}) {
     nombres,
     apellidoPaterno,
     apellidoMaterno,
+    alias,
     nombreEstructurado: Boolean(nombres || apellidoPaterno || apellidoMaterno),
     edadManual: fields.edad || "",
     sexo: fields.sexo || "",
@@ -59,6 +61,7 @@ export function buildPatientPayload(fields = {}, user = {}) {
       nombres,
       apellidoPaterno,
       apellidoMaterno,
+      alias,
       edadManual: fields.edad || "",
       sexo: fields.sexo || "",
       fechaNacimiento,
@@ -106,6 +109,7 @@ export async function mergeTransferredPatientFields(patientId, fields = {}, user
     nombres: hasImportedName ? imported.nombres : "",
     apellidoPaterno: hasImportedName ? imported.apellidoPaterno : "",
     apellidoMaterno: hasImportedName ? imported.apellidoMaterno : "",
+    alias: imported.alias,
     edadManual: fields.edad || "",
     sexo: fields.sexo || "",
     fechaNacimiento: imported.fechaNacimiento,
@@ -124,6 +128,7 @@ export async function mergeTransferredPatientFields(patientId, fields = {}, user
     nombres: hasImportedName ? imported.nombres : "",
     apellidoPaterno: hasImportedName ? imported.apellidoPaterno : "",
     apellidoMaterno: hasImportedName ? imported.apellidoMaterno : "",
+    alias: imported.alias,
     nombreEstructurado: hasImportedName ? imported.nombreEstructurado : null,
     edadManual: imported.edadManual,
     sexo: imported.sexo,

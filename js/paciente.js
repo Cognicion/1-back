@@ -4,7 +4,7 @@ import {
   MEDICAMENTOS_MAESTROS,
   buscarMedicamentos,
   medicamentoPorTexto
-} from "./data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-files-consolidated-v1";
+} from "./data/catalogoFarmacologicoUnificado.js?v=20260814-ieca-c09aa-v1";
 import { CIE10, CIE11 } from "./data/catalogoDiagnosticos.js?v=20260813-cie10-cd-v1";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
@@ -28,8 +28,9 @@ import {
 import { renderizarFormularioLaboratorioFray } from "./components/solicitudLaboratorioFray.js";
 import {
   construirNombreCompletoPaciente,
+  obtenerAliasPaciente,
   obtenerNombrePacienteParaMostrar
-} from "./utils/nombresPacientes.js";
+} from "./utils/nombresPacientes.js?v=20260814-patient-alias-v1";
 import { normalizarTextoFrecuencia } from "./utils/frecuencias.js";
 import {
   ETIQUETA_ROL_ENFERMERIA_SALUD_MENTAL,
@@ -1145,6 +1146,7 @@ function renderizarGaugeVital(clave, datos = {}) {
 const VERSION_RESUMEN_EXPEDIENTE = "1.41";
 const CAMPOS_RESUMEN_PACIENTE = Object.freeze({
   identificacion: [
+    ["alias", "Alias", "text", ["alias", "datosInstitucionales.alias"]],
     ["email", "Correo", "text", ["email", "correo"]],
     ["fechaNacimiento", "Fecha de nacimiento", "date", ["fechaNacimiento"]],
     ["sexo", "Sexo", "text", ["sexo"]],
@@ -1419,8 +1421,10 @@ function renderizarCuadroResumenPaciente(seccionId) {
 
 function renderizarBloqueIdentificacionLab(datos = {}, tipoPaciente = "privada") {
   const fechaNacimiento = obtenerFechaNacimiento(datos);
+  const alias = obtenerAliasPaciente(datos);
   return `<article class="lab-card resumen-cuadro" data-resumen-cuadro="identificacion">
     ${encabezadoResumenPaciente("Identificación", "identificacion")}
+    ${alias ? `<p><b>Alias:</b> ${renderizarDatoResumenPaciente(datos, "alias", alias)}</p>` : ""}
     <p><b>Correo:</b> ${renderizarDatoResumenPaciente(datos, "email", valorPaciente(datos, ["email", "correo"], "Sin correo"))}</p>
     <p><b>Fecha de nacimiento:</b> ${renderizarDatoResumenPaciente(datos, "fechaNacimiento", formatearFecha(fechaNacimiento))}</p>
     <p><b>Sexo:</b> ${renderizarDatoResumenPaciente(datos, "sexo", valorPaciente(datos, ["sexo"]))}</p>
@@ -4181,6 +4185,7 @@ async function guardarCampoPacienteInline(campo, nuevoValor, datos = {}) {
     "fechaNacimiento",
     "sexo",
     "genero",
+    "alias",
     "alergias",
     "tipoSangre",
     "peso",

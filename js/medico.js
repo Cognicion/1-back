@@ -6,7 +6,7 @@ import {
   obtenerNombrePacienteParaMostrar,
   normalizarTextoBusquedaPaciente,
   textoBusquedaPaciente
-} from "./utils/nombresPacientes.js";
+} from "./utils/nombresPacientes.js?v=20260814-patient-alias-v1";
 import {
   canUseMedicalPanel,
   isAdministrator
@@ -269,7 +269,7 @@ function inicializarImportacionDocxLazy() {
     try {
       if (!traspasoPacientesPromise) {
         // Marcador histórico de cache: import("./modules/patient-transfer/index.js?v=20260804-segmentation-debug-v1")
-    traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260813-diagnosis-context-gate-v1");
+    traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260814-patient-alias-v1");
       }
       const modulo = await traspasoPacientesPromise;
       modulo.openPatientTransfer();

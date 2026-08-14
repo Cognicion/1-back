@@ -8,7 +8,7 @@ import {
 import {
   obtenerMedicamentoPorId,
   resolverMedicamentoCanonico
-} from "../data/catalogoFarmacologicoUnificado.js?v=20260811-pharmacology-files-consolidated-v1";
+} from "../data/catalogoFarmacologicoUnificado.js?v=20260814-ieca-c09aa-v1";
 import { detectarInteraccionesPorCitocromos } from "../data/citocromosFarmacologicos.js?v=20260811-pharmacology-files-consolidated-v1";
 import { CATALOGO_DIAGNOSTICOS } from "../data/catalogoDiagnosticos.js?v=20260813-cie10-cd-v1";
 

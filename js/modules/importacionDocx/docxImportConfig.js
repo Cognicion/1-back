@@ -16,6 +16,7 @@ export const FIELD_RULES = Object.freeze([
   { key: "nombres", label: "Nombre(s)", aliases: ["nombre o nombres", "nombre(s)", "nombres", "nombre"] },
   { key: "apellidoPaterno", label: "Apellido paterno", aliases: ["apellido paterno", "primer apellido"] },
   { key: "apellidoMaterno", label: "Apellido materno", aliases: ["apellido materno", "segundo apellido"] },
+  { key: "alias", label: "Alias (opcional)", aliases: ["nombre preferido", "nombre social", "nombre elegido", "alias"] },
   { key: "edad", label: "Edad", aliases: ["edad"] },
   { key: "sexo", label: "Sexo", aliases: ["sexo"] },
   { key: "genero", label: "Genero", aliases: ["genero", "genero/sexo"] },
