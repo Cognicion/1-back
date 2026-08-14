@@ -8696,9 +8696,16 @@ function renderizarListaSolicitudEstudios() {
     `).join("")
     : "<p>Sin estudios agregados.</p>";
 
-  contenedor.querySelectorAll("[data-quitar-estudio-solicitud]").forEach((boton) => {
+    contenedor.querySelectorAll("[data-quitar-estudio-solicitud]").forEach((boton) => {
     boton.addEventListener("click", () => {
-      estudiosSolicitudActual.splice(Number(boton.dataset.quitarEstudioSolicitud), 1);
+      const indice = Number(boton.dataset.quitarEstudioSolicitud);
+      const eliminado = estudiosSolicitudActual[indice];
+      estudiosSolicitudActual.splice(indice, 1);
+      if (esFormatoFrayLaboratorio(estadoSolicitud.formatoId) && eliminado?.id) {
+        estadoSolicitud.estudiosFrayLaboratorio = estadoSolicitud.estudiosFrayLaboratorio
+          .filter((item) => item.id !== eliminado.id);
+        actualizarVistaCamposLaboratorioFray();
+      }
       renderizarListaSolicitudEstudios();
       actualizarPreviewSolicitudEstudios();
     });
@@ -8795,6 +8802,11 @@ function agregarEstudioSolicitud() {
       return;
     }
     estadoSolicitud.estudiosFrayLaboratorio = seleccionados;
+    estudiosSolicitudActual = seleccionados.map((item) => ({
+      ...item,
+      categoria: item.categoriaId || "laboratorio"
+    }));
+    renderizarListaSolicitudEstudios();
     actualizarVistaCamposLaboratorioFray();
     actualizarPreviewSolicitudEstudios();
     return;
