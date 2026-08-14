@@ -8350,7 +8350,13 @@ function sincronizarFormularioPorFormatoSolicitud(formatoId = "") {
   if (campos) campos.hidden = !esFrayLaboratorioActivo;
   if (categoriaSelect) categoriaSelect.disabled = esFrayLaboratorioActivo;
   if (estudioSelect) estudioSelect.disabled = esFrayLaboratorioActivo;
-  if (agregar) agregar.hidden = esFrayLaboratorioActivo;
+  if (agregar) {
+    agregar.hidden = false;
+    agregar.textContent = esFrayLaboratorioActivo ? "Agregar estudios" : "Agregar estudio";
+    agregar.setAttribute("aria-label", esFrayLaboratorioActivo
+      ? "Agregar estudios seleccionados"
+      : "Agregar estudio seleccionado");
+  }
   if (estudioLabel) estudioLabel.hidden = esFrayLaboratorioActivo;
   if (motivoGeneralLabel) motivoGeneralLabel.hidden = esFrayLaboratorioActivo;
   if (prioridadGeneralLabel) prioridadGeneralLabel.hidden = esFrayLaboratorioActivo;
@@ -8782,6 +8788,18 @@ function manejarCambioFormatoSolicitud() {
 }
 
 function agregarEstudioSolicitud() {
+  if (esFormatoFrayLaboratorio(estadoSolicitud.formatoId)) {
+    const seleccionados = obtenerEstudiosFrayLaboratorioSeleccionados();
+    if (!seleccionados.length) {
+      alert("Selecciona al menos un estudio.");
+      return;
+    }
+    estadoSolicitud.estudiosFrayLaboratorio = seleccionados;
+    actualizarVistaCamposLaboratorioFray();
+    actualizarPreviewSolicitudEstudios();
+    return;
+  }
+
   const categoria = estadoSolicitud.categoria || normalizarCategoriaEstudio(valorCampo("solicitudEstudioCategoria") || "laboratorio");
   const nombre = valorCampo("solicitudEstudioNombre");
 
