@@ -235,25 +235,56 @@
     </div>
 
     <div class="formato-manual-admin-grid">
-      <form id="formCrearFormatoManualAdmin" class="formato-manual-admin-card">
-        <h3>Crear formato manual</h3>
-        <p>Define el formato y, si aplica, sube su logo. No se asignará automáticamente a ningún usuario.</p>
-        <label>Identificador
-          <input id="formatoManualId" required maxlength="80" placeholder="ej. nota_institucional">
-        </label>
-        <label>Nombre visible
-          <input id="formatoManualNombre" required maxlength="120" placeholder="Nombre del formato">
-        </label>
-        <label>Descripción
-          <textarea id="formatoManualDescripcion" maxlength="500" placeholder="Uso y alcance del formato"></textarea>
-        </label>
-        <label>Contenido manual
-          <textarea id="formatoManualContenido" required placeholder="Escribe aquí la estructura o instrucciones del formato"></textarea>
-        </label>
-        <label>Logo opcional
-          <input id="formatoManualLogo" type="file" accept="image/png,image/jpeg,image/webp">
-        </label>
-        <button type="submit">Crear formato manual</button>
+      <form id="formCrearFormatoManualAdmin" class="formato-manual-admin-card formato-visual-builder-card">
+        <div class="formato-visual-builder-encabezado">
+          <div>
+            <h3>Creador visual de formatos</h3>
+            <p>Diseña sobre una hoja A4: mueve el logo, cambia su tamaño y agrega o reordena secciones.</p>
+          </div>
+          <button id="btnLimpiarDisenoFormato" type="button">Limpiar diseño</button>
+        </div>
+
+        <div class="formato-visual-datos">
+          <label>Identificador
+            <input id="formatoManualId" required maxlength="80" placeholder="ej. nota_institucional">
+          </label>
+          <label>Nombre visible
+            <input id="formatoManualNombre" required maxlength="120" placeholder="Nombre del formato">
+          </label>
+          <label>Descripción
+            <textarea id="formatoManualDescripcion" maxlength="500" placeholder="Uso y alcance del formato"></textarea>
+          </label>
+          <label>Logo opcional
+            <input id="formatoManualLogo" type="file" accept="image/png,image/jpeg,image/webp">
+          </label>
+          <label>Tamaño del logo
+            <input id="formatoVisualLogoTamano" type="range" min="8" max="45" value="18">
+          </label>
+        </div>
+
+        <div class="formato-visual-toolbar" aria-label="Herramientas del creador de formatos">
+          <span>Añadir sección:</span>
+          <button type="button" data-agregar-seccion-formato="texto">Texto</button>
+          <button type="button" data-agregar-seccion-formato="campos">Campos</button>
+          <button type="button" data-agregar-seccion-formato="tabla">Tabla</button>
+        </div>
+
+        <div class="formato-visual-area">
+          <div id="formatoVisualLienzo" class="formato-visual-lienzo" aria-label="Vista previa del formato">
+            <img id="formatoVisualLogoPreview" class="formato-visual-logo" alt="Logo del formato" hidden>
+            <div id="formatoVisualSecciones" class="formato-visual-secciones"></div>
+          </div>
+          <aside class="formato-visual-ayuda">
+            <strong>Edición visual</strong>
+            <span>Arrastra el logo directamente sobre la hoja.</span>
+            <span>Edita títulos y textos haciendo clic sobre ellos.</span>
+            <span>Usa las flechas para ordenar y × para quitar una sección.</span>
+            <span>Las tablas permiten añadir filas y columnas.</span>
+          </aside>
+        </div>
+
+        <textarea id="formatoManualContenido" hidden></textarea>
+        <button type="submit">Guardar formato visual</button>
       </form>
 
       <form id="formCrearPaqueteFormatosAdmin" class="formato-manual-admin-card">

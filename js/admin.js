@@ -88,6 +88,11 @@ let reportesUsuariosAdmin = [];
 let codigosMedicoAdmin = [];
 let formatosManualesAdmin = [];
 let paquetesFormatosAdmin = [];
+let formatoVisualArrastreLogo = null;
+const formatoVisualEstado = {
+  logo: { x: 6, y: 4, ancho: 18, dataUrl: "" },
+  secciones: []
+};
 let avisosGlobalesAdmin = [];
 let notasPorPaciente = {};
 let adminActual = null;
@@ -314,6 +319,7 @@ function configurarFiltros() {
   document.getElementById("btnActualizarCatalogoManualAdmin")?.addEventListener("click", cargarCatalogoManualFormatosAdmin);
   document.getElementById("formCrearFormatoManualAdmin")?.addEventListener("submit", crearFormatoManualAdmin);
   document.getElementById("formCrearPaqueteFormatosAdmin")?.addEventListener("submit", crearPaqueteFormatosAdmin);
+  configurarCreadorVisualFormatosAdmin();
   document.getElementById("btnAutorizarFrayVisibles")?.addEventListener("click", () => aplicarFormatoUsuariosVisiblesAdmin(FORMAT_PERMISSION_FRAY, true));
   document.getElementById("btnRetirarFrayVisibles")?.addEventListener("click", () => aplicarFormatoUsuariosVisiblesAdmin(FORMAT_PERMISSION_FRAY, false));
   document.getElementById("btnAutorizarNavarroVisibles")?.addEventListener("click", () => aplicarFormatoUsuariosVisiblesAdmin(FORMAT_PERMISSION_NAVARRO, true));
@@ -1809,6 +1815,196 @@ async function retirarReconocimientoColaboradorAdmin(evento) {
 }
 
 
+function crearSeccionFormatoVisual(tipo = "texto") {
+  const id = `seccion_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  if (tipo === "campos") {
+    return { id, tipo, titulo: "Datos de identificación", campos: ["Nombre", "Fecha", "Expediente"] };
+  }
+  if (tipo === "tabla") {
+    return {
+      id,
+      tipo,
+      titulo: "Tabla de registro",
+      celdas: [
+        ["Columna 1", "Columna 2", "Columna 3"],
+        ["", "", ""],
+        ["", "", ""]
+      ]
+    };
+  }
+  return { id, tipo: "texto", titulo: "Nueva sección", texto: "Escribe aquí el contenido de la sección." };
+}
+
+function contenidoTextoFormatoVisual() {
+  return formatoVisualEstado.secciones.map((seccion) => {
+    if (seccion.tipo === "campos") return `${seccion.titulo}\n${seccion.campos.map((campo) => `${campo}:`).join("\n")}`;
+    if (seccion.tipo === "tabla") return `${seccion.titulo}\n${seccion.celdas.map((fila) => fila.join(" | ")).join("\n")}`;
+    return `${seccion.titulo}\n${seccion.texto || ""}`;
+  }).join("\n\n");
+}
+
+function sincronizarContenidoFormatoVisual() {
+  const campo = document.getElementById("formatoManualContenido");
+  if (campo) campo.value = contenidoTextoFormatoVisual();
+}
+
+function renderizarCuerpoSeccionFormatoVisual(seccion) {
+  if (seccion.tipo === "campos") {
+    return `<div class="formato-visual-campos">${seccion.campos.map((campo, indice) => `
+      <div><span contenteditable="true" data-editor-campo="${indice}">${escaparHTML(campo)}</span><i></i></div>
+    `).join("")}</div>`;
+  }
+  if (seccion.tipo === "tabla") {
+    return `
+      <table class="formato-visual-tabla"><tbody>${seccion.celdas.map((fila, filaIndice) => `
+        <tr>${fila.map((celda, columnaIndice) => `<td contenteditable="true" data-editor-celda="${filaIndice}:${columnaIndice}">${escaparHTML(celda)}</td>`).join("")}</tr>
+      `).join("")}</tbody></table>
+      <div class="formato-visual-tabla-acciones">
+        <button type="button" data-accion-seccion="agregar-fila">+ Fila</button>
+        <button type="button" data-accion-seccion="agregar-columna">+ Columna</button>
+      </div>
+    `;
+  }
+  return `<div class="formato-visual-texto" contenteditable="true" data-editor-texto>${escaparHTML(seccion.texto || "").replace(/\n/g, "<br>")}</div>`;
+}
+
+function renderizarCreadorVisualFormatosAdmin() {
+  const lienzo = document.getElementById("formatoVisualLienzo");
+  const logo = document.getElementById("formatoVisualLogoPreview");
+  const contenedor = document.getElementById("formatoVisualSecciones");
+  const controlTamano = document.getElementById("formatoVisualLogoTamano");
+  if (!lienzo || !logo || !contenedor) return;
+
+  logo.hidden = !formatoVisualEstado.logo.dataUrl;
+  if (formatoVisualEstado.logo.dataUrl) logo.src = formatoVisualEstado.logo.dataUrl;
+  else logo.removeAttribute("src");
+  logo.style.left = `${formatoVisualEstado.logo.x}%`;
+  logo.style.top = `${formatoVisualEstado.logo.y}%`;
+  logo.style.width = `${formatoVisualEstado.logo.ancho}%`;
+  if (controlTamano) controlTamano.value = String(formatoVisualEstado.logo.ancho);
+
+  contenedor.innerHTML = formatoVisualEstado.secciones.length
+    ? formatoVisualEstado.secciones.map((seccion, indice) => `
+      <section class="formato-visual-seccion" data-seccion-formato="${escaparHTML(seccion.id)}">
+        <div class="formato-visual-seccion-controles">
+          <span>${escaparHTML(seccion.tipo)}</span>
+          <button type="button" data-accion-seccion="subir" ${indice === 0 ? "disabled" : ""} aria-label="Subir sección">↑</button>
+          <button type="button" data-accion-seccion="bajar" ${indice === formatoVisualEstado.secciones.length - 1 ? "disabled" : ""} aria-label="Bajar sección">↓</button>
+          <button type="button" data-accion-seccion="eliminar" aria-label="Eliminar sección">×</button>
+        </div>
+        <h3 contenteditable="true" data-editor-titulo>${escaparHTML(seccion.titulo || "Sección")}</h3>
+        ${renderizarCuerpoSeccionFormatoVisual(seccion)}
+      </section>
+    `).join("")
+    : "<p class=\"formato-visual-vacio\">Añade una sección para comenzar el diseño.</p>";
+  sincronizarContenidoFormatoVisual();
+}
+
+function seccionVisualDesdeElemento(elemento) {
+  const id = elemento?.closest?.("[data-seccion-formato]")?.dataset?.seccionFormato || "";
+  return formatoVisualEstado.secciones.find((seccion) => seccion.id === id) || null;
+}
+
+function manejarAccionSeccionFormatoVisual(evento) {
+  const boton = evento.target.closest("[data-accion-seccion]");
+  if (!boton) return;
+  const seccion = seccionVisualDesdeElemento(boton);
+  if (!seccion) return;
+  const indice = formatoVisualEstado.secciones.findIndex((item) => item.id === seccion.id);
+  const accion = boton.dataset.accionSeccion;
+  if (accion === "subir" && indice > 0) {
+    [formatoVisualEstado.secciones[indice - 1], formatoVisualEstado.secciones[indice]] = [formatoVisualEstado.secciones[indice], formatoVisualEstado.secciones[indice - 1]];
+  } else if (accion === "bajar" && indice < formatoVisualEstado.secciones.length - 1) {
+    [formatoVisualEstado.secciones[indice + 1], formatoVisualEstado.secciones[indice]] = [formatoVisualEstado.secciones[indice], formatoVisualEstado.secciones[indice + 1]];
+  } else if (accion === "eliminar") {
+    formatoVisualEstado.secciones.splice(indice, 1);
+  } else if (accion === "agregar-fila" && seccion.tipo === "tabla") {
+    seccion.celdas.push(Array.from({ length: seccion.celdas[0]?.length || 1 }, () => ""));
+  } else if (accion === "agregar-columna" && seccion.tipo === "tabla") {
+    seccion.celdas.forEach((fila, filaIndice) => fila.push(filaIndice === 0 ? `Columna ${fila.length + 1}` : ""));
+  }
+  renderizarCreadorVisualFormatosAdmin();
+}
+
+function manejarEdicionSeccionFormatoVisual(evento) {
+  const seccion = seccionVisualDesdeElemento(evento.target);
+  if (!seccion) return;
+  if (evento.target.matches("[data-editor-titulo]")) seccion.titulo = evento.target.innerText.trim();
+  if (evento.target.matches("[data-editor-texto]")) seccion.texto = evento.target.innerText;
+  if (evento.target.matches("[data-editor-campo]")) seccion.campos[Number(evento.target.dataset.editorCampo)] = evento.target.innerText.trim();
+  if (evento.target.matches("[data-editor-celda]")) {
+    const [fila, columna] = evento.target.dataset.editorCelda.split(":").map(Number);
+    if (seccion.celdas[fila]) seccion.celdas[fila][columna] = evento.target.innerText.trim();
+  }
+  sincronizarContenidoFormatoVisual();
+}
+
+function reiniciarCreadorVisualFormatosAdmin() {
+  formatoVisualEstado.logo = { x: 6, y: 4, ancho: 18, dataUrl: "" };
+  formatoVisualEstado.secciones = [crearSeccionFormatoVisual("campos"), crearSeccionFormatoVisual("texto")];
+  renderizarCreadorVisualFormatosAdmin();
+}
+
+function configurarCreadorVisualFormatosAdmin() {
+  const lienzo = document.getElementById("formatoVisualLienzo");
+  const logo = document.getElementById("formatoVisualLogoPreview");
+  const contenedor = document.getElementById("formatoVisualSecciones");
+  const archivoLogo = document.getElementById("formatoManualLogo");
+  const tamanoLogo = document.getElementById("formatoVisualLogoTamano");
+  if (!lienzo || !logo || !contenedor) return;
+
+  document.querySelectorAll("[data-agregar-seccion-formato]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      formatoVisualEstado.secciones.push(crearSeccionFormatoVisual(boton.dataset.agregarSeccionFormato));
+      renderizarCreadorVisualFormatosAdmin();
+    });
+  });
+  document.getElementById("btnLimpiarDisenoFormato")?.addEventListener("click", () => {
+    if (confirm("¿Limpiar el diseño visual actual?")) reiniciarCreadorVisualFormatosAdmin();
+  });
+  contenedor.addEventListener("click", manejarAccionSeccionFormatoVisual);
+  contenedor.addEventListener("input", manejarEdicionSeccionFormatoVisual);
+  archivoLogo?.addEventListener("change", () => {
+    const archivo = archivoLogo.files?.[0];
+    if (!archivo) {
+      formatoVisualEstado.logo.dataUrl = "";
+      renderizarCreadorVisualFormatosAdmin();
+      return;
+    }
+    const lector = new FileReader();
+    lector.addEventListener("load", () => {
+      formatoVisualEstado.logo.dataUrl = String(lector.result || "");
+      renderizarCreadorVisualFormatosAdmin();
+    });
+    lector.readAsDataURL(archivo);
+  });
+  tamanoLogo?.addEventListener("input", () => {
+    formatoVisualEstado.logo.ancho = Number(tamanoLogo.value) || 18;
+    logo.style.width = `${formatoVisualEstado.logo.ancho}%`;
+  });
+  logo.addEventListener("pointerdown", (evento) => {
+    if (logo.hidden) return;
+    const rectLogo = logo.getBoundingClientRect();
+    formatoVisualArrastreLogo = { offsetX: evento.clientX - rectLogo.left, offsetY: evento.clientY - rectLogo.top };
+    logo.setPointerCapture?.(evento.pointerId);
+    evento.preventDefault();
+  });
+  logo.addEventListener("pointermove", (evento) => {
+    if (!formatoVisualArrastreLogo) return;
+    const rect = lienzo.getBoundingClientRect();
+    const x = ((evento.clientX - rect.left - formatoVisualArrastreLogo.offsetX) / rect.width) * 100;
+    const y = ((evento.clientY - rect.top - formatoVisualArrastreLogo.offsetY) / rect.height) * 100;
+    formatoVisualEstado.logo.x = Math.max(0, Math.min(100 - formatoVisualEstado.logo.ancho, x));
+    formatoVisualEstado.logo.y = Math.max(0, Math.min(92, y));
+    logo.style.left = `${formatoVisualEstado.logo.x}%`;
+    logo.style.top = `${formatoVisualEstado.logo.y}%`;
+  });
+  const finalizarArrastre = () => { formatoVisualArrastreLogo = null; };
+  logo.addEventListener("pointerup", finalizarArrastre);
+  logo.addEventListener("pointercancel", finalizarArrastre);
+  reiniciarCreadorVisualFormatosAdmin();
+}
+
 function normalizarIdFormatoManual(valor = "") {
   return String(valor)
     .normalize("NFD")
@@ -1907,8 +2103,8 @@ async function crearFormatoManualAdmin(evento) {
   const descripcion = document.getElementById("formatoManualDescripcion")?.value.trim() || "";
   const contenido = document.getElementById("formatoManualContenido")?.value.trim() || "";
   const archivo = document.getElementById("formatoManualLogo")?.files?.[0] || null;
-  if (!id || !nombre || !contenido) {
-    alert("Completa el identificador, nombre y contenido del formato.");
+  if (!id || !nombre || !contenido || !formatoVisualEstado.secciones.length) {
+    alert("Completa el identificador, nombre y añade al menos una sección al formato.");
     return;
   }
   if (archivo && (!archivo.type.startsWith("image/") || archivo.size > 5 * 1024 * 1024)) {
@@ -1931,9 +2127,16 @@ async function crearFormatoManualAdmin(evento) {
       logoUrl = await getDownloadURL(logoRef);
     }
     const ahora = new Date().toISOString();
-    await setDoc(doc(db, "formatosAdministrados", id), { id, nombre, descripcion, contenido, logoUrl, logoPath, activo: true, creadoEn: ahora, creadoPorUid: adminActual.uid, actualizadoEn: ahora });
-    await registrarAuditoriaAdmin("crear_formato_manual_admin", "El administrador creó un formato manual.", { detalles: { formatoId: id, nombre, tieneLogo: Boolean(logoUrl) } });
+    const disenoVisual = {
+      version: 1,
+      pagina: { tamano: "A4", orientacion: "vertical" },
+      logo: { x: formatoVisualEstado.logo.x, y: formatoVisualEstado.logo.y, ancho: formatoVisualEstado.logo.ancho, url: logoUrl, path: logoPath },
+      secciones: JSON.parse(JSON.stringify(formatoVisualEstado.secciones))
+    };
+    await setDoc(doc(db, "formatosAdministrados", id), { id, nombre, descripcion, contenido, disenoVisual, logoUrl, logoPath, activo: true, creadoEn: ahora, creadoPorUid: adminActual.uid, actualizadoEn: ahora });
+    await registrarAuditoriaAdmin("crear_formato_manual_admin", "El administrador creó un formato manual visual.", { detalles: { formatoId: id, nombre, tieneLogo: Boolean(logoUrl), totalSecciones: disenoVisual.secciones.length } });
     evento.currentTarget.reset();
+    reiniciarCreadorVisualFormatosAdmin();
     await cargarCatalogoManualFormatosAdmin();
     alert("Formato manual creado correctamente.");
   } catch (error) {
