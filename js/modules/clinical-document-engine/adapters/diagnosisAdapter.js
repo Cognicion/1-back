@@ -1,4 +1,4 @@
-import { detectDiagnosisCandidates, parseDiagnosisCandidates } from "../parsers/diagnosisParser.js?v=v167-enedina-name-diagnosis-boundaries-v1";
+import { detectDiagnosisCandidates, parseDiagnosisCandidates } from "../parsers/diagnosisParser.js?v=20260813-diagnosis-treatment-filter-v1";
 import { validateDiagnosis } from "../validators/diagnosisValidator.js";
 import { EntityFactory } from "../engine/EntityFactory.js";
 

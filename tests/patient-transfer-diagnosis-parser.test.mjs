@@ -119,6 +119,27 @@ const codedNarrative = parseDiagnosisBlock({
 assert.equal(codedNarrative[0].diagnosisName, "Trastorno depresivo recurrente, episodio actual grave");
 assert.equal(codedNarrative[0].code, "F33.2");
 
+const treatmentNarrativesAreNotDiagnoses = parseDiagnosisBlock({
+  text: [
+    "Mujer adulta, con seguimiento por ginecología y dermatología, actualmente estable.",
+    "Actualmente bajo tratamiento con Medicamento Alfa 100 mg/día y Medicamento Beta 1 mg/día.",
+    "Medicación psiquiátrica previa con esquema farmacológico no vigente."
+  ].join("\n"),
+  section: "diagnosticos",
+  explicit: true,
+  documentId: "treatment-is-not-diagnosis"
+});
+assert.deepEqual(treatmentNarrativesAreNotDiagnoses, []);
+
+const diagnosisWithTreatmentContext = parseDiagnosisBlock({
+  text: "Antecedente de trastorno bipolar diagnosticado en 2022, actualmente tratado con Medicamento Gamma 300 mg",
+  section: "diagnosticos",
+  explicit: true,
+  documentId: "diagnosis-with-treatment-context"
+});
+assert.equal(diagnosisWithTreatmentContext.length, 1);
+assert.equal(diagnosisWithTreatmentContext[0].diagnosisName, "Trastorno bipolar");
+
 const deduplicated = detectDiagnosisCandidates({
   documentId: "dedup",
   sections: {

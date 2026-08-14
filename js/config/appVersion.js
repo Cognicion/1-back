@@ -27,5 +27,6 @@
 // deployment marker: 2026-08-13-hugo-wilson-brand-assets-v1
 // deployment marker: 2026-08-13-cie10-cd-v1 (+0.010)
 // deployment marker: 2026-08-13-duplicate-existing-identity-v1
-export const APP_VERSION = "1.957";
+// deployment marker: 2026-08-13-diagnosis-treatment-filter-v1
+export const APP_VERSION = "1.958";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

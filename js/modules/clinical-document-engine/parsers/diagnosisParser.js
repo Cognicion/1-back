@@ -156,6 +156,18 @@ function isExplicitNarrativeDiagnosis(text = "") {
   return /\b(?:diagnostico|antecedente\s+de|diagnosticad[oa]\s+en|diagnosticad[oa]\s+con)\b/i.test(value) && !isNarrativeIdentityOpening(text);
 }
 
+const TREATMENT_ONLY_START = /^(?:(?:actualmente\s+)?(?:bajo|en)\s+tratamiento\b|medicaci[oó]n\b|medicamentos?\b|farmacoterapia\b|(?:esquema|tratamiento)\s+(?:farmacol[oó]gico|psiqui[aá]trico)\b|(?:[uú]ltimo|actual|previo)\s+esquema\s+farmacol[oó]gico\b)/i;
+const TREATMENT_CONTEXT = /\b(?:tratamiento|medicaci[oó]n|medicamentos?|farmacoterapia|esquema\s+farmacol[oó]gico|recibe|toma|administrar|dosis)\b/i;
+const MEDICATION_DOSE = /\b\d+(?:[.,]\d+)?\s*(?:mcg|ug|mg|g|ml|ui)(?:\s*\/\s*(?:d[ií]a|h|hora|ml|\d+(?:[.,]\d+)?\s*ml))?\b/i;
+
+function isTreatmentOnlyClinicalText(text = "") {
+  const source = String(text || "").replace(/\s+/g, " ").trim();
+  if (!source) return false;
+  if (TREATMENT_ONLY_START.test(source)) return true;
+  if (!TREATMENT_CONTEXT.test(source) || !MEDICATION_DOSE.test(source)) return false;
+  return !(extractNarrativeDiagnosisEntity(source) || resolveCatalogPrefix(source) || startsWithDiagnosticName(source));
+}
+
 function logNarrativeBoundary({ documentId, noteId, text, reason }) {
   clinicalImportLogger.info("diagnosisParser:narrativeBoundary", JSON.stringify({
     documentId,
@@ -352,6 +364,11 @@ export function parseDiagnosisCandidates({ text = "", section = "diagnosticos", 
     }
     if (!rowText) return;
     const codes = splitDiagnosticCodes(rowText);
+    if (!codes.length && !rowStatus && isTreatmentOnlyClinicalText(rowText)) {
+      discardedCount += 1;
+      state = candidates.length ? "FINALIZE_DIAGNOSIS" : "WAITING_DIAGNOSIS";
+      return;
+    }
     if (!codes.length && !rowStatus && isNarrativeClinicalText(rowText) && !startsWithDiagnosticName(rowText) && !isExplicitNarrativeDiagnosis(rowText)) {
       logNarrativeBoundary({
         documentId,
