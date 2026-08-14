@@ -42,7 +42,7 @@ import {
   aplicarPermisosFormatosSelect,
   obtenerPermisosFormatosUsuario,
   usuarioPuedeUsarFormato
-} from "./services/formatosInstitucionales.js?v=20260719-actor-format-permissions";
+} from "./services/formatosInstitucionales.js?v=20260813-hugo-wilson-brand-assets-v1";
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 import {
   eliminarBorradorClinicoLocal,
@@ -112,6 +112,12 @@ import {
   numero as numeroPediatrico,
   superficieCorporal
 } from "./pediatria/formulas.js";
+
+const HUGO_WILSON_NOTA_FORMAT_ID = "hugo_wilson_nota";
+const HUGO_WILSON_NOTA_LOGO_URL = new URL(
+  "../assets/formatos-hugo-wilson/nota-firma.png",
+  import.meta.url
+).href;
 
 let uidPacienteActual = null;
 let diagnosticosSeleccionados = [];
@@ -5581,14 +5587,24 @@ function construirContenedorPdfCognicion(exportData = datosExportacionCognicion(
   documento.setAttribute("aria-label", "Nota clínica Cognición para PDF");
 
   const marcas = document.createElement("div");
-  marcas.className = "cognicion-pdf-evolucion__marcas";
-  ["assets/logo-cognicion.png", "assets/favicon-cognicion.png"].forEach((ruta) => {
+  const esFormatoHugoWilson = datosPdf.formatoNota === HUGO_WILSON_NOTA_FORMAT_ID;
+  marcas.className = esFormatoHugoWilson
+    ? "cognicion-pdf-evolucion__marcas cognicion-pdf-evolucion__marcas--hugo-wilson"
+    : "cognicion-pdf-evolucion__marcas";
+  if (esFormatoHugoWilson) {
     const logo = document.createElement("img");
-    logo.src = ruta;
-    logo.alt = "Cognición";
-    logo.dataset.pdfCognicionDecorativa = "true";
+    logo.src = HUGO_WILSON_NOTA_LOGO_URL;
+    logo.alt = "Dr. Hugo Wilson - Psiquiatria";
     marcas.appendChild(logo);
-  });
+  } else {
+    ["assets/logo-cognicion.png", "assets/favicon-cognicion.png"].forEach((ruta) => {
+      const logo = document.createElement("img");
+      logo.src = ruta;
+      logo.alt = "Cognición";
+      logo.dataset.pdfCognicionDecorativa = "true";
+      marcas.appendChild(logo);
+    });
+  }
   documento.appendChild(marcas);
 
   const titulo = document.createElement("h1");
@@ -5654,6 +5670,10 @@ function programarLimpiezaPdfCognicion() {
 }
 
 window.generarPDFNota = async function() {
+  if (!puedeUsarFormatoNota()) {
+    alert("No tienes autorizacion para usar este formato de nota.");
+    return;
+  }
   if (esFormatoFray()) {
     console.error("El generador PDF Cognicion no puede utilizarse para formatos Word.");
     alert("Selecciona PDF Cognicion para generar este documento.");

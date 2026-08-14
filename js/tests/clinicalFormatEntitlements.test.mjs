@@ -78,7 +78,10 @@ assert.equal(permisosFormatosDesdeUsuario(adminSinPerfilMedico)[FORMAT_PERMISSIO
 assert.equal(usuarioPuedeUsarFormato("evolucion_observacion", permisosFormatosDesdeUsuario(medicoFray), medicoFray.rol, medicoFray), true);
 assert.equal(usuarioPuedeUsarFormato("referencia_navarro", permisosFormatosDesdeUsuario(medicoNavarro), medicoNavarro.rol, medicoNavarro), true);
 assert.equal(usuarioPuedeUsarFormato("hugo_wilson_consulta", permisosFormatosDesdeUsuario(medicoHugoWilson), medicoHugoWilson.rol, medicoHugoWilson), true);
+assert.equal(usuarioPuedeUsarFormato("hugo_wilson_nota", permisosFormatosDesdeUsuario(medicoHugoWilson), medicoHugoWilson.rol, medicoHugoWilson), true);
+assert.equal(usuarioPuedeUsarFormato("hugo_wilson_receta", permisosFormatosDesdeUsuario(medicoHugoWilson), medicoHugoWilson.rol, medicoHugoWilson), true);
 assert.equal(usuarioPuedeUsarFormato("hugo_wilson_consulta", permisosFormatosDesdeUsuario(medicoAjenoConPermisoErroneo), medicoAjenoConPermisoErroneo.rol, medicoAjenoConPermisoErroneo), false);
+assert.equal(usuarioPuedeUsarFormato("hugo_wilson_receta", permisosFormatosDesdeUsuario(medicoAjenoConPermisoErroneo), medicoAjenoConPermisoErroneo.rol, medicoAjenoConPermisoErroneo), false);
 assert.equal(usuarioPuedeUsarFormato("hugo_wilson_consulta", { [FORMAT_PERMISSION_HUGO_WILSON]: true }, "medico"), false);
 assert.equal(usuarioPuedeUsarFormato("hugo_wilson_consulta", {}, "admin", adminSinPerfilMedico), true);
 assert.equal(usuarioPuedeUsarFormato("evolucion_observacion", permisosFormatosDesdeUsuario(adminSinPerfilMedico), adminSinPerfilMedico.rol, adminSinPerfilMedico), true);

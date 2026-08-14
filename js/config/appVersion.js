@@ -24,5 +24,6 @@
 // deployment marker: 2026-08-13-vista-previa-usuario-admin-v1
 // deployment marker: 2026-08-13-hugo-wilson-private-formats-v1
 // deployment marker: 2026-08-13-expediente-docx-summary-background-v1
-export const APP_VERSION = "1.935";
+// deployment marker: 2026-08-13-hugo-wilson-brand-assets-v1
+export const APP_VERSION = "1.936";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

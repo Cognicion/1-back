@@ -73,7 +73,9 @@ export const HUGO_WILSON_FORMAT_IDS = Object.freeze([
   "hugo_wilson_evolucion",
   "hugo_wilson_interconsulta",
   "hugo_wilson_urgencias",
-  "hugo_wilson_egreso"
+  "hugo_wilson_egreso",
+  "hugo_wilson_nota",
+  "hugo_wilson_receta"
 ]);
 
 export const FORMATOS_INSTITUCIONALES = Object.freeze([
@@ -100,7 +102,7 @@ export const FORMATOS_INSTITUCIONALES = Object.freeze([
     id: FORMAT_PERMISSION_HUGO_WILSON,
     legacyId: "hugo_wilson",
     nombre: "Dr. Hugo Wilson",
-    descripcion: "Paquete privado de consulta, evolución, interconsulta, urgencias y egreso para el Dr. Hugo Wilson.",
+    descripcion: "Paquete privado de notas, recetas, consulta, evolución, interconsulta, urgencias y egreso para el Dr. Hugo Wilson.",
     institutionId: "",
     requiereAutorizacion: true,
     authorizedUserUid: HUGO_WILSON_FORMAT_OWNER_UID,

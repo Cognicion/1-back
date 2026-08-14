@@ -19,7 +19,7 @@ import {
   resolverFormatoSolicitud,
   FORMATO_SOLICITUD_IMAGENOLOGIA,
   FORMATO_SOLICITUD_LABORATORIO_FRAY
-} from "./services/formatosInstitucionales.js";
+} from "./services/formatosInstitucionales.js?v=20260813-hugo-wilson-brand-assets-v1";
 import {
   CATALOGO_FRAY_ANALISIS_CLINICOS,
   CATALOGO_FRAY_ANALISIS_CLINICOS_PLANO,
@@ -8062,6 +8062,12 @@ function formatearIndicacionTratamientoConCambio(t = {}, incluirMedicamento = tr
 configurarCatalogoMedicamentosTratamiento();
 configurarCatalogoMedicamentosReceta();
 
+const HUGO_WILSON_RECETA_FORMAT_ID = "hugo_wilson_receta";
+const HUGO_WILSON_RECETA_LOGO_URL = new URL(
+  "../assets/formatos-hugo-wilson/receta-emblema.png",
+  import.meta.url
+).href;
+
 function fechaISOHoy() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -8124,8 +8130,12 @@ function htmlRecetaPreview(datos = datosRecetaActual()) {
     `).join("")
     : "<li><span>Sin medicamentos seleccionados.</span></li>";
 
+  const marca = datos.formato === HUGO_WILSON_RECETA_FORMAT_ID
+    ? `<div class="receta-marca receta-marca--hugo-wilson"><img src="${HUGO_WILSON_RECETA_LOGO_URL}" alt="Dr. Hugo Wilson - Psiquiatria"></div>`
+    : '<div class="receta-marca">COGNICION</div>';
+
   return `
-    <div class="receta-marca">COGNICION</div>
+    ${marca}
     <div class="receta-encabezado">
       <div>
         <h2>Receta medica</h2>
@@ -8194,6 +8204,10 @@ async function cargarTratamientoActivoEnReceta() {
 
 async function guardarRecetaPaciente() {
   const datos = datosRecetaActual();
+  if (!formatoInstitucionalPermitidoPaciente(datos.formato)) {
+    alert("No tienes autorizacion para usar este formato de receta.");
+    return;
+  }
   if (!datos.medicamentos.length) {
     alert("Agrega al menos un medicamento a la receta.");
     return;
@@ -8219,6 +8233,10 @@ async function guardarRecetaPaciente() {
 
 function descargarRecetaPaciente() {
   const datos = datosRecetaActual();
+  if (!formatoInstitucionalPermitidoPaciente(datos.formato)) {
+    alert("No tienes autorizacion para usar este formato de receta.");
+    return;
+  }
   if (!datos.medicamentos.length) {
     alert("Agrega al menos un medicamento a la receta.");
     return;
@@ -8233,6 +8251,7 @@ function descargarRecetaPaciente() {
   body{margin:0;background:#f2f3ee;font-family:Arial,Helvetica,sans-serif;color:#0e1411;}
   .hoja{width:760px;min-height:980px;margin:32px auto;padding:48px;background:white;border-radius:22px;box-shadow:0 22px 70px rgba(14,20,17,.18),0 0 0 1px rgba(52,122,77,.14);}
   .receta-marca{color:#0284c7;font-weight:900;letter-spacing:.22em;font-size:12px;margin-bottom:18px;}
+  .receta-marca--hugo-wilson{display:flex;justify-content:center;margin:0 0 16px;letter-spacing:0;}.receta-marca--hugo-wilson img{display:block;width:150px;height:150px;object-fit:contain;border-radius:12px;}
   .receta-encabezado{display:flex;justify-content:space-between;gap:22px;border-bottom:2px solid #dbeafe;padding-bottom:18px;margin-bottom:22px;}
   h2{margin:0;color:#082f49;font-size:30px;} h3{margin:24px 0 10px;color:#0369a1;font-size:14px;text-transform:uppercase;letter-spacing:.12em;}
   p{line-height:1.45;} .receta-datos{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;background:#f8fbff;border:1px solid #dbeafe;border-radius:16px;padding:14px 16px;}
@@ -9319,6 +9338,7 @@ document.getElementById("guardarRecetaPaciente")?.addEventListener("click", guar
 document.getElementById("descargarRecetaPaciente")?.addEventListener("click", descargarRecetaPaciente);
 [
   "recetaFecha",
+  "recetaFormato",
   "recetaVigencia",
   "recetaObservaciones"
 ].forEach((id) => {
