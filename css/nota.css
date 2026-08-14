@@ -1760,16 +1760,16 @@ details.nota-seccion-colapsable > summary:focus-visible {
     .cognicion-pdf-evolucion__marcas img:last-child { width: 42px; height: 42px; object-fit: contain; }
 
     .cognicion-pdf-evolucion__marcas--hugo-wilson {
-        justify-content: center;
-        min-height: 70pt;
+        justify-content: flex-start;
+        min-height: 54pt;
         padding: 0;
     }
 
     .cognicion-pdf-evolucion__marcas--hugo-wilson img:first-child,
     .cognicion-pdf-evolucion__marcas--hugo-wilson img:last-child {
-        width: 260px;
-        height: auto;
-        max-height: 78pt;
+        width: 72px;
+        height: 72px;
+        max-height: 72px;
         object-fit: contain;
     }
 

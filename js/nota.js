@@ -115,7 +115,7 @@ import {
 
 const HUGO_WILSON_NOTA_FORMAT_ID = "hugo_wilson_nota";
 const HUGO_WILSON_NOTA_LOGO_URL = new URL(
-  "../assets/formatos-hugo-wilson/nota-firma.png",
+  "../assets/formatos-hugo-wilson/receta-emblema.png",
   import.meta.url
 ).href;
 
