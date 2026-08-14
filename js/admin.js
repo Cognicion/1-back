@@ -437,7 +437,7 @@ function renderizarNotasImportadasCorroboracion(importacion) {
   `;
 }
 
-window.abrirVistaCorroboracionAdmin = async function(uidUsuario) {
+async function abrirVistaUsuarioAdmin(uidUsuario, modo = "corroboracion") {
   const usuario = usuariosAdmin.find((item) => item.id === uidUsuario);
   if (!usuario || uidUsuario === adminActual?.uid) return;
   const acceso = await usuarioPuedeAccederAdmin(adminActual);
@@ -450,16 +450,31 @@ window.abrirVistaCorroboracionAdmin = async function(uidUsuario) {
   const meta = document.getElementById("vistaCorroboracionMeta");
   const contenido = document.getElementById("vistaCorroboracionContenido");
   if (!titulo || !meta || !contenido) return;
-  titulo.textContent = usuario.nombre || usuario.email || "Cuenta consultada";
+  const esVistaPrevia = modo === "vista_previa";
+  titulo.textContent = esVistaPrevia
+    ? `Vista previa: ${usuario.nombre || usuario.email || "Cuenta consultada"}`
+    : usuario.nombre || usuario.email || "Cuenta consultada";
   meta.textContent = `${usuario.email || "Sin correo"} · UID: ${usuario.id} · Solo lectura`;
-  contenido.innerHTML = "<p>Cargando información de la cuenta...</p>";
+  contenido.innerHTML = `<p>${esVistaPrevia ? "Preparando la vista previa del perfil..." : "Cargando información de la cuenta..."}</p>`;
   mostrarVistaCorroboracionAdmin();
 
-  await registrarAuditoriaAdmin("abrir_vista_corroboracion_admin", "El administrador abrió una vista de corroboración de solo lectura.", {
+  await registrarAuditoriaAdmin(
+    esVistaPrevia ? "abrir_vista_previa_usuario_admin" : "abrir_vista_corroboracion_admin",
+    esVistaPrevia
+      ? "El administrador abrió una vista previa de usuario de solo lectura."
+      : "El administrador abrió una vista de corroboración de solo lectura.",
+    {
     pacienteUid: usuario.rol === "paciente" ? usuario.id : "",
     pacienteNombre: usuario.rol === "paciente" ? usuario.nombre || "" : "",
-    detalles: { usuarioObjetivoUid: usuario.id, usuarioObjetivoNombre: usuario.nombre || usuario.email || "", soloLectura: true }
-  });
+      detalles: {
+        usuarioObjetivoUid: usuario.id,
+        usuarioObjetivoNombre: usuario.nombre || usuario.email || "",
+        modo: esVistaPrevia ? "vista_previa_usuario" : "corroboracion",
+        soloLectura: true,
+        suplantacionSesion: false
+      }
+    }
+  );
 
   const [resultados, importacionDocx] = await Promise.all([
     Promise.all(COLECCIONES_VISTA_CORROBORACION.map(async (nombreColeccion) => {
@@ -476,6 +491,12 @@ window.abrirVistaCorroboracionAdmin = async function(uidUsuario) {
   ]);
 
   contenido.innerHTML = `
+    ${esVistaPrevia ? `
+      <section class="vista-corroboracion-perfil">
+        <h3>Vista previa administrativa</h3>
+        <p class="admin-muted">Esta revisión presenta el perfil y la información asociada disponibles para el administrador. No inicia sesión como el usuario ni permite modificar, eliminar o descargar información.</p>
+      </section>
+    ` : ""}
     <section class="vista-corroboracion-perfil">
       <h3>Perfil</h3>
       <dl>
@@ -504,11 +525,32 @@ window.abrirVistaCorroboracionAdmin = async function(uidUsuario) {
     ` : ""}
   `;
 
-  await registrarAuditoriaAdmin("consultar_datos_vista_corroboracion_admin", "El administrador consultó datos en una vista de corroboración de solo lectura.", {
+  await registrarAuditoriaAdmin(
+    esVistaPrevia ? "consultar_datos_vista_previa_usuario_admin" : "consultar_datos_vista_corroboracion_admin",
+    esVistaPrevia
+      ? "El administrador consultó datos en una vista previa de usuario de solo lectura."
+      : "El administrador consultó datos en una vista de corroboración de solo lectura.",
+    {
     pacienteUid: usuario.rol === "paciente" ? usuario.id : "",
     pacienteNombre: usuario.rol === "paciente" ? usuario.nombre || "" : "",
-    detalles: { usuarioObjetivoUid: usuario.id, coleccionesConsultadas: resultados.map((item) => item.nombre), notasImportadasConsultadas: Boolean(importacionDocx), soloLectura: true }
-  });
+      detalles: {
+        usuarioObjetivoUid: usuario.id,
+        coleccionesConsultadas: resultados.map((item) => item.nombre),
+        notasImportadasConsultadas: Boolean(importacionDocx),
+        modo: esVistaPrevia ? "vista_previa_usuario" : "corroboracion",
+        soloLectura: true,
+        suplantacionSesion: false
+      }
+    }
+  );
+}
+
+window.abrirVistaCorroboracionAdmin = async function(uidUsuario) {
+  return abrirVistaUsuarioAdmin(uidUsuario, "corroboracion");
+};
+
+window.abrirVistaPreviaUsuarioAdmin = async function(uidUsuario) {
+  return abrirVistaUsuarioAdmin(uidUsuario, "vista_previa");
 };
 
 async function publicarAvisoAdmin() {
@@ -1667,8 +1709,8 @@ function renderizarUsuariosAdmin() {
         ${renderizarControlColaboradorAdmin(usuario)}
 
         <div class="paciente-admin-acciones">
-          <button type="button" onclick="abrirVistaCorroboracionAdmin('${usuario.id}')">
-            Vista de corroboración
+          <button type="button" onclick="abrirVistaPreviaUsuarioAdmin('${usuario.id}')">
+            Vista previa del usuario
           </button>
           <button type="button" ${esAdminActual ? "disabled" : ""} onclick="cambiarRolUsuarioAdmin('${usuario.id}')">
             Cambiar rol
