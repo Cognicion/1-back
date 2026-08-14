@@ -1,41 +1,146 @@
-const { CLINICAL_PATTERN_ENGINE_VERSION } = require("./config");
+const {
+  CLINICAL_PATTERN_ENGINE_VERSION,
+  CLINICAL_PATTERN_MATRIX_CONFIG
+} = require("./config");
 
-const SEQUENCES = Object.freeze([
-  ["insomnia", "agitation"],
-  ["treatment_suspension", "relapse"],
-  ["treatment", "improvement"],
-  ["hospitalization", "readmission"],
-  ["suicidal_ideation", "suicide_attempt"]
-]);
-
-function positiveEvents(timeline) {
-  return timeline.filter((event) => event.value !== false && event.value !== "negated");
+function positiveEvents(timeline = []) {
+  return timeline
+    .filter((event) => event?.variableId && event.value !== false && event.value !== "negated")
+    .filter((event) => Number.isFinite(Date.parse(event.observedAt)))
+    .sort((a, b) => Date.parse(a.observedAt) - Date.parse(b.observedAt));
 }
 
-function detectPatientPatterns(timeline = []) {
-  const events = positiveEvents(timeline);
-  const patterns = [];
-  SEQUENCES.forEach(([first, second]) => {
-    const firstEvents = events.filter((event) => event.variableId === first);
-    const secondEvents = events.filter((event) => event.variableId === second);
-    firstEvents.forEach((start) => {
-      const end = secondEvents.find((candidate) => candidate.observedAt >= start.observedAt);
-      if (!end) return;
-      patterns.push({ patternId: `patient-${first}-${second}-${start.observedAt}-${end.observedAt}`, scope: "patient", patternType: "temporal_sequence", variables: [first, second], events: [{ eventType: first, observedAt: start.observedAt }, { eventType: second, observedAt: end.observedAt }], supportCount: 1, firstObservedAt: start.observedAt, lastObservedAt: end.observedAt, confidence: Math.min(start.confidence || 0.5, end.confidence || 0.5), evidence: [{ sourceType: "cognicion_empirical", evidenceIds: [] }], algorithmVersion: CLINICAL_PATTERN_ENGINE_VERSION });
-    });
+function uniqueVariableIds(events) {
+  return [...new Set(events.map((event) => event.variableId))].sort();
+}
+
+function sequenceEvents(timeline = []) {
+  return positiveEvents(timeline).filter((event) => event.domain !== "demographics");
+}
+
+function firstFollowingEvent(events, start, outcome) {
+  const startTime = Date.parse(start.observedAt);
+  return events.find((candidate) => (
+    candidate.variableId === outcome
+    && Date.parse(candidate.observedAt) > startTime
+  ));
+}
+
+function temporalSequencePairs(timeline = [], maxPairs = CLINICAL_PATTERN_MATRIX_CONFIG.maxTemporalPairsPerPatient) {
+  const events = sequenceEvents(timeline);
+  const variableIds = uniqueVariableIds(events);
+  const pairs = [];
+
+  for (const condition of variableIds) {
+    const starts = events.filter((event) => event.variableId === condition);
+    for (const outcome of variableIds) {
+      let occurrences = 0;
+      let firstMatch = null;
+      let lastMatch = null;
+      let confidence = 1;
+      for (const start of starts) {
+        const end = firstFollowingEvent(events, start, outcome);
+        if (!end) continue;
+        occurrences += 1;
+        firstMatch ||= { start, end };
+        lastMatch = { start, end };
+        confidence = Math.min(confidence, start.confidence || 0.5, end.confidence || 0.5);
+      }
+      if (!occurrences) continue;
+      pairs.push({
+        condition,
+        outcome,
+        occurrences,
+        eligibleOccurrences: starts.length,
+        firstObservedAt: firstMatch.start.observedAt,
+        firstOutcomeAt: firstMatch.end.observedAt,
+        lastObservedAt: lastMatch.end.observedAt,
+        confidence
+      });
+    }
+  }
+
+  return pairs
+    .sort((a, b) => b.occurrences - a.occurrences || a.condition.localeCompare(b.condition) || a.outcome.localeCompare(b.outcome))
+    .slice(0, maxPairs);
+}
+
+function cooccurrencePatterns(events) {
+  const groups = new Map();
+  events.forEach((event) => {
+    const key = `${event.observedAt}|${event.sourceRecordType || "unknown"}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(event);
   });
+  const patterns = [];
+  for (const group of groups.values()) {
+    const ids = uniqueVariableIds(group);
+    for (let firstIndex = 0; firstIndex < ids.length; firstIndex += 1) {
+      for (let secondIndex = firstIndex + 1; secondIndex < ids.length; secondIndex += 1) {
+        const first = group.find((event) => event.variableId === ids[firstIndex]);
+        const second = group.find((event) => event.variableId === ids[secondIndex]);
+        patterns.push({
+          patternId: `patient-cooccurrence-${ids[firstIndex]}-${ids[secondIndex]}-${first.observedAt}`,
+          scope: "patient",
+          patternType: "cooccurrence",
+          variables: [ids[firstIndex], ids[secondIndex]],
+          events: [
+            { eventType: ids[firstIndex], observedAt: first.observedAt },
+            { eventType: ids[secondIndex], observedAt: second.observedAt }
+          ],
+          supportCount: 1,
+          firstObservedAt: first.observedAt,
+          lastObservedAt: second.observedAt,
+          confidence: Math.min(first.confidence || 0.5, second.confidence || 0.5),
+          evidence: [{ sourceType: "cognicion_empirical", evidenceIds: [] }],
+          algorithmVersion: CLINICAL_PATTERN_ENGINE_VERSION
+        });
+      }
+    }
+  }
   return patterns;
 }
 
-function buildObservationalRelationships(timeline = []) {
-  const events = positiveEvents(timeline);
-  const relationships = [];
-  SEQUENCES.forEach(([condition, outcome]) => {
-    const denominator = events.filter((event) => event.variableId === condition).length;
-    const numerator = events.filter((event) => event.variableId === condition && events.some((candidate) => candidate.variableId === outcome && candidate.observedAt >= event.observedAt)).length;
-    if (denominator) relationships.push({ relationshipId: `${condition}__${outcome}`, condition, outcome, relationshipType: "observed_sequence", numerator, denominator, sourceType: "cognicion_empirical" });
-  });
-  return relationships;
+function detectPatientPatterns(timeline = []) {
+  const events = sequenceEvents(timeline);
+  const temporal = temporalSequencePairs(events).map((pair) => ({
+    patternId: `patient-sequence-${pair.condition}-${pair.outcome}-${pair.firstObservedAt}-${pair.firstOutcomeAt}`,
+    scope: "patient",
+    patternType: "temporal_sequence",
+    variables: [pair.condition, pair.outcome],
+    events: [
+      { eventType: pair.condition, observedAt: pair.firstObservedAt },
+      { eventType: pair.outcome, observedAt: pair.firstOutcomeAt }
+    ],
+    supportCount: pair.occurrences,
+    firstObservedAt: pair.firstObservedAt,
+    lastObservedAt: pair.lastObservedAt,
+    confidence: pair.confidence,
+    evidence: [{ sourceType: "cognicion_empirical", evidenceIds: [] }],
+    algorithmVersion: CLINICAL_PATTERN_ENGINE_VERSION
+  }));
+
+  return [...temporal, ...cooccurrencePatterns(events)]
+    .sort((a, b) => b.supportCount - a.supportCount || a.patternId.localeCompare(b.patternId))
+    .slice(0, CLINICAL_PATTERN_MATRIX_CONFIG.maxTemporalPairsPerPatient);
 }
 
-module.exports = { detectPatientPatterns, buildObservationalRelationships, SEQUENCES };
+function buildObservationalRelationships(timeline = []) {
+  return temporalSequencePairs(timeline).map((pair) => ({
+    relationshipId: `${pair.condition}__${pair.outcome}`,
+    condition: pair.condition,
+    outcome: pair.outcome,
+    relationshipType: "observed_sequence",
+    numerator: pair.occurrences,
+    denominator: pair.eligibleOccurrences,
+    sourceType: "cognicion_empirical",
+    algorithmVersion: CLINICAL_PATTERN_ENGINE_VERSION
+  }));
+}
+
+module.exports = {
+  buildObservationalRelationships,
+  detectPatientPatterns,
+  positiveEvents,
+  temporalSequencePairs
+};

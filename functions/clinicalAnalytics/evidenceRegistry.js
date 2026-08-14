@@ -75,6 +75,36 @@ const CLINICAL_EVIDENCE_REGISTRY = Object.freeze([
     modelSupported: ["support_tools"],
     notes: "Referencia regulatoria/metodológica; no es autorización ni validación del producto.",
     registryVersion: CLINICAL_EVIDENCE_REGISTRY_VERSION
+  },
+  {
+    evidenceId: "nist-sematech-statistics-handbook",
+    title: "NIST/SEMATECH e-Handbook of Statistical Methods",
+    authors: "National Institute of Standards and Technology",
+    year: null,
+    journal: "NIST",
+    doi: "10.18434/M32189",
+    url: "https://www.nist.gov/programs-projects/nistsematech-engineering-statistics-handbook",
+    evidenceType: "statistical_methodology",
+    domain: "association_measurement",
+    variablesSupported: ["continuous", "ordinal"],
+    modelSupported: ["pearson_correlation", "spearman_rank_correlation"],
+    notes: "Referencia metodologica para medidas de asociacion; no convierte correlacion en causalidad.",
+    registryVersion: CLINICAL_EVIDENCE_REGISTRY_VERSION
+  },
+  {
+    evidenceId: "benjamini-hochberg-1995",
+    title: "Controlling the False Discovery Rate: A Practical and Powerful Approach to Multiple Testing",
+    authors: "Benjamini Y, Hochberg Y",
+    year: 1995,
+    journal: "Journal of the Royal Statistical Society: Series B",
+    doi: "10.1111/j.2517-6161.1995.tb02031.x",
+    url: "https://doi.org/10.1111/j.2517-6161.1995.tb02031.x",
+    evidenceType: "statistical_methodology",
+    domain: "multiple_testing",
+    variablesSupported: [],
+    modelSupported: ["false_discovery_rate_control"],
+    notes: "Se usa para ajustar valores p al explorar muchos pares; no valida por si solo una asociacion.",
+    registryVersion: CLINICAL_EVIDENCE_REGISTRY_VERSION
   }
 ]);
 

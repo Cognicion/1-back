@@ -3,7 +3,7 @@ const { calculateEmpiricalProbability, wilsonInterval } = require("../clinicalAn
 const { extractClinicalVariables } = require("../clinicalAnalytics/variableExtractor");
 const { analyzePatientTimeline } = require("../clinicalAnalytics/timelineAnalyzer");
 const { detectPatientPatterns, buildObservationalRelationships } = require("../clinicalAnalytics/patternAnalyzer");
-const { analyticsPatientId, stripIdentifiers } = require("../clinicalAnalytics/deidentification");
+const { analyticsPatientId, globalVariable, stripIdentifiers } = require("../clinicalAnalytics/deidentification");
 const { patientAllowsProfessionalAccess, isProfessional } = require("../clinicalAnalytics/access");
 
 const probability = calculateEmpiricalProbability({ numerator: 25, denominator: 100 });
@@ -28,6 +28,18 @@ const hashed = analyticsPatientId("patient-real-id");
 assert.notStrictEqual(hashed, "patient-real-id");
 const safe = stripIdentifiers({ name: "Ana", email: "ana@example.com", nested: { phone: "555" }, symptom: "insomnia" });
 assert.deepStrictEqual(safe, { nested: {}, symptom: "insomnia" });
+const safeTreatment = globalVariable({
+  variableId: "treatment",
+  canonicalName: "tratamiento",
+  domain: "treatment",
+  datatype: "object",
+  statisticalType: "categorical",
+  observedAt: "2026-01-15T12:30:00.000Z",
+  value: { medication: "Texto libre identificable de Nombre Privado", dose: "dato privado" },
+  provenance: { sourceField: "medicamento", sourceRecordType: "tratamientos", extractedAt: "2026-01-15T12:31:00.000Z" }
+});
+assert.ok(!JSON.stringify(safeTreatment).includes("Nombre Privado"));
+assert.strictEqual(safeTreatment.observedAt, "2026-01");
 assert.strictEqual(isProfessional({ rol: "medico" }), true);
 assert.strictEqual(patientAllowsProfessionalAccess({ medicoTratanteUid: "doctor-1" }, "doctor-1"), true);
 assert.strictEqual(patientAllowsProfessionalAccess({ medicoTratanteUid: "doctor-1" }, "doctor-2"), false);

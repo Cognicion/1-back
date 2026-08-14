@@ -45,7 +45,7 @@ assert.match(html, /js\/medico\.js\?v=20260814-note-sections-runtime-v1/, "medic
 
 const appVersion = read("js/config/appVersion.js");
 const serviceWorker = read("service-worker.js");
-assert.match(appVersion, /APP_VERSION = "1\.988"/, "la versión visible identifica la corrección de notas");
+assert.match(appVersion, /APP_VERSION = "1\.998"/, "la versión visible conserva el incremento publicado más reciente");
 assert.match(serviceWorker, /CACHE_VERSION = "20260814-note-sections-runtime-v1"/, "el service worker renueva la caché del importador");
 
 const controller = read("js/modules/patient-transfer/patientTransferController.js");

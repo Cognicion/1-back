@@ -1102,7 +1102,7 @@ async function renderizarAccesoConocimientoSofia() {
   const main = document.querySelector("main.admin-contenedor");
   if (!nav || !main) return;
   try {
-    const modulo = await import("./admin/clinicalKnowledge/clinicalKnowledgeController.js?v=20260811-clinical-knowledge-v1");
+    const modulo = await import("./admin/clinicalKnowledge/clinicalKnowledgeController.js?v=20260814-pattern-matrices-v1");
     await modulo.initializeClinicalKnowledgePanel({ nav, main });
   } catch (error) {
     console.error("[ADMIN] No se pudo preparar Conocimiento registrado por SOFÍA", error);

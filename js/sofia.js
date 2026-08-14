@@ -1,10 +1,12 @@
-import { auth, db, obtenerFunctions } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { aplicarAparienciaGuardada } from "./services/apariencia.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { emitSofiaState } from "./sofia-mascota/mascotaEvents.js";
 import { analyzeSelectedPatient, listAuthorizedSofiaPatients, renderClinicalAnalysis, renderClinicalAnalysisError } from "./sofia/clinicalAnalysis/clinicalAnalysisController.js";
+import { createSofiaUnifiedClient } from "./sofia/sofiaUnifiedClient.js";
+import { applySofiaPageActions, collectSofiaPageState } from "./sofia/pageTools.js";
 import {
   analizarInteraccionesMedicamentos,
   cargarExpedientePacienteSofia,
@@ -32,6 +34,7 @@ const buscarTimeline = document.getElementById("buscarTimelineSofia");
 const notaCritica = document.getElementById("notaCriticaSofia");
 const analizarNota = document.getElementById("analizarNotaSofia");
 const limpiarCritica = document.getElementById("limpiarCriticaSofia");
+const sofiaUnifiedClient = createSofiaUnifiedClient();
 
 let usuarioActual = null;
 let perfilActual = null;
@@ -39,17 +42,8 @@ let enviandoMensaje = false;
 let pacientesSofia = [];
 let expedienteActual = null;
 let timelineActual = [];
-let chatSofiaCallablePromise = null;
-
-async function obtenerCallableSofia() {
-  if (!chatSofiaCallablePromise) {
-    chatSofiaCallablePromise = Promise.all([
-      obtenerFunctions(),
-      import("https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js")
-    ]).then(([functionsInstance, { httpsCallable }]) => httpsCallable(functionsInstance, "chatSofia"));
-  }
-  return chatSofiaCallablePromise;
-}
+let panelContextActual = {};
+let notaCriticaActual = [];
 
 function agregarMensaje(texto, tipo, claseExtra = "") {
   const div = document.createElement("div");
@@ -58,6 +52,17 @@ function agregarMensaje(texto, tipo, claseExtra = "") {
   chatBox.appendChild(div);
   chatBox.scrollTop = chatBox.scrollHeight;
   return div;
+}
+
+function agregarTrazasHerramientas(messageElement, result = {}) {
+  const names = [...new Set((result.toolsUsed || []).filter((item) => item.status === "completed").map((item) => item.name))];
+  if (!names.length && !result.legacyFallback) return;
+  const trace = document.createElement("small");
+  trace.className = "msg-tools";
+  trace.textContent = result.legacyFallback
+    ? "Modo compatible: chat sin herramientas clínicas."
+    : `Herramientas utilizadas: ${names.join(", ")}.`;
+  messageElement.appendChild(trace);
 }
 
 function bloquearAcceso(mensaje) {
@@ -133,17 +138,26 @@ recargarSofia?.addEventListener("click", () => {
 
 buscarTimeline?.addEventListener("input", () => renderTimeline(filtrarTimeline(buscarTimeline.value)));
 
-analizarNota?.addEventListener("click", () => {
-  const hallazgos = generarCriticaNota(notaCritica.value, expedienteActual);
-  renderStack("criticaNotaSofia", hallazgos.map((h) => ({ ...h, meta: h.nivel, accion: h.porQue })));
-});
+function ejecutarCriticaNota() {
+  notaCriticaActual = generarCriticaNota(notaCritica.value, expedienteActual);
+  renderStack("criticaNotaSofia", notaCriticaActual.map((hallazgo) => ({
+    ...hallazgo,
+    meta: hallazgo.nivel,
+    accion: hallazgo.porQue
+  })));
+  return true;
+}
+
+analizarNota?.addEventListener("click", ejecutarCriticaNota);
 
 limpiarCritica?.addEventListener("click", () => {
   notaCritica.value = "";
+  notaCriticaActual = [];
   document.getElementById("criticaNotaSofia").innerHTML = "";
 });
 
 async function cargarPacienteSeleccionado(idPaciente) {
+  sofiaUnifiedClient.selectPatient(idPaciente);
   emitSofiaState("analyzing", "patient-selection");
   setLoadingPanels("Construyendo paciente digital...");
   const analysisContainer = document.getElementById("clinicalAnalysisSofia");
@@ -156,18 +170,33 @@ async function cargarPacienteSeleccionado(idPaciente) {
     renderClinicalAnalysis(analysisContainer, analysisResult);
     expedienteActual = expediente;
     timelineActual = construirLineaTiempo(expedienteActual);
-    renderPacienteDigital(construirPacienteDigital(expedienteActual));
+    const digital = construirPacienteDigital(expedienteActual);
+    const narrativa = generarNarrativaClinica(expedienteActual);
+    const razonamiento = generarRazonamientoClinico(expedienteActual);
+    const alertas = generarAlertasInteligentes(expedienteActual);
+    const monitorizacion = generarRecomendacionesLaboratorio(expedienteActual);
+    const interacciones = analizarInteraccionesMedicamentos(expedienteActual.tratamientos || []);
+    panelContextActual = construirContextoHerramientasPagina({
+      digital,
+      narrativa,
+      razonamiento,
+      alertas,
+      monitorizacion,
+      interacciones
+    });
+    renderPacienteDigital(digital);
     renderTimeline(timelineActual);
     renderMapa(construirMapaRelaciones(expedienteActual));
-    renderNarrativa(generarNarrativaClinica(expedienteActual));
-    renderRazonamiento(generarRazonamientoClinico(expedienteActual));
-    renderStack("alertasSofia", generarAlertasInteligentes(expedienteActual));
-    renderStack("prediccionSofia", construirPacienteDigital(expedienteActual).riesgos.map((r) => ({ titulo: r.titulo, nivel: r.nivel, detalle: `Factores: ${(r.factores || []).join(", ")}`, accion: `Variables faltantes: ${(r.faltantes || []).join(", ")}` })));
-    renderStack("labsSofia", generarRecomendacionesLaboratorio(expedienteActual).map((r) => ({ titulo: r.estudio, nivel: r.prioridad, detalle: r.motivo, accion: `${r.periodicidad}. ${r.relacion}` })));
+    renderNarrativa(narrativa);
+    renderRazonamiento(razonamiento);
+    renderStack("alertasSofia", alertas);
+    renderStack("prediccionSofia", digital.riesgos.map((r) => ({ titulo: r.titulo, nivel: r.nivel, detalle: `Factores: ${(r.factores || []).join(", ")}`, accion: `Variables faltantes: ${(r.faltantes || []).join(", ")}` })));
+    renderStack("labsSofia", monitorizacion.map((r) => ({ titulo: r.estudio, nivel: r.prioridad, detalle: r.motivo, accion: `${r.periodicidad}. ${r.relacion}` })));
     renderFarmaco(expedienteActual);
     emitSofiaState("completed", "patient-selection", { duration: 1600, fallbackState: "idle" });
   } catch (error) {
     console.error(error);
+    panelContextActual = {};
     renderClinicalAnalysisError(analysisContainer, error);
     emitSofiaState("error", "patient-selection", { duration: 2200, fallbackState: "idle" });
     renderEstadoVacio("No se pudo cargar el expediente del paciente seleccionado.");
@@ -269,6 +298,92 @@ function renderFarmaco(expediente) {
   renderStack("farmacoSofia", tarjetas);
 }
 
+function construirContextoHerramientasPagina({ digital, narrativa, razonamiento, alertas, monitorizacion, interacciones }) {
+  const diagnosticos = (digital.diagnosticos || []).slice(0, 12).map((diagnostico) => ({
+    code: diagnostico.codigo || null,
+    system: diagnostico.sistema || null,
+    status: diagnostico.estado || null,
+    label: diagnostico.nombre || diagnostico.texto || diagnostico.diagnostico || null
+  }));
+  const treatments = (digital.tratamientosActivos || []).slice(0, 12).map((tratamiento) => ({
+    medication: tratamiento.medicamento || tratamiento.nombreMedicamento || null,
+    dose: tratamiento.dosis || null,
+    route: tratamiento.via || null,
+    frequency: tratamiento.frecuencia || null,
+    status: tratamiento.estado || tratamiento.estatus || "active"
+  }));
+  return {
+    patient_overview: {
+      age: digital.identificacion?.edad ?? null,
+      registeredSex: digital.identificacion?.sexo || null,
+      diagnoses: diagnosticos,
+      symptoms: (digital.sintomas || []).slice(0, 20),
+      treatments,
+      protectiveFactors: (digital.protectores || []).slice(0, 12),
+      recordCoverage: digital.cobertura || null
+    },
+    alerts: (alertas || []).slice(0, 20).map((alerta) => ({
+      level: alerta.nivel || null,
+      title: alerta.titulo || null,
+      detail: alerta.detalle || null,
+      rationale: alerta.porQue || null,
+      actionForProfessionalReview: alerta.accion || null
+    })),
+    risk_estimates: (digital.riesgos || []).slice(0, 12).map((riesgo) => ({
+      title: riesgo.titulo || null,
+      level: riesgo.nivel || null,
+      factors: (riesgo.factores || []).slice(0, 12),
+      missingVariables: (riesgo.faltantes || []).slice(0, 12),
+      method: "local_rules"
+    })),
+    narrative: narrativa || "",
+    clinical_reasoning: (razonamiento || []).slice(0, 12).map((item) => ({
+      title: item.titulo || null,
+      type: item.tipo || null,
+      confidence: item.confianza || null,
+      supportingData: (item.aFavor || []).slice(0, 10),
+      limitations: (item.enContra || []).slice(0, 10),
+      evidenceSources: (item.evidencia || []).slice(0, 10)
+    })),
+    monitoring: (monitorizacion || []).slice(0, 20).map((item) => ({
+      study: item.estudio || null,
+      priority: item.prioridad || null,
+      rationale: item.motivo || null,
+      periodicity: item.periodicidad || null,
+      relationship: item.relacion || null
+    })),
+    pharmacology: {
+      activeTreatments: treatments,
+      interactions: (interacciones || []).slice(0, 20).map((item) => ({
+        severity: item.severidad || null,
+        medications: (item.medicamentos || []).slice(0, 8),
+        mechanism: item.mecanismo || null,
+        consequence: item.consecuencia || null,
+        professionalReview: item.conducta || null
+      }))
+    }
+  };
+}
+
+function construirEstadoPaginaParaChat() {
+  const noteReview = notaCritica?.value.trim()
+    ? generarCriticaNota(notaCritica.value, expedienteActual)
+    : notaCriticaActual;
+  return collectSofiaPageState({
+    timelineFilter: buscarTimeline?.value || "",
+    hasNoteDraft: Boolean(notaCritica?.value.trim()),
+    panelContext: {
+      ...panelContextActual,
+      note_review: (noteReview || []).slice(0, 20).map((item) => ({
+        level: item.nivel || null,
+        title: item.titulo || null,
+        detail: item.detalle || null,
+        rationale: item.porQue || null
+      }))
+    }
+  });
+}
+
 function filtrarTimeline(valor) {
   const q = String(valor || "").toLowerCase();
   if (!q) return timelineActual;
@@ -299,11 +414,30 @@ formSofia?.addEventListener("submit", async (e) => {
   emitSofiaState("thinking", "chat-submit");
   let chatFailed = false;
   try {
-    const chatSofia = await obtenerCallableSofia();
-    const resultado = await chatSofia({ mensaje });
-    const respuesta = resultado?.data?.respuesta || "SOFIA respondio, pero no llego texto interpretable.";
+    const resultado = await sofiaUnifiedClient.ask({
+      message: mensaje,
+      patientId: selectorPaciente?.value || "",
+      pageState: construirEstadoPaginaParaChat()
+    });
+    const acciones = await applySofiaPageActions(resultado.actions, {
+      onRefresh: async () => {
+        if (!selectorPaciente?.value) return false;
+        await cargarPacienteSeleccionado(selectorPaciente.value);
+        return true;
+      },
+      onAnalyzeNote: () => ejecutarCriticaNota(),
+      onTrace: (trace) => console.debug("[SOFÍA Unified] Acción de página", trace)
+    });
+    console.debug("[SOFÍA Unified] Respuesta orquestada", {
+      mode: resultado.mode,
+      tools: (resultado.toolsUsed || []).map((item) => item.name),
+      actions: acciones,
+      clinicalWritesPerformed: resultado.clinicalWritesPerformed
+    });
+    const respuesta = resultado.respuesta || "SOFIA respondio, pero no llego texto interpretable.";
     mensajePensando.className = "msg sofia";
     mensajePensando.textContent = respuesta;
+    agregarTrazasHerramientas(mensajePensando, resultado);
   } catch (error) {
     console.error(error);
     chatFailed = true;

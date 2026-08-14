@@ -10,8 +10,10 @@ const {
   analyzePatientClinicalContext,
   listAuthorizedSofiaPatients,
   getClinicalKnowledgeAdmin,
+  rebuildClinicalPatternMatricesAdmin,
   processClinicalAnalyticsWrite
 } = require("./clinicalAnalytics/handlers");
+const { runUnifiedSofia } = require("./sofiaOrchestrator/orchestrator");
 
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 if (!admin.apps.length) admin.initializeApp();
@@ -283,7 +285,23 @@ exports.discoverTextPatterns = onCall({ region: "us-central1", timeoutSeconds: 3
 exports.analyzePatientClinicalContext = onCall({ region: "us-central1", timeoutSeconds: 120, memory: "1GiB" }, async (request) => analyzePatientClinicalContext({ request, db: adminDb }));
 exports.listAuthorizedSofiaPatients = onCall({ region: "us-central1", timeoutSeconds: 60 }, async (request) => listAuthorizedSofiaPatients({ request, db: adminDb }));
 exports.getClinicalKnowledgeAdmin = onCall({ region: "us-central1", timeoutSeconds: 60 }, async (request) => getClinicalKnowledgeAdmin({ request, db: adminDb }));
+exports.rebuildClinicalPatternMatricesAdmin = onCall({ region: "us-central1", timeoutSeconds: 540, memory: "1GiB" }, async (request) => rebuildClinicalPatternMatricesAdmin({ request, db: adminDb }));
 exports.clinicalAnalyticsOnRecordWrite = onDocumentWritten({ region: "us-central1", document: "usuarios/{patientId}/{collectionId}/{recordId}" }, async (event) => processClinicalAnalyticsWrite({ event, db: adminDb }));
+
+exports.chatSofiaUnified = onCall(
+  {
+    region: "us-central1",
+    secrets: [OPENAI_API_KEY],
+    timeoutSeconds: 120,
+    memory: "1GiB"
+  },
+  async (request) => runUnifiedSofia({
+    request,
+    db: adminDb,
+    apiKey: OPENAI_API_KEY.value(),
+    OpenAIClass: OpenAI
+  })
+);
 
 exports.chatSofia = onCall(
   {
