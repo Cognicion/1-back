@@ -6,6 +6,7 @@ import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { CIE10, CIE11 } from "./data/catalogoDiagnosticos.js?v=20260811-diagnosticos-unificados-v1";
 import { ESCALAS_PSIQUIATRICAS, interpretarEscala } from "./data/escalasPsiquiatricas.js";
+import { ESCALAS_SOLICITADAS } from "./data/escalasSolicitadas.js";
 import {
   ESCALAS_MEDICINA_GENERAL,
   ESCALAS_PEDIATRICAS_NOTA
@@ -206,6 +207,7 @@ const ESCALAS_NOTA = [
   ...ESCALAS_COGNITIVAS
     .filter((escala) => !IDS_PRUEBAS_INTERACTIVAS.has(escala.id))
     .map((escala) => ({ ...escala, interactiva: escalaAplicableEnNota(escala) })),
+  ...ESCALAS_SOLICITADAS.map((escala) => ({ ...escala, interactiva: true })),
   ...PRUEBAS_INTERACTIVAS.map((escala) => ({
     ...escala,
     tipoEscala: escala.tipoEscala || "cognitiva",
@@ -1413,7 +1415,7 @@ async function guardarEscalaDesdeNota() {
     ? interpretarPruebaInteractiva(escala, puntaje)
     : esCognitiva
       ? interpretarEscalaCognitiva(escala, puntaje, respuestas)
-      : interpretarEscala(escala, puntaje);
+      : typeof escala.interpretarPuntaje === "function" ? escala.interpretarPuntaje(puntaje, respuestas) : interpretarEscala(escala, puntaje);
   const puntajesPorDominio = esInteractiva
     ? puntajesDominioPruebaInteractiva(respuestas)
     : esCognitiva
