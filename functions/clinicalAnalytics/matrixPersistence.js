@@ -98,9 +98,9 @@ async function commitOperations(db, operations, batchSize = 400) {
 
 async function writeAssociations({ db, matrixRef, associations, runId }) {
   const collectionRef = matrixRef.collection("associations");
-  const writeOperations = associations.map((association) => (batch) => batch.set(
+  const writeOperations = associations.map((association, index) => (batch) => batch.set(
     collectionRef.doc(compactKey(association.associationId || association.patternId)),
-    { ...association, matrixRunId: runId },
+    { ...association, displayRank: index + 1, matrixRunId: runId },
     { merge: false }
   ));
   await commitOperations(db, writeOperations);
@@ -140,17 +140,62 @@ async function persistPatternMatrices({ db, result }) {
   return { matrixRunId: runId, cohortSize: result.cohortSize };
 }
 
+function sortAssociationsForDisplay(associations = [], matrixType = "") {
+  return [...associations].sort((a, b) => {
+    if (Number.isFinite(Number(a.displayRank)) || Number.isFinite(Number(b.displayRank))) {
+      return (Number(a.displayRank) || Number.MAX_SAFE_INTEGER) - (Number(b.displayRank) || Number.MAX_SAFE_INTEGER);
+    }
+    if ((a.matrixType || matrixType) === "temporal_sequences") {
+      return (Number(b.patientSupport) || 0) - (Number(a.patientSupport) || 0)
+        || (Number(b.lift) || 0) - (Number(a.lift) || 0)
+        || String(a.associationId || a.id).localeCompare(String(b.associationId || b.id));
+    }
+    return Number(b.passesFalseDiscoveryRate === true) - Number(a.passesFalseDiscoveryRate === true)
+      || Math.abs(Number(b.effectSize) || 0) - Math.abs(Number(a.effectSize) || 0)
+      || (Number(b.sampleSize) || 0) - (Number(a.sampleSize) || 0)
+      || String(a.associationId || a.id).localeCompare(String(b.associationId || b.id));
+  });
+}
+
+function effectiveMatrixStatus(status = null) {
+  if (!status) return {
+    stale: true,
+    staleReason: "not_generated",
+    versionOutdated: false,
+    currentMatrixEngineVersion: CLINICAL_MATRIX_ENGINE_VERSION
+  };
+  const versionOutdated = status.matrixEngineVersion !== CLINICAL_MATRIX_ENGINE_VERSION;
+  return {
+    ...status,
+    stale: status.stale !== false || versionOutdated,
+    staleReason: versionOutdated ? "matrix_engine_version_changed" : status.staleReason || null,
+    versionOutdated,
+    currentMatrixEngineVersion: CLINICAL_MATRIX_ENGINE_VERSION
+  };
+}
+
 async function readMatrix(db, documentId, limit) {
   const ref = db.collection(ANALYTICS_COLLECTIONS.matrices).doc(documentId);
-  const [metadata, associations] = await Promise.all([
-    ref.get(),
-    ref.collection("associations").limit(limit).get()
-  ]);
+  const metadata = await ref.get();
   if (!metadata.exists) return null;
+  const associationRef = ref.collection("associations");
+  let associations = await associationRef.orderBy("displayRank", "asc").limit(limit).get();
+  if (associations.empty && Number(metadata.data()?.retainedAssociations) > 0) {
+    const legacyLimit = Math.max(
+      CLINICAL_PATTERN_MATRIX_CONFIG.maxAssociations,
+      CLINICAL_PATTERN_MATRIX_CONFIG.maxPresenceAssociations,
+      CLINICAL_PATTERN_MATRIX_CONFIG.maxTemporalPatterns
+    );
+    associations = await associationRef.limit(legacyLimit).get();
+  }
+  const sortedAssociations = sortAssociationsForDisplay(
+    associations.docs.map((doc) => ({ id: doc.id, ...doc.data() })),
+    metadata.data()?.matrixType
+  ).slice(0, limit);
   return {
     id: documentId,
     ...metadata.data(),
-    associations: associations.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+    associations: sortedAssociations
   };
 }
 
@@ -165,7 +210,7 @@ async function readClinicalMatrices({ db, limit = 100 }) {
     readMatrix(db, documents.temporal || MATRIX_DOCUMENTS.temporal, boundedLimit)
   ]);
   return {
-    matrixStatus: statusData || { stale: true, staleReason: "not_generated" },
+    matrixStatus: effectiveMatrixStatus(statusData),
     matrices: { mixed, documentation, temporal }
   };
 }
@@ -173,8 +218,10 @@ async function readClinicalMatrices({ db, limit = 100 }) {
 module.exports = {
   MATRIX_DOCUMENTS,
   assertSafeProfile,
+  effectiveMatrixStatus,
   persistPatientFeatureProfile,
   persistPatternMatrices,
   readClinicalMatrices,
-  readPatientFeatureProfiles
+  readPatientFeatureProfiles,
+  sortAssociationsForDisplay
 };

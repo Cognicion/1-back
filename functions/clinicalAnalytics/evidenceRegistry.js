@@ -4,6 +4,7 @@ const CLINICAL_EVIDENCE_REGISTRY = Object.freeze([
   {
     evidenceId: "tripod-ai",
     title: "TRIPOD+AI statement: updated guidance for reporting clinical prediction models that use regression or machine learning methods",
+    titleEs: "Declaración TRIPOD+AI: guía actualizada para reportar modelos de predicción clínica con regresión o aprendizaje automático",
     authors: "Collins GS et al.",
     year: 2024,
     journal: "BMJ",
@@ -19,6 +20,7 @@ const CLINICAL_EVIDENCE_REGISTRY = Object.freeze([
   {
     evidenceId: "probast-ai",
     title: "PROBAST+AI: an updated quality, risk of bias, and applicability assessment tool for prediction models using regression or artificial intelligence methods",
+    titleEs: "PROBAST+AI: herramienta actualizada para evaluar calidad, riesgo de sesgo y aplicabilidad de modelos predictivos",
     authors: "Moons KGM et al.",
     year: 2025,
     journal: "BMJ",
@@ -34,6 +36,7 @@ const CLINICAL_EVIDENCE_REGISTRY = Object.freeze([
   {
     evidenceId: "nice-esf",
     title: "Evidence standards framework for digital health technologies",
+    titleEs: "Marco de estándares de evidencia para tecnologías de salud digital",
     authors: "National Institute for Health and Care Excellence",
     year: 2022,
     journal: "NICE Guidance ECD7",
@@ -49,6 +52,7 @@ const CLINICAL_EVIDENCE_REGISTRY = Object.freeze([
   {
     evidenceId: "nice-rwe",
     title: "NICE real-world evidence framework",
+    titleEs: "Marco NICE de evidencia del mundo real",
     authors: "National Institute for Health and Care Excellence",
     year: 2022,
     journal: "NICE Guidance ECD9",
@@ -64,6 +68,7 @@ const CLINICAL_EVIDENCE_REGISTRY = Object.freeze([
   {
     evidenceId: "fda-cds",
     title: "Clinical Decision Support Software",
+    titleEs: "Software de apoyo a decisiones clínicas",
     authors: "U.S. Food and Drug Administration",
     year: null,
     journal: "FDA Guidance",
@@ -79,6 +84,7 @@ const CLINICAL_EVIDENCE_REGISTRY = Object.freeze([
   {
     evidenceId: "nist-sematech-statistics-handbook",
     title: "NIST/SEMATECH e-Handbook of Statistical Methods",
+    titleEs: "Manual electrónico NIST/SEMATECH de métodos estadísticos",
     authors: "National Institute of Standards and Technology",
     year: null,
     journal: "NIST",
@@ -94,6 +100,7 @@ const CLINICAL_EVIDENCE_REGISTRY = Object.freeze([
   {
     evidenceId: "benjamini-hochberg-1995",
     title: "Controlling the False Discovery Rate: A Practical and Powerful Approach to Multiple Testing",
+    titleEs: "Control de la tasa de falsos descubrimientos: un enfoque práctico para comparaciones múltiples",
     authors: "Benjamini Y, Hochberg Y",
     year: 1995,
     journal: "Journal of the Royal Statistical Society: Series B",
@@ -104,6 +111,22 @@ const CLINICAL_EVIDENCE_REGISTRY = Object.freeze([
     variablesSupported: [],
     modelSupported: ["false_discovery_rate_control"],
     notes: "Se usa para ajustar valores p al explorar muchos pares; no valida por si solo una asociacion.",
+    registryVersion: CLINICAL_EVIDENCE_REGISTRY_VERSION
+  },
+  {
+    evidenceId: "asa-p-values-2016",
+    title: "The ASA Statement on p-Values: Context, Process, and Purpose",
+    titleEs: "Declaración de la ASA sobre valores p: contexto, proceso y propósito",
+    authors: "Wasserstein RL, Lazar NA",
+    year: 2016,
+    journal: "The American Statistician",
+    doi: "10.1080/00031305.2016.1154108",
+    url: "https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf",
+    evidenceType: "statistical_interpretation_guidance",
+    domain: "statistical_interpretation",
+    variablesSupported: [],
+    modelSupported: ["association_interpretation", "multiple_testing_reporting"],
+    notes: "Los valores p o q no miden la magnitud ni la importancia clínica y no deben sostener por sí solos una conclusión.",
     registryVersion: CLINICAL_EVIDENCE_REGISTRY_VERSION
   }
 ]);

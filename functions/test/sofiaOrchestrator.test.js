@@ -102,7 +102,7 @@ async function run() {
             matrixType: "mixed_values",
             featureCount: 2,
             testedPairs: 1,
-            associations: [{ variableA: "age.latest", variableB: "documentation.mean_words", effectSize: 0.8, effectMetric: "pearson_r", sampleSize: 40, evidenceStatus: "screened_candidate", analyticsPatientId: "must-not-leak" }]
+            associations: [{ variableA: "age.latest", variableB: "documentation.mean_words", variableALabel: "último valor de edad", variableBLabel: "promedio de palabras por nota", methodLabel: "Correlaciones de Pearson y Spearman", effectSize: 0.8, effectMetric: "pearson_r", effectMetricLabel: "r de Pearson", sampleSize: 40, evidenceStatus: "screened_candidate", evidenceStatusLabel: "Candidato exploratorio tras corrección FDR", possibleInterpretationEs: "Asociación observacional; no implica causalidad.", analyticsPatientId: "must-not-leak" }]
           },
           documentation: null,
           temporal: null
@@ -114,6 +114,8 @@ async function run() {
   assert.strictEqual(globalKnowledge.ok, true);
   assert.strictEqual(globalKnowledge.cohortSize, 40);
   assert.strictEqual(globalKnowledge.rowLevelDataIncluded, false);
+  assert.strictEqual(globalKnowledge.matrices.mixed.associations[0].variableALabel, "último valor de edad");
+  assert.match(globalKnowledge.matrices.mixed.associations[0].possibleInterpretationEs, /no implica causalidad/i);
   assert.ok(!JSON.stringify(globalKnowledge).includes("must-not-leak"));
 
   await assert.rejects(

@@ -12,6 +12,63 @@ function clamp(value, minimum = 0, maximum = 1) {
   return Math.min(maximum, Math.max(minimum, value));
 }
 
+function inverseNormalCdf(probability) {
+  if (!(probability > 0 && probability < 1)) return null;
+  const a = [-39.69683028665376, 220.9460984245205, -275.9285104469687, 138.357751867269, -30.66479806614716, 2.506628277459239];
+  const b = [-54.47609879822406, 161.5858368580409, -155.6989798598866, 66.80131188771972, -13.28068155288572];
+  const c = [-0.007784894002430293, -0.3223964580411365, -2.400758277161838, -2.549732539343734, 4.374664141464968, 2.938163982698783];
+  const d = [0.007784695709041462, 0.3224671290700398, 2.445134137142996, 3.754408661907416];
+  const lower = 0.02425;
+  const upper = 1 - lower;
+  if (probability < lower) {
+    const q = Math.sqrt(-2 * Math.log(probability));
+    const numerator = ((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5];
+    const denominator = (((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1;
+    return numerator / denominator;
+  }
+  if (probability > upper) {
+    const q = Math.sqrt(-2 * Math.log(1 - probability));
+    const numerator = ((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5];
+    const denominator = (((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1;
+    return -(numerator / denominator);
+  }
+  const q = probability - 0.5;
+  const r = q * q;
+  const numerator = (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q;
+  const denominator = ((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1;
+  return numerator / denominator;
+}
+
+function fisherCorrelationInterval(correlation, sampleSize, confidenceLevel = 0.95) {
+  if (!Number.isFinite(correlation) || sampleSize <= 3 || !(confidenceLevel > 0 && confidenceLevel < 1)) return null;
+  const bounded = clamp(correlation, -0.999999999, 0.999999999);
+  const criticalValue = inverseNormalCdf(1 - ((1 - confidenceLevel) / 2));
+  if (!Number.isFinite(criticalValue)) return null;
+  const transformed = Math.atanh(bounded);
+  const margin = criticalValue / Math.sqrt(sampleSize - 3);
+  return {
+    ciLower: Math.tanh(transformed - margin),
+    ciUpper: Math.tanh(transformed + margin),
+    confidenceLevel,
+    confidenceIntervalMethod: "fisher_z"
+  };
+}
+
+function pearsonSpearmanConcordance(pearson, spearman, tolerance = 0.15) {
+  if (!Number.isFinite(pearson) || !Number.isFinite(spearman)) return null;
+  const difference = Math.abs(pearson - spearman);
+  const sameDirection = Math.sign(pearson) === Math.sign(spearman) || Math.abs(pearson) < 1e-12 || Math.abs(spearman) < 1e-12;
+  return {
+    difference,
+    sameDirection,
+    status: !sameDirection
+      ? "direction_disagreement"
+      : difference <= tolerance
+        ? "consistent"
+        : "magnitude_difference"
+  };
+}
+
 function mean(values) {
   return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
 }
@@ -262,7 +319,7 @@ function benjaminiHochberg(items, pValueKey = "pValue") {
 function methodologicalEvidenceIds(association) {
   const evidenceIds = [];
   if (["pearson_spearman", "point_biserial"].includes(association.method)) evidenceIds.push("nist-sematech-statistics-handbook");
-  if (Number.isFinite(association.pValue)) evidenceIds.push("benjamini-hochberg-1995");
+  if (Number.isFinite(association.pValue)) evidenceIds.push("benjamini-hochberg-1995", "asa-p-values-2016");
   return evidenceIds;
 }
 
@@ -337,12 +394,14 @@ function baseAssociation(matrixType, metadataA, metadataB, sampleSize) {
   };
 }
 
-function numericAssociation(matrixType, metadataA, metadataB, rows) {
+function numericAssociation(matrixType, metadataA, metadataB, rows, config) {
   const valuesA = rows.map((row) => row[0]);
   const valuesB = rows.map((row) => row[1]);
   if (!variance(valuesA) || !variance(valuesB)) return null;
   const pearson = pearsonCorrelation(valuesA, valuesB);
   const spearman = spearmanCorrelation(valuesA, valuesB);
+  const interval = fisherCorrelationInterval(pearson, rows.length, config.confidenceLevel);
+  const concordance = pearsonSpearmanConcordance(pearson, spearman, config.pearsonSpearmanAgreementTolerance);
   return {
     ...baseAssociation(matrixType, metadataA, metadataB, rows.length),
     method: "pearson_spearman",
@@ -352,6 +411,10 @@ function numericAssociation(matrixType, metadataA, metadataB, rows) {
     secondaryEffectMetric: "spearman_rho",
     direction: pearson > 0 ? "positive" : pearson < 0 ? "negative" : "none",
     pValue: correlationPValue(pearson, rows.length),
+    ...(interval || {}),
+    pearsonSpearmanDifference: concordance?.difference ?? null,
+    pearsonSpearmanSameDirection: concordance?.sameDirection ?? null,
+    pearsonSpearmanConcordance: concordance?.status || null,
     privacySuppressed: false
   };
 }
@@ -425,7 +488,7 @@ function calculatePair(matrixType, metadataA, metadataB, rows, config) {
   const typeB = metadataB.statisticalType;
   if (typeA === "binary" && typeB === "binary") return binaryAssociation(matrixType, metadataA, metadataB, rows, config);
   if ((typeA === "binary" && NUMERIC_TYPES.has(typeB)) || (typeB === "binary" && NUMERIC_TYPES.has(typeA))) return pointBiserialAssociation(matrixType, metadataA, metadataB, rows, config);
-  if (NUMERIC_TYPES.has(typeA) && NUMERIC_TYPES.has(typeB)) return numericAssociation(matrixType, metadataA, metadataB, rows);
+  if (NUMERIC_TYPES.has(typeA) && NUMERIC_TYPES.has(typeB)) return numericAssociation(matrixType, metadataA, metadataB, rows, config);
   if ((typeA === "categorical" && NUMERIC_TYPES.has(typeB)) || (typeB === "categorical" && NUMERIC_TYPES.has(typeA))) return numericCategoricalAssociation(matrixType, metadataA, metadataB, rows, config);
   if ((typeA === "categorical" || typeA === "binary") && (typeB === "categorical" || typeB === "binary")) return categoricalAssociation(matrixType, metadataA, metadataB, rows, config);
   return null;
@@ -457,7 +520,12 @@ function buildAssociationMatrix(profiles = [], {
         skipped.privacy += 1;
         continue;
       }
-      candidates.push(association);
+      candidates.push({
+        ...association,
+        cohortSize: profiles.length,
+        coverageRate: profiles.length ? rows.length / profiles.length : 0,
+        lowCoverage: profiles.length ? rows.length / profiles.length < config.lowCoverageThreshold : true
+      });
     }
   }
   const adjusted = benjaminiHochberg(candidates).map((association) => ({
@@ -546,6 +614,12 @@ function buildTemporalPatternMatrix(profiles = [], config = CLINICAL_PATTERN_MAT
       ciLower: probability.ciLower,
       ciUpper: probability.ciUpper,
       confidenceLevel: probability.confidenceLevel,
+      confidenceIntervalMethod: probability.method,
+      cohortSize: profiles.length,
+      coverageRate: profiles.length ? denominator / profiles.length : 0,
+      lowCoverage: profiles.length ? denominator / profiles.length < config.lowCoverageThreshold : true,
+      baselineProbability: baseProbability,
+      absoluteProbabilityDifference: baseProbability === null ? null : probability.probability - baseProbability,
       lift: baseProbability > 0 ? probability.probability / baseProbability : null,
       firstObservedAt: item.firstObservedAt,
       lastObservedAt: item.lastObservedAt,
@@ -596,6 +670,9 @@ function buildPatternMatrices(profiles = [], config = CLINICAL_PATTERN_MATRIX_CO
       minimumCellCount: config.minimumCellCount,
       minimumAbsoluteEffect: config.minimumAbsoluteEffect,
       falseDiscoveryRate: config.falseDiscoveryRate,
+      confidenceLevel: config.confidenceLevel,
+      pearsonSpearmanAgreementTolerance: config.pearsonSpearmanAgreementTolerance,
+      lowCoverageThreshold: config.lowCoverageThreshold,
       correction: "benjamini_hochberg",
       directIdentifiersIncluded: false,
       rawClinicalTextIncluded: false,
@@ -612,6 +689,9 @@ module.exports = {
   correlationPValue,
   correlationRatio,
   contingency,
+  fisherCorrelationInterval,
+  inverseNormalCdf,
   pearsonCorrelation,
+  pearsonSpearmanConcordance,
   spearmanCorrelation
 };

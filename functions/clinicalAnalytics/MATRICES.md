@@ -28,6 +28,17 @@ La medida se selecciona por tipos:
 
 Los valores p compatibles se ajustan con Benjamini-Hochberg. Una asociacion se etiqueta como candidato despues de correccion solo si supera el efecto minimo y la tasa de falsos descubrimientos configurada.
 
+## Incertidumbre, orden e interpretación
+
+- Pearson incluye un intervalo de confianza mediante transformación z de Fisher.
+- Pearson y Spearman se comparan para señalar concordancia de dirección y diferencias relevantes de magnitud; esta comparación es descriptiva, no una prueba adicional.
+- Cada asociación informa cobertura respecto a la cohorte desidentificada y marca coberturas bajas.
+- Las secuencias temporales conservan probabilidad condicional, intervalo de Wilson, frecuencia basal y multiplicador basal.
+- Las asociaciones se persisten con un orden estable para mostrar primero candidatos que superan FDR y después mayor magnitud; las matrices históricas sin rango se ordenan al leerlas.
+- `spanishPresentation.js` conserva los identificadores canónicos para cálculo, pero añade etiquetas `es-MX` e interpretación posible para el panel y para SOFÍA.
+- La interpretación combina magnitud operativa, dirección, muestra, cobertura, incertidumbre y valor q. Siempre declara que el hallazgo es observacional y no causal.
+- Un valor p o q nunca se presenta como medida de importancia clínica ni como validación suficiente.
+
 ## Privacidad y limites
 
 - El perfil global no guarda `patientId`, nombres, contacto, domicilio, identificadores visibles ni texto clinico.

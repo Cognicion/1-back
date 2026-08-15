@@ -4,7 +4,9 @@ const {
   buildPatternMatrices,
   correlationRatio,
   contingency,
+  fisherCorrelationInterval,
   pearsonCorrelation,
+  pearsonSpearmanConcordance,
   spearmanCorrelation
 } = require("../clinicalAnalytics/matrixEngine");
 const { buildPatientFeatureProfile } = require("../clinicalAnalytics/patientFeatureProfile");
@@ -14,6 +16,11 @@ const { detectPatientPatterns, buildObservationalRelationships } = require("../c
 assert.ok(Math.abs(pearsonCorrelation([1, 2, 3, 4], [2, 4, 6, 8]) - 1) < 1e-12);
 assert.ok(Math.abs(pearsonCorrelation([1, 2, 3, 4], [8, 6, 4, 2]) + 1) < 1e-12);
 assert.ok(Math.abs(spearmanCorrelation([1, 2, 3, 4], [1, 4, 9, 16]) - 1) < 1e-12);
+const correlationInterval = fisherCorrelationInterval(0.5, 100, 0.95);
+assert.ok(Math.abs(correlationInterval.ciLower - 0.3366433) < 1e-6);
+assert.ok(Math.abs(correlationInterval.ciUpper - 0.6341398) < 1e-6);
+assert.strictEqual(pearsonSpearmanConcordance(0.5, 0.46, 0.15).status, "consistent");
+assert.strictEqual(pearsonSpearmanConcordance(0.5, -0.1, 0.15).status, "direction_disagreement");
 
 const table = contingency(
   [...Array(20).fill(0), ...Array(20).fill(1)],
@@ -61,12 +68,20 @@ const crossDomain = matrices.matrices.mixed.associations.find((item) => (
 assert.ok(crossDomain, "La matriz debe buscar asociaciones entre dominios distintos");
 assert.ok(crossDomain.effectSize > 0.99);
 assert.strictEqual(crossDomain.evidenceStatus, "screened_candidate");
+assert.strictEqual(crossDomain.coverageRate, 1);
+assert.strictEqual(crossDomain.lowCoverage, false);
+assert.strictEqual(crossDomain.confidenceIntervalMethod, "fisher_z");
+assert.strictEqual(crossDomain.pearsonSpearmanConcordance, "consistent");
+assert.ok(crossDomain.evidenceIds.includes("asa-p-values-2016"));
 assert.ok(matrices.matrices.documentation.associations.some((item) => item.effectSize > 0.99));
 const temporal = matrices.matrices.temporal.associations.find((item) => item.variableA === "insomnia" && item.variableB === "anxiety");
 assert.ok(temporal);
 assert.strictEqual(temporal.numerator, 20);
 assert.strictEqual(temporal.denominator, 40);
 assert.strictEqual(temporal.probability, 0.5);
+assert.strictEqual(temporal.baselineProbability, 1);
+assert.strictEqual(temporal.absoluteProbabilityDifference, -0.5);
+assert.strictEqual(temporal.lift, 0.5);
 
 const arbitraryTimeline = [
   { variableId: "education", value: "higher", observedAt: "2026-01-01T00:00:00.000Z", confidence: 0.9 },
