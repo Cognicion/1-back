@@ -28,10 +28,21 @@ export function parseClinicalQuantity(value = "") {
   return Number.isFinite(number) ? number : null;
 }
 
+function canonicalMedicationUnit(value = "") {
+  const unit = normalizeClinicalComparisonText(value).replace(/\s+/g, " ").trim();
+  if (/^(?:mg|miligramos?)$/.test(unit)) return "mg";
+  if (/^(?:g|gramos?)$/.test(unit)) return "g";
+  if (/^(?:mcg|ug|µg|microgramos?)$/.test(unit)) return "mcg";
+  if (/^(?:ml|mililitros?)$/.test(unit)) return "ml";
+  if (/^(?:ui|unidades? internacionales?)$/.test(unit)) return "ui";
+  return unit;
+}
+
 export function parseMedicationStrength(value = "") {
-  const match = String(value || "").match(/(\d+(?:[.,]\d+)?|½|¼|¾|\d+\s*\/\s*\d+)\s*(mg|g|mcg|µg|ug|ml|ui|%)(?:\s*\/\s*(\d+(?:[.,]\d+)?)\s*(mg|g|mcg|µg|ug|ml|ui))?/i);
+  const unit = String.raw`(?:miligramos?|microgramos?|mililitros?|gramos?|unidades?\s+internacionales?|mg|mcg|µg|ug|ml|ui|g|%)`;
+  const match = String(value || "").match(new RegExp(`(\\d+(?:[.,]\\d+)?|½|¼|¾|\\d+\\s*\\/\\s*\\d+)\\s*(${unit})(?:\\s*\\/\\s*(\\d+(?:[.,]\\d+)?)\\s*(${unit}))?`, "i"));
   if (!match) return { strength: null, strengthUnit: "", strengthPerValue: null, strengthPerUnit: "", rawStrength: "" };
-  return { strength: parseClinicalQuantity(match[1]), strengthUnit: match[2].toLowerCase().replace("ug", "mcg").replace("µg", "mcg"), strengthPerValue: match[3] ? parseClinicalQuantity(match[3]) : null, strengthPerUnit: match[4]?.toLowerCase().replace("ug", "mcg").replace("µg", "mcg") || "", rawStrength: match[0] };
+  return { strength: parseClinicalQuantity(match[1]), strengthUnit: canonicalMedicationUnit(match[2]), strengthPerValue: match[3] ? parseClinicalQuantity(match[3]) : null, strengthPerUnit: match[4] ? canonicalMedicationUnit(match[4]) : "", rawStrength: match[0] };
 }
 
 export function normalizeMedicationFrequency(value = "") {

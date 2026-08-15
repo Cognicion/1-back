@@ -3,7 +3,7 @@ import { ClinicalCandidate } from "../core/ClinicalCandidate.js";
 import { ClinicalEvidence } from "../core/ClinicalEvidence.js";
 import { evaluateConfidence, requiresReviewForConfidence } from "../confidence/confidenceEngine.js";
 import { normalizeClinicalComparisonText } from "../normalizers/textNormalizer.js";
-import { normalizeMedicationName, normalizeMedicationPresentation, normalizeMedicationRoute, normalizeMedicationFrequency, parseClinicalQuantity, parseMedicationStrength, parseMedicationSchedules, splitMedicationItems } from "../normalizers/medicationNormalizer.js?v=20260814-medication-name-boundaries-v1";
+import { normalizeMedicationName, normalizeMedicationPresentation, normalizeMedicationRoute, normalizeMedicationFrequency, parseClinicalQuantity, parseMedicationStrength, parseMedicationSchedules, splitMedicationItems } from "../normalizers/medicationNormalizer.js?v=20260815-medication-full-units-v1";
 import { clinicalImportLogger } from "../utils/logger.js";
 
 const VERSION = "1.0";
@@ -24,6 +24,10 @@ function findMedicationName(item = "", catalog = MEDICAMENTOS_MAESTROS) {
   const names = catalogNames(catalog);
   const match = names.find((name) => new RegExp(`\\b${String(name).replace(/[.*+?^${}()|[\\]\\]/g, "\\\\$&")}\\b`, "i").test(item));
   if (match) return match;
+  const source = String(item).trim();
+  const presentationStart = source.search(/\s+(?=tabletas?|comprimidos?|cápsulas?|capsulas?|jarabe|solución|solucion|suspensión|suspension|polvo|gotas?|ampolla|vial|parche|spray|inhalador|crema|ungüento|unguento|supositorio)\b/i);
+  const nameBeforePresentation = presentationStart > 0 ? source.slice(0, presentationStart).trim() : "";
+  if (/^[A-Za-zÁÉÍÓÚáéíóúÑñ-]+(?:\s+[A-Za-zÁÉÍÓÚáéíóúÑñ-]+){0,2}$/.test(nameBeforePresentation)) return nameBeforePresentation;
   const manual = String(item).match(/^([A-Za-zÁÉÍÓÚáéíóúÑñ-]+(?:\s+[A-Za-zÁÉÍÓÚáéíóúÑñ-]+){0,2})(?=\s+(?:tabletas?|cápsulas?|capsulas?|jarabe|polvo|\d|tomar|administrar|vía|via)|$)/i);
   const value = manual?.[1]?.trim() || "";
   if (/^antecedente\s+de$/i.test(value)) return "";

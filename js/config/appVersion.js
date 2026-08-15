@@ -43,5 +43,6 @@
 // deployment marker: 2026-08-14-sofia-cross-patient-pattern-matrices-v1 (+0.010)
 // deployment marker: 2026-08-14-medication-name-boundaries-v1
 // deployment marker: 2026-08-15-transfer-completion-progress-v1
-export const APP_VERSION = "2.001";
+// deployment marker: 2026-08-15-medication-full-units-v1
+export const APP_VERSION = "2.002";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

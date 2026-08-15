@@ -4,8 +4,8 @@ import { ClinicalCandidate } from "../core/ClinicalCandidate.js";
 import { ClinicalEvidence } from "../core/ClinicalEvidence.js";
 import { evaluateConfidence, requiresReviewForConfidence } from "../confidence/confidenceEngine.js";
 import { normalizeClinicalComparisonText } from "../normalizers/textNormalizer.js";
-import { splitMedicationItems } from "../normalizers/medicationNormalizer.js?v=20260814-medication-name-boundaries-v1";
-import { parseMedicationCandidates } from "./medicationParser.js?v=20260814-medication-name-boundaries-v1";
+import { parseMedicationStrength, splitMedicationItems } from "../normalizers/medicationNormalizer.js?v=20260815-medication-full-units-v1";
+import { parseMedicationCandidates } from "./medicationParser.js?v=20260815-medication-full-units-v1";
 import { clinicalImportLogger } from "../utils/logger.js";
 import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260814-ieca-c09aa-v1";
 
@@ -84,7 +84,7 @@ function truncateAtNextPrimaryPlanItem(value = "") {
 
 function looksLikeMedicationPrescription(item = "") {
   const source = normalizeClinicalComparisonText(item);
-  return /\b\d+(?:[.,]\d+)?\s*(?:mg|g|mcg|ug|ml|ui|%)\b/.test(source)
+  return Boolean(parseMedicationStrength(item).rawStrength)
     && /\b(?:tabletas?|comprimidos?|capsulas?|jarabe|solucion|suspension|polvo|gotas?|ampolla|vial|parche|spray|inhalador|crema|unguento|supositorio)\b/.test(source);
 }
 
@@ -184,7 +184,8 @@ export function parseTreatmentPlan({ text = "", documentId = "", noteId = "", da
     ? splitMedicationItems(medicationText, MEDICAMENTOS_MAESTROS).map((item) => truncateAtNextPrimaryPlanItem(item)).filter(looksLikeMedicationPrescription)
     : [];
   clinicalImportLogger.info("treatmentPlanParser:medication-block", JSON.stringify({ documentId, noteId, subsectionCount: medicationSubsections.length, sourceLength: medicationText.length }));
-  const medicationCandidates = delegatedItems.length ? parseMedicationCandidates({ text: delegatedItems.join("\n"), section: "plan", documentId, noteId, date }) : [];
+  const delegatedMedicationText = delegatedItems.map((item, index) => `${index + 1}) ${item}`).join("\n");
+  const medicationCandidates = delegatedItems.length ? parseMedicationCandidates({ text: delegatedMedicationText, section: "plan", documentId, noteId, date }) : [];
   const claimedMedicationNames = medicationCandidates.map((candidate) => normalizeClinicalComparisonText(candidate.medicationName)).filter(Boolean);
   const filteredCandidates = candidates.filter((candidate) => !claimedMedicationNames.some((name) => new RegExp(`\\b${name.replace(/[.*+?^${}()|[\\]\\]/g, "\\\\$&")}\\b`, "i").test(normalizeClinicalComparisonText(candidate.text))));
   clinicalImportLogger.info("treatmentPlanParser:delegated-medications", JSON.stringify({ documentId, noteId, inputCount: delegatedItems.length, count: medicationCandidates.length }));

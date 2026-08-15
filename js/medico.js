@@ -269,7 +269,7 @@ function inicializarImportacionDocxLazy() {
     try {
       if (!traspasoPacientesPromise) {
         // Marcador de cache del importador documental.
-    traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260815-transfer-completion-progress-v1");
+    traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260815-medication-full-units-v1");
       }
       const modulo = await traspasoPacientesPromise;
       modulo.openPatientTransfer();

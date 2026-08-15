@@ -88,6 +88,25 @@ assert.deepEqual(brianConsumedHeadingResult.medicationCandidates.map((item) => i
 assert.deepEqual(brianConsumedHeadingResult.medicationCandidates.map((item) => item.schedule.length), [1, 1, 3]);
 assert.ok(brianConsumedHeadingResult.medicationCandidates.every((item) => !/reportar eventualidades/i.test(item.metadata.rawMedicationText)));
 
+const fullUnitMedicationPlan = `PLAN TERAPÉUTICO (MEDIDAS GENERALES Y TRATAMIENTO FARMACOLÓGICO)
+1) Dieta NORMAL
+2) Cuidados generales de enfermería y signos vitales por turno.
+3) Vigilancia estrecha por RIESGO SUICIDA / RIESGO DE AUTOLESIONES
+4) Riesgo de caída: MEDIO
+5) Alergias: NEGADAS
+6) MEDICAMENTOS (supervisar estrictamente la ingesta, en caso de negativismo, administrar molidos y diluidos en agua):
+   a) Sertralina tabletas de 50 miligramos. Administrar por vía oral 1 vez al día. Administrar 1 tableta a las 08:00 h
+   b) Risperidona tabletas de 2 miligramos. SUSPENDER
+   c) Prazosina cápsulas de 1 miligramo. Administrar por vía oral 1 vez al día. Administrar 1 tableta a las 22:00 h.
+7) Reportar eventualidades a médico de turno.`;
+const fullUnitResult = parseTreatmentPlan({ text: fullUnitMedicationPlan, documentId: "full-units", noteId: "full-units-note", date: "14/08/2026" });
+assert.deepEqual(fullUnitResult.medicationCandidates.map((item) => item.medicationName), ["Sertralina", "Risperidona", "Prazosina"]);
+assert.deepEqual(fullUnitResult.medicationCandidates.map((item) => item.strength), [50, 2, 1]);
+assert.deepEqual(fullUnitResult.medicationCandidates.map((item) => item.strengthUnit), ["mg", "mg", "mg"]);
+assert.equal(fullUnitResult.medicationCandidates[1].action, "Suspende");
+assert.deepEqual(fullUnitResult.medicationCandidates.map((item) => item.schedule.map((dose) => dose.time)), [["08:00"], [], ["22:00"]]);
+assert.ok(fullUnitResult.medicationCandidates.every((item) => !/reportar eventualidades/i.test(item.metadata.rawMedicationText)));
+
 const hierarchy = parseTreatmentPlan({
   text: "3. Vigilancia estrecha por:\n   a. Riesgo suicida\n   b. Alucinaciones auditivas imperativas\n4. Precauciones especiales:\n   a. CaÃ­das\n   b. BroncoaspiraciÃ³n\n5. Alergias: NEGADAS\n6. )"
 });
