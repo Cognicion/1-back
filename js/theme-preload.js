@@ -6,7 +6,8 @@
   const LEGACY_KEYS = ["cognicion.apariencia.modoInterfaz", "theme"];
   const DEFAULT_THEME = "biocelular";
   const root = document.documentElement;
-  const isValid = (value) => value === "dark" || value === "light" || value === "biocelular";
+  // Claro permanece implementado, pero está temporalmente fuera de la selección activa.
+  const isValid = (value) => value === "dark" || value === "biocelular";
   const read = (key) => {
     try { return localStorage.getItem(key); } catch (_) { return null; }
   };

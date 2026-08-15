@@ -28,12 +28,6 @@ export const OPCIONES_MODO_INTERFAZ_COGNICION = [
     nombre: "Futurista Oscuro",
     icono: "\u{1F319}",
     descripcion: "La identidad oscura original de COGNICION Labs. Alto contraste, profundidad y brillo azul clinico."
-  },
-  {
-    id: MODOS_INTERFAZ_COGNICION.CLARO,
-    nombre: "Claro",
-    icono: "\u2600\uFE0F",
-    descripcion: "Fondo marfil suave, superficies pastel configurables y texto oscuro."
   }
 ];
 

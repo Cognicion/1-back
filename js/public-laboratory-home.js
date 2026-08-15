@@ -5,7 +5,7 @@
   const mobileMenu = document.getElementById("publicMobileMenu");
   const scrollTopButton = document.getElementById("scrollTopIndex");
   const themeColor = document.querySelector('meta[name="theme-color"]');
-  const validThemes = new Set(["light", "dark", "biocelular"]);
+  const validThemes = new Set(["dark", "biocelular"]);
   const themeStorageKeys = ["cognicion:theme:last", "cognicion.apariencia.tema"];
 
   function currentTheme() {

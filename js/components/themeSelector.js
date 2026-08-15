@@ -8,7 +8,6 @@ function renderSelector(container) {
       <span class="cognicion-theme-label">Tema:</span>
       <button type="button" data-theme-option="biocelular" data-cognicion-theme="biocelular" aria-pressed="false">Biocelular <small>Predeterminado</small></button>
       <button type="button" data-theme-option="dark" data-cognicion-theme="dark" aria-pressed="false">Oscuro</button>
-      <button type="button" data-theme-option="light" data-cognicion-theme="light" aria-pressed="false">Claro</button>
     </div>`;
   container.addEventListener("click", async (event) => {
     const button = event.target.closest("[data-theme-option]");

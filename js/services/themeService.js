@@ -31,7 +31,8 @@ export function normalizeTheme(value) {
 }
 
 function isValidTheme(value) {
-  return value === "light" || value === "dark" || value === "biocelular";
+  // Claro permanece implementado para reactivarlo posteriormente.
+  return value === "dark" || value === "biocelular";
 }
 
 function readStorage(key) {
