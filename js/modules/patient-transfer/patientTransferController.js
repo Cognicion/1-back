@@ -17,7 +17,7 @@ import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
 import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter.js";
 import { adaptTreatmentPlan } from "../clinical-document-engine/adapters/treatmentPlanAdapter.js?v=20260814-medication-name-boundaries-v1";
 import { resolveMedicationCandidatesAgainstCatalog } from "../clinical-document-engine/resolvers/medicationCatalogResolver.js?v=20260814-medication-name-boundaries-v1";
-import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260814-patient-name-dictionary-v1";
+import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260815-transfer-completion-progress-v1";
 import {
   DUPLICATE_DETECTION_STATUS,
   DUPLICATE_RESOLUTION,
@@ -41,11 +41,12 @@ import {
   showPatientTransferError,
   isTransferSaving,
   medicationCatalogCompactState,
+  preparePatientTransferSavingView,
   resizeTransferIndicationTextarea,
   syncBulkSelectionControls,
   syncPatientNameInputs,
   updateMedicationScheduleUnitVisibility
-} from "./ui/patientTransferView.js?v=20260814-patient-alias-v1";
+} from "./ui/patientTransferView.js?v=20260815-transfer-completion-progress-v1";
 
 let initialized = false;
 let selectedFiles = [];
@@ -805,6 +806,7 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
     return;
   }
 
+  preparePatientTransferSavingView();
   setTransferSavingState(true);
   setPatientTransferStatus(TRANSFER_STATUS.SAVING);
   setPatientTransferVisualStatus(TRANSFER_STATUS.SAVING);
@@ -852,6 +854,7 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
       !item.patientCreated && !item.patientId && Number(item.notesCreated || 0) === 0
     );
     const hasFailures = noPersistenceResult || results.some((item) => item.status === "failed" || item.status === "partially_completed");
+    const hasWarnings = results.some((item) => Array.isArray(item.warnings) && item.warnings.length > 0);
     const finalStatus = hasFailures ? TRANSFER_STATUS.PARTIALLY_COMPLETED : TRANSFER_STATUS.COMPLETED;
     const firstResult = results[0] || {};
     setPatientTransferStatus(finalStatus);
@@ -869,7 +872,7 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
     setPatientTransferMessage(
       noPersistenceResult
         ? "No se creó ningún paciente ni ninguna nota. Revise la resolución de duplicados."
-        : hasFailures ? "Traspaso no completado." : "Traspaso completado.",
+        : hasFailures ? "Traspaso no completado." : hasWarnings ? "Traspaso completado con advertencias." : "Traspaso completado.",
       hasFailures ? 85 : 100
     );
     console.info("[patient-transfer] render-result:start", { results: results.length });

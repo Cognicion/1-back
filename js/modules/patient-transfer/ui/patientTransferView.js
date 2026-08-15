@@ -301,6 +301,27 @@ export function setTransferSavingState(isSaving = false) {
   });
 }
 
+export function preparePatientTransferSavingView(modal = ensureRoot()) {
+  const noteContainers = [...modal.querySelectorAll(".patient-transfer-note, .patient-transfer-note-segment")];
+  const collapsedNotes = noteContainers.filter((details) => details.open).length;
+  noteContainers.forEach((details) => {
+    details.open = false;
+  });
+
+  const panel = modal.querySelector(".patient-transfer-panel");
+  const progress = modal.querySelector(".patient-transfer-progress");
+  if (!panel || !progress) return { collapsedNotes, scrolled: false, targetTop: 0 };
+
+  const headerHeight = Number(modal.querySelector(".patient-transfer-header")?.offsetHeight || 0);
+  const targetTop = Math.max(0, Number(progress.offsetTop || 0) - headerHeight - 16);
+  if (typeof panel.scrollTo === "function") {
+    panel.scrollTo({ top: targetTop, behavior: "smooth" });
+  } else {
+    panel.scrollTop = targetTop;
+  }
+  return { collapsedNotes, scrolled: true, targetTop };
+}
+
 export function isTransferSaving() {
   return ensureRoot().dataset.saving === "true";
 }
@@ -1658,13 +1679,14 @@ export function renderTransferResults(results = []) {
       <h3>Resultado final</h3>
       ${results.map((result) => `
         <article class="patient-transfer-result ${result.status}">
-          <strong>${result.status === "completed" ? "Traspaso completado" : result.status === "partially_completed" ? "Traspaso parcialmente completado" : "Traspaso no completado"}</strong>
+          <strong>${result.status === "completed" ? ((result.warnings || []).length ? "Traspaso completado con advertencias" : "Traspaso completado") : result.status === "partially_completed" ? "Traspaso parcialmente completado" : "Traspaso no completado"}</strong>
           <span>Notas: ${escapeHtml(notesTransferSummary(result))}</span>
           <span>Signos vitales: ${result.vitalSignsCreated || 0} registrados / Somatometria: ${result.anthropometryCreated || 0}</span>
           <span>Diagnosticos: ${escapeHtml(diagnosisTransferSummary(result))}</span>
           <span>Medicamentos: ${result.treatmentsCreated || 0} registrados / ${result.treatmentsIdempotent || 0} idempotentes / ${result.treatmentsOmitted || 0} omitidos${result.treatmentsError ? ` / Error: ${escapeHtml(result.treatmentsError)}` : ""}</span>
           <span>Indicaciones: ${result.indicationsCreated || 0} registradas / ${result.indicationsIdempotent || 0} idempotentes / ${result.indicationsOmitted || 0} omitidas${result.indicationsError ? ` / Error: ${escapeHtml(result.indicationsError)}` : ""}</span>
           <span>Documento original: ${result.sourceSaved === false ? "No guardado" : "Guardado"} / Auditoria: ${result.auditRegistered === false ? "No registrada" : "Registrada"}</span>
+          ${(result.warnings || []).length ? `<span>Advertencias técnicas: ${(result.warnings || []).length}. Los datos clínicos confirmados sí fueron guardados.</span>` : ""}
           <span>Paciente: ${escapeHtml(result.patientName || (result.patientId ? "Paciente creado/asociado" : "No creado"))} · Notas importadas: ${result.notesCreated || 0}</span>
           <span>Paciente reutilizado: ${result.patientReused ? "si" : "no"} · Notas ya existentes: ${result.notesExisting || 0} · Duplicados evitados: ${result.duplicatesAvoided || 0}</span>
           ${result.stage ? `<span>Etapa: ${escapeHtml(result.stage)}</span>` : ""}
