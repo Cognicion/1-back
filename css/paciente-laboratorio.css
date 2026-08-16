@@ -1332,6 +1332,7 @@
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: start;
   gap: 12px;
   margin: 0;
   padding-top: 16px;
@@ -1343,7 +1344,9 @@
   grid-column: auto;
   display: flex;
   min-width: 0;
-  min-height: 214px;
+  min-height: 0;
+  height: auto;
+  align-self: start;
   flex-direction: column;
   padding: 17px;
   border-radius: 11px;
@@ -1363,7 +1366,11 @@
 .resumen-modulo-estudios,
 .resumen-modulo-interconsultas,
 .resumen-cuadro[data-resumen-cuadro="equipo"] {
-  grid-column: span 1;
+  grid-column: span 2;
+}
+
+.resumen-card--institucion-ingreso {
+  grid-column: span 4;
 }
 
 .lab-card > span,

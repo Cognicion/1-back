@@ -248,6 +248,10 @@ let tratamientosCargaToken = 0;
 let estudiosCache = [];
 let solicitudesImagenologiaCache = [];
 let escalasAsignadasCache = new Map();
+let escalasAsignablesPacienteCache = [];
+let escalasAplicadasPacienteCache = [];
+let paginaEscalasPaciente = 1;
+const ESCALAS_POR_PAGINA_PACIENTE = 6;
 let diagnosticosCatalogoActual = [];
 let diagnosticoReemplazoIndex = null;
 let diagnosticoGuardadoEnCurso = false;
@@ -1194,7 +1198,8 @@ const CAMPOS_RESUMEN_PACIENTE = Object.freeze({
     ["sexo", "Sexo", "text", ["sexo"]],
     ["genero", "Género", "text", ["genero", "identidadGenero"]],
     ["curp", "CURP", "text", ["curp", "datosInstitucionales.curp"]],
-    ["telefono", "Teléfono", "text", ["telefono"]]
+    ["telefono", "Teléfono", "text", ["telefono"]],
+    ["tipoPaciente", "Tipo", "select", ["tipoPaciente", "datosInstitucionales.tipoPaciente"]]
   ],
   institucion: [
     ["institucionPaciente", "Institución", "text", ["institucionPaciente", "institucion"]],
@@ -1350,6 +1355,12 @@ function encabezadoResumenPaciente(titulo, seccionId, editable = true) {
 
 function valorInicialResumenPaciente(datos, campo, rutas) {
   if (campo === "estancia") return formatearEstancia(calcularDiasEstancia(obtenerFechaIngreso(datos)));
+  if (campo === "tipoPaciente") {
+    const tipo = valorPaciente(datos, rutas, "privada");
+    if (esTipoPacienteInstitucional(tipo)) return "institucion";
+    if (esTipoPacientePrivado(tipo)) return "privada";
+    return "otro";
+  }
   if (campo === "equipoClinico") {
     return obtenerEquipoClinicoPaciente(datos).map((item) => `${item.cargo || "Personal clínico"}: ${item.nombre || ""}`).join("\n");
   }
@@ -1372,7 +1383,13 @@ function abrirEditorResumen({ seccionId, titulo, campos, valoresActuales }) {
       const valor = valoresActuales[campo] || "";
       const control = tipo === "textarea"
         ? `<textarea data-resumen-campo="${campo}">${escaparHTML(valor)}</textarea>`
-        : `<input data-resumen-campo="${campo}" type="${tipo}" value="${escaparHTML(tipo === "date" ? valorFechaEditorResumen(valor) : valor)}">`;
+        : tipo === "select" && campo === "tipoPaciente"
+          ? `<select data-resumen-campo="${campo}">
+              <option value="privada" ${valor === "privada" ? "selected" : ""}>Privado</option>
+              <option value="institucion" ${valor === "institucion" ? "selected" : ""}>Institución</option>
+              <option value="otro" ${valor === "otro" ? "selected" : ""}>Otro</option>
+            </select>`
+          : `<input data-resumen-campo="${campo}" type="${tipo}" value="${escaparHTML(tipo === "date" ? valorFechaEditorResumen(valor) : valor)}">`;
       const subtitulo = grupo && (index === 0 || campos[index - 1]?.[4] !== grupo) ? `<h4 class="resumen-editor-subtitulo">${escaparHTML(grupo)}</h4>` : "";
       const campoId = resolverCampoVisibilidad(campo);
       return `${subtitulo}<label>${escaparHTML(etiqueta)}${control}<span class="resumen-ocultar-control"><input class="resumen-ocultar-checkbox" type="checkbox" data-resumen-oculto="${campo}" ${obtenerVisibilidadResumenPaciente(datosPacienteActual || {})[campoId] === false ? "checked" : ""}><span>Ocultar este dato en el resumen</span></span></label>`;
@@ -1419,10 +1436,20 @@ async function guardarEditorResumen(seccionId, valores, visibilidad) {
       return { cargo: cargo.trim(), nombre: nombre.join(":").trim() };
     }).filter((item) => item.cargo && item.nombre);
   }
+  if (seccionId === "identificacion" && valores.tipoPaciente) {
+    actualizacion.datosInstitucionales = {
+      ...(datosPacienteActual?.datosInstitucionales || {}),
+      tipoPaciente: valores.tipoPaciente
+    };
+  }
   await actualizarUsuario(uidPaciente, actualizacion);
   datosPacienteActual = { ...(datosPacienteActual || {}), ...actualizacion };
   console.debug("[VISIBILIDAD] estado local actualizado", visibilidadResumen);
-  renderizarCuadroResumenPaciente(seccionId);
+  if (seccionId === "identificacion" && valores.tipoPaciente) {
+    renderizarVistaLaboratorioPaciente(datosPacienteActual);
+  } else {
+    renderizarCuadroResumenPaciente(seccionId);
+  }
   console.debug("[RESUMEN STEP 6] visibilidad aplicada", { seccionId });
 }
 
@@ -1473,7 +1500,7 @@ function renderizarBloqueIdentificacionLab(datos = {}, tipoPaciente = "privada")
     <p><b>Género:</b> ${renderizarDatoResumenPaciente(datos, "genero", valorPaciente(datos, ["genero", "identidadGenero"]))}</p>
     <p><b>CURP:</b> ${renderizarDatoResumenPaciente(datos, "curp", valorPaciente(datos, ["curp", "datosInstitucionales.curp"]))}</p>
     <p><b>Teléfono:</b> ${renderizarDatoResumenPaciente(datos, "telefono", valorPaciente(datos, ["telefono"], "Sin teléfono"))}</p>
-    <p><b>Tipo:</b> ${escaparHTML(etiquetaTipoPaciente(tipoPaciente))}</p>
+    <p><b>Tipo:</b> ${renderizarDatoResumenPaciente(datos, "tipoPaciente", etiquetaTipoPaciente(tipoPaciente))}</p>
   </article>`;
 }
 
@@ -1627,12 +1654,6 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
           <ol>${renderizarListaLab(tratamientos)}</ol>
           <button class="resumen-modulo-accion" type="button" onclick="mostrarTratamiento()">Ver tratamiento</button>
         </article>
-        <article class="lab-card lab-card-lista resumen-modulo-tarjeta resumen-modulo-notas">
-          <span>Últimas notas</span>
-          <p class="lab-muted">Consulta la evolución clínica o registra una nueva nota.</p>
-          <button class="resumen-modulo-accion" type="button" onclick="abrirNota()">Nueva nota</button>
-        </article>
-        ${renderizarBloqueFuenteClinicaDocx(datos)}
         <article class="lab-card lab-card-lista resumen-modulo-estudios">
           <span>Estudios</span>
           <ul>${renderizarListaLab(estudios)}</ul>
@@ -2999,7 +3020,8 @@ function etiquetaTipoPaciente(valor = "") {
   const tipo = normalizarTipoPaciente(valor);
   if (tipo === "privada" || tipo === "privado" || tipo === "consulta privada") return "Privado";
   if (esTipoPacienteInstitucional(valor)) return "Institucional";
-  if (tipo === "clnica" || tipo === "clinica") return "Clnica";
+  if (tipo === "otro") return "Otro";
+  if (tipo === "clnica" || tipo === "clinica") return "Clínica";
   return String(valor || "").trim() || "Privado";
 }
 
@@ -3236,6 +3258,10 @@ window.mostrarPermisos = async function() {
 window.mostrarResultadosEscalas = async function() {
   ocultarSecciones();
   document.getElementById("seccionResultadosEscalas").style.display = "block";
+  ponerTexto(
+    "expedienteCognicionEscalas",
+    valorPaciente(datosPacienteActual || {}, ["expedienteCognicion", "datosInstitucionales.expedienteCognicion"], "Sin expediente")
+  );
   await inicializarEditorEscalasPaciente();
   await cargarResultadosEscalasPaciente();
   await cargarEscalasAsignablesPaciente();
@@ -3357,9 +3383,19 @@ async function cargarResultadosEscalasPaciente() {
   try {
     await cargarDependenciasEscalasPaciente();
     const escalas = await listarEscalasAplicadas(uidPaciente, 80);
+    escalasAplicadasPacienteCache = escalas;
+    ponerTexto("totalEscalasAplicadas", String(escalas.length));
 
     if (!escalas.length) {
-      contenedor.innerHTML = "<p>No hay resultados de escalas registrados.</p>";
+      contenedor.innerHTML = `
+        <div class="escalas-estado-vacio escalas-historial-vacio">
+          <span class="escalas-vacio-icono" aria-hidden="true">◇</span>
+          <div><strong>Aún no hay evaluaciones registradas</strong><p>Las escalas aplicadas aparecerán aquí.</p></div>
+          <button type="button" data-aplicar-primera-escala>Aplicar primera escala</button>
+        </div>`;
+      contenedor.querySelector("[data-aplicar-primera-escala]")?.addEventListener("click", () => {
+        document.getElementById("btnAplicarEscalaPaciente")?.click();
+      });
       return;
     }
 
@@ -3375,6 +3411,8 @@ async function cargarResultadosEscalasPaciente() {
     });
   } catch (error) {
     console.error("Error al cargar escalas:", error);
+    escalasAplicadasPacienteCache = [];
+    ponerTexto("totalEscalasAplicadas", "0");
     contenedor.innerHTML = "<p>No se pudieron cargar los resultados.</p>";
   }
 }
@@ -3585,38 +3623,95 @@ async function cargarEscalasAsignablesPaciente() {
     const snap = await getDocs(collection(db, "usuarios", uidPaciente, "escalasAsignadas"));
     escalasAsignadasCache = new Map(snap.docs.map((docEscala) => [docEscala.id, docEscala.data()]));
 
-    const escalasAsignables = [
+    escalasAsignablesPacienteCache = [
       ...ESCALAS_PSIQUIATRICAS.map((escala) => ({ ...escala, tipoAsignable: "psiquiatrica" })),
       ...ESCALAS_COGNITIVAS.map((escala) => ({ ...escala, area: "Cognitiva", descripcion: escala.descripcion, tipoAsignable: "cognitiva" }))
     ];
-
-    contenedor.innerHTML = escalasAsignables.map((escala) => {
-      const asignada = escalasAsignadasCache.get(escala.id);
-      const visible = asignada?.visiblePaciente === true;
-      return `
-        <article class="registro-card escala-asignable">
-          <div class="registro-top">
-            <div>
-              <strong>${escaparHTML(escala.nombre)}</strong>
-              <span>${escaparHTML(escala.area || "")}</span>
-            </div>
-            <label class="switch-linea">
-              <input type="checkbox" data-escala-visible="${escala.id}" ${visible ? "checked" : ""}>
-              Visible
-            </label>
-          </div>
-          <p>${escaparHTML(escala.descripcion || "Sin descripcion")}</p>
-        </article>
-      `;
-    }).join("");
-
-    document.querySelectorAll("[data-escala-visible]").forEach((control) => {
-      control.addEventListener("change", () => actualizarVisibilidadEscala(control));
-    });
+    paginaEscalasPaciente = 1;
+    actualizarCategoriasEscalasPaciente();
+    renderizarTablaEscalasAsignablesPaciente();
   } catch (error) {
     console.error("Error al cargar escalas asignables:", error);
+    escalasAsignablesPacienteCache = [];
+    ponerTexto("totalEscalasVisibles", "0");
+    ponerTexto("totalEscalasActivasBadge", "0 activas");
     contenedor.textContent = "No se pudieron cargar las escalas.";
   }
+}
+
+function actualizarCategoriasEscalasPaciente() {
+  const selector = document.getElementById("filtroCategoriaEscalasPaciente");
+  if (!selector) return;
+  const valorActual = selector.value;
+  const categorias = [...new Set(escalasAsignablesPacienteCache.map((escala) => escala.area || "Clínica"))]
+    .sort((a, b) => a.localeCompare(b, "es"));
+  selector.innerHTML = `<option value="">Todas las categorías</option>${categorias.map((categoria) => `<option value="${escaparHTML(categoria)}">${escaparHTML(categoria)}</option>`).join("")}`;
+  if (categorias.includes(valorActual)) selector.value = valorActual;
+}
+
+function obtenerUltimaAplicacionEscalaPaciente(escalaId) {
+  const registro = escalasAplicadasPacienteCache.find((escala) => escala.escalaId === escalaId);
+  return registro ? formatearFechaEscala(registro.fechaAplicacion) : "—";
+}
+
+function renderizarTablaEscalasAsignablesPaciente() {
+  const contenedor = document.getElementById("listaEscalasAsignables");
+  if (!contenedor) return;
+  const busqueda = normalizarTextoBusqueda(valorCampo("buscarEscalasPaciente"));
+  const categoria = valorCampo("filtroCategoriaEscalasPaciente");
+  const soloVisibles = document.getElementById("filtrarSoloVisiblesEscalasPaciente")?.getAttribute("aria-pressed") === "true";
+  const visibles = [...escalasAsignadasCache.values()].filter((escala) => escala.visiblePaciente === true).length;
+  ponerTexto("totalEscalasVisibles", String(visibles));
+  ponerTexto("totalEscalasActivasBadge", `${visibles} ${visibles === 1 ? "activa" : "activas"}`);
+
+  const filtradas = escalasAsignablesPacienteCache.filter((escala) => {
+    const asignada = escalasAsignadasCache.get(escala.id);
+    const coincideTexto = !busqueda || normalizarTextoBusqueda(`${escala.nombre} ${escala.area || ""}`).includes(busqueda);
+    const coincideCategoria = !categoria || (escala.area || "Clínica") === categoria;
+    const coincideVisible = !soloVisibles || asignada?.visiblePaciente === true;
+    return coincideTexto && coincideCategoria && coincideVisible;
+  });
+  const totalPaginas = Math.max(1, Math.ceil(filtradas.length / ESCALAS_POR_PAGINA_PACIENTE));
+  paginaEscalasPaciente = Math.min(paginaEscalasPaciente, totalPaginas);
+  const inicio = (paginaEscalasPaciente - 1) * ESCALAS_POR_PAGINA_PACIENTE;
+  const pagina = filtradas.slice(inicio, inicio + ESCALAS_POR_PAGINA_PACIENTE);
+
+  contenedor.innerHTML = pagina.length ? pagina.map((escala) => {
+    const visible = escalasAsignadasCache.get(escala.id)?.visiblePaciente === true;
+    return `
+      <div class="tabla-escala-fila">
+        <strong>${escaparHTML(escala.nombre)}</strong>
+        <span>${escaparHTML(escala.area || "Clínica")}</span>
+        <span>${escaparHTML(obtenerUltimaAplicacionEscalaPaciente(escala.id))}</span>
+        <label class="interruptor-escala" aria-label="Mostrar ${escaparHTML(escala.nombre)} en Mi Salud">
+          <input type="checkbox" data-escala-visible="${escaparHTML(escala.id)}" ${visible ? "checked" : ""}>
+          <span aria-hidden="true"></span>
+        </label>
+        <span class="menu-fila-escala" aria-hidden="true">⋮</span>
+      </div>`;
+  }).join("") : `<div class="escalas-tabla-vacia">No hay escalas que coincidan con los filtros.</div>`;
+
+  contenedor.querySelectorAll("[data-escala-visible]").forEach((control) => {
+    control.addEventListener("change", () => actualizarVisibilidadEscala(control));
+  });
+  ponerTexto("resumenPaginacionEscalas", `Mostrando ${pagina.length} de ${filtradas.length} escalas`);
+  renderizarPaginacionEscalasPaciente(totalPaginas);
+}
+
+function renderizarPaginacionEscalasPaciente(totalPaginas) {
+  const contenedor = document.getElementById("paginacionEscalasPaciente");
+  if (!contenedor) return;
+  const paginas = Array.from({ length: Math.min(totalPaginas, 5) }, (_, indice) => indice + 1);
+  contenedor.innerHTML = `
+    <button type="button" data-pagina-escalas="${Math.max(1, paginaEscalasPaciente - 1)}" ${paginaEscalasPaciente === 1 ? "disabled" : ""} aria-label="Página anterior">‹</button>
+    ${paginas.map((pagina) => `<button type="button" data-pagina-escalas="${pagina}" class="${pagina === paginaEscalasPaciente ? "activa" : ""}">${pagina}</button>`).join("")}
+    <button type="button" data-pagina-escalas="${Math.min(totalPaginas, paginaEscalasPaciente + 1)}" ${paginaEscalasPaciente === totalPaginas ? "disabled" : ""} aria-label="Página siguiente">›</button>`;
+  contenedor.querySelectorAll("[data-pagina-escalas]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      paginaEscalasPaciente = Number(boton.dataset.paginaEscalas) || 1;
+      renderizarTablaEscalasAsignablesPaciente();
+    });
+  });
 }
 
 async function actualizarVisibilidadEscala(control) {
@@ -3647,6 +3742,12 @@ async function actualizarVisibilidadEscala(control) {
     actualizadoEn: serverTimestamp(),
     fechaISO: new Date().toISOString()
   }, { merge: true });
+  escalasAsignadasCache.set(escalaId, {
+    ...(escalasAsignadasCache.get(escalaId) || {}),
+    escalaId,
+    visiblePaciente
+  });
+  renderizarTablaEscalasAsignablesPaciente();
 
   await registrarAccionExpediente({
     accion: visiblePaciente ? "activar_escala_mi_salud" : "ocultar_escala_mi_salud",
@@ -3693,7 +3794,19 @@ async function guardarTareaMiSaludPaciente() {
   ponerValor("tareaMiSaludTitulo", "");
   ponerValor("tareaMiSaludIndicaciones", "");
   ponerValor("tareaMiSaludFecha", "");
+  alternarFormularioTareaMiSalud(false);
   await cargarTareasMiSaludMedico();
+}
+
+function alternarFormularioTareaMiSalud(forzarVisible) {
+  const formulario = document.getElementById("formularioTareaMiSalud");
+  const boton = document.getElementById("alternarFormularioTareaMiSalud");
+  if (!formulario || !boton) return;
+  const mostrar = typeof forzarVisible === "boolean" ? forzarVisible : formulario.hidden;
+  formulario.hidden = !mostrar;
+  boton.setAttribute("aria-expanded", String(mostrar));
+  boton.textContent = mostrar ? "Cerrar formulario" : "＋ Nueva tarea";
+  if (mostrar) document.getElementById("tareaMiSaludTitulo")?.focus();
 }
 
 async function cargarTareasMiSaludMedico() {
@@ -3708,9 +3821,18 @@ async function cargarTareasMiSaludMedico() {
       limit(30)
     );
     const snap = await getDocs(q);
+    const tareasPendientes = snap.docs.filter((documento) => documento.data()?.estado !== "completada").length;
+    ponerTexto("totalTareasPendientes", String(tareasPendientes));
 
     if (snap.empty) {
-      contenedor.innerHTML = "<p>Aun no hay tareas asignadas.</p>";
+      contenedor.innerHTML = `
+        <div class="escalas-estado-vacio tareas-estado-vacio">
+          <span class="tareas-vacio-icono" aria-hidden="true">▤</span>
+          <strong>No hay tareas pendientes</strong>
+          <p>Las indicaciones y tareas aparecerán aquí.</p>
+          <button type="button" data-anadir-tarea-mi-salud>＋ Añadir tarea</button>
+        </div>`;
+      contenedor.querySelector("[data-anadir-tarea-mi-salud]")?.addEventListener("click", () => alternarFormularioTareaMiSalud(true));
       return;
     }
 
@@ -3738,6 +3860,7 @@ async function cargarTareasMiSaludMedico() {
     });
   } catch (error) {
     console.error("Error al cargar tareas de Mi Salud:", error);
+    ponerTexto("totalTareasPendientes", "0");
     contenedor.textContent = "No se pudieron cargar las tareas.";
   }
 }
@@ -9382,6 +9505,23 @@ document.getElementById("solicitudEstudioFormato")?.addEventListener("change", m
 document.getElementById("guardarNotaRapida")?.addEventListener("click", guardarNotaRapidaPaciente);
 configurarTamanoNotaRapida();
 document.getElementById("guardarTareaMiSalud")?.addEventListener("click", guardarTareaMiSaludPaciente);
+document.getElementById("alternarFormularioTareaMiSalud")?.addEventListener("click", () => alternarFormularioTareaMiSalud());
+document.getElementById("buscarEscalasPaciente")?.addEventListener("input", debouncePaciente(() => {
+  paginaEscalasPaciente = 1;
+  renderizarTablaEscalasAsignablesPaciente();
+}, 140));
+document.getElementById("filtroCategoriaEscalasPaciente")?.addEventListener("change", () => {
+  paginaEscalasPaciente = 1;
+  renderizarTablaEscalasAsignablesPaciente();
+});
+document.getElementById("filtrarSoloVisiblesEscalasPaciente")?.addEventListener("click", (evento) => {
+  const boton = evento.currentTarget;
+  const activo = boton.getAttribute("aria-pressed") !== "true";
+  boton.setAttribute("aria-pressed", String(activo));
+  boton.classList.toggle("activo", activo);
+  paginaEscalasPaciente = 1;
+  renderizarTablaEscalasAsignablesPaciente();
+});
 document.getElementById("btnGenerarCodigoPaciente")?.addEventListener("click", generarCodigoVinculacionDesdeMedico);
 document.getElementById("btnVincularCodigoPaciente")?.addEventListener("click", vincularCuentaPacienteDesdeMedico);
 document.getElementById("diagnosticoBusqueda")?.addEventListener("input", debouncePaciente(renderizarResultadosBusquedaDiagnosticos, 160));

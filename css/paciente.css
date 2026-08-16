@@ -2487,3 +2487,558 @@ body {
     flex: 1 1 100%;
   }
 }
+
+/* Escalas del expediente: panel clínico integrado */
+.seccion-escalas-expediente {
+  --escala-acento: var(--accent-primary);
+  --escala-panel: color-mix(in srgb, var(--surface-secondary) 88%, transparent);
+  --escala-borde: color-mix(in srgb, var(--accent-primary) 24%, var(--border-subtle));
+  min-width: 0;
+  padding: 8px 0 28px;
+}
+
+.escalas-expediente-encabezado {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) auto minmax(220px, 260px);
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 18px;
+  padding: 18px 20px;
+  border: 1px solid var(--escala-borde);
+  border-radius: 14px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--surface-primary) 92%, transparent), color-mix(in srgb, var(--surface-secondary) 82%, transparent));
+}
+
+.escalas-expediente-titulo {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.escalas-expediente-icono {
+  display: grid;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid var(--escala-borde);
+  border-radius: 9px;
+  color: var(--escala-acento);
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+  font-size: 22px;
+}
+
+.escalas-expediente-titulo h2,
+.escalas-expediente-panel h3 {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.escalas-expediente-titulo h2 {
+  font-size: clamp(25px, 2vw, 32px);
+  line-height: 1;
+}
+
+.escalas-expediente-titulo p,
+.escalas-expediente-titulo > div > span {
+  display: block;
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.escalas-expediente-titulo > div > span {
+  margin-top: 3px;
+  font-size: 12px;
+}
+
+.escalas-expediente-acciones {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.escalas-expediente-acciones button,
+.escalas-panel-encabezado button,
+.escalas-estado-vacio button {
+  width: auto;
+  min-height: 40px;
+  padding: 9px 15px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.escalas-expediente-folio {
+  position: relative;
+  min-height: 92px;
+  padding: 18px 62px 16px 18px;
+  overflow: hidden;
+  border: 1px solid var(--escala-borde);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface-secondary) 86%, transparent);
+}
+
+.escalas-expediente-folio > span:first-child {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--escala-acento);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.escalas-expediente-folio strong {
+  color: var(--text-primary);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 20px;
+}
+
+.escalas-expediente-folio-icono {
+  position: absolute;
+  top: 24px;
+  right: 18px;
+  color: color-mix(in srgb, var(--escala-acento) 42%, transparent);
+  font-size: 42px;
+}
+
+.escalas-expediente-metricas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.escalas-expediente-metricas article {
+  display: flex;
+  min-height: 92px;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 18px;
+  border: 1px solid var(--escala-borde);
+  border-radius: 12px;
+  background: var(--escala-panel);
+}
+
+.metrica-escala-icono {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 10px;
+  color: var(--escala-acento);
+  background: color-mix(in srgb, var(--accent-primary) 14%, transparent);
+  font-size: 25px;
+}
+
+.metrica-escala-icono.activa {
+  color: #51dd87;
+  background: rgb(42 142 78 / 16%);
+}
+
+.metrica-escala-icono.pendiente {
+  color: #f3b43b;
+  background: rgb(194 129 21 / 15%);
+}
+
+.escalas-expediente-metricas article div > span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.escalas-expediente-metricas strong {
+  color: var(--text-primary);
+  font-size: 28px;
+  line-height: 1;
+}
+
+.escalas-expediente-panel {
+  min-width: 0;
+  border: 1px solid var(--escala-borde);
+  border-radius: 13px;
+  background: var(--escala-panel);
+  box-shadow: 0 16px 40px rgb(0 0 0 / 10%);
+}
+
+.escalas-expediente-historial {
+  margin-bottom: 16px;
+  padding: 17px;
+}
+
+.escalas-expediente-panel h3 {
+  font-size: 18px;
+}
+
+.escalas-expediente-historial > h3 {
+  margin-bottom: 14px;
+}
+
+.escalas-estado-vacio {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  min-height: 76px;
+  padding: 14px 18px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface-primary) 64%, transparent);
+}
+
+.escalas-estado-vacio strong,
+.escalas-estado-vacio p {
+  display: block;
+  margin: 0;
+}
+
+.escalas-estado-vacio p {
+  margin-top: 5px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.escalas-vacio-icono {
+  display: grid;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 1px dashed var(--escala-acento);
+  border-radius: 50%;
+  color: var(--escala-acento);
+  font-size: 25px;
+}
+
+.escalas-historial-vacio button {
+  margin-left: auto;
+  color: var(--escala-acento);
+  background: transparent;
+}
+
+.escalas-expediente-columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(360px, .92fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.escalas-panel-encabezado {
+  display: flex;
+  min-height: 58px;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 17px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.escalas-contador-activo {
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: #63d68d;
+  background: rgb(38 132 70 / 17%);
+  font-size: 11px;
+}
+
+.escalas-expediente-filtros {
+  display: grid;
+  grid-template-columns: minmax(170px, 1fr) minmax(150px, .72fr) auto;
+  gap: 10px;
+  padding: 14px 17px;
+}
+
+.escalas-buscador {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 0 10px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: var(--input-bg);
+}
+
+.escalas-buscador input {
+  min-width: 0;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.escalas-expediente-filtros select,
+.escalas-expediente-filtros button {
+  min-height: 40px;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.escalas-expediente-filtros button.activo {
+  border-color: var(--escala-acento);
+  color: var(--escala-acento);
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+}
+
+.tabla-escalas-cabecera,
+.tabla-escala-fila {
+  display: grid;
+  grid-template-columns: minmax(110px, 1.15fr) minmax(90px, .9fr) minmax(110px, .9fr) 66px 24px;
+  gap: 10px;
+  align-items: center;
+}
+
+.tabla-escalas-cabecera {
+  padding: 10px 17px;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.tabla-escala-fila {
+  min-height: 43px;
+  padding: 8px 17px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.tabla-escala-fila strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.interruptor-escala {
+  position: relative;
+  display: inline-flex;
+  width: 36px;
+  height: 20px;
+  align-items: center;
+}
+
+.interruptor-escala input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.interruptor-escala span {
+  width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-secondary) 32%, transparent);
+  cursor: pointer;
+  transition: background .18s ease;
+}
+
+.interruptor-escala span::after {
+  content: "";
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin: 3px;
+  border-radius: 50%;
+  background: var(--text-primary);
+  transition: transform .18s ease;
+}
+
+.interruptor-escala input:checked + span {
+  background: var(--escala-acento);
+}
+
+.interruptor-escala input:checked + span::after {
+  transform: translateX(16px);
+}
+
+.interruptor-escala input:focus-visible + span {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.menu-fila-escala {
+  display: grid;
+  width: 24px;
+  min-height: 30px;
+  place-items: center;
+  padding: 0;
+  color: var(--text-secondary);
+}
+
+.escalas-tabla-vacia {
+  padding: 30px 18px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.tabla-escalas-pie {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 17px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+#paginacionEscalasPaciente {
+  display: flex;
+  gap: 5px;
+}
+
+#paginacionEscalasPaciente button {
+  width: 30px;
+  min-height: 30px;
+  padding: 0;
+  border-radius: 7px;
+  background: transparent;
+  box-shadow: none;
+}
+
+#paginacionEscalasPaciente button.activa {
+  border-color: var(--escala-acento);
+  color: var(--escala-acento);
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+}
+
+.formulario-tarea-mi-salud {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.formulario-tarea-mi-salud[hidden] {
+  display: none;
+}
+
+.lista-tareas-mi-salud {
+  min-height: 350px;
+  padding: 16px;
+}
+
+.lista-tareas-mi-salud .registro-card {
+  margin-bottom: 10px;
+}
+
+.tareas-estado-vacio {
+  min-height: 318px;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.tareas-vacio-icono {
+  color: #f3b43b;
+  font-size: 44px;
+}
+
+.tareas-estado-vacio button {
+  margin-top: 12px;
+  color: var(--escala-acento);
+  background: transparent;
+}
+
+html[data-theme="biocelular"] .seccion-escalas-expediente {
+  --escala-panel: linear-gradient(145deg, rgb(41 13 20 / 86%), rgb(24 7 12 / 90%));
+  --escala-borde: rgb(190 46 65 / 27%);
+}
+
+html[data-theme="biocelular"] .escalas-expediente-encabezado,
+html[data-theme="biocelular"] .escalas-expediente-panel,
+html[data-theme="biocelular"] .escalas-expediente-metricas article {
+  box-shadow: inset 0 0 32px rgb(128 20 37 / 7%), 0 16px 38px rgb(0 0 0 / 14%);
+}
+
+@media (max-width: 1180px) {
+  .escalas-expediente-encabezado {
+    grid-template-columns: minmax(280px, 1fr) auto;
+  }
+
+  .escalas-expediente-folio {
+    grid-column: 1 / -1;
+    min-height: 70px;
+  }
+
+  .escalas-expediente-columnas {
+    grid-template-columns: 1fr;
+  }
+
+  .lista-tareas-mi-salud,
+  .tareas-estado-vacio {
+    min-height: 230px;
+  }
+}
+
+@media (max-width: 760px) {
+  .escalas-expediente-encabezado,
+  .escalas-expediente-metricas {
+    grid-template-columns: 1fr;
+  }
+
+  .escalas-expediente-acciones {
+    flex-wrap: wrap;
+  }
+
+  .escalas-expediente-acciones button {
+    flex: 1 1 190px;
+  }
+
+  .escalas-expediente-filtros {
+    grid-template-columns: 1fr;
+  }
+
+  .tabla-escalas-cabecera {
+    display: none;
+  }
+
+  .tabla-escala-fila {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 6px 10px;
+    padding-block: 12px;
+  }
+
+  .tabla-escala-fila > span:first-of-type,
+  .tabla-escala-fila > span:nth-of-type(2) {
+    grid-column: 1;
+  }
+
+  .interruptor-escala {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .menu-fila-escala {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+}
+
+@media (max-width: 520px) {
+  .escalas-expediente-encabezado,
+  .escalas-expediente-historial {
+    padding: 14px;
+  }
+
+  .escalas-estado-vacio {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .escalas-historial-vacio button {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .tabla-escalas-pie {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

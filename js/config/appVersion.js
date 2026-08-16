@@ -45,5 +45,5 @@
 // deployment marker: 2026-08-15-transfer-completion-progress-v1
 // deployment marker: 2026-08-15-medication-full-units-v1
 // deployment marker: 2026-08-16-cie10-cde-v1 (+0.010)
-export const APP_VERSION = "2.014";
+export const APP_VERSION = "2.016";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;
