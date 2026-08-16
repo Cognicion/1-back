@@ -112,6 +112,7 @@ console.info("[PACIENTE BUILD] diagnosticos-descartables-1.42-20260731");
 console.info("[PACIENTE] módulo evaluado");
 
 let dependenciasEscalasPacientePromise = null;
+let editorEscalasPacientePromise = null;
 
 function formatearFechaEscalaFallback(valor, conHora = false) {
   if (!valor) return "Sin fecha";
@@ -156,6 +157,29 @@ async function cargarDependenciasEscalasPaciente() {
   }
 
   return dependenciasEscalasPacientePromise;
+}
+
+async function inicializarEditorEscalasPaciente() {
+  if (!editorEscalasPacientePromise) {
+    editorEscalasPacientePromise = import("./components/escalaPacienteExpediente.js?v=20260816-expediente-escalas-v1")
+      .then(({ inicializarEscalasPaciente }) => {
+        inicializarEscalasPaciente({
+          getPatientId: () => uidPaciente,
+          getPatientData: () => datosPacienteActual || {},
+          getProfessional: () => ({
+            ...medicoActualDatos,
+            uid: auth.currentUser?.uid || medicoActualDatos?.uid || "",
+            email: auth.currentUser?.email || ""
+          }),
+          onSaved: () => cargarResultadosEscalasPaciente()
+        });
+      })
+      .catch((error) => {
+        editorEscalasPacientePromise = null;
+        throw error;
+      });
+  }
+  return editorEscalasPacientePromise;
 }
 
 let uidPaciente = "";
@@ -3178,6 +3202,7 @@ window.mostrarPermisos = async function() {
 window.mostrarResultadosEscalas = async function() {
   ocultarSecciones();
   document.getElementById("seccionResultadosEscalas").style.display = "block";
+  await inicializarEditorEscalasPaciente();
   await cargarResultadosEscalasPaciente();
   await cargarEscalasAsignablesPaciente();
   await cargarTareasMiSaludMedico();

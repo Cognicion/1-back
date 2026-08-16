@@ -3,7 +3,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/f
 import { collection, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { ESCALAS_PSIQUIATRICAS, interpretarEscala } from "./data/escalasPsiquiatricas.js";
 import { ESCALAS_COGNITIVAS, calcularPuntajeEscalaCognitiva, interpretarEscalaCognitiva, obtenerPuntajesDominioCognitivo } from "./data/escalasCognitivas.js";
-import { ESCALAS_SOLICITADAS } from "./data/escalasSolicitadas.js";
+import { ESCALAS_SOLICITADAS, ESCALAS_COMPLETAS_ADICIONALES } from "./data/escalasSolicitadas.js";
 import { PRUEBAS_INTERACTIVAS, calcularPuntajePruebaInteractiva, interpretarPruebaInteractiva, obtenerPruebaInteractiva, puntajesDominioPruebaInteractiva } from "./data/pruebasInteractivas.js";
 import { obtenerUsuario } from "./services/usuarios.js";
 import {
@@ -18,6 +18,7 @@ const escalas = [
   ...ESCALAS_PSIQUIATRICAS,
   ...ESCALAS_COGNITIVAS,
   ...ESCALAS_SOLICITADAS,
+  ...ESCALAS_COMPLETAS_ADICIONALES,
   ...PRUEBAS_INTERACTIVAS.filter((prueba) => !ESCALAS_COGNITIVAS.some((escala) => escala.id === prueba.id))
 ];
 let escalaActual = null;
@@ -204,7 +205,7 @@ function calcularEscalaActual() {
   }
   const esPsiquiatrica = base?.tipoEscala === "psiquiatrica" || (base?.area && base.area !== "Cognitiva" && base.tipoEscala !== "cognitiva");
   const puntaje = esPsiquiatrica
-    ? calcularPuntajeEscala(respuestas)
+    ? calcularPuntajeEscala(respuestas, base)
     : modoActual === "interactiva"
       ? calcularPuntajePruebaInteractiva(base, respuestas)
       : calcularPuntajeEscalaCognitiva(base, respuestas);

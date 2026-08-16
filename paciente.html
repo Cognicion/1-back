@@ -6,7 +6,7 @@
   <title>Expediente medico</title>
   <link rel="stylesheet" href="css/theme.css">
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/paciente.css?v=20260813-hugo-wilson-brand-assets-v1">
+  <link rel="stylesheet" href="css/paciente.css?v=20260816-expediente-escalas-v1">
   <link rel="stylesheet" href="css/components/mis-apuntes-flotante.css">
   <link rel="stylesheet" href="css/paciente-laboratorio.css">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
@@ -328,7 +328,16 @@
 
     <section id="seccionResultadosEscalas" style="display:none;">
       <div class="tarjeta">
-        <h2>Escalas</h2>
+        <div class="panel-header">
+          <div>
+            <h2>Escalas</h2>
+            <p class="texto-suave">Aplica una escala nueva o registra una evaluacion previa.</p>
+          </div>
+          <div class="form-actions">
+            <button id="btnAplicarEscalaPaciente" type="button">Aplicar escala</button>
+            <button id="btnRegistrarEscalaPreviaPaciente" type="button" class="boton-secundario">Registrar escala previa</button>
+          </div>
+        </div>
         <p class="texto-suave">Historial clinico de escalas aplicadas desde Mi Salud, notas clinicas y registros manuales futuros.</p>
         <div id="resultadosEscalasExpediente" class="resultados-escalas">
           Cargando resultados...

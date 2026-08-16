@@ -581,6 +581,161 @@ details.nota-seccion-colapsable > summary:focus-visible {
     margin-top: 16px;
 }
 
+.modal-lectura-nota {
+    position: fixed;
+    inset: 0;
+    z-index: 320;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.modal-lectura-nota.abierto {
+    display: flex;
+}
+
+.modal-lectura-nota__fondo {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 7, 6, 0.76);
+    backdrop-filter: blur(12px);
+}
+
+.modal-lectura-nota__panel {
+    position: relative;
+    width: min(900px, 100%);
+    max-height: min(900px, calc(100vh - 48px));
+    overflow: auto;
+    border: 1px solid rgba(126, 182, 138, 0.32);
+    border-radius: 26px;
+    background: linear-gradient(145deg, var(--surface-primary), var(--surface-secondary));
+    color: var(--text-primary);
+    box-shadow: 0 28px 90px rgba(0, 0, 0, 0.46);
+    animation: aparecerLecturaNota 0.2s ease both;
+}
+
+.modal-lectura-nota__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 30px 34px 24px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.modal-lectura-nota__eyebrow {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--accent-primary, var(--celtic-300));
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.modal-lectura-nota__header h2 {
+    margin: 0;
+    font-size: clamp(1.55rem, 3vw, 2.25rem);
+    line-height: 1.12;
+}
+
+.modal-lectura-nota__meta {
+    margin: 10px 0 0;
+    color: var(--text-secondary, var(--gray-400));
+    font-size: 0.94rem;
+}
+
+.modal-lectura-nota__cerrar {
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 50%;
+    background: var(--surface-tertiary, rgba(255,255,255,.06));
+    color: inherit;
+    font-size: 1.7rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.modal-lectura-nota__cerrar:hover,
+.modal-lectura-nota__cerrar:focus-visible {
+    border-color: var(--accent-primary, var(--celtic-300));
+    color: var(--accent-primary, var(--celtic-300));
+}
+
+.modal-lectura-nota__contenido {
+    padding: 28px 34px 38px;
+}
+
+.lectura-nota__diagnostico {
+    margin-bottom: 26px;
+    padding: 16px 18px;
+    border-left: 3px solid var(--accent-primary, var(--celtic-300));
+    border-radius: 0 14px 14px 0;
+    background: color-mix(in srgb, var(--accent-primary, #7eb68a) 10%, transparent);
+}
+
+.lectura-nota__diagnostico span {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--accent-primary, var(--celtic-300));
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.lectura-nota__diagnostico p,
+.lectura-nota__seccion p {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.08rem;
+    line-height: 1.75;
+    white-space: normal;
+}
+
+.lectura-nota__cuerpo {
+    display: grid;
+    gap: 22px;
+}
+
+.lectura-nota__seccion {
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.lectura-nota__seccion:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.lectura-nota__seccion h3 {
+    margin: 0 0 9px;
+    color: var(--accent-primary, var(--celtic-300));
+    font-size: 0.82rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+body.modal-lectura-nota-abierto {
+    overflow: hidden;
+}
+
+@keyframes aparecerLecturaNota {
+    from { opacity: 0; transform: translateY(10px) scale(0.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 640px) {
+    .modal-lectura-nota { padding: 10px; }
+    .modal-lectura-nota__panel { max-height: calc(100vh - 20px); border-radius: 20px; }
+    .modal-lectura-nota__header,
+    .modal-lectura-nota__contenido { padding-left: 22px; padding-right: 22px; }
+    .modal-lectura-nota__meta { line-height: 1.5; }
+}
+
 .fondo-borradores-medico {
     position: fixed;
     inset: 0;

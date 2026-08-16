@@ -4000,6 +4000,68 @@ function bloqueContenidoNota(datos, titulo) {
   `;
 }
 
+function textoLecturaNota(valor) {
+  return escaparHTML(valor || "").replace(/\n/g, "<br>");
+}
+
+window.verNotaDesdeHistorial = function(notaId) {
+  const datos = notasHistorial[notaId];
+  const modal = document.getElementById("modalLecturaNota");
+  const contenido = document.getElementById("contenidoLecturaNota");
+  const titulo = document.getElementById("tituloLecturaNota");
+  const meta = document.getElementById("metaLecturaNota");
+  if (!datos || !modal || !contenido || !titulo || !meta) return;
+
+  const vigente = datosVigentesNota(datos);
+  const esRapida = vigente.tipoNota === "rapida" || vigente.notaRapida;
+  const tituloNota = normalizarTituloNota(vigente.titulo || "") || "Nota clínica";
+  const fecha = fechaNotaHistorial(datos).toLocaleDateString("es-MX", {
+    day: "numeric", month: "long", year: "numeric"
+  });
+  const estado = estadoPersistidoNota(datos) === "borrador" ? "Borrador" : "Definitiva";
+  const diagnosticos = Array.isArray(vigente.historialDiagnosticos)
+    ? vigente.historialDiagnosticos.map((dx) => dx.texto || "").filter(Boolean).join(" · ")
+    : (typeof vigente.diagnostico === "object" ? (vigente.diagnostico?.texto || "") : (vigente.diagnostico || ""));
+
+  titulo.textContent = tituloNota;
+  meta.textContent = `${etiquetaTipoNotaHistorial(vigente)} · ${fecha} · ${vigente.autor || datos.autor || "Sin médico"} · ${estado}`;
+  contenido.innerHTML = `
+    ${diagnosticos ? `<section class="lectura-nota__diagnostico"><span>Diagnóstico</span><p>${textoLecturaNota(diagnosticos)}</p></section>` : ""}
+    <div class="lectura-nota__cuerpo">
+      ${esRapida
+        ? `<section class="lectura-nota__seccion"><h3>Nota rápida</h3><p>${textoLecturaNota(vigente.notaRapida)}</p></section>`
+        : [
+            ["Subjetivo", vigente.subjetivo],
+            ["Objetivo", vigente.objetivo],
+            ["Análisis", vigente.analisis],
+            ["Plan", vigente.plan]
+          ].filter(([, valor]) => String(valor || "").trim()).map(([nombre, valor]) => `
+            <section class="lectura-nota__seccion"><h3>${nombre}</h3><p>${textoLecturaNota(valor)}</p></section>
+          `).join("")}
+    </div>
+  `;
+
+  modal.classList.add("abierto");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-lectura-nota-abierto");
+  modal.querySelector(".modal-lectura-nota__cerrar")?.focus();
+};
+
+function cerrarModoLecturaNota() {
+  const modal = document.getElementById("modalLecturaNota");
+  if (!modal) return;
+  modal.classList.remove("abierto");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-lectura-nota-abierto");
+}
+
+document.querySelectorAll("[data-cerrar-lectura-nota]").forEach((elemento) => {
+  elemento.addEventListener("click", cerrarModoLecturaNota);
+});
+document.addEventListener("keydown", (evento) => {
+  if (evento.key === "Escape") cerrarModoLecturaNota();
+});
+
 function versionesEditadasNota(datos = {}) {
   const versiones = Array.isArray(datos.ediciones)
     ? [...datos.ediciones].filter((version) => version && typeof version === "object")
@@ -4882,6 +4944,9 @@ async function cargarHistorial(uidPaciente) {
     const versionesEditadas = estadoNota === "borrador" ? [] : versionesEditadasNota(datos);
     const notaPrincipalHistorial = estadoNota === "borrador" ? notaVigente : datos;
     const accionesNota = estadoNota === "borrador" ? `
+      <button type="button" class="boton-secundario boton-ver-nota" onclick="verNotaDesdeHistorial('${nota.id}')">
+        Ver nota
+      </button>
       <button type="button" class="boton-secundario" onclick="continuarBorradorDesdeHistorial('${nota.id}')">
         Continuar borrador
       </button>
@@ -4889,6 +4954,9 @@ async function cargarHistorial(uidPaciente) {
         Usar como borrador (nueva nota)
       </button>
     ` : `
+      <button type="button" class="boton-secundario boton-ver-nota" onclick="verNotaDesdeHistorial('${nota.id}')">
+        Ver nota
+      </button>
       <button type="button" class="boton-secundario" onclick="cargarNotaComoBorrador('${nota.id}')">
         Usar como borrador (nueva nota)
       </button>

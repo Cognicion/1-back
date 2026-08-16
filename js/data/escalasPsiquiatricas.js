@@ -5,6 +5,7 @@ export const ESCALAS_PSIQUIATRICAS = [
     area: "Depresión",
     descripcion: "Tamizaje y seguimiento de síntomás depresivos en las últimas 2 semanas.",
     rango: "0-27",
+    puntajeMaximo: 27,
     opciones: ["Nunca", "Varios días", "Más de la mitad de los días", "Casi todos los días"],
     valores: [0, 1, 2, 3],
     puntosCorte: [
@@ -32,6 +33,7 @@ export const ESCALAS_PSIQUIATRICAS = [
     area: "Ansiedad",
     descripcion: "Tamizaje y seguimiento de ansiedad generalizada en las últimas 2 semanas.",
     rango: "0-21",
+    puntajeMaximo: 21,
     opciones: ["Nunca", "Varios días", "Más de la mitad de los días", "Casi todos los días"],
     valores: [0, 1, 2, 3],
     puntosCorte: [

@@ -543,6 +543,21 @@ Cancelar edicion
 
 </div>
 
+<div id="modalLecturaNota" class="modal-lectura-nota" aria-hidden="true">
+    <div class="modal-lectura-nota__fondo" data-cerrar-lectura-nota></div>
+    <article class="modal-lectura-nota__panel" role="dialog" aria-modal="true" aria-labelledby="tituloLecturaNota">
+        <header class="modal-lectura-nota__header">
+            <div>
+                <span class="modal-lectura-nota__eyebrow">Modo lectura</span>
+                <h2 id="tituloLecturaNota">Nota clínica</h2>
+                <p id="metaLecturaNota" class="modal-lectura-nota__meta"></p>
+            </div>
+            <button type="button" class="modal-lectura-nota__cerrar" data-cerrar-lectura-nota aria-label="Cerrar modo lectura">×</button>
+        </header>
+        <div id="contenidoLecturaNota" class="modal-lectura-nota__contenido"></div>
+    </article>
+</div>
+
 <script type="module" src="js/nota.js?v=20260816-cie10-cde-v1"></script>
 <script type="module" src="js/components/misApuntesFlotante.js"></script>
 <script type="module">import("./js/calculators/calculatorDialog.js");</script>

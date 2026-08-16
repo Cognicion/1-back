@@ -24,7 +24,15 @@ export function textoItemEscala(item) {
   return typeof item === "string" ? item : item?.texto || "";
 }
 
-export function calcularPuntajeEscala(respuestas) {
+export function calcularPuntajeEscala(respuestas, escala = null) {
+  if (escala?.scoring === "eat26") {
+    return respuestas.reduce((total, respuesta, index) => {
+      const valor = Number(respuesta.valor);
+      if (!Number.isFinite(valor)) return total;
+      const puntos = index === 24 ? [3, 2, 1, 0, 0, 0] : [0, 0, 0, 1, 2, 3];
+      return total + Number(puntos[valor] ?? 0);
+    }, 0);
+  }
   return respuestas.reduce((total, respuesta) => total + Number(respuesta.valor || 0), 0);
 }
 
@@ -97,6 +105,7 @@ export function normalizarEscalaAplicada(id, datos = {}) {
     observaciones: datos.observaciones || datos.observacionesOpcionales || "",
     observacionesClinicas: datos.observacionesClinicas || datos.observaciones || datos.observacionesOpcionales || "",
     recomendaciones: datos.recomendaciones || "",
+    analisisClinico: datos.analisisClinico || null,
     visibilidadPaciente: datos.visibilidadPaciente ?? datos.visiblePaciente ?? false,
     visibleDesdePaciente: datos.visibleDesdePaciente ?? datos.visiblePaciente ?? false,
     idNota: datos.idNota || "",
@@ -134,6 +143,7 @@ export async function guardarEscalaAplicada(idPaciente, registro) {
     respuestas: registro.respuestasPorItem,
     observaciones: registro.observaciones || registro.observacionesClinicas || "",
     recomendaciones: registro.recomendaciones || "",
+    analisisClinico: registro.analisisClinico || null,
     visibilidadPaciente: registro.visibilidadPaciente ?? false,
     visibleDesdePaciente: registro.visibleDesdePaciente ?? false,
     origen: registro.origen,
