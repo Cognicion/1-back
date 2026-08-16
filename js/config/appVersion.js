@@ -46,5 +46,6 @@
 // deployment marker: 2026-08-15-medication-full-units-v1
 // deployment marker: 2026-08-16-cie10-cde-v1 (+0.010)
 // deployment marker: 2026-08-16-grouped-scales-cognicion-records-v1
-export const APP_VERSION = "2.018";
+// deployment marker: 2026-08-16-patient-summary-density-tone-v1
+export const APP_VERSION = "2.019";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

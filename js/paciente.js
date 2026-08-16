@@ -1639,11 +1639,11 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
       <div class="lab-info-grid">
         ${renderizarBloqueIdentificacionLab(datos, tipoPaciente)}
 
+        ${renderizarBloqueInstitucionIngresoVertical(datos, mostrarInstitucional)}
+
         ${renderizarBloqueSeguridadLab(datos)}
 
         ${renderizarBloqueSomatometriaLab(datos)}
-
-        ${renderizarBloqueInstitucionIngresoVertical(datos, mostrarInstitucional)}
 
         <article class="lab-card lab-card-lista resumen-modulo-diagnosticos">
           <span>Diagnsticos</span>
