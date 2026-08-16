@@ -104,6 +104,24 @@ import {
   vincularExpedienteConCodigoPaciente
 } from "./services/vinculacion.js";
 
+function inicializarNavegacionVisualExpediente() {
+  const menu = document.querySelector(".sidebar .menu");
+  if (!menu || menu.dataset.navegacionVisualInicializada === "true") return;
+  menu.dataset.navegacionVisualInicializada = "true";
+  menu.addEventListener("click", (event) => {
+    const boton = event.target.closest("button");
+    if (!boton || !menu.contains(boton)) return;
+    menu.querySelectorAll("button.activo").forEach((elemento) => elemento.classList.remove("activo"));
+    boton.classList.add("activo");
+  });
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", inicializarNavegacionVisualExpediente, { once: true });
+} else {
+  inicializarNavegacionVisualExpediente();
+}
+
 let ESCALAS_PSIQUIATRICAS = [];
 let ESCALAS_COGNITIVAS = [];
 let crearResumenEscala = null;
@@ -1557,6 +1575,9 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
   const diagnosticos = listaDiagnosticosLaboratorio(datos);
   const tratamientos = listaTratamientosLaboratorio(datos);
   const estudios = listaEstudiosLaboratorio(datos);
+  const expedienteCognicion = valorPaciente(datos, ["expedienteCognicion", "datosInstitucionales.expedienteCognicion"], "Sin expediente");
+  const folioEncabezado = document.getElementById("expedienteCognicionEncabezado");
+  if (folioEncabezado) folioEncabezado.textContent = expedienteCognicion;
   contenedor.innerHTML = `
     <div class="lab-paciente-shell">
       <div class="lab-paciente-top">
@@ -1596,18 +1617,31 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
 
         ${renderizarBloqueSeguridadLab(datos)}
 
-        <article class="lab-card lab-card-lista">
+        <article class="lab-card lab-card-lista resumen-modulo-diagnosticos">
           <span>Diagnsticos</span>
           <ul>${renderizarListaLab(diagnosticos)}</ul>
+          <button class="resumen-modulo-accion" type="button" onclick="mostrarDiagnosticos()">Ver diagnósticos</button>
         </article>
-        <article class="lab-card lab-card-lista">
+        <article class="lab-card lab-card-lista resumen-modulo-tratamiento">
           <span>Tratamiento activo</span>
           <ol>${renderizarListaLab(tratamientos)}</ol>
+          <button class="resumen-modulo-accion" type="button" onclick="mostrarTratamiento()">Ver tratamiento</button>
+        </article>
+        <article class="lab-card lab-card-lista resumen-modulo-tarjeta resumen-modulo-notas">
+          <span>Últimas notas</span>
+          <p class="lab-muted">Consulta la evolución clínica o registra una nueva nota.</p>
+          <button class="resumen-modulo-accion" type="button" onclick="abrirNota()">Nueva nota</button>
         </article>
         ${renderizarBloqueFuenteClinicaDocx(datos)}
-        <article class="lab-card lab-card-lista">
+        <article class="lab-card lab-card-lista resumen-modulo-estudios">
           <span>Estudios</span>
           <ul>${renderizarListaLab(estudios)}</ul>
+          <button class="resumen-modulo-accion" type="button" onclick="mostrarEstudios()">Ver estudios</button>
+        </article>
+        <article class="lab-card lab-card-lista resumen-modulo-tarjeta resumen-modulo-interconsultas">
+          <span>Interconsultas</span>
+          <p class="lab-muted">Consulta solicitudes y valoraciones de otras especialidades.</p>
+          <button class="resumen-modulo-accion" type="button" onclick="mostrarInterconsulta()">Ver interconsultas</button>
         </article>
         <article class="lab-card resumen-cuadro" data-resumen-cuadro="equipo">
           ${encabezadoResumenPaciente("Equipo clínico", "equipo")}

@@ -254,11 +254,15 @@ async function guardarResultado() {
     puntajeMaximo: escalaActual.puntajeMaximo || "",
     dominiosEvaluados: escalaActual.dominiosEvaluados || [],
     puntajesPorDominio: resultado.dominios || {},
+    rango: escalaActual.rango || "",
     respuestasPorItem: resultado.respuestas,
     interpretacion: resultado.interpretacion,
     observaciones: document.getElementById("observacionesEscalaPaciente")?.value.trim() || "",
     observacionesClinicas: document.getElementById("observacionesEscalaPaciente")?.value.trim() || "",
+    observacionesOpcionales: document.getElementById("observacionesEscalaPaciente")?.value.trim() || "",
     recomendaciones: "Interpretar dentro del contexto clinico.",
+    aplicadoPorMedico: true,
+    visiblePaciente: visible,
     visibilidadPaciente: visible,
     visibleDesdePaciente: visible,
     medicoNombre: profesional.nombre || profesional.nombreCompleto || profesional.email || ""
@@ -279,8 +283,15 @@ async function guardarResultado() {
     contextoActual.onSaved?.();
     cerrarModal();
   } catch (error) {
-    console.error("No se pudo guardar la escala del expediente:", error);
-    document.getElementById("resultadoCalculadoEscalaPaciente").textContent = "No se pudo guardar la escala. Revisa los permisos e intenta nuevamente.";
+    console.error("No se pudo guardar la escala del expediente:", {
+      stage: error?.stage || "unknown",
+      code: error?.code || "unknown",
+      message: error?.message || "",
+      patientId: idPaciente
+    });
+    document.getElementById("resultadoCalculadoEscalaPaciente").textContent = error?.code === "permission-denied"
+      ? "Tu cuenta no tiene permiso para guardar escalas en este expediente."
+      : "No se pudo guardar la escala. Intenta nuevamente.";
   } finally {
     if (boton) boton.disabled = false;
   }

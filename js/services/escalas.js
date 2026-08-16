@@ -115,6 +115,7 @@ export function normalizarEscalaAplicada(id, datos = {}) {
 }
 
 export async function guardarEscalaAplicada(idPaciente, registro) {
+  if (!idPaciente) throw new Error("ESCALA_SIN_PACIENTE");
   const idEscalaAplicada = registro.idEscalaAplicada || doc(collection(db, "usuarios", idPaciente, "escalasAplicadas")).id;
   const fechaAplicacion = registro.fechaAplicacion || new Date().toISOString();
   const base = {
@@ -125,32 +126,47 @@ export async function guardarEscalaAplicada(idPaciente, registro) {
     updatedAt: serverTimestamp()
   };
 
-  await setDoc(doc(db, "usuarios", idPaciente, "escalasAplicadas", idEscalaAplicada), {
-    ...base,
-    createdAt: registro.createdAt || serverTimestamp()
-  }, { merge: true });
+  const escalaRef = doc(db, "usuarios", idPaciente, "escalasAplicadas", idEscalaAplicada);
+  const resultadoRef = doc(db, "usuarios", idPaciente, "resultadosEscalas", idEscalaAplicada);
+  try {
+    console.debug("[escalas] guardar:escalasAplicadas:start", { patientId: idPaciente, scaleId: idEscalaAplicada, path: escalaRef.path });
+    await setDoc(escalaRef, { ...base, createdAt: registro.createdAt || serverTimestamp() }, { merge: true });
+    console.debug("[escalas] guardar:escalasAplicadas:success", { patientId: idPaciente, scaleId: idEscalaAplicada });
+  } catch (error) {
+    console.error("[escalas] guardar:escalasAplicadas:error", { path: escalaRef.path, code: error?.code || "unknown", message: error?.message || "" });
+    error.stage = "escalasAplicadas";
+    throw error;
+  }
 
-  await setDoc(doc(db, "usuarios", idPaciente, "resultadosEscalas", idEscalaAplicada), {
-    escalaId: registro.escalaId,
-    escalaNombre: registro.nombreEscala,
-    area: registro.tipoEscala,
-    puntaje: registro.puntajeTotal,
-    puntajeMaximo: registro.puntajeMaximo ?? "",
-    dominiosEvaluados: registro.dominiosEvaluados || [],
-    puntajesPorDominio: registro.puntajesPorDominio || {},
-    rango: registro.rango,
-    interpretacion: registro.interpretacion,
-    respuestas: registro.respuestasPorItem,
-    observaciones: registro.observaciones || registro.observacionesClinicas || "",
-    recomendaciones: registro.recomendaciones || "",
-    analisisClinico: registro.analisisClinico || null,
-    visibilidadPaciente: registro.visibilidadPaciente ?? false,
-    visibleDesdePaciente: registro.visibleDesdePaciente ?? false,
-    origen: registro.origen,
-    creadoPor: registro.uidMedico || "",
-    creadoEn: serverTimestamp(),
-    fechaISO: fechaAplicacion
-  }, { merge: true });
+  try {
+    console.debug("[escalas] guardar:resultadosEscalas:start", { patientId: idPaciente, scaleId: idEscalaAplicada, path: resultadoRef.path });
+    await setDoc(resultadoRef, {
+      escalaId: registro.escalaId,
+      escalaNombre: registro.nombreEscala,
+      area: registro.tipoEscala,
+      puntaje: registro.puntajeTotal,
+      puntajeMaximo: registro.puntajeMaximo ?? "",
+      dominiosEvaluados: registro.dominiosEvaluados || [],
+      puntajesPorDominio: registro.puntajesPorDominio || {},
+      rango: registro.rango,
+      interpretacion: registro.interpretacion,
+      respuestas: registro.respuestasPorItem,
+      observaciones: registro.observaciones || registro.observacionesClinicas || "",
+      recomendaciones: registro.recomendaciones || "",
+      analisisClinico: registro.analisisClinico || null,
+      visibilidadPaciente: registro.visibilidadPaciente ?? false,
+      visibleDesdePaciente: registro.visibleDesdePaciente ?? false,
+      origen: registro.origen,
+      creadoPor: registro.uidMedico || "",
+      creadoEn: serverTimestamp(),
+      fechaISO: fechaAplicacion
+    }, { merge: true });
+    console.debug("[escalas] guardar:resultadosEscalas:success", { patientId: idPaciente, scaleId: idEscalaAplicada });
+  } catch (error) {
+    console.error("[escalas] guardar:resultadosEscalas:error", { path: resultadoRef.path, code: error?.code || "unknown", message: error?.message || "" });
+    error.stage = "resultadosEscalas";
+    throw error;
+  }
 
   return idEscalaAplicada;
 }
