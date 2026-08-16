@@ -1,5 +1,5 @@
 /** Fuente única de verdad para versiones visibles de documentos Cognición. */
-// Convención general: incrementos de 0.001. Esta entrega CIE-10 C/D aplica el +0.010 solicitado (1.946 → 1.956).
+// Convención general: incrementos de 0.001. Esta entrega CIE-10 E aplica el +0.010 solicitado (2.002 → 2.012).
 // deployment marker: 2026-08-11-memory-connectome-v3
 // deployment marker: 2026-08-11-public-interactions-v1
 // deployment marker: 2026-08-11-public-interactions-class-rules-v1
@@ -44,5 +44,6 @@
 // deployment marker: 2026-08-14-medication-name-boundaries-v1
 // deployment marker: 2026-08-15-transfer-completion-progress-v1
 // deployment marker: 2026-08-15-medication-full-units-v1
-export const APP_VERSION = "2.002";
+// deployment marker: 2026-08-16-cie10-cde-v1 (+0.010)
+export const APP_VERSION = "2.012";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

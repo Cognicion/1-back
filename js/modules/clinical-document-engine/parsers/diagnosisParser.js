@@ -7,7 +7,7 @@ import { normalizeClinicalComparisonText } from "../normalizers/textNormalizer.j
 import { normalizeDiagnosticCode, normalizeDiagnosis as normalizeDiagnosisValue } from "../normalizers/diagnosisNormalizer.js";
 import { validateDiagnosis } from "../validators/diagnosisValidator.js";
 import { clinicalImportLogger } from "../utils/logger.js";
-import { CATALOGO_DIAGNOSTICOS as DIAGNOSTICOS_BIBLIOTECA } from "../../../data/catalogoDiagnosticos.js?v=20260813-cie10-cd-v1";
+import { CATALOGO_DIAGNOSTICOS as DIAGNOSTICOS_BIBLIOTECA } from "../../../data/catalogoDiagnosticos.js?v=20260816-cie10-cde-v1";
 
 const PARSER = "midc.diagnosisParser";
 const VERSION = "1.0";

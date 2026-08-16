@@ -1,5 +1,5 @@
 import { COBERTURA_FARMACOLOGICA, MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES, medicamentoPorTexto } from "./data/catalogoFarmacologicoUnificado.js?v=20260814-ieca-c09aa-v1";
-import { CIE10 } from "./data/catalogoDiagnosticos.js?v=20260813-cie10-cd-v1";
+import { CIE10 } from "./data/catalogoDiagnosticos.js?v=20260816-cie10-cde-v1";
 import {
   evaluarMedicamentosPaciente,
   normalizarMedicamentoClinico,

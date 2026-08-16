@@ -23,8 +23,8 @@ const GRUPOS_CIE10_BIBLIOTECA = [
   { id: "B", etiqueta: "B00-B99 · Ciertas enfermedades infecciosas y parasitarias" },
   { id: "C", etiqueta: "C00-C97 · Tumores malignos" },
   { id: "D", etiqueta: "D00-D89 · Neoplasias in situ/benignas y trastornos hematológicos/inmunitarios" },
+  { id: "E", etiqueta: "E00-E90 · Enfermedades endocrinas, nutricionales y metabólicas" },
   { id: "F", etiqueta: "F00-F99 · Trastornos mentales y del comportamiento" },
-  { id: "E", etiqueta: "E00-E90 · Endocrino, nutrición y metabolismo" },
   { id: "G", etiqueta: "G00-G99 · Enfermedades del sistema nervioso" },
   { id: "I", etiqueta: "I00-I99 · Sistema circulatorio" },
   { id: "J", etiqueta: "J00-J99 · Sistema respiratorio" },
@@ -201,8 +201,8 @@ function usuarioPuedeUsarBiblioteca(user, usuario = {}) {
 const libraryRoot = document.querySelector("[data-library-root]");
 const datosBibliotecaListos = libraryRoot
   ? Promise.all([
-    import("./data/catalogoDiagnosticos.js?v=20260813-cie10-cd-v1"),
-    import("./data/psicoeducacionBiblioteca.js?v=20260813-cie10-cd-v1")
+    import("./data/catalogoDiagnosticos.js?v=20260816-cie10-cde-v1"),
+    import("./data/psicoeducacionBiblioteca.js?v=20260816-cie10-cde-v1")
   ]).then(([diagnosticosModule, psicoeducacionModule]) => {
     DIAGNOSTICOS_VALIDOS = validarDiagnosticosBiblioteca(diagnosticosModule.CATALOGO_DIAGNOSTICOS);
     PSICOEDUCACION = psicoeducacionModule.PSICOEDUCACION || [];

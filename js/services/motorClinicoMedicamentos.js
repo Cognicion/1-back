@@ -10,7 +10,7 @@ import {
   resolverMedicamentoCanonico
 } from "../data/catalogoFarmacologicoUnificado.js?v=20260814-ieca-c09aa-v1";
 import { detectarInteraccionesPorCitocromos } from "../data/citocromosFarmacologicos.js?v=20260811-pharmacology-files-consolidated-v1";
-import { CATALOGO_DIAGNOSTICOS } from "../data/catalogoDiagnosticos.js?v=20260813-cie10-cd-v1";
+import { CATALOGO_DIAGNOSTICOS } from "../data/catalogoDiagnosticos.js?v=20260816-cie10-cde-v1";
 
 const SEVERIDAD_ORDEN = {
   informativa: 1,
@@ -542,6 +542,7 @@ function crearAlerta(base) {
     fuentes: base.fuentes || [],
     fechaFuente: base.fechaFuente || base.actualizado || "",
     parametrosVigilancia: base.parametrosVigilancia || [],
+    suprimeReglas: base.suprimeReglas || [],
     permiteOverride: base.permiteOverride !== false,
     requiereJustificacion,
     fuente: "Motor clínico local de Cognición"
@@ -683,7 +684,17 @@ export function evaluarMedicamentoContraDiagnosticos(medicamentosNormalizados = 
       }));
     });
   });
-  return alertas;
+  const claveMedicamento = (alerta) => (alerta.medicamentos || [])
+    .map((medicamento) => normalizarTextoClinico(medicamento))
+    .sort()
+    .join("|");
+  const reglasSuprimidas = new Set(
+    alertas.flatMap((alerta) => (alerta.suprimeReglas || []).map((reglaId) => `${reglaId}|${claveMedicamento(alerta)}`))
+  );
+  return alertas.filter((alerta) => {
+    const reglaId = String(alerta.id || "").split(":")[0];
+    return !reglasSuprimidas.has(`${reglaId}|${claveMedicamento(alerta)}`);
+  });
 }
 
 function evaluarAlergiasPaciente(medicamentosNormalizados = [], paciente = {}) {

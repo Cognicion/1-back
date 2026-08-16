@@ -41,10 +41,11 @@ assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.fuenteUnica, true);
 assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.integridad.codigosAbfFaltantes, 0);
 assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.integridad.codigosCFaltantes, 0);
 assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.integridad.codigosDFaltantes, 0);
+assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.integridad.codigosEFaltantes, 0);
 assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.integridad.codigosLegacyOmitidos, 0);
-assert.equal(CATALOGO_DIAGNOSTICOS.length, 2823);
+assert.equal(CATALOGO_DIAGNOSTICOS.length, 3201);
 assert.equal(new Set(CATALOGO_DIAGNOSTICOS.map((diagnostico) => diagnostico.id)).size, CATALOGO_DIAGNOSTICOS.length);
-assert.equal(CIE10.length, 2804);
+assert.equal(CIE10.length, 3182);
 assert.equal(CIE11.length, 28);
 assert.equal(DSM5.length, 12);
 codigosUnicos(CIE10, "CIE-10");
@@ -57,10 +58,10 @@ for (const catalogo of [CIE10, CIE11, DSM5]) {
 }
 
 assert.deepEqual(
-  Object.fromEntries(["A", "B", "C", "D", "F"].map((letra) => [letra, CIE10.filter((diagnostico) => diagnostico.codigo.startsWith(letra)).length])),
-  { A: 465, B: 459, C: 539, D: 527, F: 467 }
+  Object.fromEntries(["A", "B", "C", "D", "E", "F"].map((letra) => [letra, CIE10.filter((diagnostico) => diagnostico.codigo.startsWith(letra)).length])),
+  { A: 465, B: 459, C: 539, D: 527, E: 412, F: 467 }
 );
-for (const [letra, esperado] of [["C", "24b24733336786e991118109fa484698b9e4000f8a04469247e7dcb2029e7059"], ["D", "5fcf520a101357c413137aef708ed043297a3772616d6d0c7145f5cf577248ac"]]) {
+for (const [letra, esperado] of [["C", "24b24733336786e991118109fa484698b9e4000f8a04469247e7dcb2029e7059"], ["D", "5fcf520a101357c413137aef708ed043297a3772616d6d0c7145f5cf577248ac"], ["E", "29c25e23e56c983272f5083a6eba16212a866430c9a14459ab46da650226b8a1"]]) {
   const codigos = CIE10.filter((diagnostico) => diagnostico.codigo.startsWith(letra)).map((diagnostico) => diagnostico.codigo).sort();
   assert.equal(createHash("sha256").update(codigos.join("\n")).digest("hex"), esperado, `Conjunto oficial ${letra} alterado`);
 }
@@ -82,14 +83,14 @@ const archivosDatos = await readdir(dataDir);
 assert.deepEqual(archivosDatos.filter((archivo) => /(?:diagnostic|cie10|cie11)/i.test(archivo)).sort(), ["catalogoDiagnosticos.js"]);
 
 for (const [archivo, modulo] of [
-  ["paciente.html", "js/paciente.js?v=20260813-cie10-cd-v1"],
-  ["nota.html", "js/nota.js?v=20260813-cie10-cd-v1"],
-  ["biblioteca.html", "js/biblioteca.js?v=20260813-cie10-cd-v1"],
-  ["laboratorio-farmacologia.html", "js/laboratorio-farmacologia.js?v=20260813-cie10-cd-v1"]
+  ["paciente.html", "js/paciente.js?v=20260816-cie10-cde-v1"],
+  ["nota.html", "js/nota.js?v=20260816-cie10-cde-v1"],
+  ["biblioteca.html", "js/biblioteca.js?v=20260816-cie10-cde-v1"],
+  ["laboratorio-farmacologia.html", "js/laboratorio-farmacologia.js?v=20260816-cie10-cde-v1"]
 ]) {
   assert.match(await readFile(resolve(root, archivo), "utf8"), new RegExp(modulo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 }
-assert.match(await readFile(resolve(root, "js/config/appVersion.js"), "utf8"), /APP_VERSION = "1\.956"/);
+assert.match(await readFile(resolve(root, "js/config/appVersion.js"), "utf8"), /APP_VERSION = "2\.012"/);
 
 const resultadoFarmacologia = evaluarMedicamentosPaciente({
   paciente: { diagnosticos: [{ codigo: "6C70", diagnostico: "Piromanía", estado: "confirmado" }] },
@@ -103,15 +104,21 @@ const resultadoOncologia = evaluarMedicamentosPaciente({
 });
 assert.ok(resultadoOncologia.alertas.some((alerta) => /tumor del sistema nervioso central/i.test(alerta.titulo)));
 
+const resultadoEndocrino = evaluarMedicamentosPaciente({
+  paciente: { diagnosticos: [{ codigo: "E87.5", diagnostico: "Hiperpotasemia", estado: "confirmado" }] },
+  medicamentos: [{ medicamento: "Espironolactona 25 mg" }]
+});
+assert.ok(resultadoEndocrino.alertas.some((alerta) => alerta.severidad === "critica" && /hiperpotasemia/i.test(alerta.titulo)));
+
 console.log(JSON.stringify({
   archivoUnico: "js/data/catalogoDiagnosticos.js",
   entidades: CATALOGO_DIAGNOSTICOS.length,
   cie10: CIE10.length,
   cie11: CIE11.length,
   dsm5: DSM5.length,
-  capitulosCompletos: { A: 465, B: 459, C: 539, D: 527, F: 467 },
+  capitulosCompletos: { A: 465, B: 459, C: 539, D: 527, E: 412, F: 467 },
   panelesVacios: 0,
   duplicados: 0,
-  version: "1.956",
+  version: "2.012",
   alertaFarmacologicaCie11: true
 }, null, 2));

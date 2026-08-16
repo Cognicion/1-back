@@ -5,7 +5,7 @@ import {
   buscarMedicamentos,
   medicamentoPorTexto
 } from "./data/catalogoFarmacologicoUnificado.js?v=20260814-ieca-c09aa-v1";
-import { CIE10, CIE11 } from "./data/catalogoDiagnosticos.js?v=20260813-cie10-cd-v1";
+import { CIE10, CIE11 } from "./data/catalogoDiagnosticos.js?v=20260816-cie10-cde-v1";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import {
