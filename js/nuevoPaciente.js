@@ -7,14 +7,13 @@ import {
 
 import {
   collection,
-  addDoc,
-  getDocs
+  addDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
   obtenerUsuario,
   crearPacienteProvisional
-} from "./services/usuarios.js?v=20260729-imc-payload-fix";
+} from "./services/usuarios.js?v=20260816-expedientes-cognicion-v1";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { crearTratamiento } from "./services/tratamientos.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
@@ -218,11 +217,6 @@ function ocultarCamposClinicosLegadoNuevo() {
   }
 }
 
-function obtenerExpedienteCognicion(paciente = {}) {
-  const institucional = paciente.datosInstitucionales || {};
-  return paciente.expedienteCognicion || institucional.expedienteCognicion || "";
-}
-
 function normalizarFechaIngreso(valor = "") {
   const limpio = String(valor).trim();
   if (!limpio) return "";
@@ -353,23 +347,6 @@ function limpiarIngresoNuevo() {
   if (fecha) fecha.value = "";
   if (hora) hora.value = "";
   cerrarSelectorIngresoNuevo();
-}
-
-async function generarExpedienteCognicion() {
-  const anio = String(new Date().getFullYear()).slice(-2);
-  const snap = await getDocs(collection(db, "usuarios"));
-  let consecutivoMayor = 999;
-
-  snap.forEach((docPaciente) => {
-    const expediente = obtenerExpedienteCognicion(docPaciente.data());
-    const coincidencia = /^C(\d+)-(\d{2})$/.exec(expediente);
-
-    if (!coincidencia || coincidencia[2] !== anio) return;
-
-    consecutivoMayor = Math.max(consecutivoMayor, Number(coincidencia[1]));
-  });
-
-  return `C${consecutivoMayor + 1}-${anio}`;
 }
 
 function actualizarDatosPersonalesDraftNuevo() {
@@ -562,7 +539,6 @@ window.guardarPacienteNuevo = async function() {
   calcularIMCNuevoPaciente();
   const perimetroAbdominal = document.getElementById("perimetroAbdominal")?.value || "";
   const diasEstancia = document.getElementById("diasEstancia")?.value || "";
-  const expedienteCognicion = await generarExpedienteCognicion();
   const signosVitales = {
     peso,
     talla,
@@ -610,7 +586,6 @@ window.guardarPacienteNuevo = async function() {
     apellidoMaterno: apellidoMaterno.trim().replace(/\s+/g, " "),
     alias,
     nombreEstructurado: true,
-    expedienteCognicion,
     fechaNacimiento,
     edadManual,
     sexo: document.getElementById("sexo").value,
@@ -646,7 +621,6 @@ window.guardarPacienteNuevo = async function() {
       apellidoPaterno: apellidoPaterno.trim().replace(/\s+/g, " "),
       apellidoMaterno: apellidoMaterno.trim().replace(/\s+/g, " "),
       alias,
-      expedienteCognicion,
       tipoPaciente,
       institucionPaciente,
       servicioInstitucional,

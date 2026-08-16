@@ -1354,23 +1354,37 @@
   box-shadow: 0 14px 32px rgb(0 0 0 / 10%);
 }
 
-.resumen-cuadro[data-resumen-cuadro="identificacion"],
-.resumen-cuadro[data-resumen-cuadro="somatometria"],
+.resumen-cuadro[data-resumen-cuadro="identificacion"] {
+  grid-column: 1 / span 2;
+  grid-row: 1;
+}
+
 .resumen-cuadro[data-resumen-cuadro="seguridad"] {
-  grid-column: span 2;
+  grid-column: 3 / span 2;
+  grid-row: 1;
+}
+
+.resumen-cuadro[data-resumen-cuadro="somatometria"] {
+  grid-column: 3 / span 2;
+  grid-row: 2;
 }
 
 .resumen-modulo-diagnosticos,
 .resumen-modulo-tratamiento,
 .resumen-modulo-notas,
 .resumen-modulo-estudios,
-.resumen-modulo-interconsultas,
 .resumen-cuadro[data-resumen-cuadro="equipo"] {
   grid-column: span 2;
 }
 
 .resumen-card--institucion-ingreso {
-  grid-column: span 4;
+  grid-column: 5 / span 2;
+  grid-row: 1 / span 2;
+}
+
+.resumen-modulo-diagnosticos {
+  grid-column: 1 / span 2;
+  grid-row: 2;
 }
 
 .lab-card > span,
@@ -1496,6 +1510,7 @@ html[data-theme="biocelular"] .lab-card:hover {
   .resumen-cuadro[data-resumen-cuadro="identificacion"],
   .resumen-cuadro[data-resumen-cuadro="somatometria"],
   .resumen-cuadro[data-resumen-cuadro="seguridad"],
+  .resumen-card--institucion-ingreso,
   .resumen-modulo-diagnosticos,
   .resumen-modulo-tratamiento,
   .resumen-modulo-notas,
@@ -1503,6 +1518,7 @@ html[data-theme="biocelular"] .lab-card:hover {
   .resumen-modulo-interconsultas,
   .resumen-cuadro[data-resumen-cuadro="equipo"] {
     grid-column: auto;
+    grid-row: auto;
   }
 }
 

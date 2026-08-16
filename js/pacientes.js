@@ -7,7 +7,7 @@ import {
 import {
   obtenerUsuario,
   listarPacientes
-} from "./services/usuarios.js?v=20260718-patient-access";
+} from "./services/usuarios.js?v=20260816-expedientes-cognicion-v1";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 

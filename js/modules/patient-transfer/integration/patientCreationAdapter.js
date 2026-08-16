@@ -1,4 +1,4 @@
-import { actualizarUsuario, crearPacienteProvisional, obtenerUsuario } from "../../../services/usuarios.js?v=20260814-patient-name-dictionary-v1";
+import { actualizarUsuario, crearPacienteProvisional, obtenerUsuario } from "../../../services/usuarios.js?v=20260816-expedientes-cognicion-v1";
 import { construirNombreCompletoPaciente, normalizarAliasPaciente } from "../../../utils/nombresPacientes.js?v=20260814-patient-alias-v1";
 import { normalizeRecordNumber } from "../parsing/patientDuplicateMatcher.js";
 

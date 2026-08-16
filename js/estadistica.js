@@ -1,7 +1,7 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { listarPacientes, obtenerUsuario } from "./services/usuarios.js?v=20260718-patient-access";
+import { listarPacientes, obtenerUsuario } from "./services/usuarios.js?v=20260816-expedientes-cognicion-v1";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 

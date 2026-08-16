@@ -1,6 +1,6 @@
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "../../services/authContextService.js";
 import { registrarEventoAuditoria } from "../../services/auditoria.js";
-import { listarPacientes } from "../../services/usuarios.js?v=20260718-patient-access";
+import { listarPacientes } from "../../services/usuarios.js?v=20260816-expedientes-cognicion-v1";
 import { db } from "../../firebase.js";
 import { obtenerNombrePacienteParaMostrar, normalizarTextoBusquedaPaciente } from "../../utils/nombresPacientes.js";
 import {

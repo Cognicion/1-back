@@ -69,6 +69,7 @@ import {
 import {
   obtenerUsuario,
   listarPacientes,
+  asegurarExpedienteCognicionPaciente,
   medicoPuedeVer,
   actualizarUsuario,
   solicitarEliminacionPaciente,
@@ -77,7 +78,7 @@ import {
   listarPermisosMedicos,
   cambiarRolPermisoMedico,
   revocarPermisoMedico
-} from "./services/usuarios.js?v=20260718-patient-access";
+} from "./services/usuarios.js?v=20260816-expedientes-cognicion-v1";
 
 import {
   crearTratamiento,
@@ -1638,11 +1639,11 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
       <div class="lab-info-grid">
         ${renderizarBloqueIdentificacionLab(datos, tipoPaciente)}
 
-        ${renderizarBloqueInstitucionIngresoVertical(datos, mostrarInstitucional)}
+        ${renderizarBloqueSeguridadLab(datos)}
 
         ${renderizarBloqueSomatometriaLab(datos)}
 
-        ${renderizarBloqueSeguridadLab(datos)}
+        ${renderizarBloqueInstitucionIngresoVertical(datos, mostrarInstitucional)}
 
         <article class="lab-card lab-card-lista resumen-modulo-diagnosticos">
           <span>Diagnsticos</span>
@@ -1658,11 +1659,6 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
           <span>Estudios</span>
           <ul>${renderizarListaLab(estudios)}</ul>
           <button class="resumen-modulo-accion" type="button" onclick="mostrarEstudios()">Ver estudios</button>
-        </article>
-        <article class="lab-card lab-card-lista resumen-modulo-tarjeta resumen-modulo-interconsultas">
-          <span>Interconsultas</span>
-          <p class="lab-muted">Consulta solicitudes y valoraciones de otras especialidades.</p>
-          <button class="resumen-modulo-accion" type="button" onclick="mostrarInterconsulta()">Ver interconsultas</button>
         </article>
         <article class="lab-card resumen-cuadro" data-resumen-cuadro="equipo">
           ${encabezadoResumenPaciente("Equipo clínico", "equipo")}
@@ -3120,6 +3116,15 @@ async function cargarDatosPaciente() {
     throw new Error("patient_access_denied");
   }
 
+  if (!valorPaciente(datos, ["expedienteCognicion", "datosInstitucionales.expedienteCognicion"], "")) {
+    try {
+      datos = await asegurarExpedienteCognicionPaciente(uidPaciente, datos);
+      datosPacienteActual = datos;
+    } catch (error) {
+      console.warn("[EXPEDIENTE COGNICION] No se pudo asignar el folio pendiente:", error);
+    }
+  }
+
   console.info("patient:vitals-read", {
     ...firebaseRuntimeInfo(),
     targetFingerprint: technicalFingerprint(uidPaciente),
@@ -3399,7 +3404,8 @@ async function cargarResultadosEscalasPaciente() {
       return;
     }
 
-    contenedor.innerHTML = escalas.map((r) => renderizarEscalaHistorialPaciente(r)).join("");
+    const grupos = agruparEscalasRegistradas(escalas);
+    contenedor.innerHTML = grupos.map((grupo) => renderizarGrupoEscalaRegistrada(grupo)).join("");
     enlazarControlesHistorialEscalas(contenedor, escalas);
     contenedor.querySelectorAll("[data-copiar-resumen-escala]").forEach((boton) => {
       boton.addEventListener("click", async () => {
@@ -3415,6 +3421,62 @@ async function cargarResultadosEscalasPaciente() {
     ponerTexto("totalEscalasAplicadas", "0");
     contenedor.innerHTML = "<p>No se pudieron cargar los resultados.</p>";
   }
+}
+
+function esRegistroPrevioEscala(escala = {}) {
+  return String(escala.modoAplicacion || "").startsWith("registro_previo");
+}
+
+function agruparEscalasRegistradas(escalas = []) {
+  const grupos = new Map();
+
+  escalas.forEach((escala) => {
+    const nombre = String(escala.nombreEscala || "Escala").trim();
+    const tipo = String(escala.tipoEscala || "Clínica").trim();
+    const clave = String(escala.escalaId || `${nombre}::${tipo}`).trim().toLocaleLowerCase("es");
+    if (!grupos.has(clave)) {
+      grupos.set(clave, { clave, nombre, tipo, aplicadas: [], previas: [] });
+    }
+    const grupo = grupos.get(clave);
+    (esRegistroPrevioEscala(escala) ? grupo.previas : grupo.aplicadas).push(escala);
+  });
+
+  return Array.from(grupos.values());
+}
+
+function renderizarGrupoEscalaRegistrada(grupo) {
+  const registros = [...grupo.aplicadas, ...grupo.previas];
+  const ultimaFecha = registros[0]?.fechaAplicacion;
+  const resumenCantidades = [
+    grupo.aplicadas.length ? `${grupo.aplicadas.length} aplicada${grupo.aplicadas.length === 1 ? "" : "s"}` : "",
+    grupo.previas.length ? `${grupo.previas.length} previa${grupo.previas.length === 1 ? "" : "s"}` : ""
+  ].filter(Boolean).join(" · ");
+  const renderizarSeccion = (titulo, items) => items.length ? `
+    <section class="grupo-escala-seccion">
+      <h4>${escaparHTML(titulo)} <span>${items.length}</span></h4>
+      <div class="grupo-escala-registros">
+        ${items.map((escala) => renderizarEscalaHistorialPaciente(escala)).join("")}
+      </div>
+    </section>
+  ` : "";
+
+  return `
+    <details class="grupo-escala-registrada">
+      <summary>
+        <span class="grupo-escala-icono" aria-hidden="true">◇</span>
+        <span class="grupo-escala-identidad">
+          <strong>${escaparHTML(grupo.nombre)}</strong>
+          <small>${escaparHTML(grupo.tipo)} · ${escaparHTML(resumenCantidades)}</small>
+        </span>
+        <span class="grupo-escala-fecha">${escaparHTML(formatearFechaEscala(ultimaFecha))}</span>
+        <span class="grupo-escala-desplegar" aria-hidden="true">⌄</span>
+      </summary>
+      <div class="grupo-escala-contenido">
+        ${renderizarSeccion("Aplicadas", grupo.aplicadas)}
+        ${renderizarSeccion("Registradas previamente", grupo.previas)}
+      </div>
+    </details>
+  `;
 }
 
 function renderizarEscalaHistorialPaciente(escala) {
@@ -3450,7 +3512,7 @@ function renderizarEscalaHistorialPaciente(escala) {
           <strong>${escaparHTML(escala.nombreEscala || "Escala")}</strong>
           <span>${escaparHTML(escala.tipoEscala || "")} - ${escaparHTML(formatearFechaEscala(escala.fechaAplicacion))} - ${escaparHTML(escala.origen || "")}</span>
         </div>
-        <div class="resultado-puntaje">${escaparHTML(String(escala.puntajeTotal ? escala.puntajeTotal : ""))}${maximo}</div>
+        <div class="resultado-puntaje">${escaparHTML(String(escala.puntajeTotal ?? ""))}${maximo}</div>
         <p>${escaparHTML(escala.interpretacion || "Sin interpretacion")}</p>
         ${controlVisibilidad}
       </summary>
@@ -3472,6 +3534,7 @@ function renderizarEscalaHistorialPaciente(escala) {
 
 function enlazarControlesHistorialEscalas(contenedor, escalas) {
   contenedor.querySelectorAll("[data-visible-resultado-escala]").forEach((control) => {
+    control.addEventListener("click", (evento) => evento.stopPropagation());
     control.addEventListener("change", async () => {
       const escala = escalas.find((item) => item.idEscalaAplicada === control.dataset.visibleResultadoEscala);
       await actualizarVisibilidadResultadoEscala(control.dataset.visibleResultadoEscala, control.checked, escala);

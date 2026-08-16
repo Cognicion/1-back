@@ -1,5 +1,5 @@
 import { auth, db } from "./firebase.js";
-import { listarPacientes, obtenerUsuario } from "./services/usuarios.js?v=20260718-patient-access";
+import { listarPacientes, obtenerUsuario } from "./services/usuarios.js?v=20260816-expedientes-cognicion-v1";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";

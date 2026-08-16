@@ -34,6 +34,142 @@ const cacheListasPacientes = new Map();
 const solicitudesListasPacientes = new Map();
 const cachePermisosMedico = new Map();
 const solicitudesPermisosMedico = new Map();
+let colaAsignacionExpedientesCognicion = Promise.resolve();
+
+function obtenerExpedienteCognicion(datos = {}) {
+    return String(
+        datos.expedienteCognicion
+        || datos.datosInstitucionales?.expedienteCognicion
+        || ""
+    ).trim();
+}
+
+function encolarAsignacionExpedienteCognicion(tarea) {
+    const ejecucion = colaAsignacionExpedientesCognicion.then(tarea, tarea);
+    colaAsignacionExpedientesCognicion = ejecucion.catch(() => undefined);
+    return ejecucion;
+}
+
+async function obtenerSiguienteExpedienteCognicion() {
+    const anio = String(new Date().getFullYear()).slice(-2);
+    const usuarios = await getDocs(collection(db, "usuarios"));
+    let consecutivoMayor = 999;
+
+    usuarios.forEach((documentoUsuario) => {
+        const coincidencia = /^C(\d+)-(\d{2})$/.exec(
+            obtenerExpedienteCognicion(documentoUsuario.data())
+        );
+        if (coincidencia?.[2] === anio) {
+            consecutivoMayor = Math.max(consecutivoMayor, Number(coincidencia[1]));
+        }
+    });
+
+    return `C${consecutivoMayor + 1}-${anio}`;
+}
+
+function completarDatosConExpedienteCognicion(datos = {}, expedienteCognicion = "") {
+    return {
+        ...datos,
+        expedienteCognicion,
+        datosInstitucionales: {
+            ...(datos.datosInstitucionales || {}),
+            expedienteCognicion
+        }
+    };
+}
+
+export async function asegurarExpedienteCognicionPaciente(uidPaciente, datosConocidos = {}) {
+    if (!uidPaciente) return datosConocidos;
+    const expedienteExistente = obtenerExpedienteCognicion(datosConocidos);
+    if (expedienteExistente) return datosConocidos;
+
+    return encolarAsignacionExpedienteCognicion(async () => {
+        const referencia = doc(db, "usuarios", uidPaciente);
+        const documentoActual = await getDoc(referencia);
+        if (!documentoActual.exists()) return datosConocidos;
+
+        const datosActuales = documentoActual.data();
+        const expedienteActual = obtenerExpedienteCognicion(datosActuales);
+        if (expedienteActual) return datosActuales;
+
+        const expedienteCognicion = await obtenerSiguienteExpedienteCognicion();
+        const datosActualizados = completarDatosConExpedienteCognicion(datosActuales, expedienteCognicion);
+        await updateDoc(referencia, {
+            expedienteCognicion,
+            datosInstitucionales: datosActualizados.datosInstitucionales
+        });
+        invalidarCacheUsuario(uidPaciente);
+        console.info("[EXPEDIENTE COGNICION] Folio asignado", { expedienteCognicion });
+        return datosActualizados;
+    });
+}
+
+async function asegurarExpedientesCognicionEnDocumentos(documentos = []) {
+    const pendientes = documentos.filter((documentoPaciente) => (
+        documentoPaciente?.id
+        && documentoPaciente.data()?.rol === "paciente"
+        && !obtenerExpedienteCognicion(documentoPaciente.data())
+    ));
+    if (!pendientes.length) return;
+
+    await encolarAsignacionExpedienteCognicion(async () => {
+        const anio = String(new Date().getFullYear()).slice(-2);
+        const usuarios = await getDocs(collection(db, "usuarios"));
+        const datosActualesPorId = new Map();
+        let consecutivoMayor = 999;
+
+        usuarios.forEach((documentoUsuario) => {
+            const datosUsuario = documentoUsuario.data();
+            datosActualesPorId.set(documentoUsuario.id, datosUsuario);
+            const coincidencia = /^C(\d+)-(\d{2})$/.exec(obtenerExpedienteCognicion(datosUsuario));
+            if (coincidencia?.[2] === anio) {
+                consecutivoMayor = Math.max(consecutivoMayor, Number(coincidencia[1]));
+            }
+        });
+
+        pendientes.sort((a, b) => {
+            const fechaA = String(a.data()?.fechaCreacion || "");
+            const fechaB = String(b.data()?.fechaCreacion || "");
+            return fechaA.localeCompare(fechaB) || a.id.localeCompare(b.id);
+        });
+
+        let lote = writeBatch(db);
+        let operaciones = 0;
+        let expedientesAsignados = 0;
+        const confirmarLote = async () => {
+            if (!operaciones) return;
+            await lote.commit();
+            lote = writeBatch(db);
+            operaciones = 0;
+        };
+
+        for (const documentoPaciente of pendientes) {
+            const datosActuales = datosActualesPorId.get(documentoPaciente.id) || documentoPaciente.data();
+            if (obtenerExpedienteCognicion(datosActuales)) continue;
+            consecutivoMayor += 1;
+            const expedienteCognicion = `C${consecutivoMayor}-${anio}`;
+            const datosCompletos = completarDatosConExpedienteCognicion(datosActuales, expedienteCognicion);
+            lote.update(doc(db, "usuarios", documentoPaciente.id), {
+                expedienteCognicion,
+                datosInstitucionales: datosCompletos.datosInstitucionales
+            });
+            operaciones += 1;
+            expedientesAsignados += 1;
+            invalidarCacheUsuario(documentoPaciente.id);
+            if (operaciones >= 400) await confirmarLote();
+        }
+
+        await confirmarLote();
+        invalidarListasPacientes();
+        if (expedientesAsignados) {
+            console.info("[EXPEDIENTE COGNICION] Folios pendientes completados", {
+                cantidad: expedientesAsignados,
+                ultimoConsecutivo: consecutivoMayor,
+                anio
+            });
+        }
+    });
+}
 
 function leerCacheVigente(cache, clave, ttlMs) {
     const registro = cache.get(clave);
@@ -189,6 +325,10 @@ async function listarPacientesSinCache(uidMedico = ""){
         console.warn("No se pudieron consultar permisos medicos agrupados:", error);
     }
 
+    await asegurarExpedientesCognicionEnDocumentos(Array.from(pacientes.values())).catch((error) => {
+        console.warn("[EXPEDIENTE COGNICION] No se pudieron completar todos los folios pendientes:", error);
+    });
+
     const docs = Array.from(pacientes.values()).sort((a,b) => {
         const nombreA = obtenerNombrePacienteParaMostrar(a.data());
         const nombreB = obtenerNombrePacienteParaMostrar(b.data());
@@ -227,7 +367,7 @@ export async function crearUsuario(uid,datos){
 
 export async function crearPacienteProvisional(datos){
 
-    const payload = {
+    let payload = {
         ...datos,
         rol:"paciente",
         tieneCuenta:false,
@@ -249,10 +389,12 @@ export async function crearPacienteProvisional(datos){
         throw new Error("Valor DOM inválido en payload.imc");
     }
 
-    const refPaciente = await addDoc(
-        collection(db,"usuarios"),
-        payload
-    );
+    const refPaciente = await encolarAsignacionExpedienteCognicion(async () => {
+        const expedienteExistente = obtenerExpedienteCognicion(payload);
+        const expedienteCognicion = expedienteExistente || await obtenerSiguienteExpedienteCognicion();
+        payload = completarDatosConExpedienteCognicion(payload, expedienteCognicion);
+        return addDoc(collection(db,"usuarios"), payload);
+    });
     registerPatientNameParts({
         nombres: payload.nombres,
         apellidoPaterno: payload.apellidoPaterno,

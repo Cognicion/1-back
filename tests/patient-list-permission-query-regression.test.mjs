@@ -23,6 +23,6 @@ test("una consulta opcional de permisos no cancela la lista principal de pacient
 });
 
 test("el Panel Médico invalida las versiones defectuosas en todos los navegadores", () => {
-  assert.match(medicoSource, /usuarios\.js\?v=20260811-patient-list-recovery-v2/);
-  assert.match(medicoHtml, /medico\.js\?v=20260811-patient-list-recovery-v2/);
+  assert.match(medicoSource, /usuarios\.js\?v=20260816-expedientes-cognicion-v1/);
+  assert.match(medicoHtml, /medico\.js\?v=20260816-expedientes-cognicion-v1/);
 });
