@@ -10,10 +10,10 @@ const repository = read("js/modules/patient-transfer/patientTransferRepository.j
 const patientCreationAdapter = read("js/modules/patient-transfer/integration/patientCreationAdapter.js");
 const clinicalDataAdapter = read("js/modules/patient-transfer/integration/clinicalDataImportAdapter.js");
 
-assert.match(panel, /from "\.\/services\/usuarios\.js\?v=20260814-patient-name-dictionary-v1";/, "el Panel usa la instancia publicada de usuarios.js");
-assert.match(repository, /from "(?:\.\.\/){2}services\/usuarios\.js\?v=20260814-patient-name-dictionary-v1";/, "el repositorio comparte la versión publicada de usuarios.js");
-assert.match(patientCreationAdapter, /from "(?:\.\.\/){3}services\/usuarios\.js\?v=20260814-patient-name-dictionary-v1";/, "la creación comparte la misma instancia publicada");
-assert.match(clinicalDataAdapter, /from "(?:\.\.\/){3}services\/usuarios\.js\?v=20260814-patient-name-dictionary-v1";/, "la importación clínica comparte la misma instancia publicada");
+assert.match(panel, /from "\.\/services\/usuarios\.js\?v=20260816-expedientes-cognicion-v1";/, "el Panel usa la instancia publicada de usuarios.js");
+assert.match(repository, /from "(?:\.\.\/){2}services\/usuarios\.js\?v=20260816-expedientes-cognicion-v1";/, "el repositorio comparte la versión publicada de usuarios.js");
+assert.match(patientCreationAdapter, /from "(?:\.\.\/){3}services\/usuarios\.js\?v=20260816-expedientes-cognicion-v1";/, "la creación comparte la misma instancia publicada");
+assert.match(clinicalDataAdapter, /from "(?:\.\.\/){3}services\/usuarios\.js\?v=20260816-expedientes-cognicion-v1";/, "la importación clínica comparte la misma instancia publicada");
 
 assert.match(panel, /cognicion:patient-transfer-completed/, "el Panel escucha el traspaso completado");
 assert.match(panel, /cargarPacientes\(uidMedicoActual, \{ forzar: true \}\)/, "el listener fuerza el refresco");

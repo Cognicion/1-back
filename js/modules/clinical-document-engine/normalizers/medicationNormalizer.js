@@ -22,6 +22,8 @@ export function parseClinicalQuantity(value = "") {
   const fractions = { "½": 0.5, "¼": 0.25, "¾": 0.75, "1/2": 0.5, "1/4": 0.25, "3/4": 0.75 };
   if (words[source] != null) return words[source];
   if (fractions[source] != null) return fractions[source];
+  const ascii = source.match(/^(\d+)\s*\/\s*(\d+)$/);
+  if (ascii && Number(ascii[2])) return Number(ascii[1]) / Number(ascii[2]);
   const mixed = source.match(/^(\d+)\s+(\d+)\s*\/\s*(\d+)$/);
   if (mixed && Number(mixed[3])) return Number(mixed[1]) + Number(mixed[2]) / Number(mixed[3]);
   const number = Number(source);
@@ -65,9 +67,15 @@ export function parseMedicationSchedules(value = "") {
     if (hour > 23 || minute > 59) continue;
     const before = text.slice(Math.max(0, match.index - 45), match.index);
     if (/\bcada\s*$/i.test(before)) continue;
-    const quantities = [...before.matchAll(/(\d+(?:[.,]\d+)?|una|un|uno|dos|tres|½|¼|¾|\d+\/\d+)\s*(?:de\s+)?(tabletas?|capsulas?|comprimidos?|ml|mililitros|cucharadas?|cucharaditas?|gotas?)/gi)];
-    const quantity = quantities.at(-1);
-    schedules.push({ time: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`, quantity: quantity ? parseClinicalQuantity(quantity[1]) : null, unit: quantity ? quantity[2].toLowerCase() : "" });
+    const quantityPattern = String.raw`(?:\d+(?:[.,]\d+)?|una|un|uno|dos|tres|½|¼|¾|\d+\s*\/\s*\d+)`;
+    const quantities = [...before.matchAll(new RegExp(`(${quantityPattern})\\s*(?:de\\s+)?(tabletas?|capsulas?|comprimidos?|ml|mililitros|cucharadas?|cucharaditas?|gotas?)`, "gi"))];
+    const quantityWithUnit = quantities.at(-1);
+    const quantityWithoutUnit = quantityWithUnit
+      ? null
+      : before.match(new RegExp(`(?:tomar|administrar|aplicar)\\s+(${quantityPattern})\\s*(?:a\\s+las?|a\\s+la)?\\s*$`, "i"));
+    const rawQuantity = quantityWithUnit?.[1] || quantityWithoutUnit?.[1] || "";
+    const unit = quantityWithUnit?.[2]?.toLowerCase() || (quantityWithoutUnit ? normalizeMedicationPresentation(text) : "");
+    schedules.push({ time: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`, quantity: rawQuantity ? parseClinicalQuantity(rawQuantity) : null, unit });
   }
   return schedules.filter((item, index, all) => all.findIndex((other) => other.time === item.time && other.quantity === item.quantity) === index);
 }

@@ -32,4 +32,22 @@ assert.deepEqual(engineResult[0].schedule.map(({ time, quantity, unit }) => ({ t
 const intervalResult = parseMedicationCandidates({ text: "cada 8 horas 1 tableta", medicationCatalog: [] });
 assert.equal(intervalResult.length, 0);
 
+const unitlessAdministrationResult = parseMedicationCandidates({
+  text: [
+    "Risperidona tabletas 2 mg vía oral una vez al día. Tomar ½ a las 22:00 h",
+    "Fluoxetina cápsulas 20 mg vía oral 1 vez al día. Tomar 1 a las 08:00 h",
+    "Alprazolam tableta 2 mg vía oral una vez al día. Tomar 1 / 2 a las 21:00 h"
+  ].join("\n")
+});
+assert.deepEqual(unitlessAdministrationResult.map(({ medicationName, administrationQuantity, administrationUnit }) => ({ medicationName, administrationQuantity, administrationUnit })), [
+  { medicationName: "Risperidona", administrationQuantity: 0.5, administrationUnit: "tabletas" },
+  { medicationName: "Fluoxetina", administrationQuantity: 1, administrationUnit: "capsulas" },
+  { medicationName: "Alprazolam", administrationQuantity: 0.5, administrationUnit: "tableta" }
+]);
+assert.deepEqual(unitlessAdministrationResult.map((candidate) => candidate.schedule.map(({ time, quantity, unit }) => ({ time, quantity, unit }))), [
+  [{ time: "22:00", quantity: 0.5, unit: "tabletas" }],
+  [{ time: "08:00", quantity: 1, unit: "capsulas" }],
+  [{ time: "21:00", quantity: 0.5, unit: "tableta" }]
+]);
+
 console.log("patient-transfer-medication-schedules: ok");

@@ -50,5 +50,6 @@
 // deployment marker: 2026-08-16-draggable-patient-summary-cards-v1
 // deployment marker: 2026-08-16-unified-patient-summary-card-v1
 // deployment marker: 2026-08-16-merged-identification-clinical-card-v1
-export const APP_VERSION = "2.022";
+// deployment marker: 2026-08-17-medication-fraction-doses-v1
+export const APP_VERSION = "2.023";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

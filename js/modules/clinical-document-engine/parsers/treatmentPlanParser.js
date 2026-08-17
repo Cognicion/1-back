@@ -4,8 +4,8 @@ import { ClinicalCandidate } from "../core/ClinicalCandidate.js";
 import { ClinicalEvidence } from "../core/ClinicalEvidence.js";
 import { evaluateConfidence, requiresReviewForConfidence } from "../confidence/confidenceEngine.js";
 import { normalizeClinicalComparisonText } from "../normalizers/textNormalizer.js";
-import { parseMedicationStrength, splitMedicationItems } from "../normalizers/medicationNormalizer.js?v=20260815-medication-full-units-v1";
-import { parseMedicationCandidates } from "./medicationParser.js?v=20260815-medication-full-units-v1";
+import { parseMedicationStrength, splitMedicationItems } from "../normalizers/medicationNormalizer.js?v=20260817-medication-fraction-doses-v1";
+import { parseMedicationCandidates } from "./medicationParser.js?v=20260817-medication-fraction-doses-v1";
 import { clinicalImportLogger } from "../utils/logger.js";
 import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260814-ieca-c09aa-v1";
 
