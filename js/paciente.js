@@ -1448,6 +1448,8 @@ async function guardarEditorResumen(seccionId, valores, visibilidad) {
   console.debug("[VISIBILIDAD] estado local actualizado", visibilidadResumen);
   if (seccionId === "identificacion" && valores.tipoPaciente) {
     renderizarVistaLaboratorioPaciente(datosPacienteActual);
+  } else if (["identificacion", "somatometria", "seguridad"].includes(seccionId)) {
+    renderizarCuadroResumenPaciente("identificacion");
   } else {
     renderizarCuadroResumenPaciente(seccionId);
   }
@@ -1468,7 +1470,8 @@ function vincularEditoresResumenPaciente(contenedor) {
 }
 
 function renderizarCuadroResumenPaciente(seccionId) {
-  const cuadro = document.querySelector(`[data-resumen-cuadro="${seccionId}"]`);
+  const seccionObjetivo = ["somatometria", "seguridad"].includes(seccionId) ? "identificacion" : seccionId;
+  const cuadro = document.querySelector(`[data-resumen-cuadro="${seccionObjetivo}"]`);
   if (!cuadro) return;
   const datos = datosPacienteActual || {};
   const tipoPaciente = datos.tipoPaciente || datos.datosInstitucionales?.tipoPaciente || "privada";
@@ -1479,7 +1482,7 @@ function renderizarCuadroResumenPaciente(seccionId) {
     seguridad: () => renderizarBloqueSeguridadLab(datos),
     equipo: () => `<article class="lab-card resumen-cuadro" data-resumen-cuadro="equipo">${encabezadoResumenPaciente("Equipo clínico", "equipo")}${renderizarEquipoClinicoLab(obtenerEquipoClinicoPaciente(datos))}<button class="lab-equipo-add" type="button" onclick="agregarEquipoClinicoPaciente()" aria-label="Agregar integrante al equipo clínico">+</button></article>`
   };
-  const html = renderizadores[seccionId]?.();
+  const html = renderizadores[seccionObjetivo]?.();
   if (!html) return;
   const plantilla = document.createElement("template");
   plantilla.innerHTML = html.trim();
@@ -1490,10 +1493,28 @@ function renderizarCuadroResumenPaciente(seccionId) {
 }
 
 function renderizarBloqueIdentificacionLab(datos = {}, tipoPaciente = "privada") {
+  return `<article class="lab-card resumen-cuadro resumen-ficha-clinica" data-resumen-cuadro="identificacion">
+    <div class="resumen-ficha-clinica-grid">
+      <section class="resumen-ficha-seccion resumen-ficha-seccion--identificacion">
+        ${encabezadoResumenPaciente("Identificación", "identificacion")}
+        <div class="resumen-ficha-datos">${renderizarDatosIdentificacionLab(datos, tipoPaciente)}</div>
+      </section>
+      <section class="resumen-ficha-seccion resumen-ficha-seccion--somatometria">
+        ${encabezadoResumenPaciente("Somatometría", "somatometria")}
+        <div class="resumen-ficha-datos">${renderizarDatosSomatometriaLab(datos)}</div>
+      </section>
+      <section class="resumen-ficha-seccion resumen-ficha-seccion--seguridad">
+        ${encabezadoResumenPaciente("Seguridad clínica", "seguridad")}
+        <div class="resumen-ficha-datos">${renderizarDatosSeguridadLab(datos)}</div>
+      </section>
+    </div>
+  </article>`;
+}
+
+function renderizarDatosIdentificacionLab(datos = {}, tipoPaciente = "privada") {
   const fechaNacimiento = obtenerFechaNacimiento(datos);
   const alias = obtenerAliasPaciente(datos);
-  return `<article class="lab-card resumen-cuadro" data-resumen-cuadro="identificacion">
-    ${encabezadoResumenPaciente("Identificación", "identificacion")}
+  return `
     ${alias ? `<p><b>Alias:</b> ${renderizarDatoResumenPaciente(datos, "alias", alias)}</p>` : ""}
     <p><b>Correo:</b> ${renderizarDatoResumenPaciente(datos, "email", valorPaciente(datos, ["email", "correo"], "Sin correo"))}</p>
     <p><b>Fecha de nacimiento:</b> ${renderizarDatoResumenPaciente(datos, "fechaNacimiento", formatearFecha(fechaNacimiento))}</p>
@@ -1502,22 +1523,28 @@ function renderizarBloqueIdentificacionLab(datos = {}, tipoPaciente = "privada")
     <p><b>CURP:</b> ${renderizarDatoResumenPaciente(datos, "curp", valorPaciente(datos, ["curp", "datosInstitucionales.curp"]))}</p>
     <p><b>Teléfono:</b> ${renderizarDatoResumenPaciente(datos, "telefono", valorPaciente(datos, ["telefono"], "Sin teléfono"))}</p>
     <p><b>Tipo:</b> ${renderizarDatoResumenPaciente(datos, "tipoPaciente", etiquetaTipoPaciente(tipoPaciente))}</p>
-  </article>`;
+  `;
 }
 
 function renderizarBloqueSomatometriaLab(datos = {}) {
+  return `<article class="lab-card resumen-cuadro" data-resumen-cuadro="somatometria">
+    ${encabezadoResumenPaciente("Somatometría", "somatometria")}
+    ${renderizarDatosSomatometriaLab(datos)}
+  </article>`;
+}
+
+function renderizarDatosSomatometriaLab(datos = {}) {
   const peso = obtenerPesoPaciente(datos);
   const talla = obtenerTallaPaciente(datos);
   const tallaMetros = Number(talla) > 3 ? Number(talla) / 100 : talla;
   const imcCalculado = calcularIMCCentral(peso, tallaMetros);
-  return `<article class="lab-card resumen-cuadro" data-resumen-cuadro="somatometria">
-    ${encabezadoResumenPaciente("Somatometría", "somatometria")}
+  return `
     <p><b>Peso:</b> ${renderizarDatoResumenPaciente(datos, "peso", valorPaciente(datos, ["peso", "somatometria.peso", "signosVitales.peso"], "Sin registro"))}</p>
     <p><b>Talla:</b> ${renderizarDatoResumenPaciente(datos, "talla", valorPaciente(datos, ["talla", "somatometria.talla", "signosVitales.talla"], "Sin registro"))}</p>
     <p><b>Perímetro abdominal:</b> ${renderizarDatoResumenPaciente(datos, "perimetroAbdominal", valorPaciente(datos, ["perimetroAbdominal", "somatometria.perimetroAbdominal", "signosVitales.perimetroAbdominal"], "Sin registro"))}</p>
     <p><b>IMC:</b> ${renderizarDatoResumenPaciente(datos, "imc", imcCalculado === null ? "Sin registro" : imcCalculado.toFixed(2))}</p>
     ${renderizarResumenPediatricoSeguro(datos)}
-  </article>`;
+  `;
 }
 
 function renderizarResumenPediatricoSeguro(datos = {}) {
@@ -1555,9 +1582,15 @@ function renderizarResumenPediatricoSeguro(datos = {}) {
 function renderizarBloqueSeguridadLab(datos = {}) {
   return `<article class="lab-card resumen-cuadro" data-resumen-cuadro="seguridad">
     ${encabezadoResumenPaciente("Seguridad clínica", "seguridad")}
+    ${renderizarDatosSeguridadLab(datos)}
+  </article>`;
+}
+
+function renderizarDatosSeguridadLab(datos = {}) {
+  return `
     <p><b>Alergias:</b> ${renderizarDatoResumenPaciente(datos, "alergias", valorPaciente(datos, ["alergias", "datosInstitucionales.alergias"], "Sin registro"))}</p>
     <p><b>Tipo de sangre:</b> ${renderizarDatoResumenPaciente(datos, "tipoSangre", valorPaciente(datos, ["tipoSangre", "datosInstitucionales.tipoSangre"], "Sin registro"))}</p>
-  </article>`;
+  `;
 }
 
 function renderizarBloqueInstitucionLab(datos = {}, mostrarInstitucional = false) {
@@ -1640,10 +1673,6 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
         ${renderizarBloqueIdentificacionLab(datos, tipoPaciente)}
 
         ${renderizarBloqueInstitucionIngresoVertical(datos, mostrarInstitucional)}
-
-        ${renderizarBloqueSeguridadLab(datos)}
-
-        ${renderizarBloqueSomatometriaLab(datos)}
 
         <article class="lab-card lab-card-lista resumen-modulo-diagnosticos">
           <span>Diagnsticos</span>

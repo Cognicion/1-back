@@ -1367,7 +1367,7 @@
 }
 
 .resumen-cuadro[data-resumen-cuadro="identificacion"] {
-  grid-column: 1 / span 5;
+  grid-column: 1 / span 6;
   grid-row: 1;
 }
 
@@ -1390,12 +1390,11 @@
 }
 
 .resumen-card--institucion-ingreso {
-  grid-column: 6 / -1;
+  grid-column: 7 / -1 !important;
   grid-row: 1;
 }
 
 .resumen-card--institucion-ingreso,
-.resumen-modulo-diagnosticos,
 .resumen-modulo-tratamiento,
 .resumen-cuadro[data-resumen-cuadro="equipo"] {
   border-right: 0;
@@ -1407,23 +1406,82 @@
 }
 
 .resumen-modulo-diagnosticos {
-  grid-column: 7 / -1;
+  grid-column: 1 / span 6;
   grid-row: 2;
 }
 
 .resumen-modulo-tratamiento {
-  grid-column: 1 / -1;
-  grid-row: 3;
+  grid-column: 7 / -1;
+  grid-row: 2;
 }
 
 .resumen-modulo-estudios {
   grid-column: 1 / span 6;
-  grid-row: 4;
+  grid-row: 3;
 }
 
 .resumen-cuadro[data-resumen-cuadro="equipo"] {
   grid-column: 7 / -1;
-  grid-row: 4;
+  grid-row: 3;
+}
+
+.resumen-ficha-clinica {
+  padding: 0;
+}
+
+.resumen-ficha-clinica-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
+}
+
+.resumen-ficha-seccion {
+  min-width: 0;
+  padding: 14px 16px;
+}
+
+.resumen-ficha-seccion--identificacion {
+  grid-column: 1 / -1;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.resumen-ficha-seccion--somatometria {
+  border-right: 1px solid var(--border-subtle);
+}
+
+.resumen-ficha-datos {
+  display: grid;
+  align-content: start;
+  gap: 0 18px;
+}
+
+.resumen-ficha-seccion--identificacion .resumen-ficha-datos {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.resumen-ficha-datos > p {
+  min-width: 0;
+}
+
+.resumen-card--institucion-ingreso .institucion-ingreso-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 30px;
+}
+
+.resumen-card--institucion-ingreso .institucion-ingreso-columna {
+  gap: 10px;
+}
+
+.resumen-card--institucion-ingreso .resumen-dato--vertical {
+  display: grid;
+  grid-template-columns: minmax(108px, .9fr) minmax(0, 1.1fr);
+  align-items: baseline;
+  gap: 8px;
+}
+
+.resumen-card--institucion-ingreso .resumen-dato--vertical .resumen-dato__etiqueta,
+.resumen-card--institucion-ingreso .resumen-dato--vertical .resumen-dato__valor {
+  margin: 0;
 }
 
 .lab-card > span,
@@ -1667,6 +1725,10 @@ html[data-theme="biocelular"] body.pagina-expediente .lab-info-grid > .lab-card:
     grid-column: 1 / -1;
   }
 
+  .resumen-card--institucion-ingreso {
+    grid-column: 1 / -1 !important;
+  }
+
 }
 
 @media (max-width: 680px) {
@@ -1699,7 +1761,18 @@ html[data-theme="biocelular"] body.pagina-expediente .lab-info-grid > .lab-card:
 
   .resumen-cuadro[data-resumen-cuadro="institucionIngreso"],
   .resumen-card--institucion-ingreso {
-    grid-column: auto;
+    grid-column: 1 !important;
+  }
+
+  .resumen-ficha-clinica-grid,
+  .resumen-ficha-seccion--identificacion .resumen-ficha-datos,
+  .resumen-card--institucion-ingreso .institucion-ingreso-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .resumen-ficha-seccion--somatometria {
+    border-right: 0;
+    border-bottom: 1px solid var(--border-subtle);
   }
 
   .lab-info-grid > .lab-card {
