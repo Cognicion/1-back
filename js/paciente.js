@@ -1591,6 +1591,160 @@ function renderizarBloqueIngresoLab(datos = {}, mostrarInstitucional = false) {
   `;
 }
 
+const CLAVE_ORDEN_TARJETAS_RESUMEN = "cognicion.ordenTarjetasResumen.v1";
+
+function identificarTarjetaResumen(tarjeta, indice) {
+  if (tarjeta?.dataset?.resumenCuadro) return `cuadro-${tarjeta.dataset.resumenCuadro}`;
+  if (tarjeta?.classList?.contains("resumen-modulo-diagnosticos")) return "modulo-diagnosticos";
+  if (tarjeta?.classList?.contains("resumen-modulo-tratamiento")) return "modulo-tratamiento";
+  if (tarjeta?.classList?.contains("resumen-modulo-estudios")) return "modulo-estudios";
+  return `tarjeta-${indice + 1}`;
+}
+
+function leerOrdenTarjetasResumen() {
+  try {
+    const orden = JSON.parse(localStorage.getItem(CLAVE_ORDEN_TARJETAS_RESUMEN) || "[]");
+    return Array.isArray(orden) ? orden.filter((id) => typeof id === "string" && id) : [];
+  } catch (error) {
+    console.warn("[EXPEDIENTE] Orden de tarjetas no válido; se usará la distribución predeterminada.", error);
+    return [];
+  }
+}
+
+function guardarOrdenTarjetasResumen(cuadricula) {
+  const orden = Array.from(cuadricula.querySelectorAll(":scope > .lab-card"))
+    .map((tarjeta) => tarjeta.dataset.tarjetaResumen)
+    .filter(Boolean);
+  try {
+    localStorage.setItem(CLAVE_ORDEN_TARJETAS_RESUMEN, JSON.stringify(orden));
+  } catch (error) {
+    console.warn("[EXPEDIENTE] No fue posible guardar el orden de las tarjetas.", error);
+  }
+  return orden;
+}
+
+function inicializarMovimientoManualTarjetas(contenedor) {
+  const cuadricula = contenedor.querySelector(".lab-info-grid");
+  const botonMover = contenedor.querySelector("#moverTarjetasResumen");
+  const botonRestaurar = contenedor.querySelector("#restaurarTarjetasResumen");
+  if (!cuadricula || !botonMover || !botonRestaurar || cuadricula.dataset.arrastreInicializado === "true") return;
+
+  cuadricula.dataset.arrastreInicializado = "true";
+  const tarjetas = Array.from(cuadricula.querySelectorAll(":scope > .lab-card"));
+  tarjetas.forEach((tarjeta, indice) => {
+    tarjeta.dataset.tarjetaResumen = identificarTarjetaResumen(tarjeta, indice);
+  });
+
+  const ordenPredeterminado = tarjetas.map((tarjeta) => tarjeta.dataset.tarjetaResumen);
+  const tarjetasPorId = new Map(tarjetas.map((tarjeta) => [tarjeta.dataset.tarjetaResumen, tarjeta]));
+  const ordenGuardado = leerOrdenTarjetasResumen();
+  let ordenPersonalizado = false;
+  let modoMovimiento = false;
+  let tarjetaArrastrada = null;
+
+  if (ordenGuardado.length) {
+    const agregadas = new Set();
+    ordenGuardado.forEach((id) => {
+      const tarjeta = tarjetasPorId.get(id);
+      if (!tarjeta) return;
+      cuadricula.append(tarjeta);
+      agregadas.add(id);
+    });
+    ordenPredeterminado.forEach((id) => {
+      if (!agregadas.has(id)) cuadricula.append(tarjetasPorId.get(id));
+    });
+    ordenPersonalizado = true;
+    cuadricula.classList.add("orden-personalizado");
+  }
+
+  const actualizarControlesMovimiento = () => {
+    botonMover.textContent = modoMovimiento ? "Terminar movimiento" : "Mover tarjetas";
+    botonMover.setAttribute("aria-pressed", String(modoMovimiento));
+    botonRestaurar.hidden = !ordenPersonalizado;
+    cuadricula.classList.toggle("modo-reordenar", modoMovimiento);
+    tarjetas.forEach((tarjeta) => {
+      tarjeta.draggable = modoMovimiento;
+      tarjeta.setAttribute("aria-grabbed", "false");
+    });
+  };
+
+  const terminarArrastre = () => {
+    if (tarjetaArrastrada) {
+      tarjetaArrastrada.classList.remove("tarjeta-arrastrando");
+      tarjetaArrastrada.setAttribute("aria-grabbed", "false");
+    }
+    tarjetaArrastrada = null;
+  };
+
+  botonMover.addEventListener("click", () => {
+    modoMovimiento = !modoMovimiento;
+    if (modoMovimiento) cuadricula.classList.add("orden-personalizado");
+    else if (!ordenPersonalizado) cuadricula.classList.remove("orden-personalizado");
+    terminarArrastre();
+    actualizarControlesMovimiento();
+  });
+
+  botonRestaurar.addEventListener("click", () => {
+    ordenPredeterminado.forEach((id) => cuadricula.append(tarjetasPorId.get(id)));
+    try {
+      localStorage.removeItem(CLAVE_ORDEN_TARJETAS_RESUMEN);
+    } catch (error) {
+      console.warn("[EXPEDIENTE] No fue posible retirar el orden guardado de las tarjetas.", error);
+    }
+    ordenPersonalizado = false;
+    modoMovimiento = false;
+    cuadricula.classList.remove("orden-personalizado");
+    terminarArrastre();
+    actualizarControlesMovimiento();
+    console.debug("[EXPEDIENTE] Orden predeterminado de tarjetas restaurado.");
+  });
+
+  tarjetas.forEach((tarjeta) => {
+    tarjeta.addEventListener("dragstart", (evento) => {
+      if (!modoMovimiento) {
+        evento.preventDefault();
+        return;
+      }
+      tarjetaArrastrada = tarjeta;
+      tarjeta.classList.add("tarjeta-arrastrando");
+      tarjeta.setAttribute("aria-grabbed", "true");
+      evento.dataTransfer.effectAllowed = "move";
+      evento.dataTransfer.setData("text/plain", tarjeta.dataset.tarjetaResumen);
+    });
+
+    tarjeta.addEventListener("dragend", () => {
+      if (!modoMovimiento) return;
+      terminarArrastre();
+      guardarOrdenTarjetasResumen(cuadricula);
+      ordenPersonalizado = true;
+      actualizarControlesMovimiento();
+      console.debug("[EXPEDIENTE] Orden manual de tarjetas guardado.");
+    });
+  });
+
+  cuadricula.addEventListener("dragover", (evento) => {
+    if (!modoMovimiento || !tarjetaArrastrada) return;
+    evento.preventDefault();
+    evento.dataTransfer.dropEffect = "move";
+    const destino = evento.target.closest(".lab-card");
+    if (!destino || destino === tarjetaArrastrada || destino.parentElement !== cuadricula) return;
+    const cajaDestino = destino.getBoundingClientRect();
+    const cajaArrastrada = tarjetaArrastrada.getBoundingClientRect();
+    const mismaFila = Math.abs(cajaDestino.top - cajaArrastrada.top) < Math.min(cajaDestino.height, cajaArrastrada.height) / 2;
+    const insertarAntes = mismaFila
+      ? evento.clientX < cajaDestino.left + cajaDestino.width / 2
+      : evento.clientY < cajaDestino.top + cajaDestino.height / 2;
+    cuadricula.insertBefore(tarjetaArrastrada, insertarAntes ? destino : destino.nextSibling);
+  });
+
+  cuadricula.addEventListener("drop", (evento) => {
+    if (!modoMovimiento) return;
+    evento.preventDefault();
+  });
+
+  actualizarControlesMovimiento();
+}
+
 function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
   const contenedor = document.getElementById("datosGeneralesLaboratorio");
   if (!contenedor || !datos) return;
@@ -1634,6 +1788,8 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
       </div>
       <div class="lab-vitales-global-actions">
         <button type="button" onclick="abrirGraficaGlobalSignosVitalesPaciente()">Ver grfica de signos vitales</button>
+        <button id="moverTarjetasResumen" type="button" aria-pressed="false" title="Activa el modo para arrastrar las tarjetas con el mouse">Mover tarjetas</button>
+        <button id="restaurarTarjetasResumen" type="button" hidden>Restaurar orden</button>
       </div>
 
       <div class="lab-info-grid">
@@ -1668,6 +1824,7 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
       </div>
     </div>
   `;
+  inicializarMovimientoManualTarjetas(contenedor);
   vincularEditoresResumenPaciente(contenedor);
   console.debug("[RESUMEN STEP 4] botones consolidados");
   console.debug("[RESUMEN STEP 1] línea clínica eliminada");

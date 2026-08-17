@@ -1551,6 +1551,63 @@ html[data-theme="biocelular"] body.pagina-expediente .sidebar {
   line-height: 1.1;
 }
 
+.lab-info-grid.orden-personalizado > .lab-card {
+  grid-row: auto !important;
+}
+
+.lab-info-grid.orden-personalizado > .resumen-cuadro[data-resumen-cuadro="identificacion"] {
+  grid-column: span 5;
+}
+
+.lab-info-grid.orden-personalizado > .resumen-card--institucion-ingreso {
+  grid-column: span 7;
+}
+
+.lab-info-grid.orden-personalizado > .resumen-cuadro[data-resumen-cuadro="seguridad"],
+.lab-info-grid.orden-personalizado > .resumen-cuadro[data-resumen-cuadro="somatometria"] {
+  grid-column: span 3;
+}
+
+.lab-info-grid.orden-personalizado > .resumen-modulo-diagnosticos {
+  grid-column: span 6;
+}
+
+.lab-info-grid.orden-personalizado > .resumen-modulo-tratamiento {
+  grid-column: span 12;
+}
+
+.lab-info-grid.orden-personalizado > .resumen-modulo-estudios,
+.lab-info-grid.orden-personalizado > .resumen-cuadro[data-resumen-cuadro="equipo"] {
+  grid-column: span 6;
+}
+
+.lab-info-grid.modo-reordenar > .lab-card {
+  cursor: grab;
+  outline: 1px dashed color-mix(in srgb, var(--accent-primary) 68%, transparent);
+  outline-offset: -5px;
+  user-select: none;
+  transition: opacity 140ms ease, transform 140ms ease, border-color 140ms ease;
+}
+
+.lab-info-grid.modo-reordenar > .lab-card:active {
+  cursor: grabbing;
+}
+
+.lab-info-grid.modo-reordenar > .lab-card :is(button, a, input, select, textarea) {
+  pointer-events: none;
+}
+
+.lab-info-grid > .lab-card.tarjeta-arrastrando {
+  opacity: .42;
+  transform: scale(.985);
+}
+
+#moverTarjetasResumen[aria-pressed="true"] {
+  border-color: var(--border-active);
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--accent-soft) 72%, var(--surface-secondary));
+}
+
 html[data-theme="biocelular"] .lab-paciente-shell,
 html[data-theme="biocelular"] .lab-card,
 html[data-theme="biocelular"] .lab-gauge,
@@ -1603,6 +1660,17 @@ html[data-theme="biocelular"] .lab-card:hover {
   .resumen-modulo-tratamiento {
     grid-column: 1 / -1;
   }
+
+  .lab-info-grid.orden-personalizado > .lab-card {
+    grid-column: span 1;
+  }
+
+  .lab-info-grid.orden-personalizado > .resumen-cuadro[data-resumen-cuadro="identificacion"],
+  .lab-info-grid.orden-personalizado > .resumen-card--institucion-ingreso,
+  .lab-info-grid.orden-personalizado > .resumen-modulo-diagnosticos,
+  .lab-info-grid.orden-personalizado > .resumen-modulo-tratamiento {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 680px) {
@@ -1636,5 +1704,9 @@ html[data-theme="biocelular"] .lab-card:hover {
   .resumen-cuadro[data-resumen-cuadro="institucionIngreso"],
   .resumen-card--institucion-ingreso {
     grid-column: auto;
+  }
+
+  .lab-info-grid.orden-personalizado > .lab-card {
+    grid-column: 1;
   }
 }
