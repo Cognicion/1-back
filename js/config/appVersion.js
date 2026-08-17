@@ -48,5 +48,6 @@
 // deployment marker: 2026-08-16-grouped-scales-cognicion-records-v1
 // deployment marker: 2026-08-16-patient-summary-density-tone-v1
 // deployment marker: 2026-08-16-draggable-patient-summary-cards-v1
-export const APP_VERSION = "2.020";
+// deployment marker: 2026-08-16-unified-patient-summary-card-v1
+export const APP_VERSION = "2.021";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;
