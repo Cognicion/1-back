@@ -1,9 +1,9 @@
-import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260814-ieca-c09aa-v1";
+import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260818-clinical-extraction-v1";
 import { ClinicalCandidate } from "../core/ClinicalCandidate.js";
 import { ClinicalEvidence } from "../core/ClinicalEvidence.js";
 import { evaluateConfidence, requiresReviewForConfidence } from "../confidence/confidenceEngine.js";
 import { normalizeClinicalComparisonText } from "../normalizers/textNormalizer.js";
-import { normalizeMedicationName, normalizeMedicationPresentation, normalizeMedicationRoute, normalizeMedicationFrequency, parseClinicalQuantity, parseMedicationStrength, parseMedicationSchedules, splitMedicationItems } from "../normalizers/medicationNormalizer.js?v=20260817-medication-fraction-doses-v1";
+import { normalizeMedicationName, normalizeMedicationPresentation, normalizeMedicationRoute, normalizeMedicationFrequency, parseClinicalQuantity, parseMedicationStrength, parseMedicationSchedules, splitMedicationItems } from "../normalizers/medicationNormalizer.js?v=20260818-clinical-extraction-v1";
 import { clinicalImportLogger } from "../utils/logger.js";
 
 const VERSION = "1.0";
@@ -25,7 +25,7 @@ function findMedicationName(item = "", catalog = MEDICAMENTOS_MAESTROS) {
   const match = names.find((name) => new RegExp(`\\b${String(name).replace(/[.*+?^${}()|[\\]\\]/g, "\\\\$&")}\\b`, "i").test(item));
   if (match) return match;
   const source = String(item).trim();
-  const presentationStart = source.search(/\s+(?=tabletas?|comprimidos?|cápsulas?|capsulas?|jarabe|solución|solucion|suspensión|suspension|polvo|gotas?|ampolla|vial|parche|spray|inhalador|crema|ungüento|unguento|supositorio)\b/i);
+  const presentationStart = source.search(/\s+(?=tabletas?|comprimidos?|cápsulas?|capsulas?|jarabe|solución|solucion|suspensión|suspension|polvo|gotas?|ámpulas?|ampulas?|ampollas?|vial|parche|spray|inhalador|crema|ungüento|unguento|supositorio)\b/i);
   const nameBeforePresentation = presentationStart > 0 ? source.slice(0, presentationStart).trim() : "";
   if (/^[A-Za-zÁÉÍÓÚáéíóúÑñ-]+(?:\s+[A-Za-zÁÉÍÓÚáéíóúÑñ-]+){0,2}$/.test(nameBeforePresentation)) return nameBeforePresentation;
   const manual = String(item).match(/^([A-Za-zÁÉÍÓÚáéíóúÑñ-]+(?:\s+[A-Za-zÁÉÍÓÚáéíóúÑñ-]+){0,2})(?=\s+(?:tabletas?|cápsulas?|capsulas?|jarabe|polvo|\d|tomar|administrar|vía|via)|$)/i);
@@ -63,7 +63,7 @@ export function medicationCandidateCompleteness(candidate = {}) {
 }
 
 function administrationFromText(text = "", schedule = []) {
-  const match = normalizeClinicalComparisonText(text).match(/(?:tomar|administrar|aplicar)\s+(\d+(?:[.,]\d+)?|una|un|uno|dos|tres|½|¼|¾|\d+\/\d+)\s*(?:de\s+)?(tabletas?|capsulas?|comprimidos?|ml|mililitros|cucharadas?|cucharaditas?|gotas?)/i);
+  const match = normalizeClinicalComparisonText(text).match(/(?:tomar|administrar|aplicar)\s+(\d+(?:[.,]\d+)?|una|un|uno|dos|tres|½|¼|¾|\d+\/\d+)\s*(?:de\s+)?(tabletas?|capsulas?|comprimidos?|ampulas?|ampollas?|atomizaciones?|ml|mililitros|cucharadas?|cucharaditas?|gotas?)/i);
   if (match) return { quantity: parseClinicalQuantity(match[1]), unit: match[2].toLowerCase() };
   const first = schedule.find((item) => item.quantity != null);
   return { quantity: first?.quantity ?? null, unit: first?.unit || "" };

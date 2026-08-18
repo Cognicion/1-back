@@ -120,7 +120,9 @@ INGREDIENTES_EXTRA.push(
   { id: "fenobarbital", nombre: "Fenobarbital", sinonimos: ["fenobarbital", "phenobarbital"], clases: ["barbiturico", "antiepileptico", "inductor_cyp3a4", "depresor_snc"], riesgos: { sedacion: 3, respiratorio: 2, convulsivo: 1 } },
   { id: "dabigatran", nombre: "Dabigatran", sinonimos: ["dabigatran", "dabigatrán", "pradaxa"], clases: ["anticoagulante", "sustrato_pgp"], riesgos: { sangrado: 3, renal: 1 } },
   { id: "heparina", nombre: "Heparina", sinonimos: ["heparina", "heparina no fraccionada"], clases: ["anticoagulante"], riesgos: { sangrado: 3 } },
-  { id: "enoxaparina", nombre: "Enoxaparina", sinonimos: ["enoxaparina", "enoxaparin", "clexane"], clases: ["anticoagulante"], riesgos: { sangrado: 3, renal: 1 } }
+  { id: "enoxaparina", nombre: "Enoxaparina", sinonimos: ["enoxaparina", "enoxaparin", "clexane"], clases: ["anticoagulante"], riesgos: { sangrado: 3, renal: 1 } },
+  { id: "microdacyn", nombre: "Microdacyn", sinonimos: ["microdacyn", "microdacyn wound care solution"], clases: ["antiseptico_topico", "dispositivo_cuidado_heridas"], riesgos: {} },
+  { id: "sulfadiazina_de_plata", nombre: "Sulfadiazina de plata", sinonimos: ["sulfadiazina de plata", "silver sulfadiazine", "silvadene"], clases: ["antimicrobiano_topico", "sulfonamida"], riesgos: { hematologico: 2, dermatologico: 2, renal: 1 } }
 );
 
 const DX_EXTRA = [
@@ -274,6 +276,22 @@ const MED_DX_EXTRA = [
 ];
 
 const INTERACCIONES_EXTRA = [
+  {
+    id: "sulfadiazina_plata_cimetidina_leucopenia",
+    ingredientesA: ["sulfadiazina_de_plata"],
+    ingredientesB: ["cimetidina"],
+    severidad: "moderada",
+    titulo: "Sulfadiazina de plata + cimetidina: mayor incidencia de leucopenia",
+    mecanismo: "El etiquetado regulatorio informa una mayor incidencia de leucopenia con el uso concomitante; no establece un mecanismo definitivo.",
+    efecto: "Puede aumentar el riesgo de descenso transitorio de leucocitos y neutrófilos.",
+    recomendacion: "Confirmar la necesidad de la combinación y valorar biometría hemática y vigilancia clínica según extensión, duración y absorción del tratamiento tópico.",
+    parametrosVigilancia: ["Biometría hemática", "Leucocitos", "Neutrófilos", "Signos de infección"],
+    categoria: "hematologica",
+    tipoInteraccion: "farmacodinamica",
+    evidencia: "documentada_en_etiquetado",
+    confianza: "alta",
+    fuentes: ["DailyMed, SILVADENE (silver sulfadiazine) cream 1%, etiqueta revisada en enero de 2026: https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=c437213a-1cd4-445e-a39f-bbcacb9f746f"]
+  },
   {
     id: "sraa_aine_riesgo_renal",
     clasesA: ["ieca", "ara2"],

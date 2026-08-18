@@ -1,6 +1,6 @@
 import { normalizeClinicalComparisonText } from "./textNormalizer.js";
 export function normalizeMedicationName(value = "") { return normalizeClinicalComparisonText(value).replace(/\s+/g, " ").trim(); }
-export const MEDICATION_PRESENTATIONS = Object.freeze(["tabletas", "tableta", "comprimidos", "comprimido", "cápsulas", "capsulas", "cápsula", "capsula", "jarabe", "solución", "solucion", "suspensión", "suspension", "polvo", "ampolla", "vial", "gotas", "crema", "ungüento", "unguento", "spray", "parche", "supositorio"]);
+export const MEDICATION_PRESENTATIONS = Object.freeze(["tabletas", "tableta", "comprimidos", "comprimido", "cápsulas", "capsulas", "cápsula", "capsula", "jarabe", "solución", "solucion", "suspensión", "suspension", "polvo", "ámpulas", "ampulas", "ámpula", "ampula", "ampollas", "ampolla", "vial", "gotas", "crema", "ungüento", "unguento", "spray", "parche", "supositorio"]);
 export function normalizeMedicationPresentation(value = "") {
   const text = normalizeClinicalComparisonText(value);
   const match = MEDICATION_PRESENTATIONS.find((item) => new RegExp(`\\b${normalizeClinicalComparisonText(item).replace(/[.*+?^${}()|[\\]\\]/g, "\\\\$&")}\\b`, "i").test(text));
@@ -68,7 +68,7 @@ export function parseMedicationSchedules(value = "") {
     const before = text.slice(Math.max(0, match.index - 45), match.index);
     if (/\bcada\s*$/i.test(before)) continue;
     const quantityPattern = String.raw`(?:\d+(?:[.,]\d+)?|una|un|uno|dos|tres|½|¼|¾|\d+\s*\/\s*\d+)`;
-    const quantities = [...before.matchAll(new RegExp(`(${quantityPattern})\\s*(?:de\\s+)?(tabletas?|capsulas?|comprimidos?|ml|mililitros|cucharadas?|cucharaditas?|gotas?)`, "gi"))];
+    const quantities = [...before.matchAll(new RegExp(`(${quantityPattern})\\s*(?:de\\s+)?(tabletas?|capsulas?|comprimidos?|ampulas?|ampollas?|atomizaciones?|ml|mililitros|cucharadas?|cucharaditas?|gotas?)`, "gi"))];
     const quantityWithUnit = quantities.at(-1);
     const quantityWithoutUnit = quantityWithUnit
       ? null

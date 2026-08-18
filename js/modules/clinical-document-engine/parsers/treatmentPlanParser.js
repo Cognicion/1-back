@@ -4,10 +4,10 @@ import { ClinicalCandidate } from "../core/ClinicalCandidate.js";
 import { ClinicalEvidence } from "../core/ClinicalEvidence.js";
 import { evaluateConfidence, requiresReviewForConfidence } from "../confidence/confidenceEngine.js";
 import { normalizeClinicalComparisonText } from "../normalizers/textNormalizer.js";
-import { parseMedicationStrength, splitMedicationItems } from "../normalizers/medicationNormalizer.js?v=20260817-medication-fraction-doses-v1";
-import { parseMedicationCandidates } from "./medicationParser.js?v=20260817-medication-fraction-doses-v1";
+import { parseMedicationStrength, splitMedicationItems } from "../normalizers/medicationNormalizer.js?v=20260818-clinical-extraction-v1";
+import { parseMedicationCandidates } from "./medicationParser.js?v=20260818-clinical-extraction-v1";
 import { clinicalImportLogger } from "../utils/logger.js";
-import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260814-ieca-c09aa-v1";
+import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260818-clinical-extraction-v1";
 
 const VERSION = "1.0";
 const MEDICATION_SUBSECTION_HEADING = /(?:^|\n)\s*(?:(?:\d+)\s*[.)-]\s*)?(?:medicamentos|medicaci[oó]n|tratamiento farmacol[oó]gico|f[aá]rmacos)\b[^\n]*/gi;
@@ -82,10 +82,30 @@ function truncateAtNextPrimaryPlanItem(value = "") {
   return source.slice(0, nextPrimary?.index ?? source.length).trim();
 }
 
+function hasCatalogMedicationName(item = "") {
+  const source = normalizeClinicalComparisonText(item);
+  return MEDICAMENTOS_MAESTROS.some((medication) => [
+    medication.nombre,
+    medication.genericName,
+    ...(medication.sinonimos || []),
+    ...(medication.marcas || [])
+  ].filter(Boolean).some((name) => {
+    const normalizedName = normalizeClinicalComparisonText(name);
+    const index = source.indexOf(normalizedName);
+    if (index < 0) return false;
+    const word = /[\p{L}\p{N}]/u;
+    return (!source[index - 1] || !word.test(source[index - 1]))
+      && (!source[index + normalizedName.length] || !word.test(source[index + normalizedName.length]));
+  }));
+}
+
 function looksLikeMedicationPrescription(item = "") {
   const source = normalizeClinicalComparisonText(item);
-  return Boolean(parseMedicationStrength(item).rawStrength)
-    && /\b(?:tabletas?|comprimidos?|capsulas?|jarabe|solucion|suspension|polvo|gotas?|ampolla|vial|parche|spray|inhalador|crema|unguento|supositorio)\b/.test(source);
+  const hasStrength = Boolean(parseMedicationStrength(item).rawStrength);
+  const hasPresentation = /\b(?:tabletas?|comprimidos?|capsulas?|jarabe|solucion|suspension|polvo|gotas?|ampulas?|ampollas?|vial|parche|spray|inhalador|crema|unguento|supositorio)\b/.test(source);
+  const hasAdministration = /\b(?:tomar|administrar|aplicar|via|veces?\s+al\s+dia|cada\s+\d+\s+horas?|a\s+las?\s+\d{1,2}(?::\d{2})?)\b/.test(source);
+  return (hasStrength && hasPresentation)
+    || (hasCatalogMedicationName(item) && (hasStrength || hasPresentation || hasAdministration));
 }
 
 function extractMedicationSubsections(text = "") {

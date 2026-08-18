@@ -31,8 +31,8 @@ const SECCIONES_CIE10 = [
 test("el catálogo consolidado es la fuente única de CIE-10, CIE-11 y DSM-5-TR", () => {
   assert.deepEqual(SISTEMAS_DIAGNOSTICOS, ["cie10", "cie11", "dsm5"]);
   assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.fuenteUnica, true);
-  assert.equal(CATALOGO_DIAGNOSTICOS.length, 3201);
-  assert.equal(CIE10.length, 3182);
+  assert.equal(CATALOGO_DIAGNOSTICOS.length, 3202);
+  assert.equal(CIE10.length, 3183);
   assert.equal(CIE11.length, 28);
   assert.equal(DSM5.length, 12);
 });
@@ -46,7 +46,14 @@ test("los códigos e identificadores son únicos en cada clasificación", () => 
 
 test("todos los códigos heredados que faltaban en la biblioteca están preservados", () => {
   const codigos = new Set(CIE10.map((diagnostico) => diagnostico.codigo));
-  for (const codigo of ["E74", "F02.0", "F90.0", "F90.1", "S20.7", "S51.7"]) assert.ok(codigos.has(codigo), codigo);
+  for (const codigo of ["E74", "F02.0", "F90.0", "F90.1", "S20.7", "S51.7", "X84"]) assert.ok(codigos.has(codigo), codigo);
+});
+
+test("X84 conserva el contrato canónico de causa externa", () => {
+  const x84 = CATALOGO_DIAGNOSTICOS.find((diagnostico) => diagnostico.sistemas?.cie10?.codigo === "X84");
+  assert.equal(x84?.nombre, "Lesión autoinfligida intencionalmente por medios no especificados");
+  assert.equal(x84?.propiedadesPorFuente?.cie10?.fuente?.sourceVerified, true);
+  assert.equal(x84?.farmacologia, null, "no debe inventar farmacología para un código de causa externa");
 });
 
 test("A, B, C, D, E y F están completos y conservan propiedades clínicas y farmacológicas", () => {

@@ -7,7 +7,7 @@ import { normalizeClinicalComparisonText } from "../normalizers/textNormalizer.j
 import { normalizeDiagnosticCode, normalizeDiagnosis as normalizeDiagnosisValue } from "../normalizers/diagnosisNormalizer.js";
 import { validateDiagnosis } from "../validators/diagnosisValidator.js";
 import { clinicalImportLogger } from "../utils/logger.js";
-import { CATALOGO_DIAGNOSTICOS as DIAGNOSTICOS_BIBLIOTECA } from "../../../data/catalogoDiagnosticos.js?v=20260816-cie10-cde-v1";
+import { CATALOGO_DIAGNOSTICOS as DIAGNOSTICOS_BIBLIOTECA } from "../../../data/catalogoDiagnosticos.js?v=20260818-clinical-extraction-v1";
 
 const PARSER = "midc.diagnosisParser";
 const VERSION = "1.0";
@@ -80,7 +80,7 @@ export function splitDiagnosticCodes(text = "") {
 // Algunos DOCX conservan varias entradas dentro de una misma celda de tabla.
 // Primero se respetan sus párrafos/saltos reales y solo después se usa una
 // recuperación estructural conservadora para celdas que Word entregó planas.
-const DIAGNOSIS_ENTRY_START = /(?:Trastorno\b|Episodio\b|Distimia|Esquizofrenia\b|Lesi[oó]n\b|Historia\s+personal\b|Soporte\s+familiar\b|C[oó]nyuge\s+o\s+pareja\b|Obesidad\b|Tabaco\b|Alcohol\b|Intoxicaci[oó]n\b|Discapacidad\b|Retraso\b|S[ií]ndrome\b|Problemas?\s+relacionad[oa]s?\b|Dependencia\b|Abuso\b|Consumo\b|Ideaci[oó]n\b|Intento\b|Reacci[oó]n\b)/gu;
+const DIAGNOSIS_ENTRY_START = /(?:Trast(?:orn|om)o\b|Episodio\b|Distimia|Esquizofrenia\b|Lesi[oó]n\b|Historia\s+personal\b|Soporte\s+familiar\b|C[oó]nyuge\s+o\s+pareja\b|Obesidad\b|Tabaco\b|Alcohol\b|Intoxicaci[oó]n\b|Discapacidad\b|Retraso\b|S[ií]ndrome\b|Problemas?\s+relacionad[oa]s?\b|Dependencia\b|Abuso\b|Consumo\b|Ideaci[oó]n\b|Intento\b|Reacci[oó]n\b)/gu;
 
 function cleanDiagnosisTableLine(value = "") {
   return String(value || "")
@@ -135,6 +135,8 @@ function normalizeDiagnosis(value = "", codes = []) {
   codes.forEach((code) => { result = result.replace(new RegExp(code.replace(".", "\\."), "ig"), " "); });
   result = result.replace(/\bdiagn(?:\u00f3|o)sticos?\b\s*(?:de\s+acuerdo\s+a\s+cie[- ]?10)?\s*[:|\-]?/gi, " ");
   return normalizeDiagnosisValue(result)
+    .replace(/\btrastomo\b/gi, "Trastorno")
+    .replace(/\bautointligid([ao])\b/gi, "autoinfligid$1")
     .replace(/\b(?:niega\s+)?antecedente\s+de\b/gi, " ")
     .replace(/\b(?:cie[- ]?10|cie[- ]?11|icd[- ]?10|diagn[oó]sticos?|impresi[oó]n diagn[oó]stica)\b\s*[:|\-]?/gi, " ")
     .replace(/\b(?:se agrega|se descarta|a descartar|probable|confirmado|antecedente|en remisi[oó]n|remisi[oó]n)\b/gi, " ")

@@ -1,9 +1,9 @@
 import { EntityFactory } from "../engine/EntityFactory.js";
 import { EntityNormalizer } from "../engine/EntityNormalizer.js";
 import { EntityValidationEngine } from "../engine/EntityValidationEngine.js";
-import { parseTreatmentPlan } from "../parsers/treatmentPlanParser.js?v=20260817-medication-fraction-doses-v1";
-import { toLegacyMedicationCandidate } from "./medicationAdapter.js?v=20260814-medication-name-boundaries-v1";
-import { resolveMedicationCandidatesAgainstCatalog } from "../resolvers/medicationCatalogResolver.js?v=20260814-medication-name-boundaries-v1";
+import { parseTreatmentPlan } from "../parsers/treatmentPlanParser.js?v=20260818-clinical-extraction-v1";
+import { toLegacyMedicationCandidate } from "./medicationAdapter.js?v=20260818-clinical-extraction-v1";
+import { resolveMedicationCandidatesAgainstCatalog } from "../resolvers/medicationCatalogResolver.js?v=20260818-clinical-extraction-v1";
 
 const normalizer = new EntityNormalizer();
 const validator = new EntityValidationEngine();

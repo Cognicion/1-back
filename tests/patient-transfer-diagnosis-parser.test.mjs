@@ -225,4 +225,35 @@ assert.equal(deduplicated.filter((item) => item.normalizedDiagnosisName === "esq
 assert.equal(deduplicated[0].code, "F20");
 assert.equal(deduplicated[0].sourceType, "structured_diagnosis");
 
+const diagnosesFromFlattenedHospitalTable = detectDiagnosisCandidates({
+  documentId: "fixture-flattened-hospital-table",
+  sourceBlocks: [{
+    type: "table",
+    rows: [[
+      [
+        "Esquizofrenia",
+        "Trastorno por consumo perjudicial de múltiples sustancias (alcohol, tabaco, solventes, cannabis)",
+        "Lesión autointligida intencionalmente por medios no especificados Trastomo por dependencia a tabaco",
+        "Historia personal de incumplimiento al tratamiento o régimen médico",
+        "Soporte familiar inadecuado"
+      ].join("\n"),
+      ["F20", "F19.1", "X84", "F17.2", "Z91.1", "Z63.2"].join("\n")
+    ]],
+    source: { tableIndex: 1, blockIndex: 2 }
+  }]
+});
+
+assert.deepEqual(
+  diagnosesFromFlattenedHospitalTable.map(({ diagnosisName, code }) => [diagnosisName, code]),
+  [
+    ["Esquizofrenia", "F20"],
+    ["Trastorno por consumo perjudicial de múltiples sustancias (alcohol, tabaco, solventes, cannabis)", "F19.1"],
+    ["Lesión autoinfligida intencionalmente por medios no especificados", "X84"],
+    ["Trastorno por dependencia a tabaco", "F17.2"],
+    ["Historia personal de incumplimiento al tratamiento o régimen médico", "Z91.1"],
+    ["Soporte familiar inadecuado", "Z63.2"]
+  ],
+  "la errata y la ausencia de salto entre X84/F17.2 no deben perder diagnósticos ni desalinear códigos"
+);
+
 console.log("patient-transfer-diagnosis-parser: ok");

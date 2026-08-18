@@ -6,14 +6,14 @@
  * archivo; las reglas y protocolos clínicos permanecen en módulos separados.
  * Presentaciones enriquecidas con RxNorm 03-Aug-2026 (API 3.1.354)
  * y fuentes regulatorias explícitas para conceptos sin producto RxNorm.
- * Corte de datos: 2026-08-14.
+ * Corte de datos: 2026-08-18.
  */
 
-import { REGLAS_INTERACCIONES_CLINICAS } from "./reglasClinicasMedicamentosExtendidas.js?v=20260814-ieca-c09aa-v1";
+import { REGLAS_INTERACCIONES_CLINICAS } from "./reglasClinicasMedicamentosExtendidas.js?v=20260818-clinical-extraction-v1";
 
 export const CATALOGO_FARMACOLOGICO_METADATA = Object.freeze({
   esquema: "cognicion.catalogo-farmacologico.v2",
-  fechaCorte: "2026-08-14",
+  fechaCorte: "2026-08-18",
   rxNormVersion: "03-Aug-2026",
   rxNormApiVersion: "3.1.354",
   fuentePresentaciones: "https://lhncbc.nlm.nih.gov/RxNav/APIs/RxNormAPIs.html"
@@ -54329,6 +54329,118 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "actualizadoEn": "2026-08-11"
   },
   {
+    "id": "microdacyn",
+    "legacyIds": [],
+    "nombre": "Microdacyn",
+    "genericName": "Microdacyn Wound Care Solution",
+    "principioActivo": "microdacyn",
+    "principiosActivos": [
+      "Microdacyn",
+      "Ácido hipocloroso",
+      "Hipoclorito de sodio"
+    ],
+    "clasePrincipal": "Dispositivo para cuidado de heridas",
+    "clases": [
+      "Dispositivo para cuidado de heridas",
+      "antiseptico_topico",
+      "dispositivo_cuidado_heridas"
+    ],
+    "categoriasInteraccion": [],
+    "sinonimos": [
+      "microdacyn",
+      "microdacyn wound care solution",
+      "solución microdacyn",
+      "solucion microdacyn"
+    ],
+    "marcas": [
+      "Microdacyn"
+    ],
+    "especialidades": [
+      "Cirugía",
+      "Dermatología",
+      "Cuidado de heridas"
+    ],
+    "presentaciones": [
+      {
+        "id": "microdacyn-solucion-atomizador",
+        "texto": "solución acuosa en atomizador (0.004 % hipoclorito de sodio + 0.003 % ácido hipocloroso)",
+        "via": "tópica",
+        "forma": "solución para cuidado de heridas",
+        "concentracion": "0.004 % hipoclorito de sodio + 0.003 % ácido hipocloroso",
+        "fuente": "FDA 510(k) K233399",
+        "rxCui": null,
+        "principioActivoPresentado": "Microdacyn Wound Care Solution",
+        "activo": true,
+        "origen": "FDA 510(k) K233399"
+      }
+    ],
+    "dosisHabitual": "Aplicación local conforme al protocolo de limpieza y cuidado de la herida",
+    "dosisHabituales": [],
+    "frecuenciasSugeridas": [],
+    "datosClinicos": {
+      "indicaciones": [
+        "Limpieza, irrigación, humectación, desbridamiento y retiro mecánico de material extraño y residuos en heridas y lesiones dérmicas conforme al etiquetado regulatorio"
+      ],
+      "contraindicaciones": [],
+      "precauciones": [
+        "El uso en heridas bajo prescripción debe realizarse bajo supervisión de un profesional de la salud"
+      ],
+      "advertencias": [
+        "La FDA lo clasifica como dispositivo para cuidado de heridas, no como fármaco sistémico"
+      ],
+      "monitorizacion": [
+        "Evolución local de la herida",
+        "Tolerancia en el sitio de aplicación"
+      ],
+      "dosisAdulto": [],
+      "dosisPediatrica": [],
+      "embarazo": null,
+      "lactancia": null
+    },
+    "farmacocinetica": {
+      "mecanismoAccion": "Ayuda a retirar mecánicamente residuos y material extraño mediante el movimiento de la solución sobre la piel o herida.",
+      "vidaMedia": "No aplica como dispositivo tópico de limpieza de heridas",
+      "tiempoConcentracionMaxima": "No aplica",
+      "duracionAccion": "Uso local durante la aplicación",
+      "metabolismo": "No aplica como dispositivo tópico de limpieza de heridas",
+      "eliminacion": "No aplica como dispositivo tópico de limpieza de heridas",
+      "cyp": [],
+      "metabolitosActivos": []
+    },
+    "efectosAdversos": [],
+    "riesgos": {},
+    "interacciones": [],
+    "interaccionesRelacionadas": [],
+    "relacionDiagnosticos": [],
+    "notas": "Registro canónico para reconocer el producto en planes importados. No se infieren interacciones farmacológicas sistémicas a partir del documento regulatorio consultado.",
+    "referencias": [
+      "FDA 510(k) K233399, Microdacyn Wound Care Solution, 13-Sep-2024: https://www.accessdata.fda.gov/cdrh_docs/pdf23/K233399.pdf"
+    ],
+    "fuenteClinica": {
+      "estado": "verificada_local",
+      "fuente": "FDA 510(k) K233399",
+      "fuentes": [
+        "https://www.accessdata.fda.gov/cdrh_docs/pdf23/K233399.pdf"
+      ],
+      "paginaSeccion": "510(k) Summary e Indications for Use",
+      "confianza": "alta"
+    },
+    "farmacologia": {
+      "esquema": "cognicion.farmacologia.v1",
+      "id": "microdacyn",
+      "nombreGenerico": "Microdacyn Wound Care Solution",
+      "estadoFuente": "verificada_local",
+      "fuente": "FDA 510(k) K233399"
+    },
+    "pediatria": null,
+    "origenesCatalogo": [
+      "FDA 510(k) K233399"
+    ],
+    "activo": true,
+    "estadoContenido": "curado_fuente_regulatoria",
+    "actualizadoEn": "2026-08-18"
+  },
+  {
     "id": "midazolam",
     "legacyIds": [],
     "nombre": "Midazolam",
@@ -79219,6 +79331,168 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
     "activo": true,
     "estadoContenido": "curado_fuente_regulatoria",
     "actualizadoEn": "2026-08-14"
+  },
+  {
+    "id": "sulfadiazina_de_plata",
+    "legacyIds": [],
+    "nombre": "Sulfadiazina de plata",
+    "genericName": "Sulfadiazina de plata",
+    "principioActivo": "sulfadiazina de plata",
+    "principiosActivos": [
+      "Sulfadiazina de plata",
+      "silver sulfadiazine"
+    ],
+    "clasePrincipal": "Antimicrobiano tópico",
+    "clases": [
+      "Antimicrobiano tópico",
+      "antimicrobiano_topico",
+      "sulfonamida"
+    ],
+    "categoriasInteraccion": [
+      "hematologica",
+      "dermatologica",
+      "renal"
+    ],
+    "sinonimos": [
+      "sulfadiazina de plata",
+      "silver sulfadiazine",
+      "sulfadiazina argéntica",
+      "sulfadiazina argentica",
+      "silvadene"
+    ],
+    "marcas": [
+      "Silvadene"
+    ],
+    "especialidades": [
+      "Cirugía",
+      "Dermatología",
+      "Cuidado de quemaduras"
+    ],
+    "presentaciones": [
+      {
+        "id": "sulfadiazina-de-plata-crema-1-por-ciento",
+        "texto": "crema tópica de 1 % (10 mg/g)",
+        "via": "tópica",
+        "forma": "crema",
+        "concentracion": "1 % (10 mg/g)",
+        "fuente": "DailyMed SILVADENE, etiqueta revisada en enero de 2026",
+        "rxCui": "106351",
+        "principioActivoPresentado": "Sulfadiazina de plata",
+        "activo": true,
+        "origen": "DailyMed/RxNorm"
+      }
+    ],
+    "dosisHabitual": "Aplicar una o dos veces al día sobre la zona de quemadura, conforme al cuidado integral de la herida",
+    "dosisHabituales": [
+      "crema de 1 %"
+    ],
+    "frecuenciasSugeridas": [
+      "una vez al día",
+      "dos veces al día"
+    ],
+    "datosClinicos": {
+      "indicaciones": [
+        "Coadyuvante para la prevención y tratamiento de sepsis de heridas en quemaduras de segundo y tercer grado"
+      ],
+      "contraindicaciones": [
+        "Hipersensibilidad a sulfadiazina de plata o a componentes de la preparación",
+        "Embarazo próximo al término",
+        "Prematuros y recién nacidos durante los primeros dos meses de vida"
+      ],
+      "precauciones": [
+        "Posible sensibilidad cruzada con otras sulfonamidas",
+        "La absorción varía con la superficie corporal tratada y la extensión del daño tisular",
+        "Precaución en deficiencia de glucosa-6-fosfato deshidrogenasa",
+        "Evitar contacto con los ojos"
+      ],
+      "advertencias": [
+        "Se han comunicado discrasias sanguíneas y reacciones cutáneas graves asociadas a sulfonamidas",
+        "Puede ocurrir acumulación si se deterioran las funciones hepática y renal"
+      ],
+      "monitorizacion": [
+        "Biometría hemática si el contexto clínico lo requiere",
+        "Función renal en quemaduras extensas",
+        "Concentración sérica de sulfa y cristales urinarios en superficies corporales extensas"
+      ],
+      "dosisAdulto": [
+        {
+          "indicationId": "quemaduras_segundo_tercer_grado",
+          "population": "adult",
+          "usualDose": {
+            "text": "Aplicar crema de 1 % una o dos veces al día; mantener cubierta la zona afectada"
+          },
+          "administrationNotes": [
+            "Uso tópico; reaplicar tras hidroterapia o si se retira de la zona tratada"
+          ]
+        }
+      ],
+      "dosisPediatrica": [],
+      "embarazo": "Contraindicada en embarazo próximo al término; en otros momentos usar solo si está claramente justificado.",
+      "lactancia": "Valorar suspender lactancia o medicamento por el riesgo potencial de reacciones graves por sulfonamidas."
+    },
+    "farmacocinetica": {
+      "mecanismoAccion": "Actúa sobre la membrana y la pared bacterianas para producir un efecto bactericida.",
+      "vidaMedia": "No establecida en la etiqueta tópica consultada",
+      "tiempoConcentracionMaxima": "No establecida; la absorción depende de la superficie y lesión tratadas",
+      "duracionAccion": "Mantener la zona cubierta; reaplicar según etiquetado",
+      "metabolismo": "La etiqueta advierte posible absorción sistémica de la fracción sulfonamida en quemaduras extensas",
+      "eliminacion": "Puede acumularse si disminuye la función hepática o renal",
+      "cyp": [],
+      "metabolitosActivos": []
+    },
+    "efectosAdversos": [
+      "Leucopenia transitoria",
+      "Reacciones cutáneas",
+      "Sensación de ardor",
+      "Nefritis intersticial",
+      "Hemólisis en personas susceptibles con deficiencia de G6PD"
+    ],
+    "riesgos": {
+      "hematologico": 2,
+      "dermatologico": 2,
+      "renal": 1
+    },
+    "interacciones": [
+      "Cimetidina: se ha comunicado una mayor incidencia de leucopenia con el uso concomitante",
+      "Enzimas proteolíticas tópicas: la plata puede inactivarlas"
+    ],
+    "interaccionesRelacionadas": [],
+    "relacionDiagnosticos": [
+      "Quemaduras de segundo y tercer grado",
+      "Deficiencia de G6PD",
+      "Insuficiencia renal",
+      "Insuficiencia hepática",
+      "Embarazo próximo al término",
+      "Recién nacido menor de dos meses"
+    ],
+    "notas": "La presentación canónica verificada es crema tópica de 1 %. Una mención documental como 'ungüento' se conserva como texto de origen y requiere revisión de presentación.",
+    "referencias": [
+      "DailyMed, SILVADENE (silver sulfadiazine) cream 1 %, etiqueta revisada en enero de 2026: https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=c437213a-1cd4-445e-a39f-bbcacb9f746f"
+    ],
+    "fuenteClinica": {
+      "estado": "verificada_local",
+      "fuente": "DailyMed SILVADENE, etiqueta revisada en enero de 2026",
+      "fuentes": [
+        "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=c437213a-1cd4-445e-a39f-bbcacb9f746f"
+      ],
+      "paginaSeccion": "Descripción, indicaciones, contraindicaciones, advertencias, precauciones, reacciones adversas y dosificación",
+      "confianza": "alta"
+    },
+    "farmacologia": {
+      "esquema": "cognicion.farmacologia.v1",
+      "id": "sulfadiazina_de_plata",
+      "nombreGenerico": "Sulfadiazina de plata",
+      "estadoFuente": "verificada_local",
+      "fuente": "DailyMed SILVADENE, etiqueta revisada en enero de 2026"
+    },
+    "pediatria": null,
+    "origenesCatalogo": [
+      "DailyMed",
+      "RxNorm"
+    ],
+    "activo": true,
+    "estadoContenido": "curado_fuente_regulatoria",
+    "actualizadoEn": "2026-08-18"
   },
   {
     "id": "sulfato_ferroso",

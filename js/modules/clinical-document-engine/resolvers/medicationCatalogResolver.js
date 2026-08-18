@@ -1,4 +1,4 @@
-import { MEDICAMENTOS_MAESTROS, normalizarNombreMedicamento } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260814-ieca-c09aa-v1";
+import { MEDICAMENTOS_MAESTROS, normalizarNombreMedicamento } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260818-clinical-extraction-v1";
 import { clinicalImportLogger } from "../utils/logger.js";
 
 const MATCH_STATUS = Object.freeze({
