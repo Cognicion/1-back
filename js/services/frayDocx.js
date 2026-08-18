@@ -146,8 +146,10 @@ function encabezadoInstitucional(datos, imagenes) {
     parrafo(datos.institucionIntermedia || "COMISIÓN NACIONAL DE SALUD MENTAL Y ADICCIONES", { bold: true, align: "center", size: 22, line: 220 }),
     parrafo(datos.institucion || 'HOSPITAL PSIQUIÁTRICO "FRAY BERNARDINO ÁLVAREZ"', { bold: true, align: "center", size: 22, line: 220 })
   ].join("");
+  const mostrarSeparador = datos.mostrarSeparadorEncabezado !== false;
   return tabla([[izquierda, centro, derecha]], [2160, 7128, 1512], {
-    soloBordeInferior: true,
+    sinBordes: !mostrarSeparador,
+    soloBordeInferior: mostrarSeparador,
     margenCelda: 0,
     vAlign: "center",
     ancho: 10800

@@ -86,7 +86,7 @@ import {
 import {
   crearDocumentoWordFray,
   nombreSeguroNotaWord
-} from "./services/frayDocx.js?v=20260716-1";
+} from "./services/frayDocx.js?v=20260818-envio-piso-header-v1";
 
 import {
   obtenerHistoriaClinica
@@ -6425,6 +6425,7 @@ window.descargarNotaSeleccionada = async function() {
     const documento = crearDocumentoWordFray({
       institucion: 'HOSPITAL PSIQUIÁTRICO "FRAY BERNARDINO ÁLVAREZ"',
       titulo: esFormatoFray() ? tituloNotaFray(tipoInstitucional) : "NOTA CLÍNICA",
+      mostrarSeparadorEncabezado: tipoInstitucional !== "envio_piso",
       servicio: observacion.servicio || datosNota.servicio || "",
       fecha: formatoFechaFray(fecha),
       hora,

@@ -53,5 +53,6 @@
 // deployment marker: 2026-08-17-medication-fraction-doses-v1
 // deployment marker: 2026-08-18-treatment-timeline-v1
 // deployment marker: 2026-08-18-diagnoses-studies-v1
-export const APP_VERSION = "2.025";
+// deployment marker: 2026-08-18-envio-piso-header-v1
+export const APP_VERSION = "2.026";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

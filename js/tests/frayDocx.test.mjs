@@ -59,8 +59,22 @@ assert.equal(cortaEntradas.has("word/footer1.xml"), false);
 const documentXml = new TextDecoder().decode(cortaEntradas.get("word/document.xml"));
 assert.match(documentXml, /María José García Ñúñez/);
 assert.match(documentXml, /½ tableta, SpO₂ 98%/);
+assert.match(documentXml, /<w:bottom w:val="dashed"/);
 assert.equal(documentXml.includes("altChunk"), false);
 assert.equal(documentXml.includes("<html"), false);
+
+// La nota de envío a hospitalización continua omite únicamente el separador punteado del encabezado.
+const envioHospitalizacion = crearDocumentoWordFray({
+  ...datosBase,
+  titulo: "NOTA DE ENVÍO A HOSPITALIZACIÓN CONTINUA",
+  mostrarSeparadorEncabezado: false,
+  secciones: [{ titulo: "DESTINO", contenido: "Hospitalización continua." }]
+});
+const envioXml = new TextDecoder().decode(
+  entradasZipSinCompresion(new Uint8Array(await envioHospitalizacion.arrayBuffer())).get("word/document.xml")
+);
+assert.doesNotMatch(envioXml, /<w:bottom w:val="dashed"/);
+assert.match(envioXml, /<w:bottom w:val="nil"/);
 
 // Nota extensa: todo el contenido queda en flujo Word, sin saltos de página manuales.
 const parrafosExtensos = Array.from({ length: 180 }, (_, i) => `Párrafo clínico ${i + 1}: evolución y seguimiento con Ñ, ½, SpO₂ y ± sin pérdida de información.`).join("\n\n");

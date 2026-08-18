@@ -18,6 +18,9 @@ assert.match(modulo, /guardarBorradorNotaClinica\(uidPaciente, notaEditandoId, n
 assert.match(modulo, /finalizarNotaClinica\(uidPaciente, notaEditandoId, notaPayload/);
 assert.match(modulo, /window\.confirm\("¿Confirma que desea cerrar esta nota como definitiva\?/);
 assert.match(modulo, /crearDocumentoWordFray\(/);
+assert.match(modulo, /mostrarSeparadorEncabezado:\s*tipoInstitucional !== "envio_piso"/);
+assert.match(modulo, /frayDocx\.js\?v=20260818-envio-piso-header-v1/);
+assert.match(html, /js\/nota\.js\?v=20260818-envio-piso-header-v1/);
 assert.match(modulo, /Usar como borrador \(nueva nota\)/);
 assert.match(modulo, /Continuar borrador/);
 assert.match(modulo, /Editar esta nota/);
