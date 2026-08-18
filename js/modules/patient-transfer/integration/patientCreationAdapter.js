@@ -1,6 +1,7 @@
 import { actualizarUsuario, crearPacienteProvisional, obtenerUsuario } from "../../../services/usuarios.js?v=20260816-expedientes-cognicion-v1";
 import { construirNombreCompletoPaciente, normalizarAliasPaciente } from "../../../utils/nombresPacientes.js?v=20260814-patient-alias-v1";
 import { normalizeRecordNumber } from "../parsing/patientDuplicateMatcher.js";
+import { normalizeImportedAdmissionDate } from "../parsing/patientAdmissionDate.js?v=20260818-admission-date-v1";
 
 function normalizeImportedDate(value = "") {
   const text = String(value || "").trim();
@@ -30,6 +31,7 @@ export function buildPatientPayload(fields = {}, user = {}) {
   const name = construirNombreCompletoPaciente({ nombres, apellidoPaterno, apellidoMaterno }) || fields.nombre || "Paciente importado sin nombre";
   const expediente = normalizeRecordNumber(fields.expediente || fields.numeroExpediente);
   const fechaNacimiento = normalizeImportedDate(fields.fechaNacimiento);
+  const fechaIngreso = normalizeImportedAdmissionDate(fields.fechaIngreso || fields.fecha, fields.hora);
   return {
     nombre: name,
     nombreCompleto: name,
@@ -41,6 +43,7 @@ export function buildPatientPayload(fields = {}, user = {}) {
     edadManual: fields.edad || "",
     sexo: fields.sexo || "",
     fechaNacimiento,
+    fechaIngreso,
     curp: fields.curp || "",
     tipoPaciente: fields.institucion ? "institucion" : "privada",
     institucionPaciente: fields.institucion || "",
@@ -65,6 +68,7 @@ export function buildPatientPayload(fields = {}, user = {}) {
       edadManual: fields.edad || "",
       sexo: fields.sexo || "",
       fechaNacimiento,
+      fechaIngreso,
       curp: fields.curp || "",
       institucionPaciente: fields.institucion || "",
       servicioInstitucional: fields.servicio || "",
@@ -97,6 +101,12 @@ export async function createTransferredPatient(fields, user) {
 export async function mergeTransferredPatientFields(patientId, fields = {}, user = {}) {
   const current = await obtenerUsuario(patientId);
   const imported = buildPatientPayload(fields, user);
+  const currentAdmissionDate = current?.fechaIngreso
+    || current?.datosInstitucionales?.fechaIngreso
+    || current?.fecha_ingreso
+    || current?.ingreso
+    || "";
+  const admissionDateToComplete = currentAdmissionDate ? "" : imported.fechaIngreso;
   const hasImportedName = Boolean(
     String(fields.nombres || "").trim()
     || String(fields.apellidoPaterno || "").trim()
@@ -113,6 +123,7 @@ export async function mergeTransferredPatientFields(patientId, fields = {}, user
     edadManual: fields.edad || "",
     sexo: fields.sexo || "",
     fechaNacimiento: imported.fechaNacimiento,
+    fechaIngreso: admissionDateToComplete,
     curp: fields.curp || "",
     institucionPaciente: fields.institucion || "",
     servicioInstitucional: fields.servicio || "",
@@ -133,6 +144,7 @@ export async function mergeTransferredPatientFields(patientId, fields = {}, user
     edadManual: imported.edadManual,
     sexo: imported.sexo,
     fechaNacimiento: imported.fechaNacimiento,
+    fechaIngreso: admissionDateToComplete,
     curp: imported.curp,
     tipoPaciente: fields.institucion ? imported.tipoPaciente : "",
     institucionPaciente: imported.institucionPaciente,

@@ -26,7 +26,7 @@ export const FIELD_RULES = Object.freeze([
   { key: "cama", label: "Numero de cama", aliases: ["no. de cama", "numero de cama", "numero cama", "no de cama", "cama"] },
   { key: "institucion", label: "Institucion", aliases: ["institucion", "unidad", "hospital"] },
   { key: "servicio", label: "Servicio", aliases: ["servicio", "area"] },
-  { key: "fecha", label: "Fecha", aliases: ["fecha", "fecha de nota", "fecha de elaboracion"] },
+  { key: "fecha", label: "Fecha de ingreso", aliases: ["fecha de ingreso", "fecha ingreso", "fecha", "fecha de nota", "fecha de elaboracion"] },
   { key: "hora", label: "Hora", aliases: ["hora", "hora de nota"] },
   { key: "alergias", label: "Alergias", aliases: ["alergias", "alergia"] },
   { key: "diasEstancia", label: "Dias de estancia", aliases: ["dias de estancia en el servicio de observacion", "dias de estancia", "estancia"] },

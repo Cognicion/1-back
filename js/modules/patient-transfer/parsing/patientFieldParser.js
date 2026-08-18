@@ -1,4 +1,4 @@
-import { FIELD_RULES } from "../../importacionDocx/docxImportConfig.js?v=20260814-patient-alias-v1";
+import { FIELD_RULES } from "../../importacionDocx/docxImportConfig.js?v=20260818-admission-date-v1";
 import {
   buildFullPatientName,
   buildNameFieldsFromExplicitParts,

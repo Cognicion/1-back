@@ -4,7 +4,7 @@ import { validateTransferDocxFile } from "./docx/docxValidator.js";
 import { calculateDocxHash, calculateNormalizedTextHash } from "./docx/docxHashService.js";
 import { extractDocx } from "./docx/docxExtractor.js?v=20260814-note-sections-runtime-v1";
 import { normalizeDocxBlocks, normalizedBlocksToText } from "./docx/docxBlockNormalizer.js?v=20260814-note-sections-runtime-v1";
-import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js?v=20260814-patient-name-dictionary-v1";
+import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js?v=20260818-admission-date-v1";
 import { resolvePatientIdentity } from "./parsing/patientIdentityResolver.js";
 import { parseClinicalSections } from "./parsing/clinicalSectionParser.js?v=20260814-note-sections-runtime-v1";
 import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js?v=20260818-diagnoses-studies-v1";
@@ -18,7 +18,7 @@ import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
 import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter.js";
 import { adaptTreatmentPlan } from "../clinical-document-engine/adapters/treatmentPlanAdapter.js?v=20260817-medication-fraction-doses-v1";
 import { resolveMedicationCandidatesAgainstCatalog } from "../clinical-document-engine/resolvers/medicationCatalogResolver.js?v=20260814-medication-name-boundaries-v1";
-import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260818-diagnoses-studies-v1";
+import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260818-admission-date-v1";
 import {
   DUPLICATE_DETECTION_STATUS,
   DUPLICATE_RESOLUTION,
@@ -47,7 +47,7 @@ import {
   syncBulkSelectionControls,
   syncPatientNameInputs,
   updateMedicationScheduleUnitVisibility
-} from "./ui/patientTransferView.js?v=20260818-diagnoses-studies-v1";
+} from "./ui/patientTransferView.js?v=20260818-admission-date-v1";
 
 let initialized = false;
 let selectedFiles = [];

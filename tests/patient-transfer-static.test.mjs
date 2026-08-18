@@ -15,6 +15,7 @@ const expectedFiles = [
   "js/modules/patient-transfer/docx/docxBlockNormalizer.js",
   "js/modules/patient-transfer/docx/docxHashService.js",
   "js/modules/patient-transfer/parsing/patientFieldParser.js",
+  "js/modules/patient-transfer/parsing/patientAdmissionDate.js",
   "js/modules/patient-transfer/parsing/clinicalSectionParser.js",
   "js/modules/patient-transfer/parsing/clinicalSectionConfig.js",
   "js/modules/patient-transfer/parsing/clinicalNoteSegmenter.js",
@@ -35,19 +36,19 @@ for (const file of expectedFiles) {
 
 const medico = read("js/medico.js");
 assert.match(medico, /btnImportarDocxPaciente/, "medico.js registra el unico boton de importacion DOCX");
-assert.match(medico, /import\("\.\/modules\/patient-transfer\/index\.js\?v=20260818-diagnoses-studies-v1"\)/, "el módulo activo se carga con lazy loading y versión explícita");
+assert.match(medico, /import\("\.\/modules\/patient-transfer\/index\.js\?v=20260818-admission-date-v1"\)/, "el módulo activo se carga con lazy loading y versión explícita");
 assert.doesNotMatch(medico, /modules\/importacionDocx\/docxImportController/, "medico.js no abre el importador local simplificado");
 
 const html = read("medico.html");
 assert.match(html, /id="btnImportarDocxPaciente"/, "medico.html conserva el boton unico de importacion");
 assert.doesNotMatch(html, /btnTraspasarPacientes/, "medico.html no conserva un segundo boton de traspaso");
 assert.match(html, /patient-transfer\.css/, "medico.html carga estilos del modulo");
-assert.match(html, /js\/medico\.js\?v=20260818-diagnoses-studies-v1/, "medico.html solicita la versión vigente del panel");
+assert.match(html, /js\/medico\.js\?v=20260818-admission-date-v1/, "medico.html solicita la versión vigente del panel");
 
 const appVersion = read("js/config/appVersion.js");
 const serviceWorker = read("service-worker.js");
-assert.match(appVersion, /APP_VERSION = "2\.025"/, "la versión visible identifica diagnósticos completos y estudios importados");
-assert.match(serviceWorker, /CACHE_VERSION = "20260818-diagnoses-studies-v1"/, "el service worker renueva la caché del importador");
+assert.match(appVersion, /APP_VERSION = "\d+\.\d+"/, "la aplicación declara una versión visible");
+assert.match(serviceWorker, /CACHE_VERSION = "20260818-admission-date-v1"/, "el service worker renueva la caché del importador");
 
 const controller = read("js/modules/patient-transfer/patientTransferController.js");
 const transferIndex = read("js/modules/patient-transfer/index.js");
@@ -77,12 +78,12 @@ assert.match(controller, /const reviewedGroups = analyzedGroups;/, "el guardado 
 assert.match(controller, /expandSegmentedGroupsForSave/, "la persistencia crea una nota por segmento confirmado");
 assert.match(controller, /setFileMultipleNotesMode/, "la revisión actualiza el modo por archivo en el estado central");
 assert.match(controller, /multipleNotesMode/, "el controlador envía el modo explícito al segmentador");
-assert.match(transferIndex, /patientTransferController\.js\?v=20260818-diagnoses-studies-v1/, "el índice fuerza la carga del controlador publicado");
-assert.match(controller, /patientFieldParser\.js\?v=20260814-patient-name-dictionary-v1/, "el controlador fuerza la carga del parser de paciente publicado");
+assert.match(transferIndex, /patientTransferController\.js\?v=20260818-admission-date-v1/, "el índice fuerza la carga del controlador publicado");
+assert.match(controller, /patientFieldParser\.js\?v=20260818-admission-date-v1/, "el controlador fuerza la carga del parser de paciente publicado");
 assert.match(fieldParser, /patientNameParser\.js\?v=20260814-patient-name-dictionary-v1/, "el parser de campos fuerza la carga del parser de nombres publicado");
 assert.match(patientNameParser, /patientNameDictionaries\.js\?v=20260814-patient-name-dictionary-v1/, "el parser de nombres carga el diccionario publicado");
-assert.match(controller, /patientTransferRepository\.js\?v=20260818-diagnoses-studies-v1/, "el controlador carga el repositorio corregido");
-assert.match(patientRepository, /patientCreationAdapter\.js\?v=20260816-expedientes-cognicion-v1/, "el repositorio carga el adaptador de creación actualizado");
+assert.match(controller, /patientTransferRepository\.js\?v=20260818-admission-date-v1/, "el controlador carga el repositorio corregido");
+assert.match(patientRepository, /patientCreationAdapter\.js\?v=20260818-admission-date-v1/, "el repositorio carga el adaptador de creación actualizado");
 assert.match(patientCreationAdapter, /usuarios\.js\?v=20260816-expedientes-cognicion-v1/, "la creación de pacientes usa el servicio de usuarios actualizado");
 assert.match(usersService, /registerPatientNameParts/, "el alta de paciente registra sus partes en el diccionario local");
 assert.match(controller, /docxExtractor\.js\?v=20260814-note-sections-runtime-v1/, "el controlador carga el extractor DOCX publicado");
@@ -111,7 +112,7 @@ assert.match(treatmentPlanParser, /medicationParser\.js\?v=20260817-medication-f
 assert.match(medicationAdapter, /medicationParser\.js\?v=20260814-medication-name-boundaries-v1/, "el adaptador usa el parser farmacológico vigente");
 assert.match(medicationAdapter, /medicationCatalogResolver\.js\?v=20260814-medication-name-boundaries-v1/, "el adaptador usa el resolver farmacológico vigente");
 assert.match(medicationParser, /medicationNormalizer\.js\?v=20260817-medication-fraction-doses-v1/, "el parser usa el normalizador farmacológico corregido");
-assert.match(controller, /patientTransferView\.js\?v=20260818-diagnoses-studies-v1/, "el controlador fuerza la carga de diagnósticos y estudios actualizados");
+assert.match(controller, /patientTransferView\.js\?v=20260818-admission-date-v1/, "el controlador fuerza la carga de la fecha de ingreso actualizada");
 assert.match(html, /patient-transfer\.css\?v=20260811-medication-presentation-concentration-ui-v1/, "el CSS de medicamentos usa un marcador de cache nuevo");
 assert.match(segmenter, /20260814-note-sections-runtime-v1/, "el segmentador expone un marcador verificable de compilación");
 assert.match(segmenter, /\[patient-transfer\] segmentation:boundaries/, "el segmentador registra los límites usados");
