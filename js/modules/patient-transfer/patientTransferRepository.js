@@ -5,7 +5,7 @@ import { obtenerNombrePacienteParaMostrar } from "../../utils/nombresPacientes.j
 import { DOCX_IMPORT_CONFIG } from "../importacionDocx/docxImportConfig.js?v=20260814-patient-alias-v1";
 import { createTransferredPatient, mergeTransferredPatientFields } from "./integration/patientCreationAdapter.js?v=20260816-expedientes-cognicion-v1";
 import { buildImportedNotePayload, createTransferredNote, importedNoteHasClinicalContent, importedNoteId } from "./integration/noteCreationAdapter.js?v=20260813-notes-canonical-text-v1";
-import { createImportedDiagnoses, createImportedIndications, createImportedTreatments } from "./integration/clinicalDataImportAdapter.js?v=20260818-treatment-timeline-v1";
+import { createImportedDiagnoses, createImportedIndications, createImportedStudies, createImportedTreatments } from "./integration/clinicalDataImportAdapter.js?v=20260818-diagnoses-studies-v1";
 import { reconcileImportedTreatmentTimeline } from "./integration/treatmentTimelineReconciler.js?v=20260818-treatment-timeline-v1";
 import { runVitalSignsAndDiagnosesIndependently } from "./domainPersistenceIsolation.js?v=v161-imported-diagnoses-isolation-v1";
 import { vitalSignsToNotePayload } from "./parsing/vitalSignsParser.js?v=20260808-imported-vitals-v1";
@@ -825,6 +825,13 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
     let indicationsOmitted = 0;
     let indicationsIdempotent = 0;
     const indicationErrors = [];
+    let studiesCreated = 0;
+    let studiesOmitted = 0;
+    let studiesDetected = 0;
+    let studiesIncluded = 0;
+    let studiesIdempotent = 0;
+    let studiesAttempted = false;
+    const studyErrors = [];
     let notesDetected = eligibleDocuments.length;
     let notesIncluded = 0;
     let notesCreated = 0;
@@ -844,6 +851,7 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
     let anthropometryCreated = 0;
     const diagnosisIds = [];
     const treatmentIds = [];
+    const studyIds = [];
     const vitalSignRecordIds = [];
     const anthropometryRecordIds = [];
     let sourceSaved = false;
@@ -1079,6 +1087,8 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           transferOperationId: operationId,
           sourceFileHash: document.hash,
           noteId: clinicalSourceNoteKey,
+          sourceNoteId: document.sourceNoteSegmentId || clinicalSourceNoteKey,
+          sourceDocumentIndex: document.sourceDocumentIndex ?? documentResults.length,
           fileName: document.file.name,
           date: document.metadata?.documentDate || "",
           time: document.metadata?.documentHour || "",
@@ -1115,6 +1125,24 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           error.stage ||= "creating_indications";
           indicationErrors.push({ code: error?.code || error?.name || "unknown" });
           console.error("patient-transfer:domain-error", { domain: "indications", stage: "creating_indications", errorCode: error?.code || error?.name || "unknown" });
+        }
+        try {
+          stage = "creating_studies";
+          studiesAttempted = true;
+          const documentStudies = document.studyCandidates || [];
+          studiesDetected += documentStudies.length;
+          studiesIncluded += documentStudies.filter((candidate) => candidate.include === true || candidate.selectedForImport === true).length;
+          onProgress?.({ stage, message: "Registrando estudios confirmados...", progress: 68 });
+          const studyResult = await timed(`create-studies-${documentResults.length + 1}`, () => createImportedStudies(patientId, documentStudies, clinicalContext), TIMEOUTS.createClinicalData);
+          studiesCreated += studyResult.created.length;
+          studiesIdempotent += studyResult.existing.length;
+          studiesOmitted += studyResult.omitted;
+          studyIds.push(...studyResult.created.map((item) => item.id).filter(Boolean));
+          console.info("patient-transfer:persist-studies-success", { created: studyResult.created.length, existing: studyResult.existing.length });
+        } catch (error) {
+          error.stage ||= "creating_studies";
+          studyErrors.push({ code: error?.code || error?.name || "unknown" });
+          console.error("patient-transfer:domain-error", { domain: "studies", stage: "creating_studies", errorCode: error?.code || error?.name || "unknown" });
         }
 
         stage = "creating_note";
@@ -1339,6 +1367,7 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           anthropometryRecordIds,
           diagnosisIds,
           treatmentIds,
+          studyIds,
           vitalSignCount: vitalSignsCreated,
           anthropometryCount: anthropometryCreated,
           diagnosisCount: diagnosesCreated,
@@ -1354,6 +1383,13 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
           indicationCount: indicationsCreated,
           indicationIdempotentCount: indicationsIdempotent,
           indicationErrorCount: indicationErrors.length,
+          studyCount: studiesCreated,
+          studyDetectedCount: studiesDetected,
+          studyIncludedCount: studiesIncluded,
+          studyIdempotentCount: studiesIdempotent,
+          studyOmittedCount: studiesOmitted,
+          studyErrorCount: studyErrors.length,
+          studyAttempted: studiesAttempted,
           sourceSaved,
           auxiliaryWarningCount: auxiliaryWarnings.length,
           documents: documentResults.map((doc) => ({
@@ -1419,6 +1455,14 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         indicationsOmitted,
         indicationsIdempotent,
         indicationsError: indicationErrors[0]?.code || "",
+        studiesCreated,
+        studiesOmitted,
+        studiesDetected,
+        studiesIncluded,
+        studiesIdempotent,
+        studiesAttempted,
+        studiesError: studyErrors[0]?.code || "",
+        studyIds,
         sourceSaved,
         auditRegistered,
         warnings: auxiliaryWarnings,
@@ -1452,6 +1496,7 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         anthropometryRecordIds,
         diagnosisIds,
         treatmentIds,
+        studyIds,
         vitalSignCount: vitalSignsCreated,
         anthropometryCount: anthropometryCreated,
         diagnosisCount: diagnosesCreated,
@@ -1467,6 +1512,13 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         indicationCount: indicationsCreated,
         indicationIdempotentCount: indicationsIdempotent,
         indicationErrorCount: indicationErrors.length,
+        studyCount: studiesCreated,
+        studyDetectedCount: studiesDetected,
+        studyIncludedCount: studiesIncluded,
+        studyIdempotentCount: studiesIdempotent,
+        studyOmittedCount: studiesOmitted,
+        studyErrorCount: studyErrors.length,
+        studyAttempted: studiesAttempted,
         sourceSaved,
         updatedAt: serverTimestamp(),
         updatedAtIso: new Date().toISOString(),
@@ -1527,6 +1579,14 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
         indicationsOmitted,
         indicationsIdempotent,
         indicationsError: indicationErrors[0]?.code || "",
+        studiesCreated,
+        studiesOmitted,
+        studiesDetected,
+        studiesIncluded,
+        studiesIdempotent,
+        studiesAttempted,
+        studiesError: studyErrors[0]?.code || "",
+        studyIds,
         sourceSaved,
         auditRegistered,
         warnings: auxiliaryWarnings

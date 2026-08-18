@@ -354,6 +354,7 @@ console.info("[patient-transfer] clinical-note-segmenter:loaded", {
         },
         confirmedType: segment.confirmedType,
         diagnosisCandidates: segment.diagnosisCandidates,
+        studyCandidates: segment.studyCandidates,
         treatmentCandidates: segment.treatmentCandidates,
         treatmentPlanCandidates: segment.treatmentPlanCandidates,
         vitalSignsCandidates: segment.vitalSignsCandidates,

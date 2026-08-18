@@ -7,17 +7,18 @@ import { normalizeDocxBlocks, normalizedBlocksToText } from "./docx/docxBlockNor
 import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js?v=20260814-patient-name-dictionary-v1";
 import { resolvePatientIdentity } from "./parsing/patientIdentityResolver.js";
 import { parseClinicalSections } from "./parsing/clinicalSectionParser.js?v=20260814-note-sections-runtime-v1";
-import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js?v=20260814-medication-name-boundaries-v1";
-import { detectMultipleClinicalNotes, expandSegmentedDocumentsForPersistence, mergeClinicalSegments, segmentClinicalNotes, splitClinicalSegment } from "./parsing/clinicalNoteSegmenter.js?v=20260814-note-sections-runtime-v1";
+import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js?v=20260818-diagnoses-studies-v1";
+import { detectMultipleClinicalNotes, expandSegmentedDocumentsForPersistence, mergeClinicalSegments, segmentClinicalNotes, splitClinicalSegment } from "./parsing/clinicalNoteSegmenter.js?v=20260818-diagnoses-studies-v1";
 import { extractVitalSignsCandidates } from "./parsing/vitalSignsParser.js";
 import { parseNoteMetadata } from "./parsing/noteMetadataParser.js";
+import { parseStudyCandidates } from "./parsing/studyCandidateParser.js?v=20260818-diagnoses-studies-v1";
 import { preserveManualSubjectiveEdits, updateSubjectiveSegmentValue } from "./state/subjectiveSegmentState.js";
 import { initializeFileMultipleNotesMode, MULTIPLE_NOTES_MODES, normalizeMultipleNotesMode, updateFileMultipleNotesMode } from "./state/multipleNotesModeState.js";
 import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
 import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter.js";
 import { adaptTreatmentPlan } from "../clinical-document-engine/adapters/treatmentPlanAdapter.js?v=20260817-medication-fraction-doses-v1";
 import { resolveMedicationCandidatesAgainstCatalog } from "../clinical-document-engine/resolvers/medicationCatalogResolver.js?v=20260814-medication-name-boundaries-v1";
-import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260818-treatment-timeline-v1";
+import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260818-diagnoses-studies-v1";
 import {
   DUPLICATE_DETECTION_STATUS,
   DUPLICATE_RESOLUTION,
@@ -46,7 +47,7 @@ import {
   syncBulkSelectionControls,
   syncPatientNameInputs,
   updateMedicationScheduleUnitVisibility
-} from "./ui/patientTransferView.js?v=20260815-transfer-completion-progress-v1";
+} from "./ui/patientTransferView.js?v=20260818-diagnoses-studies-v1";
 
 let initialized = false;
 let selectedFiles = [];
@@ -111,6 +112,12 @@ function enrichNoteSegments(document, segments = []) {
       count: treatmentPlan.medicationCandidates.length
     }));
     const sections = { ...(segment.sections || {}) };
+    const studyCandidates = parseStudyCandidates({
+      text: sections.resultadosEstudios || "",
+      documentId: document.id,
+      noteId: segment.id,
+      clinicalDate: segment.date || metadata.documentDate || ""
+    });
     if (!sections.diagnosticos && candidates.diagnoses.length) {
       sections.diagnosticos = [...new Set(candidates.diagnoses.map((candidate) => candidate.rawText).filter(Boolean))].join("\n");
     }
@@ -131,6 +138,7 @@ function enrichNoteSegments(document, segments = []) {
       },
       confirmedType: segment.confirmedType || metadata.suggestedType,
       diagnosisCandidates: candidates.diagnoses,
+      studyCandidates,
       treatmentCandidates: treatmentPlan.medicationCandidates,
       treatmentPlanCandidates: treatmentPlan.instructions,
       vitalSignsCandidates
@@ -141,6 +149,7 @@ function enrichNoteSegments(document, segments = []) {
       time: enrichedSegment.metadata.documentHour,
       vitalSigns: vitalSignsCandidates.length,
       diagnoses: candidates.diagnoses.length,
+      studies: studyCandidates.length,
       treatments: candidates.treatments.length,
       sections: Object.keys(sections).filter((key) => Boolean(sections[key]))
     });
@@ -164,6 +173,7 @@ function applySegmentsToDocument(document, rawSegments = []) {
     noteSegments,
     sections: primary.sections || document.sections || {},
     diagnosisCandidates: primary.diagnosisCandidates || [],
+    studyCandidates: primary.studyCandidates || [],
     treatmentCandidates: primary.treatmentCandidates || [],
     treatmentPlanCandidates: primary.treatmentPlanCandidates || []
   };
@@ -433,6 +443,18 @@ async function analyzeOneFile(item, user) {
   console.info("[patient-transfer] treatments:detected", { fileId: item.id, count: 0, delegatedToTreatmentPlan: true });
   console.info("[patient-transfer] diagnosis-parser:candidates", { fileId: item.id, count: clinicalCandidates.diagnoses.length, rules: [...new Set(clinicalCandidates.diagnoses.map((item) => item.detectionRule))] });
   console.info("[patient-transfer] treatment-parser:candidates", { fileId: item.id, count: 0, delegatedToTreatmentPlan: true });
+  const studyCandidates = parseStudyCandidates({
+    text: sectionsResult.secciones.resultadosEstudios || "",
+    documentId: item.id,
+    noteId: `${item.id}-note-1`,
+    clinicalDate: metadata.documentDate || ""
+  });
+  console.info("[patient-transfer] studies:detected", {
+    fileId: item.id,
+    count: studyCandidates.length,
+    laboratoryCount: studyCandidates.filter((candidate) => candidate.type === "Laboratorio").length,
+    imagingCount: studyCandidates.filter((candidate) => candidate.type === "Gabinete").length
+  });
   const vitalSignsCandidates = extractVitalSignsCandidates(blocks);
   console.info("patient-transfer:vitals-parser-result", vitalSignsPresence(vitalSignsCandidates));
   const multipleNotesDetection = detectMultipleClinicalNotes({
@@ -474,6 +496,7 @@ async function analyzeOneFile(item, user) {
     clinicalAnalysis,
     vitalSignsCandidates,
     diagnosisCandidates: clinicalCandidates.diagnoses,
+    studyCandidates,
     treatmentCandidates: [],
     treatmentPlanCandidates: [],
     multipleNotesMode,
@@ -651,6 +674,7 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
       return [vital.weight?.value, vital.height?.value, vital.bmi?.value, vital.bmiCalculated?.value].some((value) => Number.isFinite(Number(value)));
     })),
     diagnoses: reviewedSegments.reduce((count, segment) => count + (segment.diagnosisCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length, 0),
+    studies: reviewedSegments.reduce((count, segment) => count + (segment.studyCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length, 0),
     treatments: reviewedSegments.reduce((count, segment) => count + (segment.treatmentCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length, 0),
     indications: reviewedSegments.reduce((count, segment) => count + (segment.treatmentPlanCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length, 0),
     notes: reviewedSegments.filter((segment) => !segment.omitted).length
@@ -678,6 +702,7 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
     patientFields: [...new Set(persistenceGroups.flatMap((group) => Object.keys(group.confirmedFields || {}).filter((key) => Boolean(group.confirmedFields?.[key]))))],
     vitalSignsCount: expandedDocuments.reduce((count, document) => count + (document.vitalSignsCandidates || []).filter((candidate) => candidate.include).length, 0),
     diagnosesCount: expandedDocuments.reduce((count, document) => count + (document.diagnosisCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length, 0),
+    studiesCount: expandedDocuments.reduce((count, document) => count + (document.studyCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length, 0),
     treatmentsCount: expandedDocuments.reduce((count, document) => count + (document.treatmentCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length, 0),
     indicationsCount: expandedDocuments.reduce((count, document) => count + (document.treatmentPlanCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length, 0),
     notesCount: expandedDocuments.length
@@ -894,6 +919,7 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
       groups: results.length,
       notes: results.reduce((count, result) => count + Number(result.notesCreated || 0), 0),
       diagnoses: results.reduce((count, result) => count + Number(result.diagnosesCreated || 0), 0),
+      studies: results.reduce((count, result) => count + Number(result.studiesCreated || 0), 0),
       treatments: results.reduce((count, result) => count + Number(result.treatmentsCreated || 0), 0)
     });
     window.dispatchEvent(new CustomEvent("cognicion:patient-transfer-completed", { detail: { results } }));
@@ -985,9 +1011,12 @@ function syncReviewedGroupsFromView() {
   const counts = analyzedGroups.reduce((total, group) => group.documents.reduce((documentTotal, doc) => {
     const owners = doc.noteSegments?.length ? doc.noteSegments : [doc];
     const diagnoses = owners.reduce((count, owner) => count + (owner.diagnosisCandidates || []).length, 0);
+    const studies = owners.reduce((count, owner) => count + (owner.studyCandidates || []).length, 0);
     const treatments = owners.reduce((count, owner) => count + (owner.treatmentCandidates || []).length, 0);
     const diagnosesSelected = owners.reduce((count, owner) => count
       + (owner.diagnosisCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length, 0);
+    const studiesSelected = owners.reduce((count, owner) => count
+      + (owner.studyCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length, 0);
     const treatmentsSelected = owners.reduce((count, owner) => count
       + (owner.treatmentCandidates || []).filter((candidate) => candidate.include || candidate.selectedForImport).length, 0);
     const eligibility = persistenceEligibilityForDocument(group, doc);
@@ -999,9 +1028,12 @@ function syncReviewedGroupsFromView() {
       unresolvedCount: documentTotal.unresolvedCount + (eligibility.resolution === DUPLICATE_RESOLUTION.UNRESOLVED ? 1 : 0),
       omittedCount: documentTotal.omittedCount + (eligibility.resolution === DUPLICATE_RESOLUTION.OMIT ? 1 : 0),
       diagnosesSelected: documentTotal.diagnosesSelected + diagnosesSelected,
+      studiesSelected: documentTotal.studiesSelected + studiesSelected,
       treatmentsSelected: documentTotal.treatmentsSelected + treatmentsSelected,
       diagnosisCandidatesDetected: documentTotal.diagnosisCandidatesDetected + diagnoses,
       diagnosisCandidatesRendered: documentTotal.diagnosisCandidatesRendered + diagnoses,
+      studyCandidatesDetected: documentTotal.studyCandidatesDetected + studies,
+      studyCandidatesRendered: documentTotal.studyCandidatesRendered + studies,
       treatmentCandidatesDetected: documentTotal.treatmentCandidatesDetected + treatments,
       treatmentCandidatesRendered: documentTotal.treatmentCandidatesRendered + treatments
     };
@@ -1013,9 +1045,12 @@ function syncReviewedGroupsFromView() {
     unresolvedCount: 0,
     omittedCount: 0,
     diagnosesSelected: 0,
+    studiesSelected: 0,
     treatmentsSelected: 0,
     diagnosisCandidatesDetected: 0,
     diagnosisCandidatesRendered: 0,
+    studyCandidatesDetected: 0,
+    studyCandidatesRendered: 0,
     treatmentCandidatesDetected: 0,
     treatmentCandidatesRendered: 0
   });

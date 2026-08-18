@@ -68,6 +68,31 @@ const table = detectDiagnosisCandidates({
 });
 assert.deepEqual(table.map((candidate) => [candidate.diagnosisName, candidate.code, candidate.system]), [["Alcohol: síndrome de dependencia", "F10.2", "CIE-10"], ["Obesidad", "E66.9", "CIE-10"]]);
 
+const mixedMultilineTable = detectDiagnosisCandidates({
+  documentId: "fixture-multiline-table",
+  noteId: "fixture-note",
+  sourceBlocks: [{
+    type: "table",
+    source: { tableIndex: 2, blockIndex: 8 },
+    rows: [
+      ["DIAGNÓSTICO", "CIE-10"],
+      [
+        "Esquizofrenia\nTrastorno por consumo perjudicial de múltiples sustancias\nLesión autoinfligida intencionalmente por medios no especificados Trastorno por dependencia a tabaco\nHistoria personal de incumplimiento al tratamiento o régimen médico\nSoporte familiar inadecuado",
+        "F20\nF19.1\nX84\nF17.2\nZ91.1\nZ63.2"
+      ]
+    ]
+  }]
+});
+assert.deepEqual(mixedMultilineTable.map((candidate) => candidate.code), ["F20", "F19.1", "X84", "F17.2", "Z91.1", "Z63.2"]);
+assert.deepEqual(mixedMultilineTable.map((candidate) => candidate.diagnosisName), [
+  "Esquizofrenia",
+  "Trastorno por consumo perjudicial de múltiples sustancias",
+  "Lesión autoinfligida intencionalmente por medios no especificados",
+  "Trastorno por dependencia a tabaco",
+  "Historia personal de incumplimiento al tratamiento o régimen médico",
+  "Soporte familiar inadecuado"
+]);
+
 const concatenated = parseDiagnosisCandidates({ text: "DIAGNÓSTICO | CIE-10\nTrastorno depresivo F43.1F33.2F34.1\nPLAN TERAPÉUTICO", explicit: true, documentId: "anon-concat" });
 assert.equal(concatenated.length, 1);
 assert.equal(concatenated[0].code, null);

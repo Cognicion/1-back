@@ -1,8 +1,10 @@
 import { db } from "../../../firebase.js";
 import { actualizarUsuario, obtenerUsuario } from "../../../services/usuarios.js?v=20260816-expedientes-cognicion-v1";
 import { crearTratamiento, listarTratamientos } from "../../../services/tratamientos.js";
+import { crearEstudio, listarEstudios } from "../../../services/estudios.js";
 import { normalizarTextoBusquedaPaciente } from "../../../utils/nombresPacientes.js";
 import { isSuspendedTreatmentAction } from "./treatmentTimelineReconciler.js?v=20260818-treatment-timeline-v1";
+import { buildImportedStudyPayload, studyImportKey } from "./importedStudyContract.js?v=20260818-diagnoses-studies-v1";
 import {
   construirActualizacionHistorialDiagnosticos,
   fusionarDiagnosticosImportados
@@ -261,4 +263,67 @@ export async function createImportedIndications(patientId, candidates = [], cont
     observed: true
   });
   return { created: inserted > 0, existing: inserted === 0, inserted, idempotent: payload.items.length - inserted, omitted: candidates.length - payload.items.length, id: indicationId };
+}
+
+export async function createImportedStudies(patientId, candidates = [], context = {}) {
+  const selected = candidates.filter((candidate) => candidate.include === true || candidate.selectedForImport === true);
+  console.info("patient-transfer:studies-source-real", {
+    candidateCount: candidates.length,
+    includedCount: selected.length,
+    laboratoryCount: selected.filter((candidate) => candidate.type === "Laboratorio").length,
+    imagingCount: selected.filter((candidate) => candidate.type === "Gabinete").length
+  });
+  console.info("patient-transfer:studies-target", {
+    mode: context.effectiveAction === "associate" ? "associate_existing" : "create_new",
+    hasTarget: Boolean(patientId)
+  });
+  if (!selected.length) {
+    return { created: [], existing: [], omitted: candidates.length, detected: candidates.length, included: 0 };
+  }
+
+  const before = await listarEstudios(patientId);
+  console.info("patient-transfer:studies-history-before-real", { total: before.length });
+  const seen = new Set(before.map((study) => study.importCandidateKey).filter(Boolean));
+  const created = [];
+  const existing = [];
+  console.info("patient-transfer:studies-write-start", { selected: selected.length, hasTarget: Boolean(patientId) });
+
+  for (const candidate of selected) {
+    const key = studyImportKey(candidate, context);
+    if (seen.has(key)) {
+      existing.push({ candidateId: candidate.id, key });
+      continue;
+    }
+    const payload = buildImportedStudyPayload(candidate, context);
+    const ref = await crearEstudio(patientId, payload);
+    seen.add(key);
+    created.push({ id: ref.id, ...payload });
+  }
+
+  const after = await listarEstudios(patientId);
+  const observed = new Set(after.map((study) => study.importCandidateKey).filter(Boolean));
+  const expectedFound = selected.every((candidate) => observed.has(studyImportKey(candidate, context)));
+  console.info("patient-transfer:studies-history-after-real", {
+    total: after.length,
+    inserted: created.length,
+    idempotent: existing.length
+  });
+  if (!expectedFound) {
+    console.warn("patient-transfer:studies-write-not-observed", { writeResolved: true, expectedFound: false });
+    const error = new Error("La persistencia de estudios no pudo verificarse.");
+    error.code = "studies-write-not-observed";
+    throw error;
+  }
+  console.info("patient-transfer:studies-write-result", {
+    inserted: created.length,
+    idempotent: existing.length,
+    observed: true
+  });
+  return {
+    created,
+    existing,
+    omitted: candidates.length - selected.length,
+    detected: candidates.length,
+    included: selected.length
+  };
 }

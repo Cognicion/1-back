@@ -77,18 +77,55 @@ export function splitDiagnosticCodes(text = "") {
   return [...String(text || "").matchAll(/[A-Z]\d{2,3}(?:\.\d{1,2})?/gi)].map((match) => normalizeDiagnosticCode(match[0])).filter(Boolean);
 }
 
-// Algunos DOCX conservan varias entradas dentro de una misma celda de tabla
-// sin saltos de línea. Estos encabezados diagnósticos permiten recuperar los
-// límites estructurales sin consultar texto de otras secciones.
-const DIAGNOSIS_ENTRY_START = /(?:Trastorno\b|Episodio\b|Distimia|Soporte\s+familiar|C(?:o|ó|Ã³|�)nyuge\s+o\s+pareja|Obesidad\b|Tabaco\b|Alcohol\b)/gu;
+// Algunos DOCX conservan varias entradas dentro de una misma celda de tabla.
+// Primero se respetan sus párrafos/saltos reales y solo después se usa una
+// recuperación estructural conservadora para celdas que Word entregó planas.
+const DIAGNOSIS_ENTRY_START = /(?:Trastorno\b|Episodio\b|Distimia|Esquizofrenia\b|Lesi[oó]n\b|Historia\s+personal\b|Soporte\s+familiar\b|C[oó]nyuge\s+o\s+pareja\b|Obesidad\b|Tabaco\b|Alcohol\b|Intoxicaci[oó]n\b|Discapacidad\b|Retraso\b|S[ií]ndrome\b|Problemas?\s+relacionad[oa]s?\b|Dependencia\b|Abuso\b|Consumo\b|Ideaci[oó]n\b|Intento\b|Reacci[oó]n\b)/gu;
 
-function splitDiagnosisNameColumn(text = "", expectedCount = 0) {
-  const source = String(text || "").replace(/\s+/g, " ").trim();
-  if (!source) return [];
+function cleanDiagnosisTableLine(value = "") {
+  return String(value || "")
+    .replace(/^\s*(?:(?:\d+|[a-z])[.)-]|[-•▪◦])\s*/i, "")
+    .replace(/[ \t]+/g, " ")
+    .trim();
+}
+
+function mergeDiagnosisStatusLines(lines = []) {
+  return lines.reduce((entries, line) => {
+    if (STATUS_ONLY.test(line) && entries.length) {
+      entries[entries.length - 1] = `${entries.at(-1)} ${line}`.trim();
+    } else if (line) {
+      entries.push(line);
+    }
+    return entries;
+  }, []);
+}
+
+function splitDiagnosisNameColumn(text = "", codesOrCount = 0) {
+  const expectedCount = Array.isArray(codesOrCount) ? codesOrCount.length : Number(codesOrCount) || 0;
+  const raw = String(text || "")
+    .replace(/\r\n?/g, "\n")
+    .replace(/[\u000b\u2028\u2029]/g, "\n")
+    .trim();
+  if (!raw) return [];
+
+  const explicitLines = mergeDiagnosisStatusLines(raw
+    .split(/\n+/)
+    .map(cleanDiagnosisTableLine)
+    .filter(Boolean));
+  if (expectedCount > 0 && explicitLines.length === expectedCount) return explicitLines;
+
+  const source = explicitLines.join(" ").replace(/\s+/g, " ").trim();
   DIAGNOSIS_ENTRY_START.lastIndex = 0;
-  const starts = [...source.matchAll(DIAGNOSIS_ENTRY_START)].map((match) => match.index);
+  const matchedStarts = [...source.matchAll(DIAGNOSIS_ENTRY_START)].map((match) => match.index);
+  const starts = [...new Set([
+    ...(matchedStarts[0] === 0 ? [] : [0]),
+    ...matchedStarts
+  ])].sort((a, b) => a - b);
+  DIAGNOSIS_ENTRY_START.lastIndex = 0;
   if (expectedCount > 0 && starts.length === expectedCount) {
-    return starts.map((start, index) => source.slice(start, starts[index + 1] ?? source.length).trim()).filter(Boolean);
+    return starts
+      .map((start, index) => source.slice(start, starts[index + 1] ?? source.length).trim())
+      .filter(Boolean);
   }
   return [source];
 }
@@ -505,7 +542,7 @@ export function detectDiagnosisCandidates({ sections = {}, fullText = "", source
       const rowText = row.join(" | ");
       const codeColumn = row.length > 1 ? String(row[1] || "") : "";
       const codes = splitDiagnosticCodes(codeColumn || rowText);
-      const names = splitDiagnosisNameColumn(row[0] || "", codes.length);
+      const names = splitDiagnosisNameColumn(row[0] || "", codes);
       const location = { tableIndex: block.source?.tableIndex, blockIndex: block.source?.blockIndex, rowIndex };
       if (names.length === 1 && codes.length) {
         hasStructuredDiagnosisTable = true;

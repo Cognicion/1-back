@@ -579,6 +579,8 @@ function segmentControlKey(doc, segment, candidate) {
 function candidatesForType(segment = {}, candidateType = "") {
   return candidateType === "diagnosis"
     ? (segment.diagnosisCandidates || [])
+    : candidateType === "study"
+      ? (segment.studyCandidates || [])
     : candidateType === "treatment"
       ? (segment.treatmentCandidates || [])
       : candidateType === "indication"
@@ -635,6 +637,8 @@ export function applyBulkCandidateSelection(groups = [], { documentId = "", note
           }
           return candidateType === "diagnosis"
             ? { ...segment, diagnosisCandidates: updatedCandidates }
+            : candidateType === "study"
+              ? { ...segment, studyCandidates: updatedCandidates }
             : candidateType === "treatment"
               ? { ...segment, treatmentCandidates: updatedCandidates }
               : segment;
@@ -666,7 +670,7 @@ export function getAllDetectedDataSelectionState(groups = []) {
   let selectableCount = 0;
   let selectedCount = 0;
   forEachActiveTransferSegment(groups, (segment) => {
-    ["diagnosis", "treatment", "indication"].forEach((candidateType) => {
+    ["diagnosis", "study", "treatment", "indication"].forEach((candidateType) => {
       candidatesForType(segment, candidateType).forEach((candidate) => {
         if (!isTransferCandidateSelectable(candidate, candidateType)) return;
         selectableCount += 1;
@@ -716,6 +720,7 @@ export function applyAllDetectedDataSelection(groups = [], { selected = false } 
           return {
             ...segment,
             diagnosisCandidates: updateCandidates(segment.diagnosisCandidates, "diagnosis"),
+            studyCandidates: updateCandidates(segment.studyCandidates, "study"),
             treatmentCandidates: updateCandidates(segment.treatmentCandidates, "treatment"),
             treatmentPlanCandidates: (segment.treatmentPlanCandidates || []).map((candidate) => selectedIndications.get(candidate.id) || candidate),
             vitalSignsCandidates: updateCandidates(segment.vitalSignsCandidates, "vitalSigns")
@@ -765,6 +770,8 @@ function renderBulkSelectionControl(doc, segment, candidateType, label) {
   const controlId = `transfer-select-all-${doc.id}-${segment.id}-${candidateType}`;
   const help = candidateType === "diagnosis"
     ? "Selecciona todos los diagnósticos de esta nota"
+    : candidateType === "study"
+      ? "Selecciona todos los estudios de esta nota"
     : candidateType === "indication"
       ? "Selecciona todas las indicaciones de esta nota"
       : "Selecciona todos los tratamientos de esta nota";
@@ -783,7 +790,7 @@ function renderIncludeAllDetectedDataControl(groups = []) {
   const state = getAllDetectedDataSelectionState(groups);
   return `<section class="patient-transfer-summary patient-transfer-include-all-data">
     <label><input type="checkbox" data-transfer-include-all-data ${state.checked ? "checked" : ""} ${state.disabled ? "disabled" : ""}> Incluir todos los datos detectados</label>
-    <small>Aplica a signos vitales, diagnósticos, medicamentos e indicaciones de todas las notas activas.</small>
+    <small>Aplica a signos vitales, diagnósticos, estudios, medicamentos e indicaciones de todas las notas activas.</small>
     ${state.checked ? `<div class="patient-transfer-warning" role="status">Se seleccionaron todos los datos detectados. Se recomienda corroborarlos antes de confirmar el traspaso para evitar errores de compatibilidad o detección.</div>` : ""}
   </section>`;
 }
@@ -847,6 +854,23 @@ function renderSegmentDiagnosisCandidates(doc, segment) {
         <td><details><summary>Ver fuente</summary><small>${escapeHtml(candidate.rawText || "")} · ${escapeHtml(candidate.detectionRule || "")}</small></details></td>
       </tr>`;
     }).join("")}</tbody></table></div>` : "<p>No se detectaron diagnósticos explícitos en esta nota.</p>"}</section>`;
+}
+
+function renderSegmentStudyCandidates(doc, segment) {
+  const candidates = segment.studyCandidates || [];
+  return `<section class="patient-transfer-candidates"><div class="patient-transfer-candidates-header"><h4>Estudios de laboratorio y gabinete</h4>${renderBulkSelectionControl(doc, segment, "study", "Incluir todos")}</div>${candidates.length ? `<div class="patient-transfer-table-scroll"><table class="patient-transfer-data-table">
+    <thead><tr><th>Incluir</th><th>Estudio</th><th>Tipo</th><th>Fecha</th><th>Resultado / resumen</th><th>Observaciones</th><th>Fuente</th></tr></thead><tbody>${candidates.map((candidate) => {
+      const key = segmentControlKey(doc, segment, candidate);
+      return `<tr>
+        <td><input aria-label="Incluir estudio" type="checkbox" data-transfer-study-include="${key}" ${candidate.include || candidate.selectedForImport ? "checked" : ""}></td>
+        <td><input data-transfer-study-name="${key}" value="${escapeHtml(candidate.name || "")}" placeholder="Nombre del estudio"></td>
+        <td><select data-transfer-study-type="${key}">${["Laboratorio", "Gabinete", "Otro"].map((item) => option(item, item, item === (candidate.type || "Otro"))).join("")}</select></td>
+        <td><input type="date" data-transfer-study-date="${key}" value="${escapeHtml(candidate.date || "")}"></td>
+        <td><textarea rows="2" data-transfer-study-result="${key}" placeholder="Resultado o resumen">${escapeHtml(candidate.result || "")}</textarea></td>
+        <td><textarea rows="2" data-transfer-study-observations="${key}" placeholder="Observaciones">${escapeHtml(candidate.observations || "")}</textarea></td>
+        <td><details><summary>Ver fuente</summary><small>${escapeHtml(candidate.sourceText || "")}</small></details></td>
+      </tr>`;
+    }).join("")}</tbody></table></div>` : "<p>No se detectaron resultados de laboratorio o gabinete en esta nota.</p>"}</section>`;
 }
 
 function renderSegmentDiagnosisCandidatesLegacy(doc, segment) {
@@ -987,6 +1011,8 @@ function renderSegmentClinicalSections(doc, segment) {
       ["Examen mental", "examenMental"],
       ["Análisis / comentario", "analisis"]
     ])}
+    ${fieldGroup([["Resultados de laboratorio y gabinete", "resultadosEstudios"]])}
+    ${renderSegmentStudyCandidates(doc, segment)}
     ${fieldGroup([["Diagnósticos", "diagnosticos"]])}
     ${renderSegmentDiagnosisCandidates(doc, segment)}
     ${fieldGroup([["Plan / indicaciones", "plan"], ["Medicamentos", "medicamentos"]])}
@@ -1561,6 +1587,24 @@ export function readTransferReview(groups = []) {
             confirmedByDoctor: checked
           };
         });
+        const segmentStudies = (segment.studyCandidates || []).map((candidate) => {
+          const key = `${prefix}:${candidate.id}`;
+          const includeControl = modal.querySelector(`[data-transfer-study-include="${key}"]`);
+          const checked = includeControl
+            ? includeControl.checked
+            : candidate.include === true || candidate.selectedForImport === true;
+          return {
+            ...candidate,
+            include: checked,
+            selectedForImport: checked,
+            confirmedByDoctor: checked,
+            name: modal.querySelector(`[data-transfer-study-name="${key}"]`)?.value?.trim() || candidate.name || "",
+            type: modal.querySelector(`[data-transfer-study-type="${key}"]`)?.value || candidate.type || "Otro",
+            date: modal.querySelector(`[data-transfer-study-date="${key}"]`)?.value || candidate.date || "",
+            result: modal.querySelector(`[data-transfer-study-result="${key}"]`)?.value?.trim() || candidate.result || "",
+            observations: modal.querySelector(`[data-transfer-study-observations="${key}"]`)?.value?.trim() || candidate.observations || ""
+          };
+        });
         const segmentTreatments = (segment.treatmentCandidates || []).map((candidate) => {
           const key = `${prefix}:${candidate.id}`;
           const includeControl = modal.querySelector(`[data-transfer-tx-include="${key}"]`);
@@ -1619,6 +1663,7 @@ export function readTransferReview(groups = []) {
           },
           confirmedType: segmentType,
           diagnosisCandidates: segmentDiagnoses,
+          studyCandidates: segmentStudies,
           treatmentCandidates: segmentTreatments,
           treatmentPlanCandidates: segmentTreatmentPlanCandidates,
           vitalSignsCandidates: (segment.vitalSignsCandidates || []).map((segmentVital) => vitalSignsCandidates.find((item) => item.id === segmentVital.id) || segmentVital)
@@ -1635,6 +1680,7 @@ export function readTransferReview(groups = []) {
         noteSegments,
         sections: primarySegment?.sections || doc.sections,
         diagnosisCandidates: primarySegment?.diagnosisCandidates || diagnosisCandidates,
+        studyCandidates: primarySegment?.studyCandidates || doc.studyCandidates || [],
         treatmentCandidates: primarySegment?.treatmentCandidates || treatmentCandidates,
         treatmentPlanCandidates: primarySegment?.treatmentPlanCandidates || doc.treatmentPlanCandidates || []
       };
@@ -1683,6 +1729,7 @@ export function renderTransferResults(results = []) {
           <span>Notas: ${escapeHtml(notesTransferSummary(result))}</span>
           <span>Signos vitales: ${result.vitalSignsCreated || 0} registrados / Somatometria: ${result.anthropometryCreated || 0}</span>
           <span>Diagnosticos: ${escapeHtml(diagnosisTransferSummary(result))}</span>
+          <span>Estudios: ${result.studiesCreated || 0} registrados / ${result.studiesIdempotent || 0} idempotentes / ${result.studiesOmitted || 0} omitidos${result.studiesError ? ` / Error: ${escapeHtml(result.studiesError)}` : ""}</span>
           <span>Medicamentos: ${result.treatmentsCreated || 0} registrados / ${result.treatmentsIdempotent || 0} idempotentes / ${result.treatmentsOmitted || 0} omitidos${result.treatmentsError ? ` / Error: ${escapeHtml(result.treatmentsError)}` : ""}</span>
           <span>Indicaciones: ${result.indicationsCreated || 0} registradas / ${result.indicationsIdempotent || 0} idempotentes / ${result.indicationsOmitted || 0} omitidas${result.indicationsError ? ` / Error: ${escapeHtml(result.indicationsError)}` : ""}</span>
           <span>Documento original: ${result.sourceSaved === false ? "No guardado" : "Guardado"} / Auditoria: ${result.auditRegistered === false ? "No registrada" : "Registrada"}</span>

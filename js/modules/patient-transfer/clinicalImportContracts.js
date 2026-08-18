@@ -5,12 +5,13 @@
 
 /** @typedef {{pageIndex?: number|null, blockIndex?: number|null, startOffset?: number|null, endOffset?: number|null, sourceHeading?: string, rawEvidence?: string}} ClinicalEvidence */
 /** @typedef {{value: string, rawText: string, normalizedText: string, sourceBlocks: Array, sourceSection: string, evidence: ClinicalEvidence, confidence: "high"|"medium"|"low"|"not-detected", requiresReview: boolean, parserName: string, parserVersion: string}} ClinicalParserResult */
-/** @typedef {{id: string, startBlockIndex: number, endBlockIndex: number, rawText: string, date: string, time: string, sections: Object, diagnosisCandidates: Array, treatmentCandidates: Array}} ClinicalNoteSegment */
-/** @typedef {{id?: string, patient?: Object, fields?: Object, noteSegments: Array, diagnosisCandidates?: Array, treatmentCandidates?: Array, vitalSignsCandidates?: Array}} DocumentCandidate */
+/** @typedef {{id: string, startBlockIndex: number, endBlockIndex: number, rawText: string, date: string, time: string, sections: Object, diagnosisCandidates: Array, studyCandidates?: Array, treatmentCandidates: Array}} ClinicalNoteSegment */
+/** @typedef {{id?: string, patient?: Object, fields?: Object, noteSegments: Array, diagnosisCandidates?: Array, studyCandidates?: Array, treatmentCandidates?: Array, vitalSignsCandidates?: Array}} DocumentCandidate */
 /** @typedef {{id?: string, nombreCompleto?: string, nombres?: string, apellidoPaterno?: string, apellidoMaterno?: string, expediente?: string, fechaNacimiento?: string}} PatientCandidate */
 /** @typedef {{id: string, diagnosisName: string, code: string|null, system: string, status: string, sourceSection: string, evidence: ClinicalEvidence, requiresReview: boolean}} DiagnosisCandidate */
 /** @typedef {{id: string, medicationName: string, strengthValue?: number|null, strengthUnit?: string, route?: string, frequency?: string, schedule?: Array, action?: string, sourceSection?: string, evidence?: ClinicalEvidence}} MedicationCandidate */
 /** @typedef {{id?: string, date?: string, time?: string, bloodPressure?: string, temperature?: string, heartRate?: string, respiratoryRate?: string, oxygenSaturation?: string}} VitalSignsCandidate */
+/** @typedef {{id: string, sourceIndex?: number, name: string, type: "Laboratorio"|"Gabinete"|"Otro", date: string, result: string, include: boolean}} StudyCandidate */
 /** @typedef {{patientId: string, score: number, level: string, matchedFields: Array, conflictingFields: Array}} DuplicatePatientMatch */
 /** @typedef {{success: boolean, operationId: string, patientId?: string, notesCreated: number, diagnosesCreated?: number, treatmentsCreated?: number, errors: Array}} TransferPersistenceResult */
 
