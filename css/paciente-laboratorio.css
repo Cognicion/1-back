@@ -675,6 +675,11 @@
   stroke-width: 1;
 }
 
+.historial-signo-svg .historial-signo-guia {
+  stroke: rgba(190, 196, 188, 0.16);
+  stroke-dasharray: 3 4;
+}
+
 .historial-signo-svg polyline {
   fill: none;
   stroke: var(--celtic-400);
@@ -693,6 +698,12 @@
 .historial-signo-svg text {
   fill: var(--green-200);
   font-size: 12px;
+}
+
+.historial-signo-svg .historial-signo-eje {
+  fill: var(--white-950);
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .historial-signo-vacio {

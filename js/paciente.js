@@ -4823,13 +4823,24 @@ function construirGraficaSeriesSignos(series = [], opciones = {}) {
   };
   const yPunto = (punto) => alto - margen - ((punto.valor - min) / rangoValor) * (alto - margen * 2);
   const paleta = ["#347a4d", "#f97316", "#a78bfa", "#10b981", "#f43f5e", "#eab308", "#529866"];
+  const fechaGrafica = (milisegundos) => formatearFecha(new Date(milisegundos));
+  const yTicks = [min, min + rangoValor / 2, max];
+  const xTicks = [minFecha, minFecha + rangoTiempo / 2, maxFecha];
 
   return `
-    <svg viewBox="0 0 ${ancho} ${alto}" class="historial-signo-svg" role="img" aria-label="Curva histrica de signos vitales">
+    <svg viewBox="0 0 ${ancho} ${alto + 34}" class="historial-signo-svg" role="img" aria-label="Curva historica de signos vitales con fechas en el eje X y valores en el eje Y">
       <line x1="${margen}" y1="${alto - margen}" x2="${ancho - margen}" y2="${alto - margen}" />
       <line x1="${margen}" y1="${margen}" x2="${margen}" y2="${alto - margen}" />
-      <text x="${margen}" y="22">${max}</text>
-      <text x="${margen}" y="${alto - 8}">${min}</text>
+      ${yTicks.map((valor, index) => {
+        const y = alto - margen - (index * (alto - margen * 2) / 2);
+        return `<line x1="${margen}" y1="${y.toFixed(1)}" x2="${ancho - margen}" y2="${y.toFixed(1)}" class="historial-signo-guia" /><text x="${margen - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end">${Number(valor.toFixed(2))}</text>`;
+      }).join("")}
+      ${xTicks.map((milisegundos, index) => {
+        const x = margen + (index * (ancho - margen * 2) / 2);
+        return `<line x1="${x.toFixed(1)}" y1="${alto - margen}" x2="${x.toFixed(1)}" y2="${alto - margen + 6}" class="historial-signo-guia" /><text x="${x.toFixed(1)}" y="${alto - 2}" text-anchor="${index === 0 ? "start" : index === 2 ? "end" : "middle"}">${escaparHTML(fechaGrafica(milisegundos))}</text>`;
+      }).join("")}
+      <text x="${ancho / 2}" y="${alto + 24}" text-anchor="middle" class="historial-signo-eje">X: Fecha de toma</text>
+      <text x="14" y="${alto / 2}" text-anchor="middle" transform="rotate(-90 14 ${alto / 2})" class="historial-signo-eje">Y: Valor</text>
       ${visibles.map((serie, serieIndex) => {
         const color = serie.color || paleta[serieIndex % paleta.length];
         const coords = serie.puntos.map((punto) => `${xPunto(punto, serie).toFixed(1)},${yPunto(punto).toFixed(1)}`).join(" ");
