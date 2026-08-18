@@ -85,6 +85,8 @@ let usuariosOcultosAuditoria = new Set();
 let pacientesAdmin = [];
 let usuariosAdmin = [];
 let reportesUsuariosAdmin = [];
+const eliminacionesPacientesEnCurso = new Set();
+const TIEMPO_MAXIMO_ELIMINACION_PACIENTE_MS = 10 * 60 * 1000;
 let codigosMedicoAdmin = [];
 let formatosManualesAdmin = [];
 let paquetesFormatosAdmin = [];
@@ -3342,7 +3344,7 @@ function detalleSolicitudEliminacionHTML(reporte = {}) {
         <span>UID paciente: ${escaparHTML(reporte.pacienteUid || "Sin UID")}</span>
         <span>Motivo: ${escaparHTML(reporte.motivoSolicitud || "No indicado")}</span>
       </div>
-      ${esSolicitudPaciente ? `<button type="button" class="boton-peligro boton-eliminar-paciente-solicitud" onclick="eliminarPacienteDesdeSolicitudAdmin('${escaparHTML(reporte.id)}')">🗑 Eliminar paciente</button>` : ""}
+      ${esSolicitudPaciente ? `<button type="button" class="boton-peligro boton-eliminar-paciente-solicitud" data-eliminar-paciente-solicitud="${escaparHTML(reporte.id)}" onclick="eliminarPacienteDesdeSolicitudAdmin('${escaparHTML(reporte.id)}')">🗑 Eliminar paciente</button>` : ""}
       ${esSolicitudNota ? `<button type="button" class="boton-peligro boton-eliminar-nota-solicitud" data-eliminar-nota-solicitud="${escaparHTML(reporte.id)}" onclick="eliminarNotaDesdeSolicitudAdmin('${escaparHTML(reporte.id)}')">🗑 Eliminar nota</button>` : ""}
     </div>
   `;
@@ -3378,29 +3380,47 @@ window.eliminarPacienteDesdeSolicitudAdmin = async function(solicitudId) {
   const solicitud = reportesUsuariosAdmin.find((item) => item.id === solicitudId);
   const uidPaciente = solicitud?.pacienteUid || "";
   if (!solicitud || !uidPaciente || solicitud.recursoTipo !== "paciente") return;
+  if (eliminacionesPacientesEnCurso.has(solicitudId)) return;
   if (!adminActual || !(await usuarioPuedeAccederAdmin(adminActual)).permitido) {
     alert("No tienes permisos administrativos para ejecutar esta acción.");
     return;
   }
   const nombre = solicitud.pacienteNombre || solicitud.usuarioRegistrado?.nombre || "este paciente";
   if (!(await solicitarConfirmacionEliminacionPacienteAdmin(nombre))) return;
-  const boton = document.querySelector(`[onclick="eliminarPacienteDesdeSolicitudAdmin('${solicitudId}')"]`);
-  if (boton) { boton.disabled = true; boton.textContent = "Eliminando…"; }
+  eliminacionesPacientesEnCurso.add(solicitudId);
+  const boton = [...document.querySelectorAll("[data-eliminar-paciente-solicitud]")]
+    .find((item) => item.dataset.eliminarPacienteSolicitud === solicitudId);
+  if (boton) { boton.disabled = true; boton.textContent = "Eliminando paciente y archivos…"; }
   try {
-    const eliminar = httpsCallable(await obtenerFunctions(), "eliminarPacienteDefinitivamente");
+    const eliminar = httpsCallable(
+      await obtenerFunctions(),
+      "eliminarPacienteDefinitivamente",
+      { timeout: TIEMPO_MAXIMO_ELIMINACION_PACIENTE_MS }
+    );
     await eliminar({ pacienteUid: uidPaciente, pacienteNombre: nombre, solicitudId, motivo: solicitud.motivoSolicitud || "" });
     reportesUsuariosAdmin = reportesUsuariosAdmin.filter((item) => item.pacienteUid !== uidPaciente && item.id !== solicitudId);
     pacientesAdmin = pacientesAdmin.filter((item) => item.id !== uidPaciente);
     delete notasPorPaciente[uidPaciente];
     renderizarReportesUsuariosAdmin();
     renderizarPacientesAdmin();
-    await cargarResumen();
-    await cargarUsuariosAdmin();
-    await cargarAuditoria();
     alert("Paciente eliminado correctamente.");
+    Promise.allSettled([
+      cargarResumen(),
+      cargarUsuariosAdmin(),
+      cargarAuditoria()
+    ]).then((resultados) => {
+      if (resultados.some((resultado) => resultado.status === "rejected")) {
+        console.warn("La eliminación terminó, pero alguna lista administrativa no pudo refrescarse.");
+      }
+    });
   } catch (error) {
     if (boton) { boton.disabled = false; boton.textContent = "🗑 Eliminar paciente"; }
-    alert("No se pudo eliminar el paciente: " + error.message);
+    const mensaje = error?.code === "functions/already-exists"
+      ? "La eliminación de este paciente ya está en curso. Espera a que termine."
+      : error.message;
+    alert("No se pudo eliminar el paciente: " + mensaje);
+  } finally {
+    eliminacionesPacientesEnCurso.delete(solicitudId);
   }
 };
 
