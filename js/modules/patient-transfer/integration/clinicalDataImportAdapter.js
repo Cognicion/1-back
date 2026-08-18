@@ -2,6 +2,7 @@ import { db } from "../../../firebase.js";
 import { actualizarUsuario, obtenerUsuario } from "../../../services/usuarios.js?v=20260816-expedientes-cognicion-v1";
 import { crearTratamiento, listarTratamientos } from "../../../services/tratamientos.js";
 import { normalizarTextoBusquedaPaciente } from "../../../utils/nombresPacientes.js";
+import { isSuspendedTreatmentAction } from "./treatmentTimelineReconciler.js?v=20260818-treatment-timeline-v1";
 import {
   construirActualizacionHistorialDiagnosticos,
   fusionarDiagnosticosImportados
@@ -26,7 +27,9 @@ function treatmentKey(candidate = {}, context = {}) {
 }
 
 function treatmentPayload(candidate = {}, context = {}) {
-  const estado = candidate.action || candidate.statusSuggestion || "Continúa";
+  const action = candidate.action || candidate.statusSuggestion || "Continúa";
+  const suspended = isSuspendedTreatmentAction(action);
+  const estado = suspended ? "suspendido" : action;
   const strengthValue = candidate.strengthValue ?? candidate.dose ?? "";
   const strengthUnit = candidate.strengthUnit || candidate.doseUnit || "";
   const schedule = Array.isArray(candidate.schedule) ? candidate.schedule : [];
@@ -55,9 +58,14 @@ function treatmentPayload(candidate = {}, context = {}) {
     frecuencia: candidate.frequencyRaw || "",
     horarios: schedule,
     horario: candidate.scheduleText || "",
-    accionFarmacologica: candidate.action || estado,
+    accionFarmacologica: action,
     estado,
-    fechaInicio: context.date || new Date().toISOString().slice(0, 10),
+    fechaInicio: candidate.date || context.date || new Date().toISOString().slice(0, 10),
+    ...(suspended ? {
+      cambioIndicacion: "se_suspende",
+      fechaSuspension: candidate.suspensionDate || context.date || new Date().toISOString().slice(0, 10),
+      motivoSuspension: "Ausente del tratamiento indicado en la nota mas reciente"
+    } : {}),
     indicacion: "",
     observaciones: candidate.sourceText || "",
     origenImportacionDocx: true,

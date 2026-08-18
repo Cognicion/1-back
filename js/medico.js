@@ -269,7 +269,7 @@ function inicializarImportacionDocxLazy() {
     try {
       if (!traspasoPacientesPromise) {
         // Marcador de cache del importador documental.
-    traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260817-medication-fraction-doses-v1");
+    traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260818-treatment-timeline-v1");
       }
       const modulo = await traspasoPacientesPromise;
       modulo.openPatientTransfer();
