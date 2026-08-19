@@ -269,7 +269,7 @@ function inicializarImportacionDocxLazy() {
     try {
       if (!traspasoPacientesPromise) {
         // Marcador de cache del importador documental.
-    traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260818-clinical-extraction-v1");
+    traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260819-midc-allergy-context-v1");
       }
       const modulo = await traspasoPacientesPromise;
       modulo.openPatientTransfer();

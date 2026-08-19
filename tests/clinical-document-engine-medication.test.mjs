@@ -28,4 +28,29 @@ assert.equal(legacy.schedule[0].time, "08:00");
 const detected = detectMedicationCandidates({ sections: { medicamentos: "Sertralina 50 mg vía oral 1 vez al día" }, documentId: "anon" });
 assert.equal(detected.length, 1);
 
+const allergyOnly = parseMedicationCandidates({
+  text: "Alergias: CEFTRIAXONA y DEXAMETASONA",
+  section: "plan",
+  documentId: "allergy-only"
+});
+assert.deepEqual(allergyOnly, [], "una alergia no debe convertirse en medicación activa");
+
+const allergyAndActiveMedication = detectMedicationCandidates({
+  sections: {
+    plan: "5. Alergias: CEFTRIAXONA y DEXAMETASONA",
+    medicamentos: "a. Fluoxetina tabletas 20 mg vía oral una vez al día a las 08:00\nb. Pregabalina cápsulas 75 mg vía oral una vez al día a las 22:00"
+  },
+  documentId: "allergy-and-active"
+});
+assert.deepEqual(allergyAndActiveMedication.map((candidate) => candidate.medicationName), ["Fluoxetina", "Pregabalina"]);
+
+const allergyThenPrescription = parseMedicationCandidates({
+  text: "Alergia a dexametasona. Dexametasona tableta 4 mg vía oral una vez al día",
+  section: "medicamentos",
+  documentId: "allergy-then-prescription"
+});
+assert.equal(allergyThenPrescription.length, 1, "una prescripción posterior explícita debe conservarse");
+assert.equal(allergyThenPrescription[0].medicationName, "Dexametasona");
+assert.equal(allergyThenPrescription[0].strength, 4);
+
 console.log("clinical-document-engine-medication: ok");

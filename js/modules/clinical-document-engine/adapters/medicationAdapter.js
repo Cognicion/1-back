@@ -1,7 +1,7 @@
-import { detectMedicationCandidates, parseMedicationCandidates } from "../parsers/medicationParser.js?v=20260818-clinical-extraction-v1";
+import { detectMedicationCandidates, parseMedicationCandidates } from "../parsers/medicationParser.js?v=20260819-midc-allergy-context-v1";
 import { validateMedication } from "../validators/medicationValidator.js";
 import { EntityFactory } from "../engine/EntityFactory.js";
-import { resolveMedicationAgainstCatalog } from "../resolvers/medicationCatalogResolver.js?v=20260818-clinical-extraction-v1";
+import { resolveMedicationAgainstCatalog } from "../resolvers/medicationCatalogResolver.js?v=20260819-midc-allergy-context-v1";
 
 function asClinicalEntity(candidate = {}) {
   return candidate.entityType && candidate.value !== undefined && candidate.identity

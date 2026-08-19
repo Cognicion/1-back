@@ -1,4 +1,4 @@
-import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260818-clinical-extraction-v1";
+import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260819-midc-allergy-context-v1";
 import { ClinicalCandidate } from "../core/ClinicalCandidate.js";
 import { ClinicalEvidence } from "../core/ClinicalEvidence.js";
 import { evaluateConfidence, requiresReviewForConfidence } from "../confidence/confidenceEngine.js";
@@ -9,6 +9,7 @@ import { clinicalImportLogger } from "../utils/logger.js";
 const VERSION = "1.0";
 const PARSER = "midc.medicationParser";
 const MANUAL_NAMES = ["Yasmin", "Lactobacilos"];
+const ALLERGY_CONTEXT = /\b(?:alergias?\s*(?::|a\b)|alergic[oa]\s+a\b|hipersensibilidades?\s*(?::|a\b))[^.\n;]{0,180}$/i;
 
 function catalogNames(catalog = MEDICAMENTOS_MAESTROS) {
   return [...new Set([...catalog, ...MEDICAMENTOS_MAESTROS].flatMap((item) => [
@@ -34,6 +35,37 @@ function findMedicationName(item = "", catalog = MEDICAMENTOS_MAESTROS) {
   if (/^(?:cada|hora|horas)$/i.test(value)) return "";
   if (/^(?:tomar|administrar|aplicar|via|oral|se|se inicio|se inició|inicia|inicio|suspende|suspendio|suspendió|se suspendio|se suspendió|suspender|aumenta|disminuye|cambia|recibio|recibió|previamente|previo|antecedente)$/i.test(value)) return "";
   return value;
+}
+
+function medicationMentionIsAllergy(source = "", name = "", position = -1) {
+  const mentionPosition = position >= 0
+    ? position
+    : normalizeClinicalComparisonText(source).indexOf(normalizeClinicalComparisonText(name));
+  if (mentionPosition < 0) return false;
+  const prefix = normalizeClinicalComparisonText(source).slice(Math.max(0, mentionPosition - 220), mentionPosition);
+  return ALLERGY_CONTEXT.test(prefix);
+}
+
+function itemStartsInAllergyContext(source = "", item = "", name = "") {
+  const comparableSource = normalizeClinicalComparisonText(source);
+  const comparableItem = normalizeClinicalComparisonText(item);
+  const comparableName = normalizeClinicalComparisonText(name);
+  const itemPosition = comparableSource.indexOf(comparableItem);
+  const namePosition = comparableItem.indexOf(comparableName);
+  return medicationMentionIsAllergy(comparableSource, comparableName, itemPosition >= 0 && namePosition >= 0 ? itemPosition + namePosition : -1);
+}
+
+function hasMedicationMentionOutsideAllergy(source = "", name = "") {
+  const comparableSource = normalizeClinicalComparisonText(source);
+  const comparableName = normalizeClinicalComparisonText(name);
+  let position = 0;
+  let found = false;
+  while ((position = comparableSource.indexOf(comparableName, position)) >= 0) {
+    found = true;
+    if (!medicationMentionIsAllergy(comparableSource, comparableName, position)) return true;
+    position += comparableName.length;
+  }
+  return !found;
 }
 
 function actionFromText(text = "") {
@@ -128,6 +160,7 @@ export function parseMedicationCandidates({ text = "", section = "tratamiento", 
   clinicalImportLogger.info("medicationParser:input-count", JSON.stringify({ documentId, noteId, count: items.length }));
   const candidates = items.filter((item) => !/\b(?:niega|sin\s+uso\s+de|no\s+usa|no\s+toma)\b/i.test(item)).map((item, itemIndex) => {
     const candidate = createCandidate({ item, itemIndex, section, documentId, noteId, date, catalog: medicationCatalog });
+    if (candidate && itemStartsInAllergyContext(text, item, candidate.medicationName)) return null;
     if (candidate && new RegExp(`\\b(?:niega|sin\\s+uso\\s+de|no\\s+usa|no\\s+toma)\\b[^.]{0,80}\\b${candidate.medicationName.replace(/[.*+?^${}()|[\\]\\]/g, "\\\\$&")}\\b`, "i").test(text)) return null;
     if (candidate) {
       const namePosition = normalizeClinicalComparisonText(text).indexOf(normalizeClinicalComparisonText(candidate.medicationName));
@@ -139,6 +172,7 @@ export function parseMedicationCandidates({ text = "", section = "tratamiento", 
   }).filter(Boolean);
   catalogNames(medicationCatalog).forEach((name) => {
     if (!new RegExp(`\\b${name.replace(/[.*+?^${}()|[\\]\\]/g, "\\\\$&")}\\b`, "i").test(text)) return;
+    if (!hasMedicationMentionOutsideAllergy(text, name)) return;
     const normalizedName = normalizeClinicalComparisonText(name);
     if (candidates.some((candidate) => {
       const existing = normalizeClinicalComparisonText(candidate.medicationName);

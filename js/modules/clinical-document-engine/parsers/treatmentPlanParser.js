@@ -5,9 +5,9 @@ import { ClinicalEvidence } from "../core/ClinicalEvidence.js";
 import { evaluateConfidence, requiresReviewForConfidence } from "../confidence/confidenceEngine.js";
 import { normalizeClinicalComparisonText } from "../normalizers/textNormalizer.js";
 import { parseMedicationStrength, splitMedicationItems } from "../normalizers/medicationNormalizer.js?v=20260818-clinical-extraction-v1";
-import { parseMedicationCandidates } from "./medicationParser.js?v=20260818-clinical-extraction-v1";
+import { parseMedicationCandidates } from "./medicationParser.js?v=20260819-midc-allergy-context-v1";
 import { clinicalImportLogger } from "../utils/logger.js";
-import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260818-clinical-extraction-v1";
+import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260819-midc-allergy-context-v1";
 
 const VERSION = "1.0";
 const MEDICATION_SUBSECTION_HEADING = /(?:^|\n)\s*(?:(?:\d+)\s*[.)-]\s*)?(?:medicamentos|medicaci[oó]n|tratamiento farmacol[oó]gico|f[aá]rmacos)\b[^\n]*/gi;
