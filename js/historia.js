@@ -10,6 +10,7 @@ import { esPacienteMujer } from "./utils/sexo.js";
 import { crearGestorHitosDesarrolloHistoria } from "./components/hitosDesarrolloHistoria.js";
 import { crearGestorFamiliogramaHistoria } from "./components/familiogramaHistoria.js";
 import { calcularIMC } from "./utils/imc.js";
+import { generarHistoriaClinicaAutomatica, combinarHistoriaAutomatica } from "./services/historiaClinicaAutomatica.js";
 
 import {
   obtenerUsuario,
@@ -194,7 +195,20 @@ async function cargarHistoria() {
     sustancias: { seleccionadas: [], observacionesGenerales: "" }
   };
 
-  const datos = historia.exists() ? { ...raiz, ...historia.data() } : raiz;
+  let datos = historia.exists() ? { ...raiz, ...historia.data() } : raiz;
+  try {
+    const automatico = await generarHistoriaClinicaAutomatica({ uidPaciente, paciente: pacienteActual, historia: datos });
+    datos = combinarHistoriaAutomatica(datos, automatico);
+    const aviso = document.getElementById("avisoHistoriaAutomatica");
+    if (aviso) {
+      const totalFuentes = automatico.fuentes?.length || 0;
+      const totalFamiliares = Math.max(0, (automatico.familiograma?.personas?.length || 1) - 1);
+      aviso.textContent = `Historia prellenada con ${totalFuentes} fuentes clínicas y ${totalFamiliares} familiares detectados. Revisa y confirma antes de guardar.`;
+      aviso.hidden = false;
+    }
+  } catch (error) {
+    console.warn("No se pudo generar el borrador automático de historia clínica:", error);
+  }
   historiaActualDatos = datos;
 
   datos.exploracionMental = componerExploracionMentalNarrativa(datos);
@@ -273,6 +287,9 @@ function obtenerDatosHistoriaClinica() {
   datos.sustancias = gestorSustanciasHistoria?.obtenerDatos() || { seleccionadas: [], observacionesGenerales: "" };
   datos.hitosDesarrollo = gestorHitosDesarrollo?.obtenerDatos() || { registros: [], observacionesGenerales: "" };
   datos.familiograma = gestorFamiliograma?.obtenerDatos() || { personas: [], relaciones: [], observacionesGenerales: "" };
+  datos.fuentesAutomaticasHistoria = historiaActualDatos.fuentesAutomaticasHistoria || [];
+  datos.comorbilidadesFamiliares = historiaActualDatos.comorbilidadesFamiliares || [];
+  datos.historiaGeneradaAutomaticamente = historiaActualDatos.historiaGeneradaAutomaticamente === true;
   const advertencias = gestorSustanciasHistoria?.validar() || [];
   const bloqueante = advertencias.find((advertencia) => advertencia.includes("otra sustancia seleccionada"));
   if (bloqueante) throw Object.assign(new Error(bloqueante), { code: "validation/substances" });

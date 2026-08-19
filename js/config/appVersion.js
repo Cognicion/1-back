@@ -55,5 +55,6 @@
 // deployment marker: 2026-08-18-diagnoses-studies-v1
 // deployment marker: 2026-08-18-envio-piso-header-v1
 // deployment marker: 2026-08-18-patient-deletion-timeout-v1
-export const APP_VERSION = "2.027";
+// deployment marker: 2026-08-18-index-mobile-responsive-v1
+export const APP_VERSION = "2.028";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

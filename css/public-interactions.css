@@ -60,8 +60,37 @@
 .public-interactions-ok { padding: 16px; border-radius: 12px; background: rgba(34,197,94,.1); color: #bbf7d0; }
 
 @media (max-width: 560px) {
-  .public-interactions-modal { padding: 10px; align-items: end; }
-  .public-interactions-panel { max-height: 92vh; padding: 18px; border-radius: 18px 18px 0 0; }
+  .public-interactions-modal {
+    width: 100%;
+    max-width: 100vw;
+    align-items: end;
+    padding:
+      10px max(10px, env(safe-area-inset-right))
+      max(10px, env(safe-area-inset-bottom))
+      max(10px, env(safe-area-inset-left));
+    overflow: hidden;
+  }
+  .public-interactions-panel {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    max-height: calc(100dvh - 20px - env(safe-area-inset-bottom));
+    padding: 18px;
+    border-radius: 18px 18px 0 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
   .public-interactions-search-row { flex-direction: column; }
   .public-interactions-search-row input { width: 100%; }
+  .public-interaction-actions > .laboratory-button {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+  }
+  .public-interactions-results,
+  .public-interaction-alert,
+  .public-interaction-selected-item {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
 }

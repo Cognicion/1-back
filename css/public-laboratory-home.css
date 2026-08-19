@@ -1546,3 +1546,247 @@ html[data-theme="biocelular"] .roadmap-line li::before {
     transition-duration: .01ms !important;
   }
 }
+
+/* Ajuste móvil localizado: conserva intactos los layouts de tablet y escritorio. */
+@media (max-width: 760px) {
+  html,
+  body.public-lab-page {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .public-header {
+    width: 100%;
+    max-width: 100vw;
+    gap: 6px;
+    padding-inline:
+      max(10px, env(safe-area-inset-left))
+      max(10px, env(safe-area-inset-right));
+  }
+
+  .public-brand {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: calc(100% - 116px);
+    gap: 7px;
+    overflow: hidden;
+  }
+
+  .public-brand img {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+  }
+
+  .public-brand > span {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .public-brand strong {
+    display: block;
+    overflow: hidden;
+    font-size: 10px;
+    letter-spacing: .14em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .public-mobile-actions {
+    flex: 0 0 auto;
+    min-width: 0;
+    gap: 5px;
+  }
+
+  body.public-lab-page .public-mobile-actions .public-login-button {
+    min-width: 0;
+    min-height: 32px;
+    padding-inline: 8px;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+
+  .public-menu-toggle {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+  }
+
+  .public-mobile-menu {
+    right: max(10px, env(safe-area-inset-right));
+    left: max(10px, env(safe-area-inset-left));
+    width: auto;
+    max-width: calc(100vw - 20px);
+    max-height: calc(100dvh - var(--header-height) - 14px);
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .laboratory-hero {
+    width: 100%;
+    max-width: 100%;
+    min-height: 680px;
+    grid-template-rows: auto minmax(370px, 1fr);
+    padding: 38px max(14px, env(safe-area-inset-right)) 18px max(14px, env(safe-area-inset-left));
+  }
+
+  .laboratory-hero-copy {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .laboratory-kicker {
+    max-width: 100%;
+    font-size: clamp(29px, 9vw, 37px);
+    letter-spacing: .1em;
+    text-indent: 0;
+    white-space: nowrap;
+  }
+
+  .laboratory-hero h1 {
+    max-width: 100%;
+    font-size: clamp(9px, 2.8vw, 11px);
+    letter-spacing: .15em;
+    text-indent: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .laboratory-lead {
+    width: min(100%, 330px);
+    margin-inline: auto;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+  }
+
+  .laboratory-stage {
+    --orbit-width: 230px;
+    --orbit-height: 250px;
+    --orbit-radius: 115px;
+    --orbit-scale-y: 1.0869565;
+    --orbit-inverse-scale-y: .92;
+    width: 100%;
+    max-width: 100%;
+    min-height: 370px;
+    overflow: visible;
+  }
+
+  .laboratory-orbit-path,
+  .laboratory-orbit-track {
+    top: 51%;
+  }
+
+  body.public-lab-page .laboratory-orbit-action {
+    width: clamp(116px, 32vw, 124px);
+    min-width: 0;
+    min-height: 38px;
+    padding: 7px 8px;
+    font-size: 8.5px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .laboratory-brain-visual {
+    width: min(500px, 120vw);
+  }
+
+  .public-section,
+  .public-footer {
+    width: 100%;
+    max-width: 100%;
+    padding-inline:
+      max(14px, env(safe-area-inset-left))
+      max(14px, env(safe-area-inset-right));
+  }
+
+  .module-grid,
+  .module-more,
+  .roadmap-line,
+  .philosophy-card,
+  .public-footer-main {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  body.public-lab-page .module-card {
+    min-width: 0;
+    min-height: 124px;
+    padding: 13px 8px;
+  }
+
+  .module-card h3,
+  .module-card p,
+  .module-more a,
+  .public-footer a {
+    overflow-wrap: anywhere;
+  }
+
+  .public-scroll-top {
+    right: auto;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    left: max(12px, env(safe-area-inset-left));
+  }
+}
+
+@media (max-width: 430px) {
+  .laboratory-stage {
+    --orbit-width: 190px;
+    --orbit-height: 250px;
+    --orbit-radius: 95px;
+    --orbit-scale-y: 1.315789;
+    --orbit-inverse-scale-y: .76;
+  }
+
+  body.public-lab-page .laboratory-orbit-action {
+    width: clamp(112px, 33vw, 128px);
+  }
+
+  .laboratory-brain-visual {
+    width: min(470px, 120vw);
+  }
+}
+
+@media (max-width: 350px) {
+  .public-header {
+    padding-inline:
+      max(7px, env(safe-area-inset-left))
+      max(7px, env(safe-area-inset-right));
+  }
+
+  .public-brand {
+    max-width: calc(100% - 108px);
+  }
+
+  .public-brand strong {
+    font-size: 9px;
+    letter-spacing: .09em;
+  }
+
+  body.public-lab-page .public-mobile-actions .public-login-button {
+    padding-inline: 6px;
+    font-size: 8px;
+  }
+
+  .laboratory-kicker {
+    font-size: 28px;
+    letter-spacing: .075em;
+  }
+
+  .laboratory-stage {
+    --orbit-width: 154px;
+    --orbit-height: 230px;
+    --orbit-radius: 77px;
+    --orbit-scale-y: 1.493506;
+    --orbit-inverse-scale-y: .669565;
+  }
+
+  body.public-lab-page .laboratory-orbit-action {
+    width: 110px;
+    font-size: 8px;
+  }
+
+  .laboratory-brain-visual {
+    width: min(430px, 122vw);
+  }
+}
