@@ -91153,10 +91153,19 @@ function encontrarPresentacion(medicamento, entrada) {
   }
   const texto = normalizarNombreMedicamento(textoEntrada(entrada));
   if (!texto) return null;
+  const tokensRelevantes = (valor) => normalizarNombreMedicamento(valor)
+    .match(/[a-z]+|\d+(?:\.\d+)?/g)
+    ?.map((token) => token.replace(/s$/, ""))
+    .filter((token) => (token.length > 1 || /^\d/.test(token)) && !new Set(["de", "del", "la", "el", "para", "por"]).has(token)) || [];
+  const tokensEntrada = new Set(tokensRelevantes(texto));
+  const evidenciaVia = ["oral", "inyectable", "intravenosa", "intramuscular", "subcutanea", "oftalmica", "topica", "rectal", "nasal", "otica", "inhalada", "implante"]
+    .some((via) => tokensEntrada.has(via));
   return medicamento.presentaciones.map((presentacion) => {
-    const tokens = normalizarNombreMedicamento(presentacion.texto).split(/[^a-z0-9]+/).filter((token) => token.length > 1);
-    return { presentacion, score: tokens.filter((token) => texto.includes(token)).length, total: tokens.length };
-  }).filter((item) => item.score && (item.score === item.total || /\d/.test(item.presentacion.texto))).sort((a, b) => b.score - a.score || b.total - a.total)[0]?.presentacion || null;
+    const tokens = tokensRelevantes(`${presentacion.texto} ${evidenciaVia ? presentacion.via || "" : ""}`);
+    const coincidencias = tokens.filter((token) => tokensEntrada.has(token));
+    return { presentacion, score: coincidencias.length, total: tokens.length };
+  }).filter((item) => item.total > 0 && item.score === item.total)
+    .sort((a, b) => b.total - a.total)[0]?.presentacion || null;
 }
 
 export function textoMedicamentoParaBusqueda(medicamento) {

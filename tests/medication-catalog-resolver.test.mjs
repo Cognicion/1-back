@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { adaptTreatmentPlan } from "../js/modules/clinical-document-engine/adapters/treatmentPlanAdapter.js";
 import { resolveMedicationAgainstCatalog } from "../js/modules/clinical-document-engine/resolvers/medicationCatalogResolver.js";
+import { resolverMedicamentoCanonico } from "../js/data/catalogoFarmacologicoUnificado.js";
 
 const brianPlan = `PLAN TERAPÉUTICO
 6. MEDICAMENTOS:
@@ -53,5 +54,23 @@ const presentationMismatch = resolveMedicationAgainstCatalog({
 assert.equal(presentationMismatch.catalogMedicationId, "sertralina");
 assert.equal(presentationMismatch.catalogPresentationMatch, false);
 assert.equal(presentationMismatch.requiresCatalogReview, true);
+
+const dexametasonaSinPresentacion = resolverMedicamentoCanonico("Dexametasona");
+assert.equal(dexametasonaSinPresentacion?.clinicalMedicationId, "dexametasona");
+assert.equal(dexametasonaSinPresentacion?.selectedPresentationId, null, "el nombre aislado no debe inventar una presentación");
+
+const dexametasonaInyectable = resolverMedicamentoCanonico("Dexametasona 4 mg/mL solución inyectable");
+assert.equal(dexametasonaInyectable?.selectedPresentationId, "dexametasona-solucion-inyectable-4-mg-ml");
+assert.equal(dexametasonaInyectable?.presentacion?.via, "inyectable");
+assert.equal(dexametasonaInyectable?.presentacion?.forma, "solución inyectable");
+
+const dexametasonaIncompleta = resolverMedicamentoCanonico("Dexametasona 7 mg/mL solución inyectable");
+assert.equal(dexametasonaIncompleta?.clinicalMedicationId, "dexametasona");
+assert.equal(dexametasonaIncompleta?.selectedPresentationId, null, "una concentración no catalogada debe quedar incompleta");
+
+const betametasona = resolverMedicamentoCanonico("Betametasona crema tópica 0.5 mg/mL");
+assert.equal(betametasona?.clinicalMedicationId, "betametasona");
+assert.equal(betametasona?.presentacion?.via, "tópica");
+assert.notEqual(betametasona?.clinicalMedicationId, "dexametasona", "los corticoides de nombre parecido no deben confundirse");
 
 console.log("medication-catalog-resolver: ok");
