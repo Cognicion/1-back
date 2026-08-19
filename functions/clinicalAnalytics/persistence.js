@@ -6,6 +6,7 @@ const {
   CLINICAL_EXTRACTOR_VERSION,
   CLINICAL_FEATURE_PROFILE_VERSION,
   CLINICAL_MATRIX_ENGINE_VERSION,
+  CLINICAL_EMBEDDING_ENGINE_VERSION,
   CLINICAL_PATTERN_ENGINE_VERSION,
   CLINICAL_PROBABILITY_ENGINE_VERSION
 } = require("./config");
@@ -15,6 +16,7 @@ const { listClinicalEvidence } = require("./evidenceRegistry");
 const { buildPatientFeatureProfile } = require("./patientFeatureProfile");
 const { persistPatientFeatureProfile, readClinicalMatrices } = require("./matrixPersistence");
 const { localizeClinicalKnowledge } = require("./spanishPresentation");
+const { readClinicalEmbeddingKnowledge } = require("./embeddingPersistence");
 
 function compactKey(value) { return String(value || "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 450); }
 function monthBucket(value) { const date = new Date(value || 0); return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 7); }
@@ -76,20 +78,21 @@ async function persistClinicalAnalysis({ db, patientId, variables, patterns, rel
 
 async function readClinicalKnowledge({ db, limit = 100 }) {
   const read = async (collectionName) => (await db.collection(collectionName).limit(limit).get()).docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  const [variables, patterns, relationships, probabilities, evidence, matrixKnowledge] = await Promise.all([
+  const [variables, patterns, relationships, probabilities, evidence, matrixKnowledge, embeddingKnowledge] = await Promise.all([
     read(ANALYTICS_COLLECTIONS.variables),
     read(ANALYTICS_COLLECTIONS.patterns),
     read(ANALYTICS_COLLECTIONS.relationships),
     read(ANALYTICS_COLLECTIONS.probabilities),
     read(ANALYTICS_COLLECTIONS.evidence),
-    readClinicalMatrices({ db, limit })
+    readClinicalMatrices({ db, limit }),
+    readClinicalEmbeddingKnowledge({ db })
   ]);
   const storedEvidence = new Map(evidence.map((item) => [item.evidenceId, item]));
   const mergedEvidence = listClinicalEvidence().map((item) => ({ ...item, ...(storedEvidence.get(item.evidenceId) || {}) }));
   evidence.forEach((item) => {
     if (!mergedEvidence.some((candidate) => candidate.evidenceId === item.evidenceId)) mergedEvidence.push(item);
   });
-  return localizeClinicalKnowledge({ variables, patterns, relationships, probabilities, evidence: mergedEvidence, ...matrixKnowledge, versions: { schemaVersion: CLINICAL_ANALYTICS_SCHEMA_VERSION, extractorVersion: CLINICAL_EXTRACTOR_VERSION, featureProfileVersion: CLINICAL_FEATURE_PROFILE_VERSION, patternEngineVersion: CLINICAL_PATTERN_ENGINE_VERSION, probabilityEngineVersion: CLINICAL_PROBABILITY_ENGINE_VERSION, matrixEngineVersion: CLINICAL_MATRIX_ENGINE_VERSION, evidenceRegistryVersion: CLINICAL_EVIDENCE_REGISTRY_VERSION } });
+  return localizeClinicalKnowledge({ variables, patterns, relationships, probabilities, evidence: mergedEvidence, ...matrixKnowledge, embeddingKnowledge, versions: { schemaVersion: CLINICAL_ANALYTICS_SCHEMA_VERSION, extractorVersion: CLINICAL_EXTRACTOR_VERSION, featureProfileVersion: CLINICAL_FEATURE_PROFILE_VERSION, patternEngineVersion: CLINICAL_PATTERN_ENGINE_VERSION, probabilityEngineVersion: CLINICAL_PROBABILITY_ENGINE_VERSION, matrixEngineVersion: CLINICAL_MATRIX_ENGINE_VERSION, embeddingEngineVersion: CLINICAL_EMBEDDING_ENGINE_VERSION, evidenceRegistryVersion: CLINICAL_EVIDENCE_REGISTRY_VERSION } });
 }
 
 module.exports = { persistClinicalAnalysis, readClinicalKnowledge };

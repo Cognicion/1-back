@@ -1,4 +1,6 @@
-const COLLECTIONS = ["notasMedicas", "notas", "notasClinicas", "notasRapidas", "tratamientos", "estudios", "escalasAplicadas", "resultadosEscalas", "laboratorios", "signosVitales", "eventos"];
+const { CLINICAL_RECORD_COLLECTIONS } = require("./config");
+
+const COLLECTIONS = CLINICAL_RECORD_COLLECTIONS;
 
 function valueToIso(value) {
   if (value && typeof value.toDate === "function") return value.toDate().toISOString();

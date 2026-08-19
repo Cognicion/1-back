@@ -6,6 +6,37 @@ const CLINICAL_EVIDENCE_REGISTRY_VERSION = "1.2.0";
 const CLINICAL_FEATURE_PROFILE_VERSION = "1.0.0";
 const CLINICAL_MATRIX_ENGINE_VERSION = "1.1.0";
 const CLINICAL_PRESENTATION_VERSION = "1.0.0";
+const CLINICAL_EMBEDDING_ENGINE_VERSION = "1.0.0";
+
+const CLINICAL_RECORD_SOURCE_CATALOG = Object.freeze({
+  patientProfile: Object.freeze({ label: "Perfil clínico", domain: "perfil_clinico", rootDocument: true }),
+  notasMedicas: Object.freeze({ label: "Notas médicas", domain: "documentacion" }),
+  notas: Object.freeze({ label: "Notas", domain: "documentacion" }),
+  notasClinicas: Object.freeze({ label: "Notas clínicas", domain: "documentacion" }),
+  notasRapidas: Object.freeze({ label: "Notas rápidas", domain: "documentacion" }),
+  historiaClinica: Object.freeze({ label: "Historia clínica", domain: "antecedentes" }),
+  documentosImportados: Object.freeze({ label: "Documentos importados", domain: "documentacion" }),
+  notasFlotantes: Object.freeze({ label: "Notas de seguimiento", domain: "documentacion" }),
+  interconsultas: Object.freeze({ label: "Interconsultas", domain: "eventos" }),
+  tratamientos: Object.freeze({ label: "Tratamientos", domain: "tratamientos" }),
+  indicaciones: Object.freeze({ label: "Indicaciones", domain: "tratamientos" }),
+  recetas: Object.freeze({ label: "Recetas", domain: "tratamientos" }),
+  prescripcionesPediatricas: Object.freeze({ label: "Prescripciones pediátricas", domain: "tratamientos" }),
+  estudios: Object.freeze({ label: "Estudios", domain: "estudios" }),
+  solicitudesEstudios: Object.freeze({ label: "Solicitudes de estudios", domain: "estudios" }),
+  laboratorios: Object.freeze({ label: "Laboratorios", domain: "laboratorios" }),
+  signosVitales: Object.freeze({ label: "Signos vitales", domain: "signos_vitales" }),
+  medicionesPediatricas: Object.freeze({ label: "Mediciones pediátricas", domain: "signos_vitales" }),
+  escalasAplicadas: Object.freeze({ label: "Escalas aplicadas", domain: "escalas" }),
+  resultadosEscalas: Object.freeze({ label: "Resultados de escalas", domain: "escalas" }),
+  rehabilitacionResultados: Object.freeze({ label: "Resultados de rehabilitación", domain: "rehabilitacion" }),
+  eventos: Object.freeze({ label: "Eventos clínicos", domain: "eventos" })
+});
+
+const CLINICAL_RECORD_COLLECTIONS = Object.freeze(
+  Object.keys(CLINICAL_RECORD_SOURCE_CATALOG)
+    .filter((sourceId) => CLINICAL_RECORD_SOURCE_CATALOG[sourceId].rootDocument !== true)
+);
 
 const CLINICAL_PROBABILITY_CONFIG = Object.freeze({
   minimumObservations: 10,
@@ -32,6 +63,20 @@ const CLINICAL_PATTERN_MATRIX_CONFIG = Object.freeze({
   maxPatients: 5000
 });
 
+const CLINICAL_EMBEDDING_CONFIG = Object.freeze({
+  model: "text-embedding-3-small",
+  dimensions: 512,
+  maxFragmentCharacters: 4800,
+  maxFragmentsPerRecord: 12,
+  requestBatchSize: 32,
+  nearestNeighbors: 20,
+  minimumSimilarity: 0.78,
+  minimumCrossPatientPairs: 3,
+  rebuildBatchRecords: 20,
+  processingLeaseMs: 5 * 60 * 1000,
+  maxRelationsRead: 1500
+});
+
 const ANALYTICS_COLLECTIONS = Object.freeze({
   variables: "clinicalAnalyticsVariables",
   patterns: "clinicalAnalyticsPatterns",
@@ -40,6 +85,12 @@ const ANALYTICS_COLLECTIONS = Object.freeze({
   patientProfiles: "clinicalAnalyticsPatientProfiles",
   matrices: "clinicalAnalyticsMatrices",
   matrixStatus: "clinicalAnalyticsMatrixStatus",
+  embeddings: "clinicalAnalyticsEmbeddings",
+  embeddingManifests: "clinicalAnalyticsEmbeddingManifests",
+  embeddingStatus: "clinicalAnalyticsEmbeddingStatus",
+  embeddingSources: "clinicalAnalyticsEmbeddingSources",
+  embeddingJobs: "clinicalAnalyticsEmbeddingJobs",
+  semanticRelations: "clinicalAnalyticsSemanticRelations",
   runs: "clinicalAnalyticsRuns",
   queue: "clinicalAnalyticsQueue",
   evidence: "clinicalAnalyticsEvidence"
@@ -54,7 +105,11 @@ module.exports = {
   CLINICAL_FEATURE_PROFILE_VERSION,
   CLINICAL_MATRIX_ENGINE_VERSION,
   CLINICAL_PRESENTATION_VERSION,
+  CLINICAL_EMBEDDING_ENGINE_VERSION,
   CLINICAL_PROBABILITY_CONFIG,
   CLINICAL_PATTERN_MATRIX_CONFIG,
+  CLINICAL_EMBEDDING_CONFIG,
+  CLINICAL_RECORD_SOURCE_CATALOG,
+  CLINICAL_RECORD_COLLECTIONS,
   ANALYTICS_COLLECTIONS
 };

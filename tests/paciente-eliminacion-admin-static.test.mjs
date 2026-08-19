@@ -24,7 +24,7 @@ test("el cliente bloquea dobles envíos y confirma el resultado antes de refresc
   assert.match(flujo, /Paciente eliminado correctamente/);
   assert.match(flujo, /Promise\.allSettled/);
   assert.match(flujo, /functions\/already-exists/);
-  assert.match(html, /js\/admin\.js\?v=20260818-patient-deletion-timeout-v1/);
+assert.match(html, /js\/admin\.js\?v=20260819-sofia-embeddings-v1/);
 });
 
 test("el backend amplía el tiempo y evita el recorrido secuencial que agotaba 60 segundos", () => {

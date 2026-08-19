@@ -62,6 +62,7 @@ const SOFIA_TOOL_DEFINITIONS = Object.freeze([
   noArgsTool("get_detected_patterns", "Obtiene patrones temporales observacionales detectados en el paciente autorizado."),
   noArgsTool("get_observational_associations", "Obtiene asociaciones y probabilidades empíricas con numerador, denominador e incertidumbre."),
   noArgsTool("get_platform_pattern_matrices", "Consulta matrices agregadas y desidentificadas entre pacientes. Requiere rol administrador y nunca devuelve filas individuales."),
+  noArgsTool("get_platform_semantic_relations", "Consulta cobertura y relaciones semánticas agregadas del índice de embeddings. Requiere rol administrador; no devuelve texto, vectores ni identidad."),
   {
     type: "function",
     name: "get_methodological_evidence",
@@ -320,6 +321,33 @@ function createSofiaToolRegistry(context) {
                 .map(compactPlatformAssociation)
             } : null])),
             rowLevelDataIncluded: false,
+            directIdentifiersIncluded: false,
+            causalClaimsAllowed: false
+          };
+          break;
+        }
+        case "get_platform_semantic_relations": {
+          if (!context.isAdmin || typeof context.loadPlatformSemanticKnowledge !== "function") {
+            result = { ok: false, error: "admin_required", message: "Las relaciones semánticas globales solo están disponibles para administración." };
+            break;
+          }
+          const knowledge = await context.loadPlatformSemanticKnowledge();
+          result = {
+            ok: true,
+            source: "cognicion_empirical_aggregate",
+            status: knowledge.status,
+            sources: (knowledge.sources || []).slice(0, 40).map((item) => ({
+              sourceLabel: item.sourceLabel,
+              sourceDomain: item.sourceDomain,
+              indexedRecords: item.indexedRecords,
+              indexedFragments: item.indexedFragments,
+              failedRecords: item.failedRecords
+            })),
+            relations: (knowledge.relations || []).slice(0, 30),
+            privacy: knowledge.privacy,
+            rowLevelDataIncluded: false,
+            vectorsIncluded: false,
+            rawClinicalTextIncluded: false,
             directIdentifiersIncluded: false,
             causalClaimsAllowed: false
           };

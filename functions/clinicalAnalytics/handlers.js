@@ -11,8 +11,15 @@ const { buildPatientFeatureProfile } = require("./patientFeatureProfile");
 const { buildPatternMatrices } = require("./matrixEngine");
 const { persistPatientFeatureProfile, persistPatternMatrices } = require("./matrixPersistence");
 const {
+  indexClinicalRecordEmbeddings,
+  removeClinicalRecordEmbeddings,
+  removePatientEmbeddings
+} = require("./embeddingPersistence");
+const { rebuildClinicalEmbeddingIndexBatch } = require("./embeddingRebuild");
+const {
   CLINICAL_ANALYTICS_SCHEMA_VERSION,
-  CLINICAL_PATTERN_MATRIX_CONFIG
+  CLINICAL_PATTERN_MATRIX_CONFIG,
+  CLINICAL_RECORD_COLLECTIONS
 } = require("./config");
 
 function patientLabel(patient = {}) { return patient.nombre || patient.nombreCompleto || patient.displayName || "Paciente"; }
@@ -125,26 +132,117 @@ async function rebuildClinicalPatternMatricesAdmin({ request, db }) {
   };
 }
 
-async function processClinicalAnalyticsWrite({ event, db }) {
+async function rebuildClinicalEmbeddingIndexAdmin({ request, db, apiKey, OpenAIClass }) {
+  await assertAdmin(request, db);
+  return rebuildClinicalEmbeddingIndexBatch({
+    db,
+    apiKey,
+    OpenAIClass,
+    actorUid: request.auth.uid,
+    jobId: request.data?.jobId
+  });
+}
+
+async function processClinicalAnalyticsWrite({ event, db, apiKey, OpenAIClass }) {
   const patientId = event.params?.patientId;
   const collectionId = event.params?.collectionId;
-  if (!patientId || !collectionId || collectionId.startsWith("clinicalAnalytics")) return { skipped: true };
+  const recordId = event.params?.recordId;
+  if (!patientId || !collectionId || !recordId || !CLINICAL_RECORD_COLLECTIONS.includes(collectionId)) {
+    return { skipped: true, reason: "unsupported_source" };
+  }
   const after = event.data?.after;
-  if (!after?.exists) return { skipped: true, deleted: true };
   const patientSnap = await db.doc(`usuarios/${patientId}`).get();
-  if (!patientSnap.exists) return { skipped: true, patientMissing: true };
+  if (!patientSnap.exists || !isPatientProfile(patientSnap.data() || {})) {
+    return { skipped: true, patientMissing: !patientSnap.exists, nonPatientProfile: patientSnap.exists };
+  }
+  if (!after?.exists) {
+    const removal = await removeClinicalRecordEmbeddings({
+      db,
+      patientId,
+      sourceCollection: collectionId,
+      sourceRecordId: recordId
+    });
+    const context = await buildPatientClinicalContext({ db, patientId, patient: patientSnap.data() || {} });
+    const variables = extractClinicalVariables(context);
+    const timeline = analyzePatientTimeline(variables);
+    const profile = buildPatientFeatureProfile({ variables, timeline, context });
+    const persistence = await persistPatientFeatureProfile({ db, patientId, profile });
+    return { deleted: true, embeddingRemoved: removal.removed, profileUpdated: persistence.updated };
+  }
   const context = await buildPatientClinicalContext({ db, patientId, patient: patientSnap.data() || {} });
   const variables = extractClinicalVariables(context);
   const timeline = analyzePatientTimeline(variables);
   const profile = buildPatientFeatureProfile({ variables, timeline, context });
   const persistence = await persistPatientFeatureProfile({ db, patientId, profile });
+  let embedding;
+  try {
+    embedding = await indexClinicalRecordEmbeddings({
+      db,
+      apiKey,
+      OpenAIClass,
+      patientId,
+      patient: patientSnap.data() || {},
+      sourceCollection: collectionId,
+      sourceRecordId: recordId,
+      record: after.data() || {}
+    });
+  } catch (error) {
+    embedding = { indexed: false, failed: true, code: String(error?.code || error?.name || "unknown").slice(0, 80) };
+  }
   return {
     persisted: persistence.updated,
     duplicate: persistence.duplicate,
     analyticsPatientId: persistence.analyticsPatientId,
     featureCount: persistence.featureCount,
-    matrixStale: persistence.updated
+    matrixStale: persistence.updated,
+    embedding: {
+      indexed: embedding.indexed === true,
+      duplicate: embedding.duplicate === true,
+      skipped: embedding.skipped === true,
+      failed: embedding.failed === true,
+      fragmentCount: Number(embedding.fragmentCount) || 0
+    }
   };
 }
 
-module.exports = { analyzePatientClinicalContext, listAuthorizedSofiaPatients, getClinicalKnowledgeAdmin, rebuildClinicalPatternMatricesAdmin, processClinicalAnalyticsWrite };
+async function processClinicalPatientWrite({ event, db, apiKey, OpenAIClass }) {
+  const patientId = event.params?.patientId;
+  if (!patientId) return { skipped: true };
+  const after = event.data?.after;
+  if (!after?.exists) return removePatientEmbeddings({ db, patientId });
+  const patient = after.data() || {};
+  if (!isPatientProfile(patient)) return { skipped: true, reason: "non_patient_profile" };
+  try {
+    const embedding = await indexClinicalRecordEmbeddings({
+      db,
+      apiKey,
+      OpenAIClass,
+      patientId,
+      patient,
+      sourceCollection: "patientProfile",
+      sourceRecordId: "profile",
+      record: patient
+    });
+    return {
+      indexed: embedding.indexed === true,
+      duplicate: embedding.duplicate === true,
+      skipped: embedding.skipped === true,
+      fragmentCount: Number(embedding.fragmentCount) || 0
+    };
+  } catch (error) {
+    console.error("[SOFIA Embeddings] Falló la actualización del perfil clínico", {
+      code: String(error?.code || error?.name || "unknown").slice(0, 80)
+    });
+    return { indexed: false, failed: true };
+  }
+}
+
+module.exports = {
+  analyzePatientClinicalContext,
+  listAuthorizedSofiaPatients,
+  getClinicalKnowledgeAdmin,
+  processClinicalAnalyticsWrite,
+  processClinicalPatientWrite,
+  rebuildClinicalEmbeddingIndexAdmin,
+  rebuildClinicalPatternMatricesAdmin
+};

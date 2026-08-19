@@ -57,6 +57,7 @@ function createFakeDb({ actor, patient }) {
 async function run() {
   assert.ok(SOFIA_TOOL_DEFINITIONS.length >= 10);
   assert.ok(SOFIA_TOOL_DEFINITIONS.some((tool) => tool.name === "get_platform_pattern_matrices"));
+  assert.ok(SOFIA_TOOL_DEFINITIONS.some((tool) => tool.name === "get_platform_semantic_relations"));
   assert.strictEqual(new Set(SOFIA_TOOL_DEFINITIONS.map((tool) => tool.name)).size, SOFIA_TOOL_DEFINITIONS.length);
   SOFIA_TOOL_DEFINITIONS.forEach((tool) => {
     assert.strictEqual(tool.type, "function");
@@ -88,6 +89,8 @@ async function run() {
   assert.strictEqual(denied.error, "patient_context_required");
   const globalDenied = await noPatientRegistry.execute("get_platform_pattern_matrices", {});
   assert.strictEqual(globalDenied.error, "admin_required");
+  const semanticDenied = await noPatientRegistry.execute("get_platform_semantic_relations", {});
+  assert.strictEqual(semanticDenied.error, "admin_required");
 
   const adminRegistry = createSofiaToolRegistry({
     mode: "general",
@@ -108,6 +111,14 @@ async function run() {
           temporal: null
         }
       };
+    },
+    async loadPlatformSemanticKnowledge() {
+      return {
+        status: { status: "ready", indexedRecords: 12, indexedFragments: 18, vectorsExposedToClient: false },
+        sources: [{ sourceLabel: "Notas médicas", sourceDomain: "documentacion", indexedRecords: 12, indexedFragments: 18, failedRecords: 0, analyticsPatientId: "must-not-leak" }],
+        relations: [{ sourceLabelA: "Notas médicas", sourceLabelB: "Estudios", patientPairCount: 3, relationCount: 5, meanSimilarity: 0.88, possibleInterpretationEs: "Afinidad exploratoria; no implica causalidad." }],
+        privacy: { vectorsIncluded: false, rawClinicalTextIncluded: false, directIdentifiersIncluded: false }
+      };
     }
   });
   const globalKnowledge = await adminRegistry.execute("get_platform_pattern_matrices", {});
@@ -117,6 +128,12 @@ async function run() {
   assert.strictEqual(globalKnowledge.matrices.mixed.associations[0].variableALabel, "último valor de edad");
   assert.match(globalKnowledge.matrices.mixed.associations[0].possibleInterpretationEs, /no implica causalidad/i);
   assert.ok(!JSON.stringify(globalKnowledge).includes("must-not-leak"));
+  const semanticKnowledge = await adminRegistry.execute("get_platform_semantic_relations", {});
+  assert.strictEqual(semanticKnowledge.ok, true);
+  assert.strictEqual(semanticKnowledge.vectorsIncluded, false);
+  assert.strictEqual(semanticKnowledge.rawClinicalTextIncluded, false);
+  assert.strictEqual(semanticKnowledge.relations[0].patientPairCount, 3);
+  assert.ok(!JSON.stringify(semanticKnowledge).includes("must-not-leak"));
 
   await assert.rejects(
     () => buildAuthorizedSofiaContext({

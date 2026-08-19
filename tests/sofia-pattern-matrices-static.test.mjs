@@ -32,9 +32,9 @@ test("el panel usa Cloud Functions y no consulta perfiles por paciente", async (
   assert.match(controller, /function variableLabel/);
   assert.match(controller, /effectMetricLabel/);
   assert.match(controller, /no implica causalidad/i);
-  assert.match(admin, /clinicalKnowledgeController\.js\?v=20260814-correlaciones-es-v2/);
-  assert.match(html, /css\/admin\.css\?v=20260814-correlaciones-es-v2/);
-  assert.match(html, /js\/admin\.js\?v=20260814-correlaciones-es-v2/);
+assert.match(admin, /clinicalKnowledgeController\.js\?v=20260819-sofia-embeddings-v1/);
+assert.match(html, /css\/admin\.css\?v=20260819-sofia-embeddings-v1/);
+assert.match(html, /js\/admin\.js\?v=20260819-sofia-embeddings-v1/);
 });
 
 test("las matrices aplican tipado, privacidad y corrección múltiple", async () => {

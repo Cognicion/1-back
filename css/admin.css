@@ -109,6 +109,43 @@ body.admin-startup-error .admin-startup-state span { color: #fca5a5; }
 
 .clinical-knowledge-caution strong { color: var(--ivory-50, #fffdf4); }
 
+.clinical-embedding-status {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--celtic-500, #4c9c69);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--black-900, #080b0a) 78%, transparent);
+  color: var(--gray-300, #d1d5db);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.clinical-embedding-metadata {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 10px;
+  margin: 14px 0 22px;
+}
+
+.clinical-embedding-metadata span {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--black-700, #334155);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--black-900, #080b0a) 82%, transparent);
+  color: var(--gray-300, #d1d5db);
+  overflow-wrap: anywhere;
+}
+
+.clinical-embedding-metadata strong {
+  color: var(--gray-400, #9ca3af);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
 .clinical-knowledge-summary {
   display: grid;
   grid-template-columns: repeat(6, minmax(130px, 1fr));
@@ -152,6 +189,7 @@ body.admin-startup-error .admin-startup-state span { color: #fca5a5; }
 
 @media (max-width: 620px) {
   .clinical-knowledge-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .clinical-embedding-metadata { grid-template-columns: 1fr; }
   .clinical-knowledge-admin td.clinical-knowledge-interpretation { min-width: 280px; }
 }
 

@@ -14,6 +14,7 @@ const {
 const { calculateEmpiricalProbability } = require("../clinicalAnalytics/probabilityEngine");
 const { stripIdentifiers } = require("../clinicalAnalytics/deidentification");
 const { readClinicalMatrices } = require("../clinicalAnalytics/matrixPersistence");
+const { readClinicalEmbeddingKnowledge } = require("../clinicalAnalytics/embeddingPersistence");
 const {
   SOFIA_ORCHESTRATOR_LIMITS,
   SOFIA_PAGE_ANALYSIS_SECTIONS,
@@ -136,7 +137,8 @@ async function buildAuthorizedSofiaContext({ request, db }) {
       analysis: null,
       pageState: sanitizePageState(request.data?.pageState),
       identityTerms: [],
-      loadPlatformMatrices: access.isAdmin ? () => readClinicalMatrices({ db, limit: 60 }) : null
+      loadPlatformMatrices: access.isAdmin ? () => readClinicalMatrices({ db, limit: 60 }) : null,
+      loadPlatformSemanticKnowledge: access.isAdmin ? () => readClinicalEmbeddingKnowledge({ db }) : null
     };
   }
 
@@ -155,7 +157,8 @@ async function buildAuthorizedSofiaContext({ request, db }) {
     analysis: buildAnalysis(clinicalContext),
     pageState: sanitizePageState(request.data?.pageState, identityTerms),
     identityTerms,
-    loadPlatformMatrices: access.isAdmin ? () => readClinicalMatrices({ db, limit: 60 }) : null
+    loadPlatformMatrices: access.isAdmin ? () => readClinicalMatrices({ db, limit: 60 }) : null,
+    loadPlatformSemanticKnowledge: access.isAdmin ? () => readClinicalEmbeddingKnowledge({ db }) : null
   };
 }
 

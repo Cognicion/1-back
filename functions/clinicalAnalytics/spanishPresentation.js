@@ -163,6 +163,7 @@ const VERSION_LABELS = Object.freeze({
   patternEngineVersion: "Motor de patrones",
   probabilityEngineVersion: "Motor de probabilidades",
   matrixEngineVersion: "Motor de matrices",
+  embeddingEngineVersion: "Motor de embeddings",
   evidenceRegistryVersion: "Registro de evidencia",
   presentationVersion: "Presentación en español"
 });

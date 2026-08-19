@@ -21,9 +21,11 @@ export async function initializeClinicalKnowledgePanel({ nav, main }) {
       <div class="patrones-acciones">
         <button id="btnActualizarConocimientoSofiaAdmin" type="button">Actualizar vista</button>
         <button id="btnRecalcularMatricesSofiaAdmin" type="button">Recalcular matrices</button>
+        <button id="btnConstruirIndiceSemanticoAdmin" type="button">Construir índice semántico</button>
       </div>
     </div>
     <p id="estadoConocimientoSofiaAdmin">Cargando conocimiento agregado…</p>
+    <p id="estadoIndiceSemanticoSofiaAdmin" class="clinical-embedding-status" aria-live="polite">Índice semántico pendiente de consulta.</p>
     <p class="clinical-knowledge-caution"><strong>Lectura exploratoria:</strong> las interpretaciones propuestas describen asociaciones observadas en datos desidentificados. Las categorías de magnitud son operativas y dependen del contexto. No implican causalidad, no predicen a una persona y no sustituyen el juicio profesional.</p>
     <div id="resumenConocimientoSofiaAdmin" class="clinical-knowledge-summary"></div>
     <div id="tablasConocimientoSofiaAdmin"></div>`;
@@ -61,8 +63,45 @@ export async function initializeClinicalKnowledgePanel({ nav, main }) {
     }
   };
 
+  let embeddingJobId = null;
+  const rebuildEmbeddings = async () => {
+    const status = section.querySelector("#estadoIndiceSemanticoSofiaAdmin");
+    const rebuildButton = section.querySelector("#btnConstruirIndiceSemanticoAdmin");
+    rebuildButton.disabled = true;
+    rebuildButton.textContent = embeddingJobId ? "Continuando índice…" : "Construyendo índice…";
+    status.textContent = "Indexando archivos clínicos desidentificados por lotes. Puedes seguir usando el resto del panel.";
+    try {
+      const functions = await obtenerFunctions();
+      const rebuildCallable = httpsCallable(functions, "rebuildClinicalEmbeddingIndexAdmin", { timeout: 540000 });
+      let result;
+      do {
+        result = (await rebuildCallable(embeddingJobId ? { jobId: embeddingJobId } : {})).data || {};
+        embeddingJobId = result.jobId || embeddingJobId;
+        const totals = result.totals || {};
+        status.textContent = `Índice semántico: ${totals.processedRecords || 0} archivos revisados, ${totals.indexedRecords || 0} indexados, ${totals.skippedRecords || 0} sin cambios y ${totals.failedRecords || 0} con error.`;
+        console.debug("[SOFÍA Knowledge] Lote semántico procesado", {
+          status: result.status,
+          hasMore: result.hasMore,
+          processedRecords: totals.processedRecords || 0,
+          indexedRecords: totals.indexedRecords || 0,
+          failedRecords: totals.failedRecords || 0,
+          directIdentifiersIncluded: false
+        });
+      } while (result?.hasMore === true);
+      embeddingJobId = null;
+      await load();
+    } catch (error) {
+      console.error("[SOFÍA Knowledge] No se pudo continuar el índice semántico", error);
+      status.textContent = "La construcción se detuvo. Pulsa nuevamente para continuar el trabajo por lotes.";
+    } finally {
+      rebuildButton.disabled = false;
+      rebuildButton.textContent = embeddingJobId ? "Continuar índice semántico" : "Construir índice semántico";
+    }
+  };
+
   section.querySelector("#btnActualizarConocimientoSofiaAdmin").addEventListener("click", load);
   section.querySelector("#btnRecalcularMatricesSofiaAdmin").addEventListener("click", rebuild);
+  section.querySelector("#btnConstruirIndiceSemanticoAdmin").addEventListener("click", rebuildEmbeddings);
   await load();
 }
 
@@ -80,6 +119,8 @@ function matrixStatusText(status = {}) {
 
 function renderKnowledge(section, data) {
   const matrices = data.matrices || {};
+  const embeddings = data.embeddingKnowledge || {};
+  const embeddingStatus = embeddings.status || {};
   const matrixAssociations = Object.values(matrices).reduce((sum, matrix) => sum + (matrix?.associations?.length || 0), 0);
   section.querySelector("#resumenConocimientoSofiaAdmin").innerHTML = [
     ["Variables", data.variables?.length || 0],
@@ -87,13 +128,50 @@ function renderKnowledge(section, data) {
     ["Matrices", Object.values(matrices).filter(Boolean).length],
     ["Asociaciones mostradas", matrixAssociations],
     ["Probabilidades", data.probabilities?.length || 0],
-    ["Fuentes", data.evidence?.length || 0]
+    ["Fuentes", data.evidence?.length || 0],
+    ["Archivos semánticos", embeddingStatus.indexedRecords || 0],
+    ["Fragmentos vectoriales", embeddingStatus.indexedFragments || 0],
+    ["Relaciones semánticas", embeddings.relations?.length || 0]
   ].map(([label, value]) => `<span>${label}<strong>${value}</strong></span>`).join("");
+
+  section.querySelector("#estadoIndiceSemanticoSofiaAdmin").textContent = embeddingStatusText(embeddings);
 
   const mixed = matrices.mixed?.associations || [];
   const documentation = matrices.documentation?.associations || [];
   const temporal = matrices.temporal?.associations || [];
   section.querySelector("#tablasConocimientoSofiaAdmin").innerHTML = `
+    <h3>Índice semántico de archivos clínicos</h3>
+    <p>Representa contenido desidentificado mediante embeddings generados en backend. El navegador recibe métricas agregadas: no recibe vectores, texto clínico, identidad ni filas por paciente.</p>
+    <div class="clinical-embedding-metadata">
+      <span><strong>Modelo</strong>${embeddingStatus.embeddingModel || "No inicializado"}</span>
+      <span><strong>Dimensiones</strong>${embeddingStatus.embeddingDimensions || "—"}</span>
+      <span><strong>Versión del motor</strong>${embeddingStatus.embeddingEngineVersion || "—"}</span>
+      <span><strong>Índice vectorial</strong>${embeddingIndexLabel(embeddingStatus.relationIndexStatus)}</span>
+      <span><strong>Texto clínico persistido</strong>No</span>
+      <span><strong>Vectores expuestos al navegador</strong>No</span>
+    </div>
+    <h3>Cobertura del índice por fuente</h3>
+    ${rows(embeddings.sources, [
+      { label: "Fuente clínica", value: (item) => item.sourceLabel || humanizeTechnical(item.sourceCollection) },
+      { label: "Dominio", value: (item) => humanizeTechnical(item.sourceDomain) },
+      { label: "Archivos indexados", value: (item) => item.indexedRecords || 0 },
+      { label: "Fragmentos", value: (item) => item.indexedFragments || 0 },
+      { label: "Errores", value: (item) => item.failedRecords || 0 },
+      { label: "Última actualización", value: (item) => formatDateTime(item.lastProcessedAt) }
+    ])}
+    <h3>Relaciones semánticas entre archivos</h3>
+    <p>Solo se muestran afinidades repetidas en al menos ${embeddings.privacy?.minimumCrossPatientPairs || 3} pares de pacientes desidentificados. La similitud no es una probabilidad ni demuestra causalidad.</p>
+    ${rows(embeddings.relations, [
+      { label: "Fuente A", value: (item) => item.sourceLabelA || humanizeTechnical(item.sourceCollectionA) },
+      { label: "Fuente B", value: (item) => item.sourceLabelB || humanizeTechnical(item.sourceCollectionB) },
+      { label: "Dominios", value: (item) => `${humanizeTechnical(item.sourceDomainA)} ↔ ${humanizeTechnical(item.sourceDomainB)}` },
+      { label: "Pares desidentificados", value: (item) => item.patientPairCount || 0 },
+      { label: "Coincidencias", value: (item) => item.relationCount || 0 },
+      { label: "Similitud coseno media", value: (item) => formatNumber(item.meanSimilarity, 3) },
+      { label: "Rango", value: (item) => `${formatNumber(item.minimumSimilarity, 3)} a ${formatNumber(item.maximumSimilarity, 3)}` },
+      { label: "Interpretación posible", className: "clinical-knowledge-interpretation", value: (item) => item.possibleInterpretationEs || "Relación exploratoria pendiente de interpretación." },
+      { label: "Estado", value: (item) => evidenceLabel(item.evidenceStatus) }
+    ])}
     <h3>Matriz mixta de variables</h3>
     <p>Selecciona el método según los tipos de datos. Incluye magnitud, cobertura, incertidumbre y corrección de Benjamini–Hochberg para comparaciones múltiples.</p>
     ${rows(mixed, associationColumns())}
@@ -134,6 +212,30 @@ function renderKnowledge(section, data) {
       { label: "Componente", value: (item) => item.componentLabel || humanizeTechnical(item.component) },
       { label: "Versión", value: (item) => item.version }
     ])}`;
+}
+
+function embeddingStatusText(embeddingKnowledge = {}) {
+  const status = embeddingKnowledge.status || {};
+  if (status.status === "not_initialized") return "El índice semántico aún no se ha construido.";
+  const date = formatDateTime(status.lastProcessedAt);
+  const failures = Number(status.failedRecords) || 0;
+  const relationState = embeddingIndexLabel(status.relationIndexStatus);
+  return `Índice semántico: ${status.indexedRecords || 0} archivos y ${status.indexedFragments || 0} fragmentos · relaciones: ${relationState} · errores: ${failures} · última actualización: ${date}.`;
+}
+
+function embeddingIndexLabel(value) {
+  return ({
+    ready: "Disponible",
+    pending_vector_index: "Índice vectorial en construcción",
+    degraded: "Disponible con incidencias",
+    not_initialized: "No inicializado"
+  })[value] || humanizeTechnical(value);
+}
+
+function formatDateTime(value) {
+  if (!value) return "—";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString("es-MX");
 }
 
 function associationColumns() {
@@ -241,6 +343,16 @@ function humanizeTechnical(value) {
     events: "Eventos",
     documentation: "Documentación",
     platform_usage: "Uso de la plataforma",
+    perfil_clinico: "Perfil clínico",
+    documentacion: "Documentación",
+    antecedentes: "Antecedentes",
+    tratamientos: "Tratamientos",
+    estudios: "Estudios",
+    laboratorios: "Laboratorios",
+    signos_vitales: "Signos vitales",
+    escalas: "Escalas",
+    rehabilitacion: "Rehabilitación",
+    eventos: "Eventos",
     registered_sex: "sexo registrado",
     suicidal_ideation: "ideación suicida",
     treatment_suspension: "suspensión del tratamiento",
@@ -274,7 +386,8 @@ function evidenceLabel(value) {
     exploratory_not_confirmed: "Exploratorio; no confirmado",
     effect_below_threshold: "Efecto bajo",
     observational_ready: "Observación suficiente",
-    insufficient_evidence: "Evidencia insuficiente"
+    insufficient_evidence: "Evidencia insuficiente",
+    privacy_suppressed: "Oculto por privacidad"
   })[value] || value || "Exploratorio";
 }
 

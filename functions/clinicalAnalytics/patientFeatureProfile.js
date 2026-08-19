@@ -6,7 +6,16 @@ const { VARIABLE_CATALOG } = require("./variableExtractor");
 const { COLLECTIONS, valueToIso } = require("./contextBuilder");
 const { positiveEvents, temporalSequencePairs } = require("./patternAnalyzer");
 
-const NOTE_COLLECTIONS = new Set(["notasMedicas", "notas", "notasClinicas", "notasRapidas", "historiaClinica"]);
+const NOTE_COLLECTIONS = new Set([
+  "notasMedicas",
+  "notas",
+  "notasClinicas",
+  "notasRapidas",
+  "historiaClinica",
+  "documentosImportados",
+  "notasFlotantes",
+  "interconsultas"
+]);
 const BLOCKED_TEXT_KEYS = /^(id|uid|uuid|name|nombre|nombres|apellido|apellidos|telefono|tel|phone|email|correo|domicilio|direccion|direcci[oó]n|curp|rfc|patientid|pacienteid|pacienteuid|uidpaciente|expediente|numeroexpediente|foto|fotografia|path|ruta|url)$/i;
 const BLOCKED_STRUCTURED_KEYS = /(id|uid|uuid|name|nombre|apellido|telefono|phone|contacto|email|correo|domicilio|direccion|curp|rfc|expediente|folio|fecha|date|time|timestamp|created|updated|token|session|ip|device|foto|archivo|documento|path|ruta|url|latitud|longitud)/i;
 const COLLECTION_DOMAINS = Object.freeze({
@@ -14,12 +23,22 @@ const COLLECTION_DOMAINS = Object.freeze({
   notas: "documentation",
   notasClinicas: "documentation",
   notasRapidas: "documentation",
+  historiaClinica: "history",
+  documentosImportados: "documentation",
+  notasFlotantes: "documentation",
+  interconsultas: "events",
   tratamientos: "treatment",
+  indicaciones: "treatment",
+  recetas: "treatment",
+  prescripcionesPediatricas: "treatment",
   estudios: "laboratories",
+  solicitudesEstudios: "laboratories",
   escalasAplicadas: "scales",
   resultadosEscalas: "scales",
+  rehabilitacionResultados: "cognitive_rehabilitation",
   laboratorios: "laboratories",
   signosVitales: "vitals",
+  medicionesPediatricas: "vitals",
   eventos: "events"
 });
 
