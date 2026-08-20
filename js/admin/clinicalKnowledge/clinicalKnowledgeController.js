@@ -122,11 +122,18 @@ function renderKnowledge(section, data) {
   const embeddings = data.embeddingKnowledge || {};
   const embeddingStatus = embeddings.status || {};
   const matrixAssociations = Object.values(matrices).reduce((sum, matrix) => sum + (matrix?.associations?.length || 0), 0);
+  const rejectedAssociations = Object.values(matrices).reduce((sum, matrix) => sum + skippedCount(matrix?.skipped), 0);
+  const usefulDiscoveries = Object.values(matrices)
+    .flatMap((matrix) => matrix?.associations || [])
+    .filter((item) => isFiniteValue(item.utilityScore))
+    .sort((a, b) => Number(b.utilityScore) - Number(a.utilityScore));
   section.querySelector("#resumenConocimientoSofiaAdmin").innerHTML = [
     ["Variables", data.variables?.length || 0],
     ["Patrones acumulados", data.patterns?.length || 0],
     ["Matrices", Object.values(matrices).filter(Boolean).length],
     ["Asociaciones mostradas", matrixAssociations],
+    ["Hallazgos priorizados", usefulDiscoveries.length],
+    ["Candidatos descartados", rejectedAssociations],
     ["Probabilidades", data.probabilities?.length || 0],
     ["Fuentes", data.evidence?.length || 0],
     ["Archivos semánticos", embeddingStatus.indexedRecords || 0],
@@ -139,7 +146,20 @@ function renderKnowledge(section, data) {
   const mixed = matrices.mixed?.associations || [];
   const documentation = matrices.documentation?.associations || [];
   const temporal = matrices.temporal?.associations || [];
+  const prioritized = usefulDiscoveries.slice(0, 30);
   section.querySelector("#tablasConocimientoSofiaAdmin").innerHTML = `
+    <h3>Hallazgos priorizados</h3>
+    <p>Solo incluye relaciones que superaron controles de redundancia, soporte mínimo y estabilidad. La puntuación combina magnitud, corrección estadística, estabilidad entre submuestras, cobertura, tamaño de muestra, información y novedad; no representa importancia clínica ni causalidad.</p>
+    ${rows(prioritized, [
+      { label: "Tipo de hallazgo", value: (item) => item.patternCategoryLabel || humanizeTechnical(item.patternCategory) },
+      { label: "Variable A", value: (item) => variableLabel(item, "A") },
+      { label: "Variable B", value: (item) => variableLabel(item, "B") },
+      { label: "Utilidad", value: utilityLabel },
+      { label: "Estabilidad", value: robustnessLabel },
+      { label: "Muestra", value: sampleLabel },
+      { label: "Interpretación posible", className: "clinical-knowledge-interpretation", value: interpretationLabel },
+      { label: "Advertencias", value: warningLabel }
+    ])}
     <h3>Índice semántico de archivos clínicos</h3>
     <p>Representa contenido desidentificado mediante embeddings generados en backend. El navegador recibe métricas agregadas: no recibe vectores, texto clínico, identidad ni filas por paciente.</p>
     <div class="clinical-embedding-metadata">
@@ -160,20 +180,22 @@ function renderKnowledge(section, data) {
       { label: "Última actualización", value: (item) => formatDateTime(item.lastProcessedAt) }
     ])}
     <h3>Relaciones semánticas entre archivos</h3>
-    <p>Solo se muestran afinidades repetidas en al menos ${embeddings.privacy?.minimumCrossPatientPairs || 3} pares de pacientes desidentificados. La similitud no es una probabilidad ni demuestra causalidad.</p>
+    <p>Solo se muestran afinidades repetidas en al menos ${embeddings.privacy?.minimumCrossPatientPairs || 3} pares de pacientes desidentificados y que superan el umbral de utilidad ${Math.round(Number(embeddings.privacy?.minimumSemanticUtilityScore || 0.5) * 100)}/100. La similitud no es una probabilidad ni demuestra causalidad.</p>
     ${rows(embeddings.relations, [
       { label: "Fuente A", value: (item) => item.sourceLabelA || humanizeTechnical(item.sourceCollectionA) },
       { label: "Fuente B", value: (item) => item.sourceLabelB || humanizeTechnical(item.sourceCollectionB) },
       { label: "Dominios", value: (item) => `${humanizeTechnical(item.sourceDomainA)} ↔ ${humanizeTechnical(item.sourceDomainB)}` },
       { label: "Pares desidentificados", value: (item) => item.patientPairCount || 0 },
       { label: "Coincidencias", value: (item) => item.relationCount || 0 },
+      { label: "Utilidad", value: utilityLabel },
       { label: "Similitud coseno media", value: (item) => formatNumber(item.meanSimilarity, 3) },
-      { label: "Rango", value: (item) => `${formatNumber(item.minimumSimilarity, 3)} a ${formatNumber(item.maximumSimilarity, 3)}` },
+      { label: "Dispersión", value: (item) => `DE ${formatNumber(item.similarityStandardDeviation, 3)} · rango ${formatNumber(item.minimumSimilarity, 3)} a ${formatNumber(item.maximumSimilarity, 3)}` },
       { label: "Interpretación posible", className: "clinical-knowledge-interpretation", value: (item) => item.possibleInterpretationEs || "Relación exploratoria pendiente de interpretación." },
+      { label: "Advertencias", value: semanticWarningLabel },
       { label: "Estado", value: (item) => evidenceLabel(item.evidenceStatus) }
     ])}
-    <h3>Matriz mixta de variables</h3>
-    <p>Selecciona el método según los tipos de datos. Incluye magnitud, cobertura, incertidumbre y corrección de Benjamini–Hochberg para comparaciones múltiples.</p>
+    <h3>Matriz útil de variables</h3>
+    <p>Excluye metadatos técnicos, variables equivalentes y conteos deterministas. Equilibra variables clínicas, documentales y operativas antes de aplicar el método estadístico correspondiente.</p>
     ${rows(mixed, associationColumns())}
     <h3>Matriz de presencia y documentación</h3>
     <p>Busca qué variables suelen documentarse juntas o ausentarse de forma sistemática.</p>
@@ -183,10 +205,12 @@ function renderKnowledge(section, data) {
     ${rows(temporal, [
       { label: "Variable inicial", value: (item) => variableLabel(item, "A") },
       { label: "Variable posterior", value: (item) => variableLabel(item, "B") },
+      { label: "Utilidad", value: utilityLabel },
       { label: "Soporte", value: (item) => `${item.numerator || 0}/${item.denominator || 0}` },
       { label: "Probabilidad empírica", value: (item) => formatProbability(item) },
       { label: "Frecuencia basal", value: (item) => formatPercentage(item.baselineProbability) },
       { label: "Multiplicador basal", value: (item) => formatNumber(item.lift, 2) },
+      { label: "Intervalo temporal", value: temporalLagLabel },
       { label: "Interpretación posible", className: "clinical-knowledge-interpretation", value: (item) => interpretationLabel(item) },
       { label: "Estado", value: (item) => item.evidenceStatusLabel || evidenceLabel(item.evidenceStatus) }
     ])}
@@ -240,18 +264,60 @@ function formatDateTime(value) {
 
 function associationColumns() {
   return [
+    { label: "Tipo de hallazgo", value: (item) => item.patternCategoryLabel || humanizeTechnical(item.patternCategory) },
     { label: "Variable A", value: (item) => variableLabel(item, "A") },
     { label: "Variable B", value: (item) => variableLabel(item, "B") },
     { label: "Dominios", value: (item) => `${item.domainALabel || humanizeTechnical(item.domainA)} ↔ ${item.domainBLabel || humanizeTechnical(item.domainB)}` },
     { label: "Método", value: (item) => item.methodLabel || humanizeTechnical(item.method) },
+    { label: "Utilidad", value: utilityLabel },
+    { label: "Estabilidad", value: robustnessLabel },
     { label: "Medidas", value: (item) => effectLabel(item) },
     { label: "Magnitud y dirección", value: (item) => `${item.effectMagnitudeLabel || "No estimable"} · ${item.directionLabel || humanizeTechnical(item.direction)}` },
     { label: "Muestra", value: (item) => sampleLabel(item) },
     { label: "IC", value: (item) => correlationIntervalLabel(item) },
     { label: "q (tasa de falsos descubrimientos)", value: (item) => formatNumber(item.adjustedPValue, 4) },
     { label: "Interpretación posible", className: "clinical-knowledge-interpretation", value: (item) => interpretationLabel(item) },
+    { label: "Advertencias", value: warningLabel },
     { label: "Estado", value: (item) => item.evidenceStatusLabel || evidenceLabel(item.evidenceStatus) }
   ];
+}
+
+function skippedCount(value) {
+  if (!value || typeof value !== "object") return 0;
+  return Object.values(value).reduce((sum, item) => sum + (typeof item === "object" ? skippedCount(item) : Number(item) || 0), 0);
+}
+
+function utilityLabel(item = {}) {
+  if (!isFiniteValue(item.utilityScore)) return "No calculada";
+  return `${item.utilityTierLabel || humanizeTechnical(item.utilityTier)} · ${Math.round(Number(item.utilityScore) * 100)}/100`;
+}
+
+function robustnessLabel(item = {}) {
+  if (item.matrixType === "temporal_sequences") return "Precisión temporal y soporte";
+  if (!isFiniteValue(item.robustnessScore)) return item.robustnessLabel || "No calculada";
+  return `${item.robustnessLabel || humanizeTechnical(item.robustnessStatus)} · ${Math.round(Number(item.robustnessScore) * 100)}/100`;
+}
+
+function warningLabel(item = {}) {
+  const warnings = Array.isArray(item.qualityWarningLabels) ? item.qualityWarningLabels : [];
+  return warnings.length ? warnings.join("; ") : "Sin alertas metodológicas adicionales";
+}
+
+function semanticWarningLabel(item = {}) {
+  const labels = {
+    limited_cross_patient_support: "Soporte entre pacientes todavía limitado",
+    variable_semantic_similarity: "La similitud varía entre coincidencias",
+    same_source_semantics: "Afinidad dentro de una misma fuente; puede reflejar estructura documental"
+  };
+  const warnings = Array.isArray(item.qualityWarnings) ? item.qualityWarnings : [];
+  return warnings.length ? warnings.map((warning) => labels[warning] || humanizeTechnical(warning)).join("; ") : "Sin alertas metodológicas adicionales";
+}
+
+function temporalLagLabel(item = {}) {
+  if (!isFiniteValue(item.medianLagDays)) return "No estimable";
+  const median = Number(item.medianLagDays).toFixed(1).replace(/\.0$/, "");
+  const iqr = isFiniteValue(item.lagIqrDays) ? ` · RIC ${Number(item.lagIqrDays).toFixed(1).replace(/\.0$/, "")} días` : "";
+  return `Mediana ${median} días${iqr}`;
 }
 
 function rows(items, columns) {

@@ -1,12 +1,13 @@
-const CLINICAL_ANALYTICS_SCHEMA_VERSION = "1.1";
-const CLINICAL_EXTRACTOR_VERSION = "1.0.0";
-const CLINICAL_PATTERN_ENGINE_VERSION = "2.0.0";
+const CLINICAL_ANALYTICS_SCHEMA_VERSION = "1.2";
+const CLINICAL_EXTRACTOR_VERSION = "1.1.0";
+const CLINICAL_PATTERN_ENGINE_VERSION = "2.1.0";
 const CLINICAL_PROBABILITY_ENGINE_VERSION = "1.1.0";
-const CLINICAL_EVIDENCE_REGISTRY_VERSION = "1.2.0";
-const CLINICAL_FEATURE_PROFILE_VERSION = "1.0.0";
-const CLINICAL_MATRIX_ENGINE_VERSION = "1.1.0";
-const CLINICAL_PRESENTATION_VERSION = "1.0.0";
+const CLINICAL_EVIDENCE_REGISTRY_VERSION = "1.3.0";
+const CLINICAL_FEATURE_PROFILE_VERSION = "1.1.0";
+const CLINICAL_MATRIX_ENGINE_VERSION = "2.0.0";
+const CLINICAL_PRESENTATION_VERSION = "1.1.0";
 const CLINICAL_EMBEDDING_ENGINE_VERSION = "1.0.0";
+const CLINICAL_SEMANTIC_RELATION_VERSION = "1.1.0";
 
 const CLINICAL_RECORD_SOURCE_CATALOG = Object.freeze({
   patientProfile: Object.freeze({ label: "Perfil clínico", domain: "perfil_clinico", rootDocument: true }),
@@ -53,6 +54,28 @@ const CLINICAL_PATTERN_MATRIX_CONFIG = Object.freeze({
   confidenceLevel: 0.95,
   pearsonSpearmanAgreementTolerance: 0.15,
   lowCoverageThreshold: 0.25,
+  minimumUtilityScore: 0.45,
+  highUtilityScore: 0.75,
+  moderateUtilityScore: 0.6,
+  robustnessFolds: 5,
+  minimumRobustnessObservations: 8,
+  minimumRobustnessScore: 0.45,
+  utilityReferenceSampleSize: 100,
+  maximumTemporalLagDays: 730,
+  featureLayerShares: Object.freeze({
+    clinical: 0.65,
+    documentation: 0.2,
+    operations: 0.15
+  }),
+  utilityWeights: Object.freeze({
+    effect: 0.2,
+    evidence: 0.18,
+    robustness: 0.2,
+    sample: 0.12,
+    coverage: 0.12,
+    novelty: 0.1,
+    information: 0.08
+  }),
   maxCategories: 12,
   maxProfileFeatures: 260,
   maxMatrixFeatures: 160,
@@ -72,6 +95,10 @@ const CLINICAL_EMBEDDING_CONFIG = Object.freeze({
   nearestNeighbors: 20,
   minimumSimilarity: 0.78,
   minimumCrossPatientPairs: 3,
+  minimumSemanticUtilityScore: 0.5,
+  moderateSemanticUtilityScore: 0.62,
+  highSemanticUtilityScore: 0.78,
+  semanticUtilityReferencePairs: 20,
   rebuildBatchRecords: 20,
   processingLeaseMs: 5 * 60 * 1000,
   maxRelationsRead: 1500
@@ -106,6 +133,7 @@ module.exports = {
   CLINICAL_MATRIX_ENGINE_VERSION,
   CLINICAL_PRESENTATION_VERSION,
   CLINICAL_EMBEDDING_ENGINE_VERSION,
+  CLINICAL_SEMANTIC_RELATION_VERSION,
   CLINICAL_PROBABILITY_CONFIG,
   CLINICAL_PATTERN_MATRIX_CONFIG,
   CLINICAL_EMBEDDING_CONFIG,

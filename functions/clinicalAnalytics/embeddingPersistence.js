@@ -457,6 +457,9 @@ async function readClinicalEmbeddingKnowledge({ db }) {
     privacy: {
       minimumCrossPatientPairs: aggregation.minimumCrossPatientPairs,
       privacySuppressedGroups: aggregation.privacySuppressedGroups,
+      lowUtilityGroups: aggregation.lowUtilityGroups,
+      minimumSemanticUtilityScore: aggregation.minimumSemanticUtilityScore,
+      semanticRelationVersion: aggregation.semanticRelationVersion,
       directIdentifiersIncluded: false,
       rawClinicalTextIncluded: false,
       vectorsIncluded: false

@@ -3,9 +3,10 @@ const { CLINICAL_RECORD_COLLECTIONS } = require("./config");
 const COLLECTIONS = CLINICAL_RECORD_COLLECTIONS;
 
 function valueToIso(value) {
+  if (value === null || value === undefined || value === "") return null;
   if (value && typeof value.toDate === "function") return value.toDate().toISOString();
   if (value && typeof value.seconds === "number") return new Date(value.seconds * 1000).toISOString();
-  const parsed = new Date(value || 0);
+  const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 

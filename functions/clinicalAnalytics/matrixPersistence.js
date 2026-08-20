@@ -145,6 +145,12 @@ function sortAssociationsForDisplay(associations = [], matrixType = "") {
     if (Number.isFinite(Number(a.displayRank)) || Number.isFinite(Number(b.displayRank))) {
       return (Number(a.displayRank) || Number.MAX_SAFE_INTEGER) - (Number(b.displayRank) || Number.MAX_SAFE_INTEGER);
     }
+    if (Number.isFinite(Number(a.utilityScore)) || Number.isFinite(Number(b.utilityScore))) {
+      return (Number(b.utilityScore) || 0) - (Number(a.utilityScore) || 0)
+        || (Number(b.robustnessScore) || 0) - (Number(a.robustnessScore) || 0)
+        || (Number(b.sampleSize) || 0) - (Number(a.sampleSize) || 0)
+        || String(a.associationId || a.id).localeCompare(String(b.associationId || b.id));
+    }
     if ((a.matrixType || matrixType) === "temporal_sequences") {
       return (Number(b.patientSupport) || 0) - (Number(a.patientSupport) || 0)
         || (Number(b.lift) || 0) - (Number(a.lift) || 0)

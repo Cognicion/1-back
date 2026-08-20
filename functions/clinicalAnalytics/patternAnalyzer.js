@@ -18,11 +18,22 @@ function sequenceEvents(timeline = []) {
   return positiveEvents(timeline).filter((event) => event.domain !== "demographics");
 }
 
-function firstFollowingEvent(events, start, outcome) {
+function quantile(values = [], probability = 0.5) {
+  if (!values.length) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const position = (sorted.length - 1) * probability;
+  const lower = Math.floor(position);
+  const upper = Math.ceil(position);
+  if (lower === upper) return sorted[lower];
+  return sorted[lower] + (sorted[upper] - sorted[lower]) * (position - lower);
+}
+
+function firstFollowingEvent(events, start, outcome, maximumLagDays = CLINICAL_PATTERN_MATRIX_CONFIG.maximumTemporalLagDays) {
   const startTime = Date.parse(start.observedAt);
   return events.find((candidate) => (
     candidate.variableId === outcome
     && Date.parse(candidate.observedAt) > startTime
+    && (Date.parse(candidate.observedAt) - startTime) / 86400000 <= maximumLagDays
   ));
 }
 
@@ -38,10 +49,13 @@ function temporalSequencePairs(timeline = [], maxPairs = CLINICAL_PATTERN_MATRIX
       let firstMatch = null;
       let lastMatch = null;
       let confidence = 1;
+      const lagDays = [];
       for (const start of starts) {
         const end = firstFollowingEvent(events, start, outcome);
         if (!end) continue;
+        const lag = (Date.parse(end.observedAt) - Date.parse(start.observedAt)) / 86400000;
         occurrences += 1;
+        lagDays.push(lag);
         firstMatch ||= { start, end };
         lastMatch = { start, end };
         confidence = Math.min(confidence, start.confidence || 0.5, end.confidence || 0.5);
@@ -55,6 +69,10 @@ function temporalSequencePairs(timeline = [], maxPairs = CLINICAL_PATTERN_MATRIX
         firstObservedAt: firstMatch.start.observedAt,
         firstOutcomeAt: firstMatch.end.observedAt,
         lastObservedAt: lastMatch.end.observedAt,
+        medianLagDays: quantile(lagDays, 0.5),
+        minimumLagDays: Math.min(...lagDays),
+        maximumLagDays: Math.max(...lagDays),
+        lagIqrDays: quantile(lagDays, 0.75) - quantile(lagDays, 0.25),
         confidence
       });
     }
@@ -142,5 +160,6 @@ module.exports = {
   buildObservationalRelationships,
   detectPatientPatterns,
   positiveEvents,
+  quantile,
   temporalSequencePairs
 };

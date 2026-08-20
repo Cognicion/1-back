@@ -97,7 +97,9 @@ const DOMAIN_LABELS = Object.freeze({
   digital_health_evidence: "Evidencia en salud digital",
   real_world_data: "Datos del mundo real",
   clinical_decision_support: "Apoyo a decisiones clínicas",
-  statistical_interpretation: "Interpretación estadística"
+  statistical_interpretation: "Interpretación estadística",
+  robustness_assessment: "Evaluación de estabilidad",
+  non_redundant_patterns: "Patrones no redundantes"
 });
 
 const METHOD_LABELS = Object.freeze({
@@ -153,7 +155,44 @@ const EVIDENCE_TYPE_LABELS = Object.freeze({
   real_world_evidence_framework: "Marco de evidencia del mundo real",
   regulatory_methodological_reference: "Referencia regulatoria y metodológica",
   statistical_methodology: "Metodología estadística",
-  statistical_interpretation_guidance: "Guía de interpretación estadística"
+  statistical_interpretation_guidance: "Guía de interpretación estadística",
+  pattern_mining_methodology: "Metodología de descubrimiento de patrones"
+});
+
+const UTILITY_TIER_LABELS = Object.freeze({
+  high: "Alta",
+  moderate: "Moderada",
+  exploratory: "Exploratoria",
+  low: "Baja"
+});
+
+const ROBUSTNESS_LABELS = Object.freeze({
+  stable: "Estable entre submuestras",
+  moderate: "Estabilidad moderada",
+  unstable: "Inestable entre submuestras",
+  limited_sample: "Muestra limitada para estabilidad"
+});
+
+const PATTERN_CATEGORY_LABELS = Object.freeze({
+  clinical_cross_domain: "Clínico entre dominios",
+  clinical_same_domain: "Clínico dentro del mismo dominio",
+  clinical_documentation: "Clínico y documentación",
+  clinical_operations: "Clínico y uso de plataforma",
+  documentation_quality: "Calidad de documentación",
+  platform_operations: "Operación de la plataforma",
+  cross_domain: "Entre dominios",
+  recurrence: "Recurrencia temporal",
+  semantic_cross_source: "Afinidad semántica entre fuentes"
+});
+
+const QUALITY_WARNING_LABELS = Object.freeze({
+  multiple_testing_not_confirmed: "No supera todavía la corrección por comparaciones múltiples",
+  low_coverage: "Cobertura baja de la cohorte",
+  unstable_subsamples: "El efecto cambia entre submuestras",
+  perfect_sample_fit: "Ajuste perfecto en esta muestra; requiere descartar dependencia estructural",
+  limited_cross_patient_support: "Soporte entre pacientes todavía limitado",
+  variable_semantic_similarity: "La similitud varía entre coincidencias",
+  same_source_semantics: "Afinidad dentro de una misma fuente; puede reflejar estructura documental"
 });
 
 const VERSION_LABELS = Object.freeze({
@@ -164,6 +203,7 @@ const VERSION_LABELS = Object.freeze({
   probabilityEngineVersion: "Motor de probabilidades",
   matrixEngineVersion: "Motor de matrices",
   embeddingEngineVersion: "Motor de embeddings",
+  semanticRelationVersion: "Relaciones semánticas",
   evidenceRegistryVersion: "Registro de evidencia",
   presentationVersion: "Presentación en español"
 });
@@ -374,6 +414,23 @@ function concordanceSentence(association) {
   return `Spearman (rho=${rho}) conserva la dirección, pero difiere en magnitud; conviene revisar la forma de la relación.`;
 }
 
+function utilitySentence(association) {
+  if (!finiteNumeric(association.utilityScore)) return "";
+  const label = localizedLabel(UTILITY_TIER_LABELS, association.utilityTier, "Exploratoria").toLowerCase();
+  const score = Math.round(Number(association.utilityScore) * 100);
+  const robustness = localizedLabel(ROBUSTNESS_LABELS, association.robustnessStatus, "Estabilidad no estimada").toLowerCase();
+  return `Prioridad de utilidad ${label} (${score}/100); ${robustness}.`;
+}
+
+function timingSentence(association) {
+  if (!finiteNumeric(association.medianLagDays)) return "";
+  const medianDays = Number(association.medianLagDays).toFixed(1).replace(/\.0$/, "");
+  const iqr = finiteNumeric(association.lagIqrDays)
+    ? `, con un rango intercuartílico de ${Number(association.lagIqrDays).toFixed(1).replace(/\.0$/, "")} días`
+    : "";
+  return `El intervalo mediano observado entre ambos eventos fue de ${medianDays} días${iqr}.`;
+}
+
 function temporalInterpretation(association, labelA, labelB) {
   const probability = percentage(association.probability);
   const lower = percentage(association.ciLower);
@@ -387,7 +444,7 @@ function temporalInterpretation(association, labelA, labelB) {
     ? ` Equivale a ${lift} veces la frecuencia basal de ${labelB} (${baseline}).`
     : "";
   const coverage = association.lowCoverage === true ? " La cobertura de la condición inicial es baja." : "";
-  return `En la cohorte desidentificada, tras registrarse ${labelA}, se registró posteriormente ${labelB} en ${probability || "una proporción no estimable"} de los perfiles elegibles (n=${numerator}/${denominator}${interval}).${comparison}${coverage} Es una secuencia observada; no implica causalidad ni predicción individual.`;
+  return `${utilitySentence(association)} En la cohorte desidentificada, tras registrarse ${labelA}, se registró posteriormente ${labelB} en ${probability || "una proporción no estimable"} de los perfiles elegibles (n=${numerator}/${denominator}${interval}).${comparison}${coverage} ${timingSentence(association)} Es una secuencia observada; no implica causalidad ni predicción individual.`.replace(/\s+/g, " ").trim();
 }
 
 function possibleInterpretation(association, labelA, labelB) {
@@ -396,6 +453,7 @@ function possibleInterpretation(association, labelA, labelB) {
   }
   const magnitude = effectMagnitude(association.effectMetric, association.effectSize);
   return [
+    utilitySentence(association),
     correlationDirectionSentence(association, labelA, labelB, magnitude),
     coverageSentence(association),
     correlationUncertaintySentence(association),
@@ -440,6 +498,10 @@ function localizeAssociation(association = {}) {
     statisticalTypeBLabel: localizedLabel(TYPE_LABELS, enriched.statisticalTypeB),
     evidenceStatusLabel: localizedLabel(EVIDENCE_STATUS_LABELS, enriched.evidenceStatus, "Exploratorio"),
     sourceTypeLabel: localizedLabel(SOURCE_LABELS, enriched.sourceType, "Fuente no especificada"),
+    utilityTierLabel: localizedLabel(UTILITY_TIER_LABELS, enriched.utilityTier, "No calculada"),
+    robustnessLabel: localizedLabel(ROBUSTNESS_LABELS, enriched.robustnessStatus, "No calculada"),
+    patternCategoryLabel: localizedLabel(PATTERN_CATEGORY_LABELS, enriched.patternCategory, "Hallazgo exploratorio"),
+    qualityWarningLabels: (enriched.qualityWarnings || []).map((warning) => localizedLabel(QUALITY_WARNING_LABELS, warning, humanizeWords(warning))),
     possibleInterpretationEs: possibleInterpretation(enriched, variableALabel, variableBLabel),
     presentationLanguage: "es-MX",
     presentationVersion: CLINICAL_PRESENTATION_VERSION
@@ -466,7 +528,7 @@ function localizeClinicalKnowledge(knowledge = {}) {
   const patterns = (knowledge.patterns || []).map((item) => ({
     ...item,
     scopeLabel: localizedLabel({ patient: "Paciente", physician: "Médico", platform: "Plataforma" }, item.scope),
-    patternTypeLabel: localizedLabel({ temporal_sequence: "Secuencia temporal", cooccurrence: "Coocurrencia" }, item.patternType),
+    patternTypeLabel: localizedLabel({ temporal_sequence: "Secuencia temporal", recurrence_sequence: "Recurrencia temporal", cooccurrence: "Coocurrencia" }, item.patternType),
     variableLabels: (item.variables || []).map((variableId) => featureLabel(variableId))
   }));
   const relationships = (knowledge.relationships || []).map((item) => ({

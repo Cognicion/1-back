@@ -5,6 +5,7 @@ const {
 const { VARIABLE_CATALOG } = require("./variableExtractor");
 const { COLLECTIONS, valueToIso } = require("./contextBuilder");
 const { positiveEvents, temporalSequencePairs } = require("./patternAnalyzer");
+const { enrichFeatureMetadata } = require("./patternUtilityEngine");
 
 const NOTE_COLLECTIONS = new Set([
   "notasMedicas",
@@ -16,8 +17,8 @@ const NOTE_COLLECTIONS = new Set([
   "notasFlotantes",
   "interconsultas"
 ]);
-const BLOCKED_TEXT_KEYS = /^(id|uid|uuid|name|nombre|nombres|apellido|apellidos|telefono|tel|phone|email|correo|domicilio|direccion|direcci[oó]n|curp|rfc|patientid|pacienteid|pacienteuid|uidpaciente|expediente|numeroexpediente|foto|fotografia|path|ruta|url)$/i;
-const BLOCKED_STRUCTURED_KEYS = /(id|uid|uuid|name|nombre|apellido|telefono|phone|contacto|email|correo|domicilio|direccion|curp|rfc|expediente|folio|fecha|date|time|timestamp|created|updated|token|session|ip|device|foto|archivo|documento|path|ruta|url|latitud|longitud)/i;
+const BLOCKED_TEXT_KEYS = /^(id|uid|uuid|name|nombre|nombres|apellido|apellidos|telefono|tel|phone|email|correo|domicilio|direccion|direcci[oó]n|curp|rfc|patientid|pacienteid|pacienteuid|uidpaciente|expediente|numeroexpediente|foto|fotografia|path|ruta|url|importaciondocx|imported|importedby|migrated|migratedby|processing|processed|processedby|createdby|updatedby|schema|checksum|hash)$/i;
+const BLOCKED_STRUCTURED_KEYS = /(id|uid|uuid|name|nombre|apellido|telefono|phone|contacto|email|correo|domicilio|direccion|curp|rfc|expediente|folio|fecha|date|time|timestamp|created|updated|token|session|ip|device|foto|archivo|documento|path|ruta|url|latitud|longitud|importaciondocx|imported|migrated|migration|migracion|processing|processed|sync|sincronizacion|schema|checksum|hash|audit|auditoria)/i;
 const COLLECTION_DOMAINS = Object.freeze({
   notasMedicas: "documentation",
   notas: "documentation",
@@ -117,7 +118,7 @@ function createFeature({
   if (!featureId || value === null || value === undefined) return null;
   if (typeof value === "number" && !Number.isFinite(value)) return null;
   if (!["number", "boolean", "string"].includes(typeof value)) return null;
-  return {
+  const feature = {
     featureId,
     canonicalName: canonicalName || featureId,
     domain,
@@ -131,6 +132,7 @@ function createFeature({
     sourceType: "derived_deidentified",
     featureProfileVersion: CLINICAL_FEATURE_PROFILE_VERSION
   };
+  return { ...feature, ...enrichFeatureMetadata(feature) };
 }
 
 function addFeature(features, definition) {
@@ -483,6 +485,11 @@ function buildPatientFeatureProfile({ variables = [], timeline = [], context = {
     relationshipType: "temporal_sequence",
     occurrences: pair.occurrences,
     eligibleOccurrences: pair.eligibleOccurrences,
+    medianLagDays: pair.medianLagDays,
+    minimumLagDays: pair.minimumLagDays,
+    maximumLagDays: pair.maximumLagDays,
+    lagIqrDays: pair.lagIqrDays,
+    confidence: pair.confidence,
     firstObservedAt: monthBucket(pair.firstObservedAt),
     lastObservedAt: monthBucket(pair.lastObservedAt)
   }));

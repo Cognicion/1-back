@@ -19,7 +19,7 @@ const { localizeClinicalKnowledge } = require("./spanishPresentation");
 const { readClinicalEmbeddingKnowledge } = require("./embeddingPersistence");
 
 function compactKey(value) { return String(value || "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 450); }
-function monthBucket(value) { const date = new Date(value || 0); return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 7); }
+function monthBucket(value) { if (value === null || value === undefined || value === "") return null; const date = new Date(value); return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 7); }
 
 async function commitOperations(db, operations, batchSize = 400) {
   for (let start = 0; start < operations.length; start += batchSize) {

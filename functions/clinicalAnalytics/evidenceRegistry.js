@@ -128,6 +128,38 @@ const CLINICAL_EVIDENCE_REGISTRY = Object.freeze([
     modelSupported: ["association_interpretation", "multiple_testing_reporting"],
     notes: "Los valores p o q no miden la magnitud ni la importancia clínica y no deben sostener por sí solos una conclusión.",
     registryVersion: CLINICAL_EVIDENCE_REGISTRY_VERSION
+  },
+  {
+    evidenceId: "stability-selection-2010",
+    title: "Stability selection",
+    titleEs: "Selección por estabilidad",
+    authors: "Meinshausen N, Bühlmann P",
+    year: 2010,
+    journal: "Journal of the Royal Statistical Society: Series B",
+    doi: "10.1111/j.1467-9868.2010.00740.x",
+    url: "https://doi.org/10.1111/j.1467-9868.2010.00740.x",
+    evidenceType: "statistical_methodology",
+    domain: "robustness_assessment",
+    variablesSupported: [],
+    modelSupported: ["subsample_stability_screening"],
+    notes: "Informa la comprobación de estabilidad entre submuestras. COGNICIÓN no afirma implementar las garantías formales completas del procedimiento original.",
+    registryVersion: CLINICAL_EVIDENCE_REGISTRY_VERSION
+  },
+  {
+    evidenceId: "closed-patterns-1999",
+    title: "Discovering Frequent Closed Itemsets for Association Rules",
+    titleEs: "Descubrimiento de conjuntos frecuentes cerrados para reglas de asociación",
+    authors: "Pasquier N, Bastide Y, Taouil R, Lakhal L",
+    year: 1999,
+    journal: "International Conference on Database Theory",
+    doi: "10.1007/3-540-49257-7_25",
+    url: "https://doi.org/10.1007/3-540-49257-7_25",
+    evidenceType: "pattern_mining_methodology",
+    domain: "non_redundant_patterns",
+    variablesSupported: [],
+    modelSupported: ["closed_lexical_patterns"],
+    notes: "Referencia para reducir patrones frecuentes redundantes; no aporta evidencia clínica externa.",
+    registryVersion: CLINICAL_EVIDENCE_REGISTRY_VERSION
   }
 ]);
 

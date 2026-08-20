@@ -74,16 +74,16 @@ function extractClinicalVariables(context) {
   const patient = context.patient || {};
   const profileSource = { sourceField: "patientProfile", sourceRecordType: "patientProfile" };
   const age = inferAge(patient);
-  if (age !== null) variables.push(createVariable("age", age, valueToIso(patient.updatedAt || patient.fechaNacimiento) || new Date().toISOString(), profileSource, 0.95));
+  if (age !== null) variables.push(createVariable("age", age, valueToIso(patient.updatedAt || patient.fechaNacimiento), profileSource, 0.95));
   for (const [variableId, fields] of [["registered_sex", ["sexo", "genero"]], ["education", ["escolaridad"]], ["occupation", ["ocupacion", "ocupación"]]]) {
     const field = fields.find((key) => patient[key] !== undefined && patient[key] !== "");
-    if (field) variables.push(createVariable(variableId, String(patient[field]), valueToIso(patient.updatedAt) || new Date().toISOString(), { ...profileSource, sourceField: field }, 0.9));
+    if (field) variables.push(createVariable(variableId, String(patient[field]), valueToIso(patient.updatedAt), { ...profileSource, sourceField: field }, 0.9));
   }
   const diagnoses = Array.isArray(patient.diagnosticos) ? patient.diagnosticos : [...(patient.diagnostico ? [patient.diagnostico] : []), ...(Array.isArray(patient.historialDiagnosticos) ? patient.historialDiagnosticos : [])];
   diagnoses.forEach((diagnosis, index) => variables.push(createVariable("diagnosis", { code: diagnosis?.codigo || null, system: diagnosis?.sistema || null, status: diagnosis?.estado || "active", label: typeof diagnosis === "string" ? diagnosis : diagnosis?.nombre || diagnosis?.texto || null }, valueToIso(diagnosis?.fecha || patient.updatedAt), { sourceField: `diagnosticos[${index}]`, sourceRecordType: "patientProfile" }, 0.85)));
   const allRecords = Object.values(context.records || {}).flat();
   allRecords.forEach((record) => {
-    const observedAt = valueToIso(record.fecha || record.fechaAplicacion || record.fechaInicio || record.observedAt || record.createdAt || record.updatedAt) || new Date().toISOString();
+    const observedAt = valueToIso(record.fecha || record.fechaAplicacion || record.fechaInicio || record.observedAt || record.createdAt || record.updatedAt);
     const sourceBase = { sourceField: record._recordType, sourceRecordType: record._recordType };
     if (record.medicamento || record.nombreMedicamento) variables.push(createVariable("treatment", { medication: record.medicamento || record.nombreMedicamento, dose: record.dosis || null, route: record.via || null, frequency: record.frecuencia || null, status: record.estado || record.estatus || "active" }, observedAt, { ...sourceBase, sourceField: "medicamento" }, 0.9));
     if (record.puntajeTotal !== undefined || record.puntuacion !== undefined || record.score !== undefined) {

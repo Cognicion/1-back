@@ -154,8 +154,24 @@ async function run() {
   const aggregated = aggregateSemanticRelations(relations);
   assert.strictEqual(aggregated.relations.length, 1);
   assert.strictEqual(aggregated.relations[0].patientPairCount, 3);
+  assert.ok(aggregated.relations[0].utilityScore >= CLINICAL_EMBEDDING_CONFIG.minimumSemanticUtilityScore);
+  assert.strictEqual(aggregated.relations[0].utilityEligible, true);
+  assert.strictEqual(aggregated.relations[0].semanticRelationVersion, "1.1.0");
+  assert.strictEqual(aggregated.relations[0].similarityStandardDeviation, 0);
   assert.ok(aggregated.relations[0].possibleInterpretationEs.includes("no implica causalidad"));
   assert.strictEqual(aggregateSemanticRelations(relations.slice(0, 2)).relations.length, 0);
+  const weakRelations = [
+    ["w1", "x1", "patient-g", "patient-h"],
+    ["w2", "x2", "patient-i", "patient-j"],
+    ["w3", "x3", "patient-k", "patient-l"]
+  ].map(([sourceId, targetId, sourcePatient, targetPatient]) => buildSemanticRelation({
+    source: { id: sourceId, analyticsPatientId: sourcePatient, sourceCollection: "notasMedicas" },
+    target: { id: targetId, analyticsPatientId: targetPatient, sourceCollection: "estudios" },
+    distance: 0.219
+  }));
+  const weakAggregation = aggregateSemanticRelations(weakRelations);
+  assert.strictEqual(weakAggregation.relations.length, 0);
+  assert.strictEqual(weakAggregation.lowUtilityGroups, 1);
   assert.strictEqual(buildSemanticRelation({
     source: { id: "old", analyticsPatientId: "a", embeddingEngineVersion: "0.9.0" },
     target: { id: "new", analyticsPatientId: "b", embeddingEngineVersion: "1.0.0", embeddingModel: "text-embedding-3-small", embeddingDimensions: 512 },

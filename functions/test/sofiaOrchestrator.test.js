@@ -105,7 +105,7 @@ async function run() {
             matrixType: "mixed_values",
             featureCount: 2,
             testedPairs: 1,
-            associations: [{ variableA: "age.latest", variableB: "documentation.mean_words", variableALabel: "último valor de edad", variableBLabel: "promedio de palabras por nota", methodLabel: "Correlaciones de Pearson y Spearman", effectSize: 0.8, effectMetric: "pearson_r", effectMetricLabel: "r de Pearson", sampleSize: 40, evidenceStatus: "screened_candidate", evidenceStatusLabel: "Candidato exploratorio tras corrección FDR", possibleInterpretationEs: "Asociación observacional; no implica causalidad.", analyticsPatientId: "must-not-leak" }]
+            associations: [{ variableA: "age.latest", variableB: "documentation.mean_words", variableALabel: "último valor de edad", variableBLabel: "promedio de palabras por nota", methodLabel: "Correlaciones de Pearson y Spearman", effectSize: 0.8, effectMetric: "pearson_r", effectMetricLabel: "r de Pearson", sampleSize: 40, evidenceStatus: "screened_candidate", evidenceStatusLabel: "Candidato exploratorio tras corrección FDR", utilityScore: 0.82, utilityTier: "high", robustnessScore: 0.91, robustnessStatus: "stable", qualityWarnings: [], possibleInterpretationEs: "Asociación observacional; no implica causalidad.", analyticsPatientId: "must-not-leak" }]
           },
           documentation: null,
           temporal: null
@@ -116,7 +116,7 @@ async function run() {
       return {
         status: { status: "ready", indexedRecords: 12, indexedFragments: 18, vectorsExposedToClient: false },
         sources: [{ sourceLabel: "Notas médicas", sourceDomain: "documentacion", indexedRecords: 12, indexedFragments: 18, failedRecords: 0, analyticsPatientId: "must-not-leak" }],
-        relations: [{ sourceLabelA: "Notas médicas", sourceLabelB: "Estudios", patientPairCount: 3, relationCount: 5, meanSimilarity: 0.88, possibleInterpretationEs: "Afinidad exploratoria; no implica causalidad." }],
+        relations: [{ sourceLabelA: "Notas médicas", sourceLabelB: "Estudios", patientPairCount: 3, relationCount: 5, meanSimilarity: 0.88, utilityScore: 0.71, utilityTier: "moderate", qualityWarnings: ["limited_cross_patient_support"], possibleInterpretationEs: "Afinidad exploratoria; no implica causalidad.", analyticsPatientId: "must-not-leak" }],
         privacy: { vectorsIncluded: false, rawClinicalTextIncluded: false, directIdentifiersIncluded: false }
       };
     }
@@ -126,6 +126,8 @@ async function run() {
   assert.strictEqual(globalKnowledge.cohortSize, 40);
   assert.strictEqual(globalKnowledge.rowLevelDataIncluded, false);
   assert.strictEqual(globalKnowledge.matrices.mixed.associations[0].variableALabel, "último valor de edad");
+  assert.strictEqual(globalKnowledge.matrices.mixed.associations[0].utilityScore, 0.82);
+  assert.strictEqual(globalKnowledge.matrices.mixed.associations[0].robustnessScore, 0.91);
   assert.match(globalKnowledge.matrices.mixed.associations[0].possibleInterpretationEs, /no implica causalidad/i);
   assert.ok(!JSON.stringify(globalKnowledge).includes("must-not-leak"));
   const semanticKnowledge = await adminRegistry.execute("get_platform_semantic_relations", {});
@@ -133,6 +135,7 @@ async function run() {
   assert.strictEqual(semanticKnowledge.vectorsIncluded, false);
   assert.strictEqual(semanticKnowledge.rawClinicalTextIncluded, false);
   assert.strictEqual(semanticKnowledge.relations[0].patientPairCount, 3);
+  assert.strictEqual(semanticKnowledge.relations[0].utilityScore, 0.71);
   assert.ok(!JSON.stringify(semanticKnowledge).includes("must-not-leak"));
 
   await assert.rejects(

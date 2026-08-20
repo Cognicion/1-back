@@ -1,10 +1,11 @@
 const { HttpsError } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
+const { selectUsefulLexicalPatterns } = require("./lexicalPatternQuality");
 
 const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
 const ADMIN_ROLES = new Set(["admin", "administrador", "superadmin", "adminprincipal", "administradorprincipal"]);
 const TEXT_COLLECTIONS = ["notasMedicas", "notas", "notasClinicas", "notasRapidas", "historiaClinica"];
-const PATTERN_CONFIG = Object.freeze({ defaultThreshold: 3, minimumThreshold: 2, maximumThreshold: 1000, minimumTokens: 2, maximumTokens: 20, batchSize: 25, initialBatchSize: 10, pageSize: 50 });
+const PATTERN_CONFIG = Object.freeze({ defaultThreshold: 3, minimumThreshold: 2, maximumThreshold: 1000, minimumTokens: 2, maximumTokens: 8, batchSize: 25, initialBatchSize: 10, pageSize: 50, maximumDocuments: 10000, maximumResults: 250 });
 const META_KEYS = /^(id|uid|uuid|path|ruta|url|email|correo|telefono|tel|curp|rfc|timestamp|createdat|updatedat|fecha|hora|version|estado|rol|sexo|edad|nombre|apellido|expediente|pacienteid|pacienteuid|medicouid|institucionid)$/i;
 
 function roleIsAdmin(value = "") {
@@ -53,9 +54,10 @@ function collectTexts(value, path = "", result = []) {
 function anonymize(text = "") { return String(text).replace(/https?:\/\/\S+|www\.\S+|[\w.+-]+@[\w.-]+\.[a-z]{2,}/gi, "[dato omitido]").replace(/\+?\d[\d\s().-]{7,}/g, "[dato omitido]").replace(/\b[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3}\b/g, "[persona]"); }
 
 function asIso(value) {
+  if (value === null || value === undefined || value === "") return "";
   if (value && typeof value.toDate === "function") return value.toDate().toISOString();
   if (value && typeof value.seconds === "number") return new Date(value.seconds * 1000).toISOString();
-  const date = new Date(value || 0);
+  const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "" : date.toISOString();
 }
 
@@ -64,8 +66,7 @@ function metadata(data, patientUid) {
 }
 
 function matches(meta, filters = {}) {
-  const haystack = `${meta.institucion} ${meta.servicio} ${meta.diagnostico}`.toLowerCase();
-  return (!filters.medico || meta.medicoUid === filters.medico) && (!filters.paciente || meta.pacienteUid === filters.paciente) && (!filters.institucion || meta.institucion === filters.institucion) && (!filters.servicio || meta.servicio === filters.servicio) && (!filters.desde || meta.fecha >= filters.desde) && (!filters.hasta || meta.fecha <= `${filters.hasta}T23:59:59.999Z`) && (!filters.busqueda || haystack.includes(String(filters.busqueda).toLowerCase()));
+  return (!filters.medico || meta.medicoUid === filters.medico) && (!filters.paciente || meta.pacienteUid === filters.paciente) && (!filters.institucion || meta.institucion === filters.institucion) && (!filters.servicio || meta.servicio === filters.servicio) && (!filters.desde || meta.fecha >= filters.desde) && (!filters.hasta || meta.fecha <= `${filters.hasta}T23:59:59.999Z`);
 }
 
 function add(map, key, item) {
@@ -96,12 +97,17 @@ async function discoverTextPatterns({ request, db }) {
     console.log("[PATTERNS][FUNCTION] Usuario autenticado", { uid: adminUid });
     trace("autenticacion");
     const filters = request.data?.filtros || {};
-    const threshold = PATTERN_CONFIG.minimumThreshold;
+    const requestedThreshold = Number(request.data?.threshold);
+    const threshold = Number.isInteger(requestedThreshold) && requestedThreshold >= PATTERN_CONFIG.minimumThreshold && requestedThreshold <= PATTERN_CONFIG.maximumThreshold
+      ? requestedThreshold
+      : PATTERN_CONFIG.minimumThreshold;
     const rows = new Map();
     let totalNotas = 0;
     let batchesProcessed = 0;
     const initialBatchOnly = request.data?.initialBatchOnly !== false;
     let hasMore = false;
+    let documentLimitReached = false;
+    const shouldStop = () => documentLimitReached || (initialBatchOnly && totalNotas >= PATTERN_CONFIG.initialBatchSize);
     let lastUser = null;
     do {
       currentStage = "consulta_inicial";
@@ -130,37 +136,46 @@ async function discoverTextPatterns({ request, db }) {
             if (!firstBatchReceived && snapshot.size > 0) { firstBatchReceived = true; firstBatchSize = snapshot.size; console.log("[PATTERNS][FUNCTION] Primer lote recibido", { size: snapshot.size }); trace("snapshot_recibido"); }
             batchesProcessed++;
             for (const note of snapshot.docs) {
+              if (totalNotas >= PATTERN_CONFIG.maximumDocuments) {
+                documentLimitReached = true;
+                hasMore = true;
+                break;
+              }
               totalNotas++;
               const data = note.data() || {};
               const meta = metadata(data, perfil.rol === "paciente" ? usuario.id : "");
               if (!matches(meta, filters)) continue;
               const notaId = `usuarios:${usuario.id}:${collectionName}:${note.id}`;
               for (const source of collectTexts(data)) {
-                const words = tokens(source.texto);
+                const words = tokens(anonymize(source.texto));
                 for (let n = PATTERN_CONFIG.minimumTokens; n <= Math.min(PATTERN_CONFIG.maximumTokens, words.length); n++) for (let i = 0; i <= words.length - n; i++) {
                   const tipo = n === 1 ? "word" : n === 2 ? "bigram" : n === 3 ? "trigram" : "phrase";
                   const clave = words.slice(i, i + n).join(" ");
                   add(rows, `${tipo}:${clave}`, { ...meta, notaId, campo: source.campo, tipo, n, clave });
                 }
               }
-              if (initialBatchOnly && totalNotas >= PATTERN_CONFIG.initialBatchSize) { hasMore = true; break; }
+              if (shouldStop()) { hasMore = true; break; }
             }
-            if (initialBatchOnly && totalNotas >= PATTERN_CONFIG.initialBatchSize) break;
+            if (shouldStop()) break;
             if (snapshot.size < limit) break;
             lastDoc = snapshot.docs[snapshot.docs.length - 1];
           }
-          if (initialBatchOnly && totalNotas >= PATTERN_CONFIG.initialBatchSize) break;
+          if (shouldStop()) break;
         }
-        if (initialBatchOnly && totalNotas >= PATTERN_CONFIG.initialBatchSize) break;
+        if (shouldStop()) break;
       }
-      if (initialBatchOnly && totalNotas >= PATTERN_CONFIG.initialBatchSize) break;
+      if (shouldStop()) break;
       lastUser = usuarios.docs[usuarios.docs.length - 1] || null;
     } while (lastUser && !initialBatchOnly);
     const temporaryCandidates = rows.size;
-    const patterns = [...rows.values()].filter((row) => row.frecuencia >= threshold).map((row) => ({ phrase: row.clave, normalizedPhrase: row.clave, frequency: row.frecuencia, noteCount: row.notas.size, patientCount: row.pacientes.size, physicianCount: row.medicos.size, firstSeenAt: row.primeraAparicion, lastSeenAt: row.ultimaAparicion, tokenCount: row.n })).filter((row) => !filters.busqueda || `${row.phrase} ${row.normalizedPhrase}`.includes(String(filters.busqueda).toLowerCase())).sort((a, b) => b.frequency - a.frequency || a.normalizedPhrase.localeCompare(b.normalizedPhrase));
+    const quality = selectUsefulLexicalPatterns([...rows.values()], {
+      threshold,
+      maxResults: PATTERN_CONFIG.maximumResults
+    });
+    const patterns = quality.patterns.filter((row) => !filters.busqueda || `${row.phrase} ${row.normalizedPhrase}`.includes(String(filters.busqueda).toLowerCase()));
     currentStage = "respuesta";
-    await db.collection("auditoria").add({ accion: "analizar_patrones_texto", modulo: "Motor de Descubrimiento de Patrones", usuarioUid: adminUid, filtros: { ...filters }, umbral: threshold, cantidadResultados: patterns.length, totalNotas, duracionMs: Date.now() - inicio, fecha: new Date().toISOString(), exito: true });
-    const response = { ok: true, patterns, stats: { documentsProcessed: totalNotas, batchesProcessed, temporaryCandidates, confirmedPatterns: patterns.length, threshold, elapsedMs: Date.now() - inicio, firstBatchSize, readOperations, documentsRead, hasMore } };
+    await db.collection("auditoria").add({ accion: "analizar_patrones_texto", modulo: "Explorador de patrones lexicos", usuarioUid: adminUid, filtrosAplicados: { busqueda: Boolean(filters.busqueda), medico: Boolean(filters.medico), paciente: Boolean(filters.paciente), institucion: Boolean(filters.institucion), servicio: Boolean(filters.servicio), periodo: Boolean(filters.desde || filters.hasta) }, umbral: threshold, cantidadResultados: patterns.length, totalNotas, duracionMs: Date.now() - inicio, fecha: new Date().toISOString(), exito: true });
+    const response = { ok: true, patterns, stats: { documentsProcessed: totalNotas, batchesProcessed, temporaryCandidates, confirmedPatterns: patterns.length, threshold, elapsedMs: Date.now() - inicio, firstBatchSize, readOperations, documentsRead, hasMore, documentLimitReached, ...quality.stats } };
     try { JSON.stringify(response); } catch (error) { throw new HttpsError("internal", "PATTERN_RESPONSE_SERIALIZATION_FAILED", { stage: "serializacion", originalCode: error?.code ?? null, originalMessage: error?.message ?? null }); }
     trace("serializacion");
     trace("respuesta_enviada");
@@ -171,4 +186,4 @@ async function discoverTextPatterns({ request, db }) {
   }
 }
 
-module.exports = { discoverTextPatterns };
+module.exports = { asIso, discoverTextPatterns };
