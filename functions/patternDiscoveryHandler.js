@@ -1,11 +1,12 @@
 const { HttpsError } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
-const { selectUsefulLexicalPatterns } = require("./lexicalPatternQuality");
+const { CLINICAL_RECORD_COLLECTIONS } = require("./clinicalAnalytics/config");
+const { isPotentiallyUsefulLexicalPhrase, selectUsefulLexicalPatterns } = require("./lexicalPatternQuality");
 
 const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
 const ADMIN_ROLES = new Set(["admin", "administrador", "superadmin", "adminprincipal", "administradorprincipal"]);
-const TEXT_COLLECTIONS = ["notasMedicas", "notas", "notasClinicas", "notasRapidas", "historiaClinica"];
-const PATTERN_CONFIG = Object.freeze({ defaultThreshold: 3, minimumThreshold: 2, maximumThreshold: 1000, minimumTokens: 2, maximumTokens: 8, batchSize: 25, initialBatchSize: 10, pageSize: 50, maximumDocuments: 10000, maximumResults: 250 });
+const TEXT_COLLECTIONS = [...CLINICAL_RECORD_COLLECTIONS];
+const PATTERN_CONFIG = Object.freeze({ defaultThreshold: 3, minimumThreshold: 2, maximumThreshold: 1000, minimumTokens: 2, maximumTokens: 8, batchSize: 200, initialBatchSize: 10, pageSize: 50, maximumDocuments: 10000, maximumResults: 250, maximumExecutionMs: 45000, maximumTokensPerDocument: 6000, maximumCandidates: 75000 });
 const META_KEYS = /^(id|uid|uuid|path|ruta|url|email|correo|telefono|tel|curp|rfc|timestamp|createdat|updatedat|fecha|hora|version|estado|rol|sexo|edad|nombre|apellido|expediente|pacienteid|pacienteuid|medicouid|institucionid)$/i;
 
 function roleIsAdmin(value = "") {
@@ -13,7 +14,7 @@ function roleIsAdmin(value = "") {
 }
 
 async function assertAdmin(request, db, trace) {
-  console.log("[PATTERNS][AUTH]", { authenticated: Boolean(request.auth), uid: request.auth?.uid ?? null, tokenRole: request.auth?.token?.role ?? null, tokenAdmin: request.auth?.token?.admin ?? null });
+  console.log("[PATTERNS][AUTH]", { authenticated: Boolean(request.auth), tokenRole: request.auth?.token?.role ?? null, tokenAdmin: request.auth?.token?.admin ?? null });
   if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Autenticación requerida.");
   const claims = request.auth.token || {};
   if (request.auth.uid === ADMIN_UID || claims.admin === true || roleIsAdmin(claims.role) || roleIsAdmin(claims.rol)) { console.log("[PATTERNS][FUNCTION] Rol admin confirmado"); trace?.("rol_confirmado"); return request.auth.uid; }
@@ -71,6 +72,7 @@ function matches(meta, filters = {}) {
 
 function add(map, key, item) {
   let row = map.get(key);
+  if (!row && map.size >= PATTERN_CONFIG.maximumCandidates) return false;
   if (!row) row = { clave: item.clave, tipo: item.tipo, n: item.n, frecuencia: 0, notas: new Set(), pacientes: new Set(), medicos: new Set(), primeraAparicion: item.fecha, ultimaAparicion: item.fecha };
   row.frecuencia++;
   if (item.notaId) row.notas.add(item.notaId);
@@ -79,6 +81,89 @@ function add(map, key, item) {
   if (item.fecha && (!row.primeraAparicion || item.fecha < row.primeraAparicion)) row.primeraAparicion = item.fecha;
   if (item.fecha > row.ultimaAparicion) row.ultimaAparicion = item.fecha;
   map.set(key, row);
+  return true;
+}
+
+function documentLocation(reference, collectionName) {
+  const parts = String(reference?.path || "").split("/").filter(Boolean);
+  if (parts.length !== 4 || parts[0] !== "usuarios" || parts[2] !== collectionName) return null;
+  return {
+    patientUid: parts[1],
+    noteId: parts.join(":")
+  };
+}
+
+function createTextQuery(db, collectionName, patientFilter, limit, lastDocument = null) {
+  const source = patientFilter
+    ? db.collection(`usuarios/${patientFilter}/${collectionName}`)
+    : db.collectionGroup(collectionName);
+  let query = source.orderBy(admin.firestore.FieldPath.documentId()).limit(limit);
+  if (lastDocument) query = query.startAfter(lastDocument);
+  return query;
+}
+
+async function scanTextDocuments({ db, filters = {}, initialBatchOnly = false, deadline, trace, onDocument }) {
+  let documentsProcessed = 0;
+  let documentsRead = 0;
+  let readOperations = 0;
+  let batchesProcessed = 0;
+  let firstBatchSize = 0;
+  let documentLimitReached = false;
+  let timeBudgetReached = false;
+  const collectionStats = {};
+  const targetDocuments = initialBatchOnly ? PATTERN_CONFIG.initialBatchSize : PATTERN_CONFIG.maximumDocuments;
+
+  for (const collectionName of TEXT_COLLECTIONS) {
+    let lastDocument = null;
+    let collectionDocuments = 0;
+    while (documentsProcessed < targetDocuments) {
+      if (Date.now() >= deadline) {
+        timeBudgetReached = true;
+        break;
+      }
+      const remaining = targetDocuments - documentsProcessed;
+      const limit = Math.min(initialBatchOnly ? PATTERN_CONFIG.initialBatchSize : PATTERN_CONFIG.batchSize, remaining);
+      const query = createTextQuery(db, collectionName, filters.paciente, limit, lastDocument);
+      console.log("[PATTERNS][READ] Consulta agrupada", { collection: collectionName, limit, patientScoped: Boolean(filters.paciente) });
+      trace?.("consulta_agrupada_enviada");
+      const snapshot = await query.get();
+      readOperations += 1;
+      batchesProcessed += 1;
+      documentsRead += snapshot.size;
+      if (!firstBatchSize && snapshot.size) firstBatchSize = snapshot.size;
+      for (const document of snapshot.docs) {
+        const location = documentLocation(document.ref, collectionName);
+        if (!location) continue;
+        documentsProcessed += 1;
+        collectionDocuments += 1;
+        await onDocument({ document, collectionName, location });
+        if (documentsProcessed >= targetDocuments || Date.now() >= deadline) break;
+      }
+      if (Date.now() >= deadline) {
+        timeBudgetReached = true;
+        break;
+      }
+      if (documentsProcessed >= targetDocuments) break;
+      if (snapshot.size < limit) break;
+      lastDocument = snapshot.docs[snapshot.docs.length - 1];
+    }
+    collectionStats[collectionName] = collectionDocuments;
+    if (timeBudgetReached || documentsProcessed >= targetDocuments) break;
+  }
+
+  documentLimitReached = !initialBatchOnly && documentsProcessed >= PATTERN_CONFIG.maximumDocuments;
+  return {
+    documentsProcessed,
+    documentsRead,
+    readOperations,
+    batchesProcessed,
+    firstBatchSize,
+    collectionStats,
+    documentLimitReached,
+    timeBudgetReached,
+    hasMore: documentLimitReached || timeBudgetReached || (initialBatchOnly && documentsProcessed >= targetDocuments),
+    readStrategy: filters.paciente ? "patient_scoped_subcollections" : "collection_group"
+  };
 }
 
 async function discoverTextPatterns({ request, db }) {
@@ -94,7 +179,7 @@ async function discoverTextPatterns({ request, db }) {
     trace("inicio");
     currentStage = "autenticacion_rol";
     const adminUid = await assertAdmin(request, db, trace);
-    console.log("[PATTERNS][FUNCTION] Usuario autenticado", { uid: adminUid });
+    console.log("[PATTERNS][FUNCTION] Usuario autenticado");
     trace("autenticacion");
     const filters = request.data?.filtros || {};
     const requestedThreshold = Number(request.data?.threshold);
@@ -102,71 +187,46 @@ async function discoverTextPatterns({ request, db }) {
       ? requestedThreshold
       : PATTERN_CONFIG.minimumThreshold;
     const rows = new Map();
-    let totalNotas = 0;
-    let batchesProcessed = 0;
+    let candidateLimitReached = false;
+    let truncatedDocuments = 0;
     const initialBatchOnly = request.data?.initialBatchOnly !== false;
-    let hasMore = false;
-    let documentLimitReached = false;
-    const shouldStop = () => documentLimitReached || (initialBatchOnly && totalNotas >= PATTERN_CONFIG.initialBatchSize);
-    let lastUser = null;
-    do {
-      currentStage = "consulta_inicial";
-      let usersQuery = db.collection("usuarios").orderBy(admin.firestore.FieldPath.documentId()).limit(PATTERN_CONFIG.initialBatchSize);
-      if (lastUser) usersQuery = usersQuery.startAfter(lastUser);
-      console.log("[PATTERNS][FUNCTION] Preparando consulta", { collection: "usuarios", limit: PATTERN_CONFIG.initialBatchSize });
-      trace("consulta_creada");
-      const usuarios = await usersQuery.get();
-      readOperations++;
-      documentsRead += usuarios.size;
-      if (!firstBatchReceived && usuarios.size > 0) { firstBatchReceived = true; firstBatchSize = usuarios.size; console.log("[PATTERNS][FUNCTION] Primer lote recibido", { size: usuarios.size }); trace("snapshot_recibido"); }
-      for (const usuario of usuarios.docs) {
-        const perfil = usuario.data() || {};
-        for (const collectionName of TEXT_COLLECTIONS) {
-          let lastDoc = null;
-          while (true) {
-            currentStage = "consulta_inicial";
-            const limit = lastDoc ? PATTERN_CONFIG.batchSize : PATTERN_CONFIG.initialBatchSize;
-            let query = db.collection(`usuarios/${usuario.id}/${collectionName}`).orderBy(admin.firestore.FieldPath.documentId()).limit(limit);
-            if (lastDoc) query = query.startAfter(lastDoc);
-            console.log("[PATTERNS][FUNCTION] Ejecutando primer lote", { collection: collectionName, limit });
-            trace("consulta_enviada");
-            const snapshot = await query.get();
-            readOperations++;
-            documentsRead += snapshot.size;
-            if (!firstBatchReceived && snapshot.size > 0) { firstBatchReceived = true; firstBatchSize = snapshot.size; console.log("[PATTERNS][FUNCTION] Primer lote recibido", { size: snapshot.size }); trace("snapshot_recibido"); }
-            batchesProcessed++;
-            for (const note of snapshot.docs) {
-              if (totalNotas >= PATTERN_CONFIG.maximumDocuments) {
-                documentLimitReached = true;
-                hasMore = true;
-                break;
-              }
-              totalNotas++;
-              const data = note.data() || {};
-              const meta = metadata(data, perfil.rol === "paciente" ? usuario.id : "");
-              if (!matches(meta, filters)) continue;
-              const notaId = `usuarios:${usuario.id}:${collectionName}:${note.id}`;
-              for (const source of collectTexts(data)) {
-                const words = tokens(anonymize(source.texto));
-                for (let n = PATTERN_CONFIG.minimumTokens; n <= Math.min(PATTERN_CONFIG.maximumTokens, words.length); n++) for (let i = 0; i <= words.length - n; i++) {
-                  const tipo = n === 1 ? "word" : n === 2 ? "bigram" : n === 3 ? "trigram" : "phrase";
-                  const clave = words.slice(i, i + n).join(" ");
-                  add(rows, `${tipo}:${clave}`, { ...meta, notaId, campo: source.campo, tipo, n, clave });
-                }
-              }
-              if (shouldStop()) { hasMore = true; break; }
-            }
-            if (shouldStop()) break;
-            if (snapshot.size < limit) break;
-            lastDoc = snapshot.docs[snapshot.docs.length - 1];
+    currentStage = "lectura_agrupada";
+    const scan = await scanTextDocuments({
+      db,
+      filters,
+      initialBatchOnly,
+      deadline: inicio + PATTERN_CONFIG.maximumExecutionMs,
+      trace,
+      onDocument: async ({ document: note, collectionName, location }) => {
+        const data = note.data() || {};
+        const meta = metadata(data, location.patientUid);
+        if (!matches(meta, filters)) return;
+        let remainingTokens = PATTERN_CONFIG.maximumTokensPerDocument;
+        let documentTruncated = false;
+        for (const source of collectTexts(data)) {
+          if (remainingTokens <= 0) {
+            documentTruncated = true;
+            break;
           }
-          if (shouldStop()) break;
+          const sourceWords = tokens(anonymize(source.texto));
+          const words = sourceWords.slice(0, remainingTokens);
+          remainingTokens -= words.length;
+          if (words.length < sourceWords.length) documentTruncated = true;
+          for (let n = PATTERN_CONFIG.minimumTokens; n <= Math.min(PATTERN_CONFIG.maximumTokens, words.length); n++) for (let i = 0; i <= words.length - n; i++) {
+            const tipo = n === 1 ? "word" : n === 2 ? "bigram" : n === 3 ? "trigram" : "phrase";
+            const clave = words.slice(i, i + n).join(" ");
+            if (!isPotentiallyUsefulLexicalPhrase(clave)) continue;
+            if (!add(rows, `${tipo}:${clave}`, { ...meta, notaId: location.noteId, campo: source.campo, tipo, n, clave })) candidateLimitReached = true;
+          }
         }
-        if (shouldStop()) break;
+        if (documentTruncated) truncatedDocuments += 1;
       }
-      if (shouldStop()) break;
-      lastUser = usuarios.docs[usuarios.docs.length - 1] || null;
-    } while (lastUser && !initialBatchOnly);
+    });
+    readOperations = scan.readOperations;
+    documentsRead = scan.documentsRead;
+    firstBatchSize = scan.firstBatchSize;
+    firstBatchReceived = scan.firstBatchSize > 0;
+    const totalNotas = scan.documentsProcessed;
     const temporaryCandidates = rows.size;
     const quality = selectUsefulLexicalPatterns([...rows.values()], {
       threshold,
@@ -174,8 +234,8 @@ async function discoverTextPatterns({ request, db }) {
     });
     const patterns = quality.patterns.filter((row) => !filters.busqueda || `${row.phrase} ${row.normalizedPhrase}`.includes(String(filters.busqueda).toLowerCase()));
     currentStage = "respuesta";
-    await db.collection("auditoria").add({ accion: "analizar_patrones_texto", modulo: "Explorador de patrones lexicos", usuarioUid: adminUid, filtrosAplicados: { busqueda: Boolean(filters.busqueda), medico: Boolean(filters.medico), paciente: Boolean(filters.paciente), institucion: Boolean(filters.institucion), servicio: Boolean(filters.servicio), periodo: Boolean(filters.desde || filters.hasta) }, umbral: threshold, cantidadResultados: patterns.length, totalNotas, duracionMs: Date.now() - inicio, fecha: new Date().toISOString(), exito: true });
-    const response = { ok: true, patterns, stats: { documentsProcessed: totalNotas, batchesProcessed, temporaryCandidates, confirmedPatterns: patterns.length, threshold, elapsedMs: Date.now() - inicio, firstBatchSize, readOperations, documentsRead, hasMore, documentLimitReached, ...quality.stats } };
+    await db.collection("auditoria").add({ accion: "analizar_patrones_texto", modulo: "Explorador de patrones lexicos", usuarioUid: adminUid, filtrosAplicados: { busqueda: Boolean(filters.busqueda), medico: Boolean(filters.medico), paciente: Boolean(filters.paciente), institucion: Boolean(filters.institucion), servicio: Boolean(filters.servicio), periodo: Boolean(filters.desde || filters.hasta) }, umbral: threshold, cantidadResultados: patterns.length, totalNotas, duracionMs: Date.now() - inicio, fecha: new Date().toISOString(), exito: true, lecturaParcial: scan.hasMore, estrategiaLectura: scan.readStrategy });
+    const response = { ok: true, patterns, stats: { documentsProcessed: totalNotas, temporaryCandidates, confirmedPatterns: patterns.length, threshold, elapsedMs: Date.now() - inicio, firstBatchReceived, candidateLimitReached, truncatedDocuments, ...scan, ...quality.stats } };
     try { JSON.stringify(response); } catch (error) { throw new HttpsError("internal", "PATTERN_RESPONSE_SERIALIZATION_FAILED", { stage: "serializacion", originalCode: error?.code ?? null, originalMessage: error?.message ?? null }); }
     trace("serializacion");
     trace("respuesta_enviada");
@@ -186,4 +246,4 @@ async function discoverTextPatterns({ request, db }) {
   }
 }
 
-module.exports = { asIso, discoverTextPatterns };
+module.exports = { asIso, createTextQuery, discoverTextPatterns, documentLocation, scanTextDocuments };

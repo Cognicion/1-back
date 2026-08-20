@@ -42,7 +42,14 @@ export async function inicializarMotorDescubrimientoPatrones(contexto) {
       resultados = Array.isArray(respuesta.data?.patterns) ? respuesta.data.patterns.map((pattern) => adaptarResultadoBusquedaPatrones(pattern, { removeConnectors: !includeConnectors, removePrepositions: !includePrepositions })) : [];
       actualizarFirmasLexicas();
       const stats = respuesta.data?.stats || {};
-      setText("documentosPatronesTexto", stats.documentsProcessed || 0); setText("lotesPatronesTexto", stats.batchesProcessed || 0); setText("candidatasPatronesTexto", stats.temporaryCandidates || 0); setText("tiempoPatronesTexto", `${Math.round(performance.now() - inicio)} ms`); setText("estadoPatronesTexto", stats.documentLimitReached ? `Análisis parcial: se alcanzó el límite seguro de ${stats.documentsProcessed} documentos. Se conservaron ${resultados.length} patrones útiles no redundantes.` : `Análisis completo: ${stats.documentsProcessed || 0} documentos y ${resultados.length} patrones útiles no redundantes.`); pintar();
+      const partialMessage = stats.timeBudgetReached
+        ? `Análisis parcial seguro: se procesaron ${stats.documentsProcessed || 0} documentos antes del límite de tiempo y se conservaron ${resultados.length} patrones útiles. Puedes ejecutar nuevamente cuando haya nuevos datos.`
+        : stats.candidateLimitReached
+          ? `Análisis parcial seguro: se alcanzó el límite de candidatos tras ${stats.documentsProcessed || 0} documentos. Se conservaron ${resultados.length} patrones útiles con mayor soporte.`
+        : stats.documentLimitReached
+          ? `Análisis parcial: se alcanzó el límite seguro de ${stats.documentsProcessed} documentos. Se conservaron ${resultados.length} patrones útiles no redundantes.`
+          : `Análisis completo: ${stats.documentsProcessed || 0} documentos y ${resultados.length} patrones útiles no redundantes.`;
+      setText("documentosPatronesTexto", stats.documentsProcessed || 0); setText("lotesPatronesTexto", stats.batchesProcessed || 0); setText("candidatasPatronesTexto", stats.temporaryCandidates || 0); setText("tiempoPatronesTexto", `${Math.round(performance.now() - inicio)} ms`); setText("estadoPatronesTexto", partialMessage); pintar();
       document.getElementById("btnExportarPatronesExcel")?.removeAttribute("disabled"); document.getElementById("btnExportarPatronesCsv")?.removeAttribute("disabled");
     } catch (error) { setError("lectura", error, performance.now() - inicio); setText("tiempoPatronesTexto", `${Math.round(performance.now() - inicio)} ms`); } finally { boton && (boton.disabled = false); }
   };

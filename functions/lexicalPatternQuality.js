@@ -18,6 +18,12 @@ function phraseTokens(value = "") {
   return String(value).split(/\s+/).map((token) => token.trim()).filter(Boolean);
 }
 
+function isPotentiallyUsefulLexicalPhrase(value = "") {
+  const tokens = phraseTokens(value);
+  const contentTokens = tokens.filter((token) => !FUNCTION_WORDS.has(token) && !LOW_INFORMATION_WORDS.has(token));
+  return contentTokens.some((token) => token.length >= 4 || CLINICAL_SIGNAL.test(token));
+}
+
 function sameSet(first = new Set(), second = new Set()) {
   return first.size === second.size && [...first].every((value) => second.has(value));
 }
@@ -37,7 +43,7 @@ function assessLexicalPattern(row = {}, { threshold = 3 } = {}) {
   const tokens = phraseTokens(row.clave);
   const contentTokens = tokens.filter((token) => !FUNCTION_WORDS.has(token) && !LOW_INFORMATION_WORDS.has(token));
   const hasClinicalSignal = contentTokens.some((token) => CLINICAL_SIGNAL.test(token));
-  const hasSpecificContent = contentTokens.some((token) => token.length >= 4 || hasClinicalSignal);
+  const hasSpecificContent = isPotentiallyUsefulLexicalPhrase(row.clave);
   const noteCount = row.notas?.size || Number(row.noteCount) || 0;
   const patientCount = row.pacientes?.size || Number(row.patientCount) || 0;
   const physicianCount = row.medicos?.size || Number(row.physicianCount) || 0;
@@ -141,5 +147,6 @@ function selectUsefulLexicalPatterns(rows = [], options = {}) {
 module.exports = {
   assessLexicalPattern,
   containsPhrase,
+  isPotentiallyUsefulLexicalPhrase,
   selectUsefulLexicalPatterns
 };

@@ -1104,7 +1104,7 @@ async function renderizarAccesoConocimientoSofia() {
   const main = document.querySelector("main.admin-contenedor");
   if (!nav || !main) return;
   try {
-    const modulo = await import("./admin/clinicalKnowledge/clinicalKnowledgeController.js?v=20260819-sofia-patterns-v2");
+    const modulo = await import("./admin/clinicalKnowledge/clinicalKnowledgeController.js?v=20260820-sofia-patterns-v3");
     await modulo.initializeClinicalKnowledgePanel({ nav, main });
   } catch (error) {
     console.error("[ADMIN] No se pudo preparar Conocimiento registrado por SOFÍA", error);
@@ -1117,7 +1117,7 @@ async function cargarMotorPatronesBajoDemanda() {
   const requestId = patternModuleRequestId;
   if (!patternModulePromise) {
     console.log("[ADMIN] Importando Motor de Patrones tras clic explícito");
-    patternModulePromise = import("./admin/patternDiscovery/patternDiscoveryController.js?v=20260819-patterns-useful-v1");
+    patternModulePromise = import("./admin/patternDiscovery/patternDiscoveryController.js?v=20260820-patterns-useful-v2");
   }
   const modulo = await patternModulePromise;
   if (requestId !== patternModuleRequestId || !document.getElementById("seccionMotorPatronesAdmin")) throw new Error("PATTERN_DISCOVERY_CANCELLED");

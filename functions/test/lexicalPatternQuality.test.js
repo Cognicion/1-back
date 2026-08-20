@@ -2,6 +2,7 @@ const assert = require("assert");
 const { asIso } = require("../patternDiscoveryHandler");
 const {
   assessLexicalPattern,
+  isPotentiallyUsefulLexicalPhrase,
   selectUsefulLexicalPatterns
 } = require("../lexicalPatternQuality");
 
@@ -19,6 +20,8 @@ function row(clave, frecuencia, notes, patients, physicians = ["m1"]) {
 }
 
 assert.strictEqual(asIso(), "");
+assert.strictEqual(isPotentiallyUsefulLexicalPhrase("de la"), false);
+assert.strictEqual(isPotentiallyUsefulLexicalPhrase("ansiedad persistente"), true);
 assert.strictEqual(assessLexicalPattern(row("de la", 10, ["n1", "n2"], ["p1", "p2"])).eligible, false);
 assert.strictEqual(assessLexicalPattern(row("tabletas de", 10, ["n1", "n2"], ["p1", "p2"])).eligible, false);
 assert.strictEqual(assessLexicalPattern(row("via oral vez al dia", 10, ["n1", "n2"], ["p1", "p2"])).eligible, false);
