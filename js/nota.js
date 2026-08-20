@@ -3,6 +3,12 @@ window.getCognicionCalculatorUid = () => auth.currentUser?.uid || "sin_usuario";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { guardarSolicitudEliminacion } from "./services/reportes.js?v=20260716-1";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
+import {
+  actualizarApunteConRevision,
+  eliminarApunteConRevision,
+  esConflictoApunte,
+  esErrorConexionApunte
+} from "./services/apuntesMedicoPersistence.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { CIE10, CIE11 } from "./data/catalogoDiagnosticos.js?v=20260816-cie10-cde-v1";
 import { ESCALAS_PSIQUIATRICAS, interpretarEscala } from "./data/escalasPsiquiatricas.js";
@@ -133,6 +139,7 @@ let perfilMedicoActual = {};
 let rolUsuarioActual = "";
 let permisosFormatosActual = {};
 let apuntesMedicoCache = [];
+let guardandoBorradoresMedico = false;
 let notasFlotantesPacienteCache = [];
 let catalogoMedicosFirmasCache = [];
 let escalasPreviasNotaCache = [];
@@ -3874,6 +3881,7 @@ window.cerrarNotasFlotantesPaciente = function() {
 // La ventana y las calculadoras se cargan en js/calculators/calculatorDialog.js bajo demanda.
 
 window.guardarBorradoresMedico = async function() {
+  if (guardandoBorradoresMedico) return;
   const texto = document.getElementById("borradoresMedicoTexto");
   const titulo = document.getElementById("apunteMedicoTitulo");
   const id = document.getElementById("apunteMedicoId")?.value;
@@ -3885,27 +3893,62 @@ window.guardarBorradoresMedico = async function() {
     return;
   }
 
-  if (estado) estado.textContent = "Guardando...";
+  const contenido = texto.value;
+  const original = apuntesMedicoCache.find((item) => item.id === id);
+  const contenidoCambio = !original || contenido !== String(original.contenido ?? "");
+  if (
+    id
+    && contenidoCambio
+    && original?.contenidoHtml
+    && !confirm("Este panel usa texto simple. Al cambiar el contenido se quitará su formato de negrita y color. ¿Continuar?")
+  ) return;
 
+  const fechaActualizacion = new Date().toISOString();
   const payload = {
     titulo: titulo?.value.trim() || "Sin título",
-    contenido: texto.value,
-    fechaActualizacion: new Date().toISOString(),
+    fechaActualizacion,
     fechaActualizacionServidor: serverTimestamp()
   };
+  if (!id || contenidoCambio) payload.contenido = contenido;
 
-  if (id) {
-    await updateDoc(doc(db, "usuarios", uidMedicoActual, "apuntesMedico", id), payload);
-  } else {
-    const nuevo = await addDoc(ref, {
-      ...payload,
-      fechaCreacion: new Date().toISOString()
-    });
-    document.getElementById("apunteMedicoId").value = nuevo.id;
+  guardandoBorradoresMedico = true;
+  if (estado) estado.textContent = "Guardando...";
+  try {
+    if (id) {
+      if (contenidoCambio) {
+        payload.contenidoHtml = deleteField();
+        payload.contenidoHtmlActualizado = deleteField();
+      } else if (
+        original?.contenidoHtml
+        && original.contenidoHtmlActualizado === original.fechaActualizacion
+      ) {
+        payload.contenidoHtmlActualizado = fechaActualizacion;
+      }
+      await actualizarApunteConRevision({
+        db,
+        referencia: doc(db, "usuarios", uidMedicoActual, "apuntesMedico", id),
+        payload,
+        fechaEsperada: original?.fechaActualizacion
+      });
+    } else {
+      const nuevo = await addDoc(ref, {
+        ...payload,
+        fechaCreacion: fechaActualizacion
+      });
+      document.getElementById("apunteMedicoId").value = nuevo.id;
+    }
+    if (estado) estado.textContent = "Guardado";
+    await cargarBorradoresMedico();
+  } catch (error) {
+    console.error("[APUNTES] No se pudo guardar desde Nota", error);
+    if (estado) estado.textContent = esConflictoApunte(error)
+      ? "El apunte cambió en otra ventana. Vuelve a abrirlo."
+      : esErrorConexionApunte(error)
+        ? "Necesitas conexión para actualizar este apunte."
+        : "No se pudo guardar. Inténtalo de nuevo.";
+  } finally {
+    guardandoBorradoresMedico = false;
   }
-
-  if (estado) estado.textContent = "Guardado";
-  await cargarBorradoresMedico();
 };
 
 window.nuevoApunteMedico = function() {
@@ -3930,6 +3973,7 @@ window.seleccionarApunteMedico = function(id) {
 };
 
 window.eliminarApunteMedicoActual = async function() {
+  if (guardandoBorradoresMedico) return;
   const id = document.getElementById("apunteMedicoId")?.value;
   if (!id) {
     nuevoApunteMedico();
@@ -3938,8 +3982,26 @@ window.eliminarApunteMedicoActual = async function() {
 
   if (!confirm("¿Eliminar este apunte?")) return;
 
-  await deleteDoc(doc(db, "usuarios", uidMedicoActual, "apuntesMedico", id));
-  await cargarBorradoresMedico();
+  guardandoBorradoresMedico = true;
+  const estado = document.getElementById("estadoBorradoresMedico");
+  try {
+    const original = apuntesMedicoCache.find((apunte) => apunte.id === id);
+    await eliminarApunteConRevision({
+      db,
+      referencia: doc(db, "usuarios", uidMedicoActual, "apuntesMedico", id),
+      fechaEsperada: original?.fechaActualizacion
+    });
+    await cargarBorradoresMedico();
+  } catch (error) {
+    console.error("[APUNTES] No se pudo eliminar desde Nota", error);
+    if (estado) estado.textContent = esConflictoApunte(error)
+      ? "El apunte cambió en otra ventana. Vuelve a abrirlo antes de eliminar."
+      : esErrorConexionApunte(error)
+        ? "Necesitas conexión para eliminar este apunte."
+        : "No se pudo eliminar. Inténtalo de nuevo.";
+  } finally {
+    guardandoBorradoresMedico = false;
+  }
 };
 
 function crearVistaPreviaApunte(texto, maximo = 120) {
@@ -3974,7 +4036,7 @@ function renderizarListaApuntes() {
     <button
       type="button"
       class="apunte-lista-item ${apunte.id === activo ? "activo" : ""}"
-      aria-selected="${apunte.id === activo ? "true" : "false"}"
+      ${apunte.id === activo ? 'aria-current="true"' : ""}
       title="${escaparHTML(obtenerTituloVisibleApunte(apunte.titulo))}"
       onclick="seleccionarApunteMedico('${apunte.id}')"
     >

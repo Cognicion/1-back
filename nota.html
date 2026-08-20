@@ -41,10 +41,10 @@
 
 <div id="fondoApuntesMedicoPaciente" class="fondo-apuntes-paciente oculto" onclick="cerrarApuntesMedicoPaciente()"></div>
 
-<section id="panelApuntesMedicoPaciente" class="panel-apuntes-paciente" aria-hidden="true">
+<section id="panelApuntesMedicoPaciente" class="panel-apuntes-paciente" role="dialog" aria-modal="true" aria-labelledby="tituloApuntesMedicoPaciente" aria-hidden="true">
     <div class="panel-apuntes-header">
         <div>
-            <span>Mis apuntes</span>
+            <span id="tituloApuntesMedicoPaciente">Mis apuntes</span>
             <small>Apuntes privados del medico, disponibles en todos los pacientes.</small>
         </div>
         <button type="button" class="boton-cerrar-panel" onclick="cerrarApuntesMedicoPaciente()">Cerrar</button>
@@ -62,7 +62,7 @@
             <input id="apunteMedicoPacienteTitulo" placeholder="Titulo del apunte">
             <textarea id="apunteMedicoPacienteContenido" placeholder="Escribe apuntes, ideas clinicas o borradores generales..."></textarea>
             <div class="panel-apuntes-acciones">
-                <span id="estadoApuntesMedicoPaciente">Sin guardar</span>
+                <span id="estadoApuntesMedicoPaciente" role="status" aria-live="polite">Sin guardar</span>
                 <button type="button" class="boton-secundario" onclick="guardarApunteMedicoPaciente()">Guardar</button>
                 <button type="button" class="boton-secundario" onclick="nuevoApunteMedicoPaciente()">Nuevo</button>
                 <button type="button" class="boton-secundario boton-peligro-suave" onclick="eliminarApunteMedicoPaciente()">Eliminar</button>
@@ -563,8 +563,13 @@ Cancelar edicion
     </article>
 </div>
 
+<<<<<<< HEAD
 <script type="module" src="js/nota.js?v=20260820-patient-notes-import-v1"></script>
 <script type="module" src="js/components/misApuntesFlotante.js"></script>
+=======
+<script type="module" src="js/nota.js?v=20260820-apuntes-rich-folders-v1"></script>
+<script type="module" src="js/components/misApuntesFlotante.js?v=20260820-apuntes-rich-v1"></script>
+>>>>>>> 1797192966c7e0f32cd10a18809b31f93bf12094
 <script type="module">import("./js/calculators/calculatorDialog.js");</script>
 
   <script type="module" src="js/components/accesosRapidos.js"></script>

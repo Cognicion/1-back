@@ -9,6 +9,12 @@ import { CIE10, CIE11 } from "./data/catalogoDiagnosticos.js?v=20260816-cie10-cd
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import {
+  actualizarApunteConRevision,
+  eliminarApunteConRevision,
+  esConflictoApunte,
+  esErrorConexionApunte
+} from "./services/apuntesMedicoPersistence.js";
+import {
   detectarAlertasClinicasMedicamentos,
   detectarInteraccionesFarmacologicas
 } from "./data/interaccionesFarmacologicas.js";
@@ -260,6 +266,24 @@ let intervaloEstanciaPaciente = null;
 let campoFechaIngresoModal = "fechaIngreso";
 let textoIndicacionesEditado = false;
 let apuntesMedicoPacienteCache = [];
+let guardandoApunteMedicoPacienteEnPaciente = false;
+
+function ponerPanelApuntesPacienteOcupado(ocupado) {
+  guardandoApunteMedicoPacienteEnPaciente = ocupado;
+  const panel = document.getElementById("panelApuntesMedicoPaciente");
+  panel?.setAttribute("aria-busy", String(ocupado));
+  panel?.querySelectorAll("button, input, textarea").forEach((control) => {
+    if (ocupado) {
+      control.dataset.apuntesDisabledPrevio = String(control.disabled);
+      control.disabled = true;
+    } else if (control.dataset.apuntesDisabledPrevio !== undefined) {
+      control.disabled = control.dataset.apuntesDisabledPrevio === "true";
+      delete control.dataset.apuntesDisabledPrevio;
+    }
+  });
+  const lista = document.getElementById("listaApuntesMedicoPaciente");
+  if (lista) lista.inert = ocupado;
+}
 let catalogoMedicosFirmasIndicacionesCache = [];
 let catalogoMedicosFirmasIndicacionesPromise = null;
 let indicacionesPacienteCache = [];
@@ -2129,7 +2153,7 @@ async function cargarApuntesMedicoPaciente() {
   if (apuntesMedicoPacienteCache.length && !valorCampo("apunteMedicoPacienteId")) {
     seleccionarApunteMedicoPaciente(apuntesMedicoPacienteCache[0].id);
   } else if (!apuntesMedicoPacienteCache.length) {
-    nuevoApunteMedicoPaciente();
+    nuevoApunteMedicoPacienteInterno();
   }
 }
 
@@ -2161,9 +2185,11 @@ function renderizarListaApuntesMedicoPaciente() {
     boton.type = "button";
     boton.className = `apunte-paciente-item ${apunte.id === activo ? "activo" : ""}`;
     boton.dataset.apuntePaciente = apunte.id;
-    boton.setAttribute("aria-selected", apunte.id === activo ? "true" : "false");
+    if (apunte.id === activo) boton.setAttribute("aria-current", "true");
     boton.title = tituloVisible;
-    boton.addEventListener("click", () => seleccionarApunteMedicoPaciente(apunte.id));
+    boton.addEventListener("click", () => {
+      if (!guardandoApunteMedicoPacienteEnPaciente) seleccionarApunteMedicoPaciente(apunte.id);
+    });
 
     const titulo = document.createElement("span");
     titulo.className = "apunte-paciente-item__titulo";
@@ -2185,62 +2211,164 @@ function seleccionarApunteMedicoPaciente(id) {
   renderizarListaApuntesMedicoPaciente();
 }
 
-window.nuevoApunteMedicoPaciente = function() {
+function nuevoApunteMedicoPacienteInterno() {
   ponerValor("apunteMedicoPacienteId", "");
   ponerValor("apunteMedicoPacienteTitulo", "");
   ponerValor("apunteMedicoPacienteContenido", "");
   ponerEstadoApuntesPaciente("Nuevo apunte");
   renderizarListaApuntesMedicoPaciente();
+}
+
+window.nuevoApunteMedicoPaciente = function() {
+  if (guardandoApunteMedicoPacienteEnPaciente) return;
+  nuevoApunteMedicoPacienteInterno();
 };
 
 window.guardarApunteMedicoPaciente = async function() {
+  if (guardandoApunteMedicoPacienteEnPaciente) return;
   const ref = referenciaApuntesMedicoPaciente();
   const id = valorCampo("apunteMedicoPacienteId");
   const titulo = valorCampo("apunteMedicoPacienteTitulo") || "Apunte sin titulo";
-  const contenido = valorCampo("apunteMedicoPacienteContenido");
+  const contenido = document.getElementById("apunteMedicoPacienteContenido")?.value ?? "";
 
   if (!ref) return;
 
-  if (!contenido) {
+  if (!contenido.trim()) {
     alert("Escribe el contenido del apunte.");
     return;
   }
 
+  const original = apuntesMedicoPacienteCache.find((item) => item.id === id);
+  const contenidoCambio = !original || contenido !== String(original.contenido ?? "");
+  if (
+    id
+    && contenidoCambio
+    && original?.contenidoHtml
+    && !confirm("Este panel usa texto simple. Al cambiar el contenido se quitará su formato de negrita y color. ¿Continuar?")
+  ) return;
+
+  const fechaActualizacion = new Date().toISOString();
   const payload = {
     titulo,
-    contenido,
-    fechaActualizacion: new Date().toISOString()
+    fechaActualizacion,
+    fechaActualizacionServidor: serverTimestamp()
   };
+  if (!id || contenidoCambio) payload.contenido = contenido;
 
-  if (id) {
-    await updateDoc(doc(db, "usuarios", auth.currentUser.uid, "apuntesMedico", id), payload);
-  } else {
-    await addDoc(ref, {
-      ...payload,
-      fechaCreacion: new Date().toISOString()
-    });
+  ponerPanelApuntesPacienteOcupado(true);
+  ponerEstadoApuntesPaciente("Guardando...");
+  let escrituraCompletada = false;
+  try {
+    let idGuardado = id;
+    if (id) {
+      if (contenidoCambio) {
+        payload.contenidoHtml = deleteField();
+        payload.contenidoHtmlActualizado = deleteField();
+      } else if (
+        original?.contenidoHtml
+        && original.contenidoHtmlActualizado === original.fechaActualizacion
+      ) {
+        payload.contenidoHtmlActualizado = fechaActualizacion;
+      }
+      await actualizarApunteConRevision({
+        db,
+        referencia: doc(db, "usuarios", auth.currentUser.uid, "apuntesMedico", id),
+        payload,
+        fechaEsperada: original?.fechaActualizacion
+      });
+    } else {
+      const nuevo = await addDoc(ref, {
+        ...payload,
+        fechaCreacion: fechaActualizacion
+      });
+      ponerValor("apunteMedicoPacienteId", nuevo.id);
+      idGuardado = nuevo.id;
+    }
+    actualizarCacheApuntePaciente({ id: idGuardado, titulo, contenido, contenidoCambio, original, fechaActualizacion });
+    escrituraCompletada = true;
+    await cargarApuntesMedicoPaciente();
+    ponerEstadoApuntesPaciente("Guardado");
+  } catch (error) {
+    console.error("[APUNTES] No se pudo guardar desde Paciente", error);
+    if (escrituraCompletada) {
+      renderizarListaApuntesMedicoPaciente();
+      ponerEstadoApuntesPaciente("Guardado; no se pudo actualizar la lista.");
+    } else {
+      ponerEstadoApuntesPaciente(esConflictoApunte(error)
+        ? "El apunte cambió en otra ventana. Vuelve a abrirlo."
+        : esErrorConexionApunte(error)
+          ? "Necesitas conexión para actualizar este apunte."
+          : "No se pudo guardar. Inténtalo de nuevo.");
+    }
+  } finally {
+    ponerPanelApuntesPacienteOcupado(false);
   }
-
-  await cargarApuntesMedicoPaciente();
-  ponerEstadoApuntesPaciente("Guardado");
 };
 
+function actualizarCacheApuntePaciente({ id, titulo, contenido, contenidoCambio, original, fechaActualizacion }) {
+  const actualizado = {
+    ...(original || {}),
+    id,
+    titulo,
+    fechaActualizacion,
+    fechaCreacion: original?.fechaCreacion || fechaActualizacion
+  };
+  if (!original || contenidoCambio) actualizado.contenido = contenido;
+  if (contenidoCambio) {
+    delete actualizado.contenidoHtml;
+    delete actualizado.contenidoHtmlActualizado;
+  } else if (original?.contenidoHtml && original.contenidoHtmlActualizado === original.fechaActualizacion) {
+    actualizado.contenidoHtmlActualizado = fechaActualizacion;
+  }
+  apuntesMedicoPacienteCache = [
+    actualizado,
+    ...apuntesMedicoPacienteCache.filter((apunte) => apunte.id !== id)
+  ];
+}
+
 window.eliminarApunteMedicoPaciente = async function() {
+  if (guardandoApunteMedicoPacienteEnPaciente) return;
   const id = valorCampo("apunteMedicoPacienteId");
 
   if (!id) {
-    nuevoApunteMedicoPaciente();
+    nuevoApunteMedicoPacienteInterno();
     return;
   }
 
   if (!confirm("Eliminar este apunte?")) return;
 
-  await deleteDoc(doc(db, "usuarios", auth.currentUser.uid, "apuntesMedico", id));
-  nuevoApunteMedicoPaciente();
-  await cargarApuntesMedicoPaciente();
+  ponerPanelApuntesPacienteOcupado(true);
+  let eliminacionCompletada = false;
+  try {
+    const original = apuntesMedicoPacienteCache.find((apunte) => apunte.id === id);
+    await eliminarApunteConRevision({
+      db,
+      referencia: doc(db, "usuarios", auth.currentUser.uid, "apuntesMedico", id),
+      fechaEsperada: original?.fechaActualizacion
+    });
+    eliminacionCompletada = true;
+    apuntesMedicoPacienteCache = apuntesMedicoPacienteCache.filter((apunte) => apunte.id !== id);
+    nuevoApunteMedicoPacienteInterno();
+    await cargarApuntesMedicoPaciente();
+  } catch (error) {
+    console.error("[APUNTES] No se pudo eliminar desde Paciente", error);
+    if (eliminacionCompletada) {
+      renderizarListaApuntesMedicoPaciente();
+      ponerEstadoApuntesPaciente("Eliminado; no se pudo actualizar la lista.");
+    } else {
+      ponerEstadoApuntesPaciente(esConflictoApunte(error)
+        ? "El apunte cambió en otra ventana. Vuelve a abrirlo antes de eliminar."
+        : esErrorConexionApunte(error)
+          ? "Necesitas conexión para eliminar este apunte."
+          : "No se pudo eliminar. Inténtalo de nuevo.");
+    }
+  } finally {
+    ponerPanelApuntesPacienteOcupado(false);
+  }
 };
 
 window.abrirApuntesMedicoPaciente = async function() {
+  if (guardandoApunteMedicoPacienteEnPaciente) return;
   moverPanelApuntesPacienteAlBody();
   document.getElementById("fondoApuntesMedicoPaciente")?.classList.remove("oculto");
   const panel = document.getElementById("panelApuntesMedicoPaciente");
@@ -2249,10 +2377,20 @@ window.abrirApuntesMedicoPaciente = async function() {
     panel.setAttribute("aria-hidden", "false");
   }
 
-  await cargarApuntesMedicoPaciente();
+  ponerPanelApuntesPacienteOcupado(true);
+  try {
+    await cargarApuntesMedicoPaciente();
+  } catch (error) {
+    console.error("[APUNTES] No se pudieron cargar desde Paciente", error);
+    ponerEstadoApuntesPaciente("No se pudieron cargar los apuntes.");
+  } finally {
+    ponerPanelApuntesPacienteOcupado(false);
+    document.getElementById("buscadorApuntesPaciente")?.focus();
+  }
 };
 
 window.cerrarApuntesMedicoPaciente = function() {
+  if (guardandoApunteMedicoPacienteEnPaciente) return;
   document.getElementById("fondoApuntesMedicoPaciente")?.classList.add("oculto");
   const panel = document.getElementById("panelApuntesMedicoPaciente");
   if (panel) {
