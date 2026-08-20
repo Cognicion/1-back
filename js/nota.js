@@ -144,6 +144,7 @@ let catalogosClinicosNotaCache = {
 let catalogosClinicosNotaCargados = false;
 let estudiosSincronizadosNotaIds = new Set();
 let estadoNotaActual = "nueva";
+let importadorNotasExternasPromise = null;
 
 const NOTE_FIELD_REGISTRY = Object.freeze({
   subjective: {
@@ -4323,6 +4324,65 @@ async function recuperarBorradorCorrespondiente() {
   }
 }
 
+function actualizarDisponibilidadImportacionNotasExternas() {
+  const button = document.getElementById("btnImportarNotasExternas");
+  if (!button) return;
+  const patientId = String(uidPacienteActual || document.getElementById("uidPaciente")?.value || "").trim();
+  const patientReady = Boolean(patientId && Object.keys(pacienteActualDatos || {}).length);
+  button.disabled = !patientReady;
+  button.title = patientReady
+    ? "Importar uno o varios documentos DOCX a este expediente"
+    : "Selecciona un paciente antes de importar notas externas";
+}
+
+async function abrirImportadorNotasExternas() {
+  const patientId = String(uidPacienteActual || document.getElementById("uidPaciente")?.value || "").trim();
+  if (!patientId) {
+    alert("Selecciona un paciente antes de importar notas externas.");
+    return;
+  }
+  if (!await usuarioActualPuedeAccederPaciente(patientId)) {
+    alert("No tienes permiso para importar notas a este paciente.");
+    return;
+  }
+
+  const button = document.getElementById("btnImportarNotasExternas");
+  if (button) {
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+  }
+  try {
+    if (!importadorNotasExternasPromise) {
+      importadorNotasExternasPromise = import("./modules/patient-transfer/index.js?v=20260820-patient-notes-import-v1");
+    }
+    const module = await importadorNotasExternasPromise;
+    module.openPatientTransfer({
+      targetPatient: {
+        id: patientId,
+        name: obtenerNombrePacienteParaMostrar(pacienteActualDatos || {}) || "Paciente seleccionado"
+      }
+    });
+  } catch (error) {
+    importadorNotasExternasPromise = null;
+    throw error;
+  } finally {
+    button?.removeAttribute("aria-busy");
+    actualizarDisponibilidadImportacionNotasExternas();
+  }
+}
+
+window.addEventListener("cognicion:patient-transfer-completed", (event) => {
+  const currentPatientId = String(uidPacienteActual || document.getElementById("uidPaciente")?.value || "").trim();
+  if (!currentPatientId) return;
+  const results = Array.isArray(event.detail?.results) ? event.detail.results : [];
+  const targetPatientId = String(event.detail?.context?.targetPatientId || "").trim();
+  if (targetPatientId && targetPatientId !== currentPatientId) return;
+  if (!targetPatientId && !results.some((result) => result.patientId === currentPatientId)) return;
+  cargarHistorial(currentPatientId).catch((error) => {
+    console.warn("No se pudo refrescar el historial tras importar notas externas:", error?.code || error?.name || "unknown");
+  });
+});
+
 async function inicializarNotaClinica() {
   const user = await getAuthenticatedUserOnce();
   if (!user) {
@@ -4347,6 +4407,12 @@ async function inicializarNotaClinica() {
   await cargarCatalogoMedicosFirmas();
   configurarCatalogoMedicosFirmas();
   await configurarAutocompletadosClinicosNota();
+  document.getElementById("btnImportarNotasExternas")?.addEventListener("click", () => {
+    abrirImportadorNotasExternas().catch((error) => {
+      console.error("No se pudo abrir el importador de notas externas:", error?.code || error?.name || "unknown");
+      alert("No se pudo abrir la importación DOCX. Intenta nuevamente.");
+    });
+  });
   document.getElementById("btnSincronizarEstudiosNota")?.addEventListener("click", abrirSincronizacionEstudiosNota);
   document.getElementById("obsResultadosEstudios")?.addEventListener("input", (evento) => {
     evento.target.dataset.editadoManual = "true";
@@ -4424,6 +4490,8 @@ async function cargarListaPacientes() {
     }
     if (cambiosNotaPendientes) guardarRespaldoTemporalNota();
     uidPacienteActual = selector.value;
+    pacienteActualDatos = {};
+    actualizarDisponibilidadImportacionNotasExternas();
     notaEditandoId = null;
     edicionVersionadaActiva = false;
     modoEdicionNota = null;
@@ -4437,19 +4505,27 @@ async function cargarListaPacientes() {
 }
 
 async function cargarPaciente(uidPaciente) {
+  actualizarDisponibilidadImportacionNotasExternas();
   const tieneAcceso = await usuarioActualPuedeAccederPaciente(uidPaciente);
 
   if (!tieneAcceso) {
     alert("No tienes permiso para acceder a este paciente.");
     uidPacienteActual = null;
+    pacienteActualDatos = {};
+    actualizarDisponibilidadImportacionNotasExternas();
     window.location.href = "medico.html";
     return;
   }
 
   const datos = await obtenerUsuario(uidPaciente);
 
-  if (!datos) return;
+  if (!datos) {
+    pacienteActualDatos = {};
+    actualizarDisponibilidadImportacionNotasExternas();
+    return;
+  }
   pacienteActualDatos = datos;
+  actualizarDisponibilidadImportacionNotasExternas();
   const nombrePacienteNota = document.getElementById("nombrePacienteNota");
   if (nombrePacienteNota) nombrePacienteNota.textContent = obtenerNombrePacienteParaMostrar(datos) || "Paciente sin nombre";
 

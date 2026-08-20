@@ -228,8 +228,9 @@ function ensureRoot() {
       <header class="patient-transfer-header">
         <div>
           <p>Importacion documental</p>
-          <h2 id="patientTransferTitle">Importar pacientes y notas externas</h2>
-          <span>Cargue notas clínicas externas para crear pacientes nuevos o agregar notas a pacientes existentes.</span>
+          <h2 id="patientTransferTitle" data-transfer-title>Importar pacientes y notas externas</h2>
+          <span data-transfer-description>Cargue notas clínicas externas para crear pacientes nuevos o agregar notas a pacientes existentes.</span>
+          <small data-transfer-target hidden></small>
           <small>La informacion detectada debera revisarse antes de guardarse.</small>
         </div>
         <button type="button" data-transfer-close aria-label="Cerrar">Cerrar</button>
@@ -257,6 +258,26 @@ function ensureRoot() {
     </section>`;
   document.body.appendChild(root);
   return root;
+}
+
+export function configurePatientTransferView(context = {}) {
+  const modal = ensureRoot();
+  const targetPatient = context.targetPatient?.id ? context.targetPatient : null;
+  modal.dataset.transferMode = targetPatient ? "existing_patient_notes" : "patient_transfer";
+  modal.querySelector("[data-transfer-title]").textContent = targetPatient
+    ? "Importar notas externas"
+    : "Importar pacientes y notas externas";
+  modal.querySelector("[data-transfer-description]").textContent = targetPatient
+    ? "Cargue uno o varios DOCX para agregarlos al expediente abierto."
+    : "Cargue notas clínicas externas para crear pacientes nuevos o agregar notas a pacientes existentes.";
+  const targetLabel = modal.querySelector("[data-transfer-target]");
+  targetLabel.hidden = !targetPatient;
+  targetLabel.textContent = targetPatient
+    ? `Destino fijo: ${targetPatient.name || "paciente seleccionado"}. No se creará otro expediente.`
+    : "";
+  modal.querySelector("[data-transfer-save]").textContent = targetPatient
+    ? "Confirmar importación"
+    : "Confirmar traspaso";
 }
 
 export function openPatientTransferView() {
@@ -457,12 +478,12 @@ function renderDuplicateWarning(group) {
   </section>`;
 }
 
-function renderFields(group) {
+function renderFields(group, { readOnly = false } = {}) {
   return FIELD_RULES.map((rule) => {
     const field = group.fields?.[rule.key];
     return `
       <label>${rule.label}
-        <input data-transfer-field="${group.id}:${rule.key}" value="${escapeHtml(field?.value || "")}" placeholder="${rule.label}">
+        <input data-transfer-field="${group.id}:${rule.key}" value="${escapeHtml(field?.value || "")}" placeholder="${rule.label}" ${readOnly ? "readonly" : ""}>
         <small>${fieldStatus(field)}${field ? ` · confianza ${field.confidence}` : ""}</small>
       </label>`;
   }).join("");
@@ -1063,16 +1084,17 @@ function renderDocument(doc, groups = [], currentGroupId = "") {
   const mode = ["auto", "single", "multiple"].includes(doc.multipleNotesMode) ? doc.multipleNotesMode : "auto";
   const detectedNotes = doc.detectedNoteSummaries?.length ? doc.detectedNoteSummaries : doc.noteSegments || [];
   const detectedCount = detectedNotes.length;
+  const targetPatientLocked = groups.some((group) => group.targetPatientLocked);
   return `
     <details class="patient-transfer-note" open>
       <summary>${escapeHtml(doc.file.name)} <span>${escapeHtml(doc.duplicateStatusLabel || "Nuevo")}</span></summary>
       <div class="patient-transfer-note-grid">
-        <label>Paciente probable
+        ${targetPatientLocked ? "" : `<label>Paciente probable
           <select data-transfer-document-target="${doc.id}">
             ${groups.map((group) => option(group.id, group.fields?.nombre?.value || group.id, group.id === currentGroupId)).join("")}
             ${option("__new__", "Crear grupo nuevo", false)}
           </select>
-        </label>
+        </label>`}
         <label>Tipo documental
           <select data-transfer-note-type="${doc.id}">
             ${NOTE_TYPE_RULES.map((rule) => option(rule.key, rule.label, rule.key === selected)).join("")}
@@ -1369,6 +1391,7 @@ function enhanceMedicationPautaTables(modal) {
 export function renderDetectedGroups(groups = []) {
   const modal = ensureRoot();
   const saveButton = modal.querySelector("[data-transfer-save]");
+  const fixedTarget = groups.find((group) => group.targetPatientLocked)?.targetPatient || null;
   const openNoteSegments = new Map(
     [...modal.querySelectorAll("[data-transfer-segment]")]
       .map((segment) => [`${segment.dataset.transferDocumentId || ""}:${segment.dataset.transferSegment || ""}`, segment.open])
@@ -1376,28 +1399,36 @@ export function renderDetectedGroups(groups = []) {
   saveButton.disabled = !groups.length;
   modal.querySelector("[data-transfer-review]").innerHTML = groups.length ? `
     <section class="patient-transfer-summary">
-      <h3>Resumen del traspaso</h3>
-      <p>Pacientes probables: ${groups.length} · Notas: ${countTransferNotes(groups)} · Con conflictos: ${groups.filter((group) => group.ambiguous).length}</p>
+      <h3>${fixedTarget ? "Resumen de la importación" : "Resumen del traspaso"}</h3>
+      <p>${fixedTarget
+        ? `Destino: ${escapeHtml(fixedTarget.name || "paciente seleccionado")} · Documentos agrupados: ${groups.length} · Notas: ${countTransferNotes(groups)}`
+        : `Pacientes probables: ${groups.length} · Notas: ${countTransferNotes(groups)} · Con conflictos: ${groups.filter((group) => group.ambiguous).length}`}</p>
     </section>
     ${renderIncludeAllDetectedDataControl(groups)}
-    ${groups.map((group, index) => `
+    ${groups.map((group, index) => {
+      const lockedTarget = group.targetPatientLocked ? group.targetPatient : null;
+      const detectedPatientName = group.fields?.nombre?.value || "Paciente sin nombre detectado";
+      return `
       <article class="patient-transfer-group">
         <header>
           <div>
-            <p>Paciente probable ${index + 1}</p>
-            <h3>${escapeHtml(group.fields?.nombre?.value || (group.fields?.expediente?.value ? "Paciente identificado por expediente" : "Paciente sin nombre detectado"))}</h3>
-            <span>${group.fields?.expediente?.value ? `Expediente: ${escapeHtml(group.fields.expediente.value)}` : "Sin expediente detectado"}</span>
+            <p>${lockedTarget ? "Expediente de destino" : `Paciente probable ${index + 1}`}</p>
+            <h3>${escapeHtml(lockedTarget?.name || group.fields?.nombre?.value || (group.fields?.expediente?.value ? "Paciente identificado por expediente" : "Paciente sin nombre detectado"))}</h3>
+            <span>${lockedTarget
+              ? "Las notas se asociarán exclusivamente a este paciente."
+              : group.fields?.expediente?.value ? `Expediente: ${escapeHtml(group.fields.expediente.value)}` : "Sin expediente detectado"}</span>
           </div>
-          ${(group.possibleMatches || group.candidates || []).length
+          ${lockedTarget ? "" : (group.possibleMatches || group.candidates || []).length
             ? ""
             : `<label><input type="checkbox" data-transfer-omit-group="${group.id}" ${group.omitted ? "checked" : ""}> Omitir paciente</label>`}
         </header>
         ${group.ambiguous ? `<div class="patient-transfer-warning">Datos incompletos o contradictorios. Revise antes de guardar.</div>` : ""}
-        ${renderDuplicateWarning(group)}
+        ${lockedTarget ? `<div class="patient-transfer-warning" data-transfer-fixed-target="${group.id}"><strong>Destino bloqueado al expediente abierto.</strong><p>Identidad detectada en el documento: ${escapeHtml(detectedPatientName)}. Los datos generales mostrados abajo son solo de referencia y no reemplazarán los del paciente.</p></div>` : renderDuplicateWarning(group)}
         ${group.action === "unresolved" ? `<div class="patient-transfer-warning">El documento ya fue detectado durante una importación previa. Seleccione cómo desea continuar.</div>` : ""}
-        <div class="patient-transfer-field-grid">${renderFields(group)}</div>
+        <div class="patient-transfer-field-grid">${renderFields(group, { readOnly: Boolean(lockedTarget) })}</div>
         <div class="patient-transfer-documents">${group.documents.map((doc) => renderDocument(doc, groups, group.id)).join("")}</div>
-      </article>`).join("")}` : "";
+      </article>`;
+    }).join("")}` : "";
   modal.querySelectorAll("[data-transfer-segment]").forEach((segment) => {
     const segmentKey = `${segment.dataset.transferDocumentId || ""}:${segment.dataset.transferSegment || ""}`;
     if (openNoteSegments.has(segmentKey)) segment.open = openNoteSegments.get(segmentKey);
@@ -1455,14 +1486,21 @@ export function readTransferReview(groups = []) {
     };
   };
   return groups.map((group) => {
+    const fixedTargetPatientId = group.targetPatientLocked
+      ? String(group.targetPatient?.id || "").trim()
+      : "";
     const duplicateControl = modal.querySelector(`[data-transfer-duplicate-resolution="${group.id}"]:checked`);
-    const groupOmitted = modal.querySelector(`[data-transfer-omit-group="${group.id}"]`)?.checked || false;
-    const selectedResolution = mapLegacyDuplicateResolution({
-      selectedResolution: duplicateControl?.value || group.selectedResolution,
-      omitted: groupOmitted
-    });
+    const groupOmitted = fixedTargetPatientId
+      ? false
+      : modal.querySelector(`[data-transfer-omit-group="${group.id}"]`)?.checked || false;
+    const selectedResolution = fixedTargetPatientId
+      ? DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING
+      : mapLegacyDuplicateResolution({
+          selectedResolution: duplicateControl?.value || group.selectedResolution,
+          omitted: groupOmitted
+        });
     const selectedPatientId = selectedResolution === DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING
-      ? modal.querySelector(`[data-transfer-existing="${group.id}"]`)?.value || ""
+      ? fixedTargetPatientId || modal.querySelector(`[data-transfer-existing="${group.id}"]`)?.value || ""
       : "";
     const action = selectedResolution === DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING
       ? "associate"

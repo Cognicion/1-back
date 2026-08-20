@@ -58,5 +58,6 @@
 // deployment marker: 2026-08-18-index-mobile-responsive-v1
 // deployment marker: 2026-08-19-midc-allergy-context-v1
 // deployment marker: 2026-08-19-sofia-semantic-embeddings-v1 (+0.010)
-export const APP_VERSION = "2.039";
+// deployment marker: 2026-08-20-patient-notes-import-v1
+export const APP_VERSION = "2.040";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

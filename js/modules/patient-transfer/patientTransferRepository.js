@@ -996,11 +996,20 @@ export async function saveTransferredGroups({ groups = [], user, onProgress = nu
       }
       console.info("patient-transfer:notes-history-before-real", { total: notesBeforeTotal });
 
-      console.info("patient-transfer:persist-demographics-start", { patientCreated, associated: effectiveAction === "associate" });
-      if (effectiveAction === "associate") {
+      const skipPatientFieldMerge = effectiveAction === "associate" && group.skipPatientFieldMerge === true;
+      console.info("patient-transfer:persist-demographics-start", {
+        patientCreated,
+        associated: effectiveAction === "associate",
+        skippedForFixedTarget: skipPatientFieldMerge
+      });
+      if (effectiveAction === "associate" && !skipPatientFieldMerge) {
         await timed("merge-imported-patient-fields", () => mergeTransferredPatientFields(patientId, group.confirmedFields || {}, user), TIMEOUTS.firestoreWrite);
       }
-      console.info("patient-transfer:persist-demographics-success", { patientCreated, associated: effectiveAction === "associate" });
+      console.info("patient-transfer:persist-demographics-success", {
+        patientCreated,
+        associated: effectiveAction === "associate",
+        skippedForFixedTarget: skipPatientFieldMerge
+      });
 
       stage = "creating_transfer_record";
       onProgress?.({ stage, message: "Preparando registro de traspaso...", progress: 35 });
