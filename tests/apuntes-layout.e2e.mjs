@@ -107,7 +107,7 @@ function documentoDemo() {
     </body>`);
 }
 
-async function montarDocumento(harness) {
+async function montarDocumento(harness, { uidSidebar = "qa-sidebar" } = {}) {
   await harness.navigate("/tests/fixtures/apuntes-origin.html");
   const { frameTree } = await harness.cdp.send("Page.getFrameTree");
   await harness.cdp.send("Page.setDocumentContent", {
@@ -115,6 +115,16 @@ async function montarDocumento(harness) {
     html: documentoDemo()
   });
   await harness.waitForFunction("document.readyState === 'complete' && Boolean(document.querySelector('.apuntes-shell'))");
+  const moduloSidebar = `${harness.origin}/js/apuntes-sidebar.js`;
+  await harness.evaluate(`import(${JSON.stringify(moduloSidebar)}).then(({ inicializarSidebarApuntes }) => {
+    globalThis.__qaSidebarApuntes?.destruir?.();
+    globalThis.__qaSidebarApuntes = inicializarSidebarApuntes({
+      uid: ${JSON.stringify(uidSidebar)},
+      shell: document.querySelector(".apuntes-shell"),
+      sidebar: document.querySelector("#sidebarApuntes"),
+      boton: document.querySelector("#alternarSidebarApuntes")
+    });
+  })`);
   await harness.evaluate(`(() => {
     const widget = document.querySelector("#reporteGlobalWidget");
     const contraerPorDefecto = document.body.classList.contains("pagina-apuntes")
@@ -236,6 +246,136 @@ test("apuntes ocupa el escritorio y mantiene libres Guardar y Eliminar", async (
   }
 });
 
+test("el sidebar se retrae sin romper la geometría, accesibilidad ni persistencia", async () => {
+  const harness = await launchChromeHarness({ rootDirectory: raiz, viewport: { width: 1536, height: 864 } });
+  const uidSidebar = "qa-sidebar-persistente";
+  const claveSidebar = `cognicion:apuntes:sidebar-retraida:${uidSidebar}`;
+  try {
+    await montarDocumento(harness, { uidSidebar });
+    const expandido = await harness.evaluate(`(() => {
+      const rect = (selector) => {
+        const r = document.querySelector(selector).getBoundingClientRect();
+        return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height };
+      };
+      const sidebar = document.querySelector("#sidebarApuntes");
+      const boton = document.querySelector("#alternarSidebarApuntes");
+      return {
+        viewport: innerWidth,
+        shell: rect(".apuntes-shell"),
+        sidebar: rect("#sidebarApuntes"),
+        editor: rect(".apuntes-editor"),
+        boton: rect("#alternarSidebarApuntes"),
+        nuevo: rect("#nuevoApunte"),
+        carpeta: rect("#nuevaCarpeta"),
+        editorPaddingLeft: Number.parseFloat(getComputedStyle(document.querySelector(".apuntes-editor")).paddingLeft),
+        ariaExpanded: boton.getAttribute("aria-expanded"),
+        ariaHidden: sidebar.getAttribute("aria-hidden"),
+        inert: sidebar.inert,
+        etiqueta: boton.getAttribute("aria-label")
+      };
+    })()`);
+
+    assert.ok(expandido.sidebar.width >= 276 && expandido.sidebar.width <= 360, JSON.stringify(expandido));
+    assertBorde(expandido.sidebar.left, expandido.shell.left, "sidebar expandido / borde izquierdo");
+    assertBorde(expandido.editor.left, expandido.sidebar.right, "sidebar expandido / unión con editor");
+    assertBorde(expandido.editor.right, expandido.shell.right, "sidebar expandido / editor al borde derecho");
+    assertBorde(expandido.boton.left, expandido.editor.left + expandido.editorPaddingLeft, "toggle / dentro de la cabecera del editor");
+    assertBorde(expandido.boton.width, 40, "toggle / ancho minimalista");
+    assertBorde(expandido.boton.height, 42, "toggle / alto accesible");
+    assert.ok(expandido.nuevo.height >= 32 && expandido.nuevo.height <= 34, JSON.stringify(expandido.nuevo));
+    assert.ok(expandido.carpeta.height >= 32 && expandido.carpeta.height <= 34, JSON.stringify(expandido.carpeta));
+    assert.ok(expandido.nuevo.width < 110 && expandido.carpeta.width < 110, "los botones de alta deben ser compactos");
+    assert.equal(expandido.ariaExpanded, "true");
+    assert.equal(expandido.ariaHidden, null);
+    assert.equal(expandido.inert, false);
+    assert.equal(expandido.etiqueta, "Ocultar panel lateral");
+
+    await harness.click("#alternarSidebarApuntes");
+    await harness.waitForFunction(`document.querySelector(".apuntes-shell").classList.contains("sidebar-retraida")
+      && document.querySelector("#sidebarApuntes").getBoundingClientRect().width <= 1`);
+    const retraido = await harness.evaluate(`(() => {
+      const rect = (selector) => {
+        const r = document.querySelector(selector).getBoundingClientRect();
+        return { left: r.left, right: r.right, width: r.width, height: r.height };
+      };
+      const sidebar = document.querySelector("#sidebarApuntes");
+      const boton = document.querySelector("#alternarSidebarApuntes");
+      document.querySelector("#buscadorApuntes").focus();
+      return {
+        shell: rect(".apuntes-shell"),
+        sidebar: rect("#sidebarApuntes"),
+        editor: rect(".apuntes-editor"),
+        boton: rect("#alternarSidebarApuntes"),
+        editorPaddingLeft: Number.parseFloat(getComputedStyle(document.querySelector(".apuntes-editor")).paddingLeft),
+        ariaExpanded: boton.getAttribute("aria-expanded"),
+        ariaHidden: sidebar.getAttribute("aria-hidden"),
+        inert: sidebar.inert,
+        etiqueta: boton.getAttribute("aria-label"),
+        focoDentro: sidebar.contains(document.activeElement),
+        persistido: localStorage.getItem(${JSON.stringify(claveSidebar)}),
+        overflowHorizontal: document.documentElement.scrollWidth - innerWidth
+      };
+    })()`);
+
+    assertBorde(retraido.sidebar.width, 0, "sidebar retraído / ancho cero");
+    assertBorde(retraido.editor.left, retraido.shell.left, "sidebar retraído / editor desde el borde izquierdo");
+    assertBorde(retraido.editor.right, retraido.shell.right, "sidebar retraído / editor al borde derecho");
+    assertBorde(retraido.boton.left, retraido.editor.left + retraido.editorPaddingLeft, "sidebar retraído / toggle dentro del editor");
+    assertBorde(retraido.editor.width - expandido.editor.width, expandido.sidebar.width, "sidebar retraído / espacio cedido al editor");
+    assert.equal(retraido.ariaExpanded, "false");
+    assert.equal(retraido.ariaHidden, "true");
+    assert.equal(retraido.inert, true);
+    assert.equal(retraido.etiqueta, "Mostrar panel lateral");
+    assert.equal(retraido.focoDentro, false);
+    assert.equal(retraido.persistido, "1");
+    assert.ok(retraido.overflowHorizontal <= 0);
+    if (process.env.APUNTES_COLLAPSED_SCREENSHOT_PATH) {
+      const captura = await harness.screenshot();
+      await writeFile(process.env.APUNTES_COLLAPSED_SCREENSHOT_PATH, Buffer.from(captura, "base64"));
+    }
+
+    await montarDocumento(harness, { uidSidebar });
+    await harness.waitForFunction(`document.querySelector(".apuntes-shell").classList.contains("sidebar-retraida")
+      && document.querySelector("#sidebarApuntes").getBoundingClientRect().width <= 1`);
+    const restaurado = await harness.evaluate(`(() => {
+      const sidebar = document.querySelector("#sidebarApuntes");
+      const boton = document.querySelector("#alternarSidebarApuntes");
+      return {
+        ancho: sidebar.getBoundingClientRect().width,
+        inert: sidebar.inert,
+        ariaHidden: sidebar.getAttribute("aria-hidden"),
+        ariaExpanded: boton.getAttribute("aria-expanded")
+      };
+    })()`);
+    assertBorde(restaurado.ancho, 0, "sidebar restaurado / ancho cero");
+    assert.equal(restaurado.inert, true);
+    assert.equal(restaurado.ariaHidden, "true");
+    assert.equal(restaurado.ariaExpanded, "false");
+
+    await harness.click("#alternarSidebarApuntes");
+    await harness.waitForFunction(`!document.querySelector(".apuntes-shell").classList.contains("sidebar-retraida")
+      && document.querySelector("#sidebarApuntes").getBoundingClientRect().width >= 275`);
+    const reabierto = await harness.evaluate(`(() => {
+      const sidebar = document.querySelector("#sidebarApuntes");
+      const boton = document.querySelector("#alternarSidebarApuntes");
+      return {
+        unido: Math.abs(sidebar.getBoundingClientRect().right - document.querySelector(".apuntes-editor").getBoundingClientRect().left),
+        inert: sidebar.inert,
+        ariaHidden: sidebar.getAttribute("aria-hidden"),
+        ariaExpanded: boton.getAttribute("aria-expanded"),
+        persistido: localStorage.getItem(${JSON.stringify(claveSidebar)})
+      };
+    })()`);
+    assert.ok(reabierto.unido <= TOLERANCIA_BORDE_PX);
+    assert.equal(reabierto.inert, false);
+    assert.equal(reabierto.ariaHidden, null);
+    assert.equal(reabierto.ariaExpanded, "true");
+    assert.equal(reabierto.persistido, "0");
+  } finally {
+    await harness.close();
+  }
+});
+
 test("apuntes conserva controles accesibles y sin desborde en móvil táctil", async () => {
   const harness = await launchChromeHarness({
     rootDirectory: raiz,
@@ -286,6 +426,14 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
         colorTextoWidth: colorTexto.getBoundingClientRect().width,
         etiquetaColorDisplay: getComputedStyle(etiquetaColor).display,
         etiquetaLimpiarDisplay: getComputedStyle(etiquetaLimpiar).display,
+        alternarSidebarDisplay: getComputedStyle(document.querySelector("#alternarSidebarApuntes")).display,
+        sidebarInert: document.querySelector("#sidebarApuntes").inert,
+        sidebarAriaHidden: document.querySelector("#sidebarApuntes").getAttribute("aria-hidden"),
+        sidebarAriaExpanded: document.querySelector("#alternarSidebarApuntes").getAttribute("aria-expanded"),
+        nuevoApunteHeight: document.querySelector("#nuevoApunte").getBoundingClientRect().height,
+        nuevaCarpetaHeight: document.querySelector("#nuevaCarpeta").getBoundingClientRect().height,
+        nuevoApunteTextoVisible: getComputedStyle(document.querySelector("#nuevoApunte span:last-child")).display,
+        nuevaCarpetaTextoVisible: getComputedStyle(document.querySelector("#nuevaCarpeta span:last-child")).display,
         selectorCarpetaHeight: document.querySelector("#apunteCarpeta").getBoundingClientRect().height,
         toolbarOverflowX: getComputedStyle(document.querySelector(".barra-formato")).overflowX
       };
@@ -316,6 +464,14 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
     assert.ok(metricas.colorTextoWidth >= 64, detalleSolapamiento);
     assert.notEqual(metricas.etiquetaColorDisplay, "none");
     assert.notEqual(metricas.etiquetaLimpiarDisplay, "none");
+    assert.equal(metricas.alternarSidebarDisplay, "none", "el control lateral no debe ocupar espacio en móvil");
+    assert.equal(metricas.sidebarInert, false, "el sidebar móvil permanece disponible");
+    assert.equal(metricas.sidebarAriaHidden, null);
+    assert.equal(metricas.sidebarAriaExpanded, "true");
+    assert.ok(metricas.nuevoApunteHeight >= 40, detalleSolapamiento);
+    assert.ok(metricas.nuevaCarpetaHeight >= 40, detalleSolapamiento);
+    assert.notEqual(metricas.nuevoApunteTextoVisible, "none");
+    assert.notEqual(metricas.nuevaCarpetaTextoVisible, "none");
     assert.ok(metricas.selectorCarpetaHeight >= 42, detalleSolapamiento);
     assert.equal(metricas.toolbarOverflowX, "auto");
 
@@ -351,18 +507,29 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
       const limpiar = document.querySelector("#quitarFormato");
       const accionCarpeta = document.querySelector(".carpeta-accion");
       const contraer = document.querySelector(".reporte-contraer-btn");
+      const alternarSidebar = document.querySelector("#alternarSidebarApuntes");
       return {
         limpiarWidth: limpiar.getBoundingClientRect().width,
         limpiarScrollWidth: limpiar.scrollWidth,
         limpiarClientWidth: limpiar.clientWidth,
         accionCarpetaWidth: accionCarpeta.getBoundingClientRect().width,
-        contraerWidth: contraer.getBoundingClientRect().width
+        contraerWidth: contraer.getBoundingClientRect().width,
+        nuevoApunteHeight: document.querySelector("#nuevoApunte").getBoundingClientRect().height,
+        nuevaCarpetaHeight: document.querySelector("#nuevaCarpeta").getBoundingClientRect().height,
+        alternarSidebarWidth: alternarSidebar.getBoundingClientRect().width,
+        alternarSidebarHeight: alternarSidebar.getBoundingClientRect().height,
+        alternarSidebarDisplay: getComputedStyle(alternarSidebar).display
       };
     })()`);
     assert.ok(tableta.limpiarWidth >= 68);
     assert.ok(tableta.limpiarScrollWidth <= tableta.limpiarClientWidth);
     assert.ok(tableta.accionCarpetaWidth >= 40);
     assert.ok(tableta.contraerWidth >= 40);
+    assert.ok(tableta.nuevoApunteHeight >= 40);
+    assert.ok(tableta.nuevaCarpetaHeight >= 40);
+    assert.equal(tableta.alternarSidebarDisplay, "grid");
+    assertBorde(tableta.alternarSidebarWidth, 44, "tableta táctil / ancho del toggle");
+    assertBorde(tableta.alternarSidebarHeight, 44, "tableta táctil / alto del toggle");
   } finally {
     await harness.close();
   }

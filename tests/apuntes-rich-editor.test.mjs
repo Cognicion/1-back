@@ -23,6 +23,7 @@ const leer = (ruta) => readFileSync(new URL(ruta, import.meta.url), "utf8");
 const html = leer("../apuntes.html");
 const css = leer("../css/apuntes.css");
 const controlador = leer("../js/apuntes.js");
+const sidebarControlador = leer("../js/apuntes-sidebar.js");
 const reportes = leer("../js/reportes.js");
 const textoRico = leer("../js/apuntes-rich-text.js");
 const persistencia = leer("../js/services/apuntesMedicoPersistence.js");
@@ -90,6 +91,8 @@ test("la revisión optimista impide guardar o eliminar una versión obsoleta", (
 
 test("el HTML ofrece carpetas, formato accesible y accesos globales integrados", () => {
   assert.match(html, /id="nuevaCarpeta"/);
+  assert.match(html, /id="sidebarApuntes"/);
+  assert.match(html, /id="alternarSidebarApuntes"[\s\S]*aria-controls="sidebarApuntes"[\s\S]*aria-expanded="true"/);
   assert.match(html, /id="dialogoCarpeta"/);
   assert.match(html, /id="apunteCarpeta"/);
   assert.match(html, /id="apunteContenido"[\s\S]*contenteditable="true"/);
@@ -101,8 +104,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /data-accesos-rapidos/);
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-organizacion-v1/);
-  assert.match(html, /apuntes\.css\?v=20260820-apuntes-edge-to-edge-v1/);
-  assert.match(html, /apuntes\.js\?v=20260820-apuntes-organizacion-v1/);
+  assert.match(html, /apuntes\.css\?v=20260820-apuntes-sidebar-v1/);
+  assert.match(html, /apuntes\.js\?v=20260820-apuntes-sidebar-v1/);
 });
 
 test("el layout usa el lienzo completo y evita controles flotantes", () => {
@@ -121,6 +124,11 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(css, /\.editor-contenido:empty::before/);
   assert.match(reportes, /contraerPorDefectoEnApuntes/);
   assert.match(reportes, /classList\.contains\("pagina-apuntes"\)/);
+  assert.match(css, /\.apuntes-shell\.sidebar-retraida\s*\{[\s\S]*grid-template-columns:\s*0 minmax\(0, 1fr\)/);
+  assert.match(css, /@media \(hover: none\) and \(min-width: 900px\)[\s\S]*\.boton-alternar-sidebar[\s\S]*width:\s*44px[\s\S]*height:\s*44px/);
+  assert.match(controlador, /import \{ inicializarSidebarApuntes \} from "\.\/apuntes-sidebar\.js"/);
+  assert.match(sidebarControlador, /PREFIJO_ESTADO_SIDEBAR = "cognicion:apuntes:sidebar-retraida"/);
+  assert.match(sidebarControlador, /sidebar\.inert = oculta/);
 });
 
 test("la persistencia rica mantiene texto plano y sanea el HTML", () => {
@@ -193,6 +201,6 @@ test("vinculación y eliminación administrativa incluyen las carpetas", () => {
 });
 
 test("la versión visible se incrementa para el cambio funcional", () => {
-  assert.match(version, /2026-08-20-apuntes-edge-to-edge-v1/);
-  assert.match(version, /APP_VERSION = "2\.041"/);
+  assert.match(version, /2026-08-20-apuntes-collapsible-sidebar-v1/);
+  assert.match(version, /APP_VERSION = "2\.042"/);
 });

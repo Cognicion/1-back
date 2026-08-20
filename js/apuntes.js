@@ -1,6 +1,7 @@
 import { auth, db } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { sanitizarHTMLRico } from "./apuntes-rich-text.js";
+import { inicializarSidebarApuntes } from "./apuntes-sidebar.js";
 import {
   actualizarApunteConRevision,
   eliminarApunteConRevision,
@@ -63,9 +64,9 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   uidMedico = user.uid;
-  document.body.classList.remove("bloqueado");
   recuperarEstadoCarpetas();
   inicializarInterfaz();
+  document.body.classList.remove("bloqueado");
   ponerEdicionOcupada(true);
 
   try {
@@ -87,6 +88,13 @@ function inicializarInterfaz() {
   const buscador = document.getElementById("buscadorApuntes");
   const lista = document.getElementById("listaApuntes");
   const editor = obtenerEditor();
+
+  inicializarSidebarApuntes({
+    uid: uidMedico,
+    shell: document.querySelector(".apuntes-shell"),
+    sidebar: document.getElementById("sidebarApuntes"),
+    boton: document.getElementById("alternarSidebarApuntes")
+  });
 
   sincronizarColoresIniciales();
 

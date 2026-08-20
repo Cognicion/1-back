@@ -128,6 +128,7 @@ body.bloqueado main {
 }
 
 .apuntes-shell {
+  position: relative;
   width: 100%;
   max-width: none;
   flex: 1 1 0;
@@ -159,6 +160,10 @@ body.bloqueado main {
   padding: 14px;
   border-width: 0 1px 0 0;
   overflow: hidden;
+}
+
+.apuntes-shell .boton-alternar-sidebar {
+  display: none;
 }
 
 .apuntes-editor {
@@ -258,14 +263,27 @@ body.bloqueado main {
 }
 
 .acciones-sidebar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .acciones-sidebar .boton-principal-apuntes,
 .acciones-sidebar .boton-secundario-apuntes {
-  min-height: 41px;
+  flex: 0 0 auto;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 720;
+  letter-spacing: 0.01em;
+}
+
+.acciones-sidebar .boton-principal-apuntes {
+  color: var(--apuntes-texto);
+  border-color: var(--control-border, var(--apuntes-borde));
+  background: var(--control-bg, var(--apuntes-superficie));
 }
 
 .acciones-sidebar .boton-secundario-apuntes,
@@ -276,9 +294,16 @@ body.bloqueado main {
 }
 
 .acciones-sidebar button span[aria-hidden="true"] {
-  margin-right: 4px;
-  font-size: 17px;
+  margin-right: 3px;
+  font-size: 14px;
   line-height: 0;
+}
+
+.apuntes-shell .acciones-sidebar button:hover:not(:disabled) {
+  transform: none;
+  border-color: var(--accent-primary, var(--apuntes-acento));
+  background: var(--control-bg-hover, var(--apuntes-superficie-hover));
+  box-shadow: none;
 }
 
 .lista-cabecera {
@@ -866,6 +891,93 @@ html[data-theme="light"] .apuntes-shell .boton-peligro {
   border-color: rgba(122, 39, 34, 0.22);
 }
 
+@media (min-width: 900px) {
+  .apuntes-shell {
+    transition: grid-template-columns 180ms ease;
+  }
+
+  .apuntes-sidebar {
+    transition: opacity 140ms ease, padding 180ms ease;
+  }
+
+  .editor-cabecera {
+    grid-template-columns: 40px minmax(0, 1fr) minmax(180px, 24%);
+  }
+
+  .apuntes-shell .boton-alternar-sidebar {
+    width: 40px;
+    min-width: 40px;
+    height: 42px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--control-border, var(--apuntes-borde));
+    border-radius: 8px;
+    color: var(--apuntes-texto-suave);
+    background: var(--control-bg, var(--apuntes-superficie));
+    box-shadow: none;
+    transform: none;
+    transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+  }
+
+  .apuntes-shell .boton-alternar-sidebar:hover:not(:disabled) {
+    color: var(--apuntes-texto);
+    border-color: var(--accent-primary, var(--apuntes-acento));
+    background: var(--control-bg-hover, var(--apuntes-superficie-hover));
+    box-shadow: none;
+    transform: none;
+  }
+
+  .apuntes-shell .boton-alternar-sidebar:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  .boton-alternar-sidebar svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .boton-alternar-sidebar__flecha {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform 180ms ease;
+  }
+
+  .apuntes-shell.sidebar-retraida {
+    grid-template-columns: 0 minmax(0, 1fr);
+  }
+
+  .sidebar-retraida .apuntes-sidebar {
+    padding-inline: 0;
+    border-width: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 140ms ease, padding 180ms ease, visibility 0s linear 180ms;
+  }
+
+  .sidebar-retraida .boton-alternar-sidebar__flecha {
+    transform: rotate(180deg);
+  }
+}
+
+@media (hover: none) and (min-width: 900px) {
+  .editor-cabecera {
+    grid-template-columns: 44px minmax(0, 1fr) minmax(180px, 24%);
+  }
+
+  .apuntes-shell .boton-alternar-sidebar {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+  }
+}
+
 @media (max-width: 899px) {
   html,
   body {
@@ -920,6 +1032,12 @@ html[data-theme="light"] .apuntes-shell .boton-peligro {
   .apuntes-shell .carpeta-toggle,
   .control-color {
     min-height: 42px;
+  }
+
+  .acciones-sidebar .boton-principal-apuntes,
+  .acciones-sidebar .boton-secundario-apuntes {
+    min-height: 40px;
+    padding-inline: 12px;
   }
 
   .control-color {

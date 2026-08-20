@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260820-apuntes-edge-to-edge-v1">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260820-apuntes-sidebar-v1">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -30,7 +30,7 @@
   </header>
 
   <main class="apuntes-shell">
-    <aside class="apuntes-sidebar" aria-label="Organización de apuntes">
+    <aside id="sidebarApuntes" class="apuntes-sidebar" aria-label="Organización de apuntes">
       <label class="campo-busqueda">
         <span class="sr-only">Buscar apuntes</span>
         <span class="campo-busqueda__icono" aria-hidden="true"></span>
@@ -38,12 +38,11 @@
       </label>
 
       <div class="acciones-sidebar">
-        <button id="nuevoApunte" type="button" class="boton-principal-apuntes">
-          <span aria-hidden="true">＋</span> Nuevo apunte
+        <button id="nuevoApunte" type="button" class="boton-principal-apuntes" aria-label="Crear un nuevo apunte" title="Nuevo apunte">
+          <span aria-hidden="true">＋</span><span>Apunte</span>
         </button>
-        <button id="nuevaCarpeta" type="button" class="boton-secundario-apuntes" title="Crear carpeta" aria-label="Crear una carpeta">
-          <span aria-hidden="true">＋</span>
-          <span>Carpeta</span>
+        <button id="nuevaCarpeta" type="button" class="boton-secundario-apuntes" title="Nueva carpeta" aria-label="Crear una nueva carpeta">
+          <span aria-hidden="true">＋</span><span>Carpeta</span>
         </button>
       </div>
 
@@ -58,6 +57,21 @@
       <input id="apunteId" type="hidden">
 
       <div class="editor-cabecera">
+        <button
+          id="alternarSidebarApuntes"
+          type="button"
+          class="boton-alternar-sidebar btn--icon"
+          aria-controls="sidebarApuntes"
+          aria-expanded="true"
+          aria-label="Ocultar panel lateral"
+          title="Ocultar panel lateral"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3.5" y="4" width="17" height="16" rx="2"></rect>
+            <path d="M9 4v16"></path>
+            <path class="boton-alternar-sidebar__flecha" d="m15 9-3 3 3 3"></path>
+          </svg>
+        </button>
         <label class="campo-titulo">
           <span class="sr-only">Título del apunte</span>
           <input id="apunteTitulo" autocomplete="off" placeholder="Título del apunte">
@@ -128,7 +142,7 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260820-apuntes-organizacion-v1"></script>
+  <script type="module" src="js/apuntes.js?v=20260820-apuntes-sidebar-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-organizacion-v1"></script>
 </body>
