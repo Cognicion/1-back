@@ -7,6 +7,15 @@ import { fileURLToPath } from "node:url";
 import { launchChromeHarness } from "../js/tests/helpers/chrome-cdp.mjs";
 
 const raiz = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const TOLERANCIA_BORDE_PX = 1;
+
+function assertBorde(actual, esperado, etiqueta) {
+  assert.ok(
+    Math.abs(actual - esperado) <= TOLERANCIA_BORDE_PX,
+    `${etiqueta}: esperado ${esperado}px, recibido ${actual}px`
+  );
+}
+
 const rutasTema = [
   "css/theme/tokens.css",
   "css/theme/themes.css",
@@ -130,6 +139,9 @@ test("apuntes ocupa el escritorio y mantiene libres Guardar y Eliminar", async (
       const contraerReporte = rect(".reporte-contraer-btn");
       return {
         viewport: innerWidth,
+        viewportHeight: innerHeight,
+        scrollHeight: document.documentElement.scrollHeight,
+        topbar: rect(".topbar-apuntes"),
         shell: rect(".apuntes-shell"),
         sidebar: rect(".apuntes-sidebar"),
         editor: rect(".apuntes-editor"),
@@ -143,7 +155,22 @@ test("apuntes ocupa el escritorio y mantiene libres Guardar y Eliminar", async (
       };
     })()`);
 
-    assert.ok(metricas.shell.width / metricas.viewport > 0.97, `ancho útil: ${metricas.shell.width}/${metricas.viewport}`);
+    assertBorde(metricas.topbar.top, 0, "cabecera / borde superior");
+    assertBorde(metricas.topbar.left, 0, "cabecera / borde izquierdo");
+    assertBorde(metricas.topbar.right, metricas.viewport, "cabecera / borde derecho");
+    assert.ok(metricas.topbar.height <= 60, `cabecera compacta: ${metricas.topbar.height}px`);
+    assertBorde(metricas.shell.top, metricas.topbar.bottom, "shell / sin espacio bajo cabecera");
+    assertBorde(metricas.shell.left, 0, "shell / borde izquierdo");
+    assertBorde(metricas.shell.right, metricas.viewport, "shell / borde derecho");
+    assertBorde(metricas.shell.bottom, metricas.viewportHeight, "shell / borde inferior");
+    assertBorde(metricas.scrollHeight, metricas.viewportHeight, "documento / sin desborde vertical");
+    assertBorde(metricas.sidebar.left, metricas.shell.left, "sidebar / borde izquierdo");
+    assertBorde(metricas.sidebar.top, metricas.shell.top, "sidebar / borde superior");
+    assertBorde(metricas.sidebar.bottom, metricas.shell.bottom, "sidebar / borde inferior");
+    assertBorde(metricas.editor.right, metricas.shell.right, "editor / borde derecho");
+    assertBorde(metricas.editor.top, metricas.shell.top, "editor / borde superior");
+    assertBorde(metricas.editor.bottom, metricas.shell.bottom, "editor / borde inferior");
+    assertBorde(metricas.editor.left, metricas.sidebar.right, "columnas / sin separación");
     assert.ok(metricas.editor.width > metricas.sidebar.width * 2.5);
     assert.ok(metricas.contenido.height > 500);
     assert.equal(metricas.seSuperponen, false);
@@ -218,6 +245,18 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
     await harness.cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 5 });
     await montarDocumento(harness);
     const metricas = await harness.evaluate(`(async () => {
+      const rect = (selector) => {
+        const r = document.querySelector(selector).getBoundingClientRect();
+        return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height };
+      };
+      const bordes = {
+        viewportWidth: innerWidth,
+        scrollHeight: document.documentElement.scrollHeight,
+        topbar: rect(".topbar-apuntes"),
+        shell: rect(".apuntes-shell"),
+        sidebar: rect(".apuntes-sidebar"),
+        editor: rect(".apuntes-editor")
+      };
       document.querySelector(".acciones-apuntes").scrollIntoView({ block: "end" });
       await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       const eliminar = document.querySelector("#eliminarApunte").getBoundingClientRect();
@@ -229,6 +268,7 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
       const etiquetaColor = colorTexto.querySelector("span:nth-child(2)");
       const etiquetaLimpiar = document.querySelector("#quitarFormato span:last-child");
       return {
+        bordes,
         scrollWidth: document.documentElement.scrollWidth,
         innerWidth,
         sidebarHeight: document.querySelector(".apuntes-sidebar").getBoundingClientRect().height,
@@ -251,6 +291,20 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
       };
     })()`);
 
+    assertBorde(metricas.bordes.topbar.top, 0, "móvil / cabecera superior");
+    assertBorde(metricas.bordes.topbar.left, 0, "móvil / cabecera izquierda");
+    assertBorde(metricas.bordes.topbar.right, metricas.bordes.viewportWidth, "móvil / cabecera derecha");
+    assertBorde(metricas.bordes.shell.top, metricas.bordes.topbar.bottom, "móvil / sin espacio bajo cabecera");
+    assertBorde(metricas.bordes.shell.left, 0, "móvil / shell izquierdo");
+    assertBorde(metricas.bordes.shell.right, metricas.bordes.viewportWidth, "móvil / shell derecho");
+    assertBorde(metricas.bordes.sidebar.left, metricas.bordes.shell.left, "móvil / sidebar izquierdo");
+    assertBorde(metricas.bordes.sidebar.right, metricas.bordes.shell.right, "móvil / sidebar derecho");
+    assertBorde(metricas.bordes.sidebar.top, metricas.bordes.shell.top, "móvil / sidebar superior");
+    assertBorde(metricas.bordes.editor.left, metricas.bordes.shell.left, "móvil / editor izquierdo");
+    assertBorde(metricas.bordes.editor.right, metricas.bordes.shell.right, "móvil / editor derecho");
+    assertBorde(metricas.bordes.editor.top, metricas.bordes.sidebar.bottom, "móvil / sin separación entre paneles");
+    assertBorde(metricas.bordes.editor.bottom, metricas.bordes.shell.bottom, "móvil / editor al fondo del shell");
+    assertBorde(metricas.bordes.shell.bottom, metricas.bordes.scrollHeight, "móvil / sin espacio inferior");
     assert.ok(metricas.scrollWidth <= metricas.innerWidth);
     assert.ok(metricas.sidebarHeight >= 319);
     assert.equal(metricas.accionesCarpetaOpacidad, "1");
@@ -258,7 +312,7 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
     assert.ok(metricas.eliminarRight <= metricas.reporteLeft, detalleSolapamiento);
     assert.ok(metricas.eliminarRight <= metricas.contraerReporteLeft, detalleSolapamiento);
     assert.equal(metricas.reporteContraido, true);
-    assert.ok(metricas.topbarHeight <= 80, detalleSolapamiento);
+    assert.ok(metricas.topbarHeight <= 60, detalleSolapamiento);
     assert.ok(metricas.colorTextoWidth >= 64, detalleSolapamiento);
     assert.notEqual(metricas.etiquetaColorDisplay, "none");
     assert.notEqual(metricas.etiquetaLimpiarDisplay, "none");
@@ -273,7 +327,7 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
       contraerReporteLeft: document.querySelector(".reporte-contraer-btn").getBoundingClientRect().left
     }))()`);
     assert.ok(telefonoCompacto.scrollWidth <= 360, JSON.stringify(telefonoCompacto));
-    assert.ok(telefonoCompacto.topbarHeight <= 80, JSON.stringify(telefonoCompacto));
+    assert.ok(telefonoCompacto.topbarHeight <= 60, JSON.stringify(telefonoCompacto));
     assert.ok(telefonoCompacto.eliminarRight <= telefonoCompacto.contraerReporteLeft, JSON.stringify(telefonoCompacto));
 
     await harness.setViewport(1024, 768, { mobile: true });

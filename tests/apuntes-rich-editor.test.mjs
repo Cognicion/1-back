@@ -101,12 +101,19 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /data-accesos-rapidos/);
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-organizacion-v1/);
-  assert.match(html, /apuntes\.css\?v=20260820-apuntes-organizacion-v1/);
+  assert.match(html, /apuntes\.css\?v=20260820-apuntes-edge-to-edge-v1/);
   assert.match(html, /apuntes\.js\?v=20260820-apuntes-organizacion-v1/);
 });
 
 test("el layout usa el lienzo completo y evita controles flotantes", () => {
-  assert.match(css, /\.apuntes-shell\s*\{[\s\S]*width:\s*calc\(100% - 24px\)/);
+  const reglaTopbar = css.match(/\.topbar-apuntes\s*\{([^}]*)\}/)?.[1] || "";
+  const reglaShell = css.match(/\.apuntes-shell\s*\{([^}]*)\}/)?.[1] || "";
+  assert.match(reglaTopbar, /position:\s*relative/);
+  assert.match(reglaTopbar, /z-index:\s*4/);
+  assert.match(reglaTopbar, /min-height:\s*56px/);
+  assert.match(reglaShell, /width:\s*100%/);
+  assert.match(reglaShell, /margin:\s*0/);
+  assert.match(reglaShell, /gap:\s*0/);
   assert.doesNotMatch(css, /width:\s*min\(1280px/);
   assert.match(css, /grid-template-columns:\s*clamp\(276px, 23vw, 360px\) minmax\(0, 1fr\)/);
   assert.match(css, /\.acciones-apuntes\s*\{[\s\S]*padding-right:\s*205px/);
@@ -186,6 +193,6 @@ test("vinculación y eliminación administrativa incluyen las carpetas", () => {
 });
 
 test("la versión visible se incrementa para el cambio funcional", () => {
-  assert.match(version, /2026-08-20-apuntes-rich-folders-v1/);
-  assert.match(version, /APP_VERSION = "2\.040"/);
+  assert.match(version, /2026-08-20-apuntes-edge-to-edge-v1/);
+  assert.match(version, /APP_VERSION = "2\.041"/);
 });
