@@ -3,7 +3,7 @@ import { getPageHeader, isPublicPage, pageIdFromLocation } from "./pageHeaderReg
 
 const DEBUG_PREFIX = "[GLOBAL HEADER]";
 const RECENT_KEY = "cognicion.globalHeader.featureRecent";
-const MIGRATED_PAGES = new Set(["dashboard", "medico", "paciente", "nota", "historia"]);
+const MIGRATED_PAGES = new Set(["dashboard", "medico", "paciente", "nota", "historia", "apuntes"]);
 let stylesPromise;
 
 function log(message, data) { console.debug(`${DEBUG_PREFIX} ${message}`, data ?? ""); }
@@ -33,6 +33,7 @@ function findHeader(pageId) {
   if (pageId === "medico") return document.querySelector("header.header-medico") || null;
   if (pageId === "paciente") return document.querySelector(".topbar") || null;
   if (pageId === "nota") return document.querySelector(".barra-superior") || null;
+  if (pageId === "apuntes") return document.querySelector("header.topbar-apuntes") || null;
   if (pageId === "historia") {
     let header = document.querySelector("[data-global-header-host]");
     if (!header) {
@@ -188,6 +189,7 @@ function createContextController(pageId) {
     nota: ["#nombrePacienteNota"],
     historia: ["#nombrePaciente", "#datosPaciente"]
   }[pageId] || [];
+  if (!selectors.length) return () => {};
   let lastContext = "";
   const refresh = () => {
     const context = selectors.map((selector) => document.querySelector(selector)?.textContent || "")

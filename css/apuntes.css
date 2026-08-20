@@ -67,17 +67,29 @@ body.bloqueado main {
   backdrop-filter: blur(12px);
 }
 
-.topbar-apuntes h1,
-.topbar-apuntes p {
-  margin: 0;
+.topbar-apuntes .global-header-branding {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 1 auto;
 }
 
-.topbar-apuntes h1 {
-  font-size: clamp(19px, 1.5vw, 22px);
+.topbar-apuntes .global-header-identity {
+  min-width: 150px;
+  display: grid;
+  gap: 2px;
 }
 
-.topbar-apuntes p {
-  display: none;
+.topbar-apuntes .global-header-identity strong {
+  font-size: clamp(16px, 1.35vw, 20px);
+  line-height: 1.1;
+}
+
+.topbar-apuntes .global-header-identity span {
+  color: var(--apuntes-texto-suave);
+  font-size: 11px;
+  line-height: 1.15;
 }
 
 .topbar-apuntes nav {
@@ -100,6 +112,29 @@ body.bloqueado main {
 .topbar-apuntes a:hover {
   text-decoration: underline;
   text-underline-offset: 4px;
+}
+
+.topbar-apuntes .topbar-apuntes__logo {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+}
+
+.topbar-apuntes__logo img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+
+body .topbar-apuntes .global-header-discovery {
+  flex: 1 1 280px;
+  margin-left: auto;
 }
 
 .topbar-apuntes .topbar-notificaciones {
@@ -565,8 +600,15 @@ body.bloqueado main {
   border-radius: 0 10px 10px 0;
   color: var(--apuntes-texto);
   background-color: transparent;
+  color-scheme: dark;
   outline-offset: -2px;
   font-size: 12px;
+}
+
+.apuntes-shell .selector-carpeta select option,
+.apuntes-shell .selector-carpeta select optgroup {
+  color: #fff5e6;
+  background-color: #1f0b11;
 }
 
 .barra-formato {
@@ -728,6 +770,10 @@ body.bloqueado main {
   padding-right: 205px;
 }
 
+body.reporte-global-contraido .apuntes-shell .acciones-apuntes {
+  padding-right: 52px;
+}
+
 .acciones-apuntes span {
   min-width: 0;
   overflow: hidden;
@@ -854,6 +900,23 @@ html[data-theme="light"] .topbar-apuntes :where(p, a),
 html[data-theme="light"] .acciones-apuntes span,
 html[data-theme="light"] :where(.vacio, .carpeta-vacia) {
   color: var(--apuntes-texto-suave);
+}
+
+html:is([data-theme="light"], [data-theme^="light-"]) .selector-carpeta select {
+  color: var(--text-primary, #1b1d1b);
+  color-scheme: light;
+}
+
+html:is([data-theme="light"], [data-theme^="light-"]) .selector-carpeta select option,
+html:is([data-theme="light"], [data-theme^="light-"]) .selector-carpeta select optgroup {
+  color: var(--text-primary, #1b1d1b);
+  background-color: var(--surface-elevated, #fff);
+}
+
+@media (max-width: 1100px) {
+  .topbar-apuntes .topbar-apuntes__enlace {
+    display: none;
+  }
 }
 
 html[data-theme="light"] .apuntes-sidebar,
@@ -987,8 +1050,7 @@ html[data-theme="light"] .apuntes-shell .boton-peligro {
   }
 
   .topbar-apuntes {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
+    display: flex;
   }
 
   .apuntes-shell {
@@ -1059,11 +1121,14 @@ html[data-theme="light"] .apuntes-shell .boton-peligro {
   .topbar-apuntes {
     min-height: 56px;
     padding: 6px 10px;
-    grid-template-columns: auto minmax(0, 1fr);
     gap: 8px;
   }
 
-  .topbar-apuntes p {
+  body .topbar-apuntes .global-header-identity {
+    min-width: 0;
+  }
+
+  body .topbar-apuntes .global-header-identity span {
     display: none;
   }
 
@@ -1125,6 +1190,14 @@ html[data-theme="light"] .apuntes-shell .boton-peligro {
     grid-column: 1 / -1;
   }
 
+  body.reporte-global-contraido .apuntes-shell .acciones-apuntes {
+    grid-template-columns: minmax(0, 1fr) minmax(82px, 90px) minmax(82px, 90px);
+  }
+
+  body.reporte-global-contraido .apuntes-shell .acciones-apuntes span {
+    grid-column: auto;
+  }
+
 }
 
 @media (max-width: 480px) {
@@ -1143,6 +1216,16 @@ html[data-theme="light"] .apuntes-shell .boton-peligro {
 @media (max-width: 360px) {
   .acciones-apuntes {
     grid-template-columns: 1fr;
+  }
+
+  body.reporte-global-contraido .apuntes-shell .acciones-apuntes {
+    grid-template-columns: minmax(0, 1fr) 82px 82px;
+  }
+}
+
+@media (max-width: 760px) {
+  body .topbar-apuntes .global-header-discovery {
+    display: none;
   }
 }
 

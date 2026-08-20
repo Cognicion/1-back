@@ -64,7 +64,7 @@
   window.addEventListener("pageshow", apply);
   // El encabezado se carga de forma diferida y solo monta la fase autenticada validada.
   window.addEventListener("DOMContentLoaded", () => {
-    void import("./components/globalAppHeader.js")
+    void import("./components/globalAppHeader.js?v=20260820-apuntes-navbar-v1")
       .then(({ scheduleGlobalAppHeader }) => scheduleGlobalAppHeader())
       .catch((error) => console.warn("[GLOBAL HEADER] Error de carga", error));
   }, { once: true });

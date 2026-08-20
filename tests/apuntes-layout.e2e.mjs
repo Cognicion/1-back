@@ -16,6 +16,22 @@ function assertBorde(actual, esperado, etiqueta) {
   );
 }
 
+function luminanciaRelativa({ r, g, b }) {
+  const canales = [r, g, b].map((canal) => {
+    const normalizado = canal / 255;
+    return normalizado <= 0.04045
+      ? normalizado / 12.92
+      : ((normalizado + 0.055) / 1.055) ** 2.4;
+  });
+  return (0.2126 * canales[0]) + (0.7152 * canales[1]) + (0.0722 * canales[2]);
+}
+
+function relacionContraste(primerColor, segundoColor) {
+  const primera = luminanciaRelativa(primerColor);
+  const segunda = luminanciaRelativa(segundoColor);
+  return (Math.max(primera, segunda) + 0.05) / (Math.min(primera, segunda) + 0.05);
+}
+
 const rutasTema = [
   "css/theme/tokens.css",
   "css/theme/themes.css",
@@ -85,16 +101,19 @@ const gruposDemo = `
     <div id="demo-pendientes" class="carpeta-contenido" hidden></div>
   </section>`;
 
-function documentoDemo() {
+function documentoDemo({ accesosDemo = true } = {}) {
+  const hostAccesos = accesosDemo
+    ? `<div data-accesos-rapidos data-global-header-access class="accesos-rapidos">
+        <button class="accesos-rapidos-toggle" type="button"><span aria-hidden="true">⚡</span> Accesos rápidos</button>
+      </div>`
+    : '<div data-accesos-rapidos data-global-header-access></div>';
   return htmlFuente
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "")
     .replace(/<link\b[^>]*>/gi, "")
+    .replace("<head>", '<head><base href="/">')
     .replace('<body class="bloqueado pagina-apuntes">', '<body class="pagina-apuntes">')
     .replace("</head>", `<style>${cssApuntes}\n${cssTema}\n${cssAccesos}\n${cssReportes}</style></head>`)
-    .replace('<div data-accesos-rapidos></div>', `
-      <div data-accesos-rapidos class="accesos-rapidos">
-        <button class="accesos-rapidos-toggle" type="button"><span aria-hidden="true">⚡</span> Accesos rápidos</button>
-      </div>`)
+    .replace('<div data-accesos-rapidos data-global-header-access></div>', hostAccesos)
     .replace('<div id="listaApuntes" class="lista-apuntes" aria-live="polite">Cargando apuntes...</div>', `<div id="listaApuntes" class="lista-apuntes" aria-live="polite">${gruposDemo}</div>`)
     .replace('id="apunteTitulo" autocomplete="off"', 'id="apunteTitulo" value="Regla del 7-38-55" autocomplete="off"')
     .replace('id="apunteContenido"\n        class="editor-contenido"', 'id="apunteContenido"\n        class="editor-contenido"')
@@ -131,6 +150,10 @@ async function montarDocumento(harness, { uidSidebar = "qa-sidebar" } = {}) {
       && matchMedia("(max-width: 720px)").matches
       && localStorage.getItem("cognicion.reporteGlobal.contraido") === null;
     widget?.classList.toggle("reporte-widget-contraido", contraerPorDefecto);
+    document.body.classList.toggle(
+      "reporte-global-contraido",
+      Boolean(widget?.classList.contains("reporte-widget-contraido"))
+    );
   })()`);
   await harness.evaluate("new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))");
 }
@@ -240,6 +263,168 @@ test("apuntes ocupa el escritorio y mantiene libres Guardar y Eliminar", async (
     assert.ok(captura.length > 20_000);
     if (process.env.APUNTES_SCREENSHOT_PATH) {
       await writeFile(process.env.APUNTES_SCREENSHOT_PATH, Buffer.from(captura, "base64"));
+    }
+  } finally {
+    await harness.close();
+  }
+});
+
+test("el navbar común se monta una sola vez y deja el shell unido al encabezado", async () => {
+  const harness = await launchChromeHarness({ rootDirectory: raiz, viewport: { width: 1536, height: 864 } });
+  try {
+    await harness.navigate("/tests/fixtures/apuntes-origin.html");
+    const { frameTree } = await harness.cdp.send("Page.getFrameTree");
+    await harness.cdp.send("Page.setDocumentContent", {
+      frameId: frameTree.frame.id,
+      html: documentoDemo({ accesosDemo: false })
+    });
+    await harness.waitForFunction("document.readyState === 'complete' && Boolean(document.querySelector('.apuntes-shell'))");
+    await harness.evaluate("history.replaceState({}, '', '/apuntes.html')");
+    const moduloNavbar = `${harness.origin}/js/components/globalAppHeader.js`;
+    const montaje = await harness.evaluate(`import(${JSON.stringify(moduloNavbar)}).then(async ({ mountGlobalAppHeader }) => {
+      const primero = await mountGlobalAppHeader();
+      const segundo = await mountGlobalAppHeader();
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const header = document.querySelector("header.topbar-apuntes");
+      const shell = document.querySelector(".apuntes-shell");
+      const sidebar = document.querySelector(".apuntes-sidebar");
+      const editor = document.querySelector(".apuntes-editor");
+      const rect = (elemento) => {
+        const r = elemento.getBoundingClientRect();
+        return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height };
+      };
+      return {
+        mismoControlador: primero === segundo,
+        pageId: primero?.pageId,
+        encabezados: document.querySelectorAll("body > header.topbar-apuntes").length,
+        montados: document.querySelectorAll("[data-global-app-header]").length,
+        brandings: header.querySelectorAll("[data-global-header-branding]").length,
+        acciones: header.querySelectorAll(".global-header-actions").length,
+        descubrimientos: header.querySelectorAll(".global-header-discovery").length,
+        accesos: header.querySelectorAll("[data-accesos-rapidos]").length,
+        notificaciones: header.querySelectorAll("[data-global-notifications-link], [data-global-header-notifications]").length,
+        role: header.getAttribute("role"),
+        ariaLabel: header.getAttribute("aria-label"),
+        titulo: header.querySelector("[data-global-header-title]")?.textContent?.trim(),
+        descripcion: header.querySelector("[data-global-header-description]")?.textContent?.trim(),
+        header: rect(header),
+        shell: rect(shell),
+        sidebar: rect(sidebar),
+        editor: rect(editor),
+        viewportWidth: innerWidth,
+        viewportHeight: innerHeight,
+        scrollHeight: document.documentElement.scrollHeight,
+        rutas: [...header.querySelectorAll('.global-header-actions > a[href]')].map((enlace) => enlace.getAttribute('href'))
+      };
+    })`);
+
+    assert.equal(montaje.mismoControlador, true);
+    assert.equal(montaje.pageId, "apuntes");
+    assert.deepEqual(
+      [montaje.encabezados, montaje.montados, montaje.brandings, montaje.acciones, montaje.descubrimientos, montaje.accesos, montaje.notificaciones],
+      [1, 1, 1, 1, 1, 1, 1]
+    );
+    assert.equal(montaje.role, "banner");
+    assert.equal(montaje.ariaLabel, "Encabezado de Mis apuntes");
+    assert.equal(montaje.titulo, "Mis apuntes");
+    assert.equal(montaje.descripcion, "Notas personales, recordatorios y pendientes.");
+    assert.ok(montaje.rutas.includes("nota.html"), JSON.stringify(montaje.rutas));
+    assert.ok(montaje.rutas.includes("dashboard.html"), JSON.stringify(montaje.rutas));
+    assertBorde(montaje.header.top, 0, "navbar real / borde superior");
+    assertBorde(montaje.header.left, 0, "navbar real / borde izquierdo");
+    assertBorde(montaje.header.right, montaje.viewportWidth, "navbar real / borde derecho");
+    assertBorde(montaje.shell.top, montaje.header.bottom, "navbar real / shell pegado al header");
+    assertBorde(montaje.shell.bottom, montaje.viewportHeight, "navbar real / shell al fondo");
+    assertBorde(montaje.sidebar.bottom, montaje.shell.bottom, "navbar real / sidebar al fondo");
+    assertBorde(montaje.editor.bottom, montaje.shell.bottom, "navbar real / editor al fondo");
+    assertBorde(montaje.scrollHeight, montaje.viewportHeight, "navbar real / sin espacio muerto inferior");
+
+    await harness.waitForFunction("Boolean(document.querySelector('[data-acceso-toggle]'))");
+    await harness.click("[data-acceso-toggle]");
+    const accesoFuncional = await harness.evaluate(`(() => ({
+      expandido: document.querySelector("[data-acceso-toggle]")?.getAttribute("aria-expanded"),
+      panelOculto: document.querySelector("[data-acceso-panel]")?.getAttribute("aria-hidden"),
+      panelAbierto: document.querySelector("[data-accesos-rapidos]")?.classList.contains("abierto")
+    }))()`);
+    assert.deepEqual(accesoFuncional, { expandido: "true", panelOculto: "false", panelAbierto: true });
+
+    const sugerenciaInicial = await harness.evaluate("document.querySelector('.global-header-discovery__text')?.textContent");
+    await harness.click("[data-global-tip-next]");
+    await harness.waitForFunction(`document.querySelector('.global-header-discovery__text')?.textContent !== ${JSON.stringify(sugerenciaInicial)}`);
+    if (process.env.APUNTES_NAVBAR_SCREENSHOT_PATH) {
+      await harness.evaluate(`new Promise((resolve) => {
+        document.querySelector("#reporteGlobalWidget")?.classList.add("reporte-widget-contraido");
+        document.body.classList.add("reporte-global-contraido");
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      })`);
+      const captura = await harness.screenshot();
+      await writeFile(process.env.APUNTES_NAVBAR_SCREENSHOT_PATH, Buffer.from(captura, "base64"));
+    }
+  } finally {
+    await harness.close();
+  }
+});
+
+test("selector de carpetas mantiene contraste AA y esquema nativo en biocelular y claro", async () => {
+  const harness = await launchChromeHarness({ rootDirectory: raiz, viewport: { width: 1024, height: 768 } });
+  try {
+    await montarDocumento(harness);
+    const medirTema = async (tema, esquemaEsperado) => harness.evaluate(`(async () => {
+      document.documentElement.dataset.theme = ${JSON.stringify(tema)};
+      const select = document.querySelector("#apunteCarpeta");
+      if (select.options.length < 2) select.add(new Option("Cardiología", "cardiologia"));
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+      const parsear = (valor) => {
+        const componentes = String(valor).match(/[\\d.]+/g)?.map(Number) || [];
+        return {
+          r: componentes[0] || 0,
+          g: componentes[1] || 0,
+          b: componentes[2] || 0,
+          a: componentes.length > 3 ? componentes[3] : 1
+        };
+      };
+      const superponer = (frente, fondo) => {
+        const alfa = frente.a + fondo.a * (1 - frente.a);
+        if (!alfa) return { r: 0, g: 0, b: 0, a: 0 };
+        return {
+          r: ((frente.r * frente.a) + (fondo.r * fondo.a * (1 - frente.a))) / alfa,
+          g: ((frente.g * frente.a) + (fondo.g * fondo.a * (1 - frente.a))) / alfa,
+          b: ((frente.b * frente.a) + (fondo.b * fondo.a * (1 - frente.a))) / alfa,
+          a: alfa
+        };
+      };
+      const fondoEfectivo = (elemento) => {
+        const capas = [];
+        for (let actual = elemento; actual; actual = actual.parentElement) {
+          capas.push(parsear(getComputedStyle(actual).backgroundColor));
+        }
+        let fondo = { r: 255, g: 255, b: 255, a: 1 };
+        for (const capa of capas.reverse()) fondo = superponer(capa, fondo);
+        return fondo;
+      };
+      const opcion = select.options[1];
+      const estiloSelect = getComputedStyle(select);
+      const estiloOpcion = getComputedStyle(opcion);
+      return {
+        selectColor: parsear(estiloSelect.color),
+        selectFondo: fondoEfectivo(select),
+        optionColor: parsear(estiloOpcion.color),
+        optionFondo: parsear(estiloOpcion.backgroundColor),
+        selectColorScheme: estiloSelect.colorScheme,
+        optionColorScheme: estiloOpcion.colorScheme
+      };
+    })()`);
+
+    for (const [tema, esquema] of [["biocelular", "dark"], ["light", "light"]]) {
+      const metricas = await medirTema(tema, esquema);
+      const contrasteSelect = relacionContraste(metricas.selectColor, metricas.selectFondo);
+      const contrasteOption = relacionContraste(metricas.optionColor, metricas.optionFondo);
+      assert.ok(contrasteSelect >= 4.5, `${tema}: contraste select ${contrasteSelect.toFixed(2)}; ${JSON.stringify(metricas)}`);
+      assert.ok(contrasteOption >= 4.5, `${tema}: contraste option ${contrasteOption.toFixed(2)}; ${JSON.stringify(metricas)}`);
+      assert.ok(metricas.optionFondo.a >= 0.99, `${tema}: option requiere fondo opaco; ${JSON.stringify(metricas.optionFondo)}`);
+      assert.equal(metricas.selectColorScheme, esquema);
+      assert.equal(metricas.optionColorScheme, esquema);
     }
   } finally {
     await harness.close();
@@ -400,9 +585,12 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
       document.querySelector(".acciones-apuntes").scrollIntoView({ block: "end" });
       await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       const eliminar = document.querySelector("#eliminarApunte").getBoundingClientRect();
+      const guardar = document.querySelector("#guardarApunte").getBoundingClientRect();
+      const estado = document.querySelector("#estadoApuntes").getBoundingClientRect();
       const reporte = document.querySelector(".reporte-float-btn").getBoundingClientRect();
       const contraerReporte = document.querySelector(".reporte-contraer-btn").getBoundingClientRect();
       const acciones = document.querySelector(".acciones-apuntes");
+      const accionesRect = acciones.getBoundingClientRect();
       const estiloAcciones = getComputedStyle(acciones);
       const colorTexto = document.querySelector("#colorTexto").closest(".control-color");
       const etiquetaColor = colorTexto.querySelector("span:nth-child(2)");
@@ -417,11 +605,17 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
         reporteLeft: reporte.left,
         contraerReporteLeft: contraerReporte.left,
         contraerReporteRight: contraerReporte.right,
-        accionesWidth: acciones.getBoundingClientRect().width,
-        accionesPaddingRight: estiloAcciones.paddingRight,
+        accionesWidth: accionesRect.width,
+        accionesPaddingRight: Number.parseFloat(estiloAcciones.paddingRight),
         accionesColumnas: estiloAcciones.gridTemplateColumns,
         eliminarWidth: eliminar.width,
         reporteContraido: document.querySelector("#reporteGlobalWidget").classList.contains("reporte-widget-contraido"),
+        bodyReporteContraido: document.body.classList.contains("reporte-global-contraido"),
+        diferenciaCentroFila: Math.max(
+          Math.abs(((estado.top + estado.bottom) / 2) - ((guardar.top + guardar.bottom) / 2)),
+          Math.abs(((guardar.top + guardar.bottom) / 2) - ((eliminar.top + eliminar.bottom) / 2))
+        ),
+        espacioMuertoDerecha: accionesRect.right - Math.max(estado.right, guardar.right, eliminar.right),
         topbarHeight: document.querySelector(".topbar-apuntes").getBoundingClientRect().height,
         colorTextoWidth: colorTexto.getBoundingClientRect().width,
         etiquetaColorDisplay: getComputedStyle(etiquetaColor).display,
@@ -460,6 +654,10 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
     assert.ok(metricas.eliminarRight <= metricas.reporteLeft, detalleSolapamiento);
     assert.ok(metricas.eliminarRight <= metricas.contraerReporteLeft, detalleSolapamiento);
     assert.equal(metricas.reporteContraido, true);
+    assert.equal(metricas.bodyReporteContraido, true);
+    assert.ok(metricas.accionesPaddingRight >= 51 && metricas.accionesPaddingRight <= 53, detalleSolapamiento);
+    assert.ok(metricas.espacioMuertoDerecha >= 51 && metricas.espacioMuertoDerecha <= 53, detalleSolapamiento);
+    assert.ok(metricas.diferenciaCentroFila <= 1, `390px / status y acciones deben compartir fila: ${detalleSolapamiento}`);
     assert.ok(metricas.topbarHeight <= 60, detalleSolapamiento);
     assert.ok(metricas.colorTextoWidth >= 64, detalleSolapamiento);
     assert.notEqual(metricas.etiquetaColorDisplay, "none");
@@ -477,30 +675,64 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
 
     await harness.evaluate(`new Promise((resolve) => {
       document.querySelector("#reporteGlobalWidget")?.classList.remove("reporte-widget-contraido");
+      document.body.classList.remove("reporte-global-contraido");
       setTimeout(resolve, 260);
     })`);
     const reporteExpandido = await harness.evaluate(`(() => ({
       eliminarRight: document.querySelector("#eliminarApunte").getBoundingClientRect().right,
       reporteLeft: document.querySelector(".reporte-float-btn").getBoundingClientRect().left,
-      contraerReporteLeft: document.querySelector(".reporte-contraer-btn").getBoundingClientRect().left
+      contraerReporteLeft: document.querySelector(".reporte-contraer-btn").getBoundingClientRect().left,
+      accionesPaddingRight: Number.parseFloat(getComputedStyle(document.querySelector(".acciones-apuntes")).paddingRight),
+      bodyReporteContraido: document.body.classList.contains("reporte-global-contraido")
     }))()`);
     assert.ok(reporteExpandido.eliminarRight <= reporteExpandido.reporteLeft, JSON.stringify(reporteExpandido));
     assert.ok(reporteExpandido.eliminarRight <= reporteExpandido.contraerReporteLeft, JSON.stringify(reporteExpandido));
+    assert.equal(reporteExpandido.bodyReporteContraido, false);
+    assert.ok(reporteExpandido.accionesPaddingRight >= 180, `expandido conserva reserva: ${JSON.stringify(reporteExpandido)}`);
+    assert.ok(reporteExpandido.accionesPaddingRight - metricas.accionesPaddingRight >= 120, JSON.stringify(reporteExpandido));
     await harness.evaluate(`new Promise((resolve) => {
       document.querySelector("#reporteGlobalWidget")?.classList.add("reporte-widget-contraido");
+      document.body.classList.add("reporte-global-contraido");
       setTimeout(resolve, 260);
     })`);
 
     await harness.setViewport(360, 800, { mobile: true });
-    const telefonoCompacto = await harness.evaluate(`(() => ({
-      scrollWidth: document.documentElement.scrollWidth,
-      topbarHeight: document.querySelector(".topbar-apuntes").getBoundingClientRect().height,
-      eliminarRight: document.querySelector("#eliminarApunte").getBoundingClientRect().right,
-      contraerReporteLeft: document.querySelector(".reporte-contraer-btn").getBoundingClientRect().left
-    }))()`);
+    const telefonoCompacto = await harness.evaluate(`(async () => {
+      const acciones = document.querySelector(".acciones-apuntes");
+      acciones.scrollIntoView({ block: "end" });
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const rect = (selector) => document.querySelector(selector).getBoundingClientRect();
+      const estado = rect("#estadoApuntes");
+      const guardar = rect("#guardarApunte");
+      const eliminar = rect("#eliminarApunte");
+      const reporte = rect(".reporte-float-btn");
+      const contraer = rect(".reporte-contraer-btn");
+      const accionesRect = acciones.getBoundingClientRect();
+      return {
+        scrollWidth: document.documentElement.scrollWidth,
+        topbarHeight: document.querySelector(".topbar-apuntes").getBoundingClientRect().height,
+        eliminarRight: eliminar.right,
+        reporteLeft: reporte.left,
+        contraerReporteLeft: contraer.left,
+        accionesPaddingRight: Number.parseFloat(getComputedStyle(acciones).paddingRight),
+        espacioMuertoDerecha: accionesRect.right - Math.max(estado.right, guardar.right, eliminar.right),
+        diferenciaCentroFila: Math.max(
+          Math.abs(((estado.top + estado.bottom) / 2) - ((guardar.top + guardar.bottom) / 2)),
+          Math.abs(((guardar.top + guardar.bottom) / 2) - ((eliminar.top + eliminar.bottom) / 2))
+        ),
+        reporteContraido: document.querySelector("#reporteGlobalWidget").classList.contains("reporte-widget-contraido"),
+        bodyReporteContraido: document.body.classList.contains("reporte-global-contraido")
+      };
+    })()`);
     assert.ok(telefonoCompacto.scrollWidth <= 360, JSON.stringify(telefonoCompacto));
     assert.ok(telefonoCompacto.topbarHeight <= 60, JSON.stringify(telefonoCompacto));
+    assert.ok(telefonoCompacto.eliminarRight <= telefonoCompacto.reporteLeft, JSON.stringify(telefonoCompacto));
     assert.ok(telefonoCompacto.eliminarRight <= telefonoCompacto.contraerReporteLeft, JSON.stringify(telefonoCompacto));
+    assert.equal(telefonoCompacto.reporteContraido, true);
+    assert.equal(telefonoCompacto.bodyReporteContraido, true);
+    assert.ok(telefonoCompacto.accionesPaddingRight >= 51 && telefonoCompacto.accionesPaddingRight <= 53, JSON.stringify(telefonoCompacto));
+    assert.ok(telefonoCompacto.espacioMuertoDerecha >= 51 && telefonoCompacto.espacioMuertoDerecha <= 53, JSON.stringify(telefonoCompacto));
+    assert.ok(telefonoCompacto.diferenciaCentroFila <= 1, `360px / status y acciones deben compartir fila: ${JSON.stringify(telefonoCompacto)}`);
 
     await harness.setViewport(1024, 768, { mobile: true });
     const tableta = await harness.evaluate(`(() => {

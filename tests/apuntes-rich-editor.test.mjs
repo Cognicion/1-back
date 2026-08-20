@@ -25,6 +25,8 @@ const css = leer("../css/apuntes.css");
 const controlador = leer("../js/apuntes.js");
 const sidebarControlador = leer("../js/apuntes-sidebar.js");
 const reportes = leer("../js/reportes.js");
+const encabezadoGlobal = leer("../js/components/globalAppHeader.js");
+const precargaTema = leer("../js/theme-preload.js");
 const textoRico = leer("../js/apuntes-rich-text.js");
 const persistencia = leer("../js/services/apuntesMedicoPersistence.js");
 const flotante = leer("../js/components/misApuntesFlotante.js");
@@ -102,10 +104,18 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /id="colorFondoTexto" type="color"/);
   assert.match(html, /data-global-notifications-link="true"/);
   assert.match(html, /data-accesos-rapidos/);
+  assert.match(html, /class="global-header-branding" data-global-header-branding/);
+  assert.match(html, /data-global-header-title>Mis apuntes</);
+  assert.match(html, /data-global-header-description>Notas personales, recordatorios y pendientes\.<\/span>/);
+  assert.match(html, /<nav class="global-header-actions" aria-label="Navegación de apuntes">/);
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
-  assert.match(html, /reportes\.js\?v=20260820-apuntes-organizacion-v1/);
-  assert.match(html, /apuntes\.css\?v=20260820-apuntes-sidebar-v1/);
-  assert.match(html, /apuntes\.js\?v=20260820-apuntes-sidebar-v1/);
+  assert.match(html, /theme-preload\.js\?v=20260820-apuntes-navbar-v1/);
+  assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
+  assert.match(html, /apuntes\.css\?v=20260820-apuntes-navbar-v1/);
+  assert.match(html, /apuntes\.js\?v=20260820-apuntes-navbar-v1/);
+  assert.match(encabezadoGlobal, /MIGRATED_PAGES = new Set\([^)]*"apuntes"/);
+  assert.match(encabezadoGlobal, /pageId === "apuntes"\) return document\.querySelector\("header\.topbar-apuntes"\)/);
+  assert.match(precargaTema, /globalAppHeader\.js\?v=20260820-apuntes-navbar-v1/);
 });
 
 test("el layout usa el lienzo completo y evita controles flotantes", () => {
@@ -120,10 +130,16 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.doesNotMatch(css, /width:\s*min\(1280px/);
   assert.match(css, /grid-template-columns:\s*clamp\(276px, 23vw, 360px\) minmax\(0, 1fr\)/);
   assert.match(css, /\.acciones-apuntes\s*\{[\s\S]*padding-right:\s*205px/);
+  assert.match(css, /body\.reporte-global-contraido \.apuntes-shell \.acciones-apuntes\s*\{\s*padding-right:\s*52px/);
+  assert.match(css, /@media \(max-width: 640px\)[\s\S]*body\.reporte-global-contraido \.apuntes-shell \.acciones-apuntes\s*\{[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\) minmax\(82px, 90px\) minmax\(82px, 90px\)/);
+  assert.match(css, /\.selector-carpeta select\s*\{[\s\S]*color-scheme:\s*dark/);
+  assert.match(css, /\.selector-carpeta select option,[\s\S]*color:\s*#fff5e6;[\s\S]*background-color:\s*#1f0b11/);
+  assert.match(css, /html:is\(\[data-theme="light"\], \[data-theme\^="light-"\]\) \.selector-carpeta select\s*\{[\s\S]*color-scheme:\s*light/);
   assert.match(css, /@media \(hover: none\)[\s\S]*\.carpeta-acciones\s*\{[\s\S]*opacity:\s*1/);
   assert.match(css, /\.editor-contenido:empty::before/);
   assert.match(reportes, /contraerPorDefectoEnApuntes/);
   assert.match(reportes, /classList\.contains\("pagina-apuntes"\)/);
+  assert.match(reportes, /function sincronizarEstadoReporteContraido\(raiz\)[\s\S]*"reporte-global-contraido"[\s\S]*classList\.contains\("reporte-widget-contraido"\)/);
   assert.match(css, /\.apuntes-shell\.sidebar-retraida\s*\{[\s\S]*grid-template-columns:\s*0 minmax\(0, 1fr\)/);
   assert.match(css, /@media \(hover: none\) and \(min-width: 900px\)[\s\S]*\.boton-alternar-sidebar[\s\S]*width:\s*44px[\s\S]*height:\s*44px/);
   assert.match(controlador, /import \{ inicializarSidebarApuntes \} from "\.\/apuntes-sidebar\.js"/);
@@ -202,5 +218,6 @@ test("vinculación y eliminación administrativa incluyen las carpetas", () => {
 
 test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-20-apuntes-collapsible-sidebar-v1/);
-  assert.match(version, /APP_VERSION = "2\.042"/);
+  assert.match(version, /2026-08-20-apuntes-global-navbar-layout-v1/);
+  assert.match(version, /APP_VERSION = "2\.043"/);
 });

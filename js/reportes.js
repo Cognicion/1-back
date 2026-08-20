@@ -93,7 +93,11 @@ async function obtenerUsuarioActualReporte() {
   return usuarioActual;
 }
 function inicializarReporteGlobal() {
-  if (document.getElementById("reporteGlobalWidget")) return;
+  const existente = document.getElementById("reporteGlobalWidget");
+  if (existente) {
+    sincronizarEstadoReporteContraido(existente);
+    return;
+  }
 
   const raiz = document.createElement("div");
   raiz.id = "reporteGlobalWidget";
@@ -104,6 +108,7 @@ function inicializarReporteGlobal() {
   if (preferenciaContraido === "1" || contraerPorDefectoEnApuntes) {
     raiz.classList.add("reporte-widget-contraido");
   }
+  sincronizarEstadoReporteContraido(raiz);
   raiz.innerHTML = `
     <button class="reporte-float-btn" type="button" aria-label="Reportar problema o sugerencia" aria-haspopup="dialog" aria-controls="reporteGlobalModal">
       <span>Reportar</span>
@@ -286,7 +291,15 @@ function conectarEventosReporte(raiz) {
 function alternarReporteContraido(raiz) {
   const contraido = !raiz.classList.contains("reporte-widget-contraido");
   raiz.classList.toggle("reporte-widget-contraido", contraido);
+  sincronizarEstadoReporteContraido(raiz);
   localStorage.setItem(STORAGE_REPORTE_CONTRAIDO, contraido ? "1" : "0");
+}
+
+function sincronizarEstadoReporteContraido(raiz) {
+  document.body.classList.toggle(
+    "reporte-global-contraido",
+    Boolean(raiz?.classList.contains("reporte-widget-contraido"))
+  );
 }
 
 function abrirModalReporte(overlay, primerCampo) {

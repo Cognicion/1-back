@@ -1,31 +1,36 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="biocelular">
 <head>
-  <script src="js/theme-preload.js"></script>
+  <script src="js/theme-preload.js?v=20260820-apuntes-navbar-v1"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260820-apuntes-sidebar-v1">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260820-apuntes-navbar-v1">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
 
 <body class="bloqueado pagina-apuntes">
   <header class="topbar-apuntes">
-    <div>
-      <h1>Mis apuntes</h1>
-      <p>Apuntes privados del médico, disponibles en todas las notas.</p>
+    <div class="global-header-branding" data-global-header-branding>
+      <a class="topbar-apuntes__logo" href="dashboard.html" aria-label="Ir al inicio de Cognición">
+        <img src="assets/favicon-cognicion.png" alt="Cognición" width="44" height="44">
+      </a>
+      <div class="global-header-identity">
+        <strong data-global-header-title>Mis apuntes</strong>
+        <span data-global-header-description>Notas personales, recordatorios y pendientes.</span>
+      </div>
     </div>
-    <nav aria-label="Navegación de apuntes">
-      <a href="nota.html">Notas</a>
-      <a href="dashboard.html">Inicio</a>
+    <nav class="global-header-actions" aria-label="Navegación de apuntes">
+      <a class="topbar-apuntes__enlace" href="nota.html">Notas</a>
+      <a class="topbar-apuntes__enlace" href="dashboard.html">Inicio</a>
       <a class="topbar-notificaciones" href="dashboard.html#avisosDashboardModulo" data-global-notifications-link="true" aria-label="Abrir notificaciones">
         <span class="icono-lineal" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg>
         </span>
       </a>
-      <div data-accesos-rapidos></div>
+      <div data-accesos-rapidos data-global-header-access></div>
     </nav>
   </header>
 
@@ -142,8 +147,8 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260820-apuntes-sidebar-v1"></script>
+  <script type="module" src="js/apuntes.js?v=20260820-apuntes-navbar-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
-  <script type="module" src="js/reportes.js?v=20260820-apuntes-organizacion-v1"></script>
+  <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>
 </html>
