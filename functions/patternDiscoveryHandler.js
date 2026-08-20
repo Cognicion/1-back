@@ -32,7 +32,7 @@ function mapReadError(error, stage) {
   const codeText = String(originalCode || "").toLowerCase();
   const code = codeText.includes("permission") || originalCode === 7 ? "permission-denied" : codeText.includes("failed-precondition") || originalCode === 9 ? "failed-precondition" : codeText.includes("not-found") || originalCode === 5 ? "not-found" : codeText.includes("unavailable") || originalCode === 14 ? "unavailable" : codeText.includes("deadline") || originalCode === 4 ? "deadline-exceeded" : "internal";
   if (code !== "internal") return new HttpsError(code, error?.message || code, { stage });
-  return new HttpsError("internal", "PATTERN_READ_FAILED", { stage, originalCode, originalMessage: error?.message ?? null });
+  return new HttpsError("internal", "PATTERN_READ_FAILED", { stage, originalCode });
 }
 
 function normalize(text = "") {
@@ -241,7 +241,7 @@ async function discoverTextPatterns({ request, db }) {
     trace("respuesta_enviada");
     return response;
   } catch (error) {
-    console.error("[PATTERNS][FUNCTION] Fallo", { stage: currentStage, error: error?.stack || error });
+    console.error("[PATTERNS][FUNCTION] Fallo", { stage: currentStage, code: error?.code || "unknown", name: error?.name || "Error" });
     throw mapReadError(error, currentStage);
   }
 }
