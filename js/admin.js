@@ -142,6 +142,8 @@ const DOCUMENTOS_LEGACY_PACIENTE = [
 
 const SUBCOLECCIONES_USUARIO_MEDICO = [
   "agenda",
+  "apuntesMedico",
+  "carpetasApuntes",
   "borradoresMedico"
 ];
 

@@ -97,7 +97,11 @@ function inicializarReporteGlobal() {
 
   const raiz = document.createElement("div");
   raiz.id = "reporteGlobalWidget";
-  if (localStorage.getItem(STORAGE_REPORTE_CONTRAIDO) === "1") {
+  const preferenciaContraido = obtenerLocalStorageSeguro(STORAGE_REPORTE_CONTRAIDO);
+  const contraerPorDefectoEnApuntes = preferenciaContraido === null
+    && document.body.classList.contains("pagina-apuntes")
+    && window.matchMedia("(max-width: 720px)").matches;
+  if (preferenciaContraido === "1" || contraerPorDefectoEnApuntes) {
     raiz.classList.add("reporte-widget-contraido");
   }
   raiz.innerHTML = `

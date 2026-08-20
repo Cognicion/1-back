@@ -1,49 +1,135 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="biocelular">
 <head>
-<script src="js/theme-preload.js"></script>
+  <script src="js/theme-preload.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mis apuntes | Cognicion</title>
+  <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260813-apuntes-layout-v4.04">
-<link rel="stylesheet" href="css/theme/cognicion-theme.css">
-<script type="module" src="js/services/themeBootstrap.js"></script>
+  <link rel="stylesheet" href="css/apuntes.css?v=20260820-apuntes-organizacion-v1">
+  <link rel="stylesheet" href="css/theme/cognicion-theme.css">
+  <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
 
-<body class="bloqueado">
+<body class="bloqueado pagina-apuntes">
   <header class="topbar-apuntes">
     <div>
       <h1>Mis apuntes</h1>
-      <p>Apuntes privados del medico, disponibles en todas las notas.</p>
+      <p>Apuntes privados del médico, disponibles en todas las notas.</p>
     </div>
-    <nav>
+    <nav aria-label="Navegación de apuntes">
       <a href="nota.html">Notas</a>
       <a href="dashboard.html">Inicio</a>
+      <a class="topbar-notificaciones" href="dashboard.html#avisosDashboardModulo" data-global-notifications-link="true" aria-label="Abrir notificaciones">
+        <span class="icono-lineal" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg>
+        </span>
+      </a>
+      <div data-accesos-rapidos></div>
     </nav>
   </header>
 
   <main class="apuntes-shell">
-    <aside class="apuntes-sidebar">
-      <input id="buscadorApuntes" placeholder="Buscar por titulo o texto...">
-      <button id="nuevoApunte" type="button">Nuevo apunte</button>
-      <div id="listaApuntes" class="lista-apuntes">Cargando apuntes...</div>
+    <aside class="apuntes-sidebar" aria-label="Organización de apuntes">
+      <label class="campo-busqueda">
+        <span class="sr-only">Buscar apuntes</span>
+        <span class="campo-busqueda__icono" aria-hidden="true"></span>
+        <input id="buscadorApuntes" type="search" autocomplete="off" placeholder="Buscar por título o texto...">
+      </label>
+
+      <div class="acciones-sidebar">
+        <button id="nuevoApunte" type="button" class="boton-principal-apuntes">
+          <span aria-hidden="true">＋</span> Nuevo apunte
+        </button>
+        <button id="nuevaCarpeta" type="button" class="boton-secundario-apuntes" title="Crear carpeta" aria-label="Crear una carpeta">
+          <span aria-hidden="true">＋</span>
+          <span>Carpeta</span>
+        </button>
+      </div>
+
+      <div class="lista-cabecera">
+        <span>Carpetas</span>
+        <span id="contadorApuntes" aria-live="polite"></span>
+      </div>
+      <div id="listaApuntes" class="lista-apuntes" aria-live="polite">Cargando apuntes...</div>
     </aside>
 
-    <section class="apuntes-editor">
+    <section class="apuntes-editor" aria-label="Editor de apuntes">
       <input id="apunteId" type="hidden">
-      <input id="apunteTitulo" placeholder="Titulo del apunte">
-      <textarea id="apunteContenido" placeholder="Escribe tus apuntes, ideas clinicas o borradores..."></textarea>
+
+      <div class="editor-cabecera">
+        <label class="campo-titulo">
+          <span class="sr-only">Título del apunte</span>
+          <input id="apunteTitulo" autocomplete="off" placeholder="Título del apunte">
+        </label>
+        <label class="selector-carpeta">
+          <span>Carpeta</span>
+          <select id="apunteCarpeta" aria-label="Carpeta del apunte">
+            <option value="">Sin carpeta</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="barra-formato" role="toolbar" aria-label="Formato de texto">
+        <button id="formatoNegrita" type="button" class="boton-formato" data-command="bold" aria-label="Negrita" aria-pressed="false" title="Negrita (Ctrl+B)">
+          <strong aria-hidden="true">B</strong>
+        </button>
+        <span class="separador-formato" aria-hidden="true"></span>
+        <label class="control-color" title="Color de texto">
+          <span class="control-color__muestra control-color__muestra--texto" aria-hidden="true">A</span>
+          <span>Texto</span>
+          <input id="colorTexto" type="color" value="#f6e8d5" aria-label="Elegir color de texto">
+        </label>
+        <label class="control-color" title="Color de fondo del texto">
+          <span class="control-color__muestra control-color__muestra--fondo" aria-hidden="true">A</span>
+          <span>Fondo</span>
+          <input id="colorFondoTexto" type="color" value="#7a4d16" aria-label="Elegir color de fondo del texto">
+        </label>
+        <span class="separador-formato" aria-hidden="true"></span>
+        <button id="quitarFormato" type="button" class="boton-formato boton-formato--ancho" aria-label="Quitar formato" title="Quitar formato de la selección">
+          <span aria-hidden="true">Tx</span>
+          <span>Limpiar</span>
+        </button>
+      </div>
+
+      <div
+        id="apunteContenido"
+        class="editor-contenido"
+        contenteditable="true"
+        role="textbox"
+        aria-multiline="true"
+        aria-label="Contenido del apunte"
+        data-placeholder="Escribe tus apuntes, ideas clínicas o borradores..."
+        spellcheck="true"
+      ></div>
+
       <div class="acciones-apuntes">
-        <span id="estadoApuntes">Sin guardar</span>
-        <button id="guardarApunte" type="button">Guardar</button>
+        <span id="estadoApuntes" role="status">Sin guardar</span>
+        <button id="guardarApunte" type="button" class="boton-guardar-apuntes">Guardar</button>
         <button id="eliminarApunte" type="button" class="boton-peligro">Eliminar</button>
       </div>
     </section>
   </main>
 
-  <script type="module" src="js/apuntes.js?v=20260726-apuntes-layout-v1"></script>
+  <dialog id="dialogoCarpeta" class="dialogo-carpeta" aria-labelledby="tituloDialogoCarpeta">
+    <form id="formularioCarpeta" method="dialog">
+      <div class="dialogo-carpeta__icono" aria-hidden="true"></div>
+      <h2 id="tituloDialogoCarpeta">Nueva carpeta</h2>
+      <p>Escribe un nombre breve para organizar tus apuntes.</p>
+      <label>
+        <span>Nombre de la carpeta</span>
+        <input id="nombreCarpeta" maxlength="60" autocomplete="off" required placeholder="Ej. Cardiología">
+      </label>
+      <span id="errorCarpeta" class="error-carpeta" role="alert"></span>
+      <div class="dialogo-carpeta__acciones">
+        <button id="cancelarCarpeta" type="button" class="boton-secundario-apuntes">Cancelar</button>
+        <button id="guardarCarpeta" type="submit">Guardar carpeta</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="js/apuntes.js?v=20260820-apuntes-organizacion-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
-  <script type="module" src="js/reportes.js"></script>
+  <script type="module" src="js/reportes.js?v=20260820-apuntes-organizacion-v1"></script>
 </body>
 </html>

@@ -22,6 +22,7 @@ const SUBCOLECCIONES_USUARIO = [
   "tareasMiSalud",
   "diarioPersonal",
   "apuntesMedico",
+  "carpetasApuntes",
   "borradoresMedico"
 ];
 
