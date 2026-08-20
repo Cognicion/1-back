@@ -995,7 +995,7 @@ html[data-theme="light"] .apuntes-shell .boton-peligro {
 
   .acciones-apuntes {
     grid-template-columns: 1fr 1fr;
-    padding-right: 174px;
+    padding-right: 182px;
   }
 
   .apuntes-shell .acciones-apuntes button {

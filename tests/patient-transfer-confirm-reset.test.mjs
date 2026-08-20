@@ -151,10 +151,13 @@ for (const decision of ["associate_existing", "create_new"]) {
     "setPatientTransferMessage",
     "setPatientTransferVisualStatus",
     "showPatientTransferError",
+    "normalizePatientTransferLaunchContext",
+    "configurePatientTransferView",
     "TRANSFER_STATUS",
     `
       let selectedFiles = ["stale-file"];
       let analyzedGroups = [{ id: "stale-group" }];
+      let launchContext = {};
       ${resetSource}
       return {
         resetAndOpen,
@@ -172,6 +175,8 @@ for (const decision of ["associate_existing", "create_new"]) {
     () => {},
     () => {},
     () => {},
+    (options) => ({ mode: "patient_transfer", options }),
+    () => calls.push("configure"),
     { CREATED: "created" }
   );
 
@@ -182,6 +187,10 @@ for (const decision of ["associate_existing", "create_new"]) {
   assert.ok(
     calls.indexOf("saving:false") < calls.indexOf("open"),
     "el botón se restaura antes de volver a mostrar el modal"
+  );
+  assert.ok(
+    calls.indexOf("configure") < calls.indexOf("open"),
+    "el contexto visual se configura antes de mostrar el modal"
   );
 }
 

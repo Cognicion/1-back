@@ -319,6 +319,22 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
     assert.ok(metricas.selectorCarpetaHeight >= 42, detalleSolapamiento);
     assert.equal(metricas.toolbarOverflowX, "auto");
 
+    await harness.evaluate(`new Promise((resolve) => {
+      document.querySelector("#reporteGlobalWidget")?.classList.remove("reporte-widget-contraido");
+      setTimeout(resolve, 260);
+    })`);
+    const reporteExpandido = await harness.evaluate(`(() => ({
+      eliminarRight: document.querySelector("#eliminarApunte").getBoundingClientRect().right,
+      reporteLeft: document.querySelector(".reporte-float-btn").getBoundingClientRect().left,
+      contraerReporteLeft: document.querySelector(".reporte-contraer-btn").getBoundingClientRect().left
+    }))()`);
+    assert.ok(reporteExpandido.eliminarRight <= reporteExpandido.reporteLeft, JSON.stringify(reporteExpandido));
+    assert.ok(reporteExpandido.eliminarRight <= reporteExpandido.contraerReporteLeft, JSON.stringify(reporteExpandido));
+    await harness.evaluate(`new Promise((resolve) => {
+      document.querySelector("#reporteGlobalWidget")?.classList.add("reporte-widget-contraido");
+      setTimeout(resolve, 260);
+    })`);
+
     await harness.setViewport(360, 800, { mobile: true });
     const telefonoCompacto = await harness.evaluate(`(() => ({
       scrollWidth: document.documentElement.scrollWidth,

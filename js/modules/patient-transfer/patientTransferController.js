@@ -16,9 +16,10 @@ import { preserveManualSubjectiveEdits, updateSubjectiveSegmentValue } from "./s
 import { initializeFileMultipleNotesMode, MULTIPLE_NOTES_MODES, normalizeMultipleNotesMode, updateFileMultipleNotesMode } from "./state/multipleNotesModeState.js";
 import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
 import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter.js";
+import { lockTransferGroupsToTargetPatient, normalizePatientTransferLaunchContext } from "./patientTransferLaunchContext.js?v=20260820-patient-notes-import-v1";
 import { adaptTreatmentPlan } from "../clinical-document-engine/adapters/treatmentPlanAdapter.js?v=20260819-midc-allergy-context-v1";
 import { resolveMedicationCandidatesAgainstCatalog } from "../clinical-document-engine/resolvers/medicationCatalogResolver.js?v=20260819-midc-allergy-context-v1";
-import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260818-admission-date-v1";
+import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260820-patient-notes-import-v1";
 import {
   DUPLICATE_DETECTION_STATUS,
   DUPLICATE_RESOLUTION,
@@ -27,6 +28,7 @@ import {
 } from "./persistence/documentPersistenceEligibility.js";
 import {
   closePatientTransferView,
+  configurePatientTransferView,
   applyAllDetectedDataSelection,
   applyBulkCandidateSelection,
   getPatientTransferRoot,
@@ -47,11 +49,12 @@ import {
   syncBulkSelectionControls,
   syncPatientNameInputs,
   updateMedicationScheduleUnitVisibility
-} from "./ui/patientTransferView.js?v=20260818-clinical-extraction-v1";
+} from "./ui/patientTransferView.js?v=20260820-patient-notes-import-v1";
 
 let initialized = false;
 let selectedFiles = [];
 let analyzedGroups = [];
+let launchContext = normalizePatientTransferLaunchContext();
 
 function vitalSignsPresence(candidates = []) {
   const vitalTypes = new Set(candidates.flatMap((candidate) => Object.keys(candidate?.vitalSigns || {})));
@@ -305,7 +308,10 @@ function moveDocumentToGroup(documentId = "", targetGroupId = "") {
       ? normalizeGroupAfterMove({ ...group, documents: [...group.documents, movingDocument] })
       : group);
   }
-  analyzedGroups = analyzedGroups.map(normalizeGroupAfterMove);
+  analyzedGroups = lockTransferGroupsToTargetPatient(
+    analyzedGroups.map(normalizeGroupAfterMove),
+    launchContext
+  );
   setPatientTransferGroups(analyzedGroups);
   renderDetectedGroups(analyzedGroups);
 }
@@ -575,35 +581,37 @@ async function analyzeSelectedFiles() {
 
   setPatientTransferStatus(TRANSFER_STATUS.ANALYZING);
   let groups = groupDocumentsByPatient(documents);
-  groups = await Promise.all(groups.map(async (group) => {
-    const candidates = await findExistingPatientCandidates(fieldValues(group.fields), user.uid);
-    const strongest = candidates.find((match) => match.showAlert) || candidates[0] || null;
-    return {
-      ...group,
-      candidates,
-      possibleMatches: candidates,
-      highestMatch: strongest,
-      recommendedResolution: strongest?.level === "muy_alta"
-        ? DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING
-        : strongest?.level === "alta" ? "review" : null,
-      selectedResolution: strongest ? DUPLICATE_RESOLUTION.UNRESOLVED : DUPLICATE_RESOLUTION.CREATE_NEW,
-      selectedExistingPatientId: null,
-      duplicateResolution: strongest ? {
-        action: null,
-        matchedPatientId: strongest.patientId || strongest.id || "",
-        score: strongest.score,
-        level: strongest.level,
-        matchedFields: strongest.matchedFields,
-        conflictingFields: strongest.conflictingFields
-      } : null,
-      action: group.action === "omit"
-        ? "omit"
-        : group.documents.some((document) => document.duplicateResolution === DUPLICATE_RESOLUTION.UNRESOLVED)
-          ? "unresolved"
-          : "create",
-      selectedPatientId: ""
-    };
-  }));
+  groups = launchContext.targetPatientLocked
+    ? lockTransferGroupsToTargetPatient(groups, launchContext)
+    : await Promise.all(groups.map(async (group) => {
+      const candidates = await findExistingPatientCandidates(fieldValues(group.fields), user.uid);
+      const strongest = candidates.find((match) => match.showAlert) || candidates[0] || null;
+      return {
+        ...group,
+        candidates,
+        possibleMatches: candidates,
+        highestMatch: strongest,
+        recommendedResolution: strongest?.level === "muy_alta"
+          ? DUPLICATE_RESOLUTION.ASSOCIATE_EXISTING
+          : strongest?.level === "alta" ? "review" : null,
+        selectedResolution: strongest ? DUPLICATE_RESOLUTION.UNRESOLVED : DUPLICATE_RESOLUTION.CREATE_NEW,
+        selectedExistingPatientId: null,
+        duplicateResolution: strongest ? {
+          action: null,
+          matchedPatientId: strongest.patientId || strongest.id || "",
+          score: strongest.score,
+          level: strongest.level,
+          matchedFields: strongest.matchedFields,
+          conflictingFields: strongest.conflictingFields
+        } : null,
+        action: group.action === "omit"
+          ? "omit"
+          : group.documents.some((document) => document.duplicateResolution === DUPLICATE_RESOLUTION.UNRESOLVED)
+            ? "unresolved"
+            : "create",
+        selectedPatientId: ""
+      };
+    }));
   analyzedGroups = setPatientTransferGroups(groups);
   console.info("[docx-import] patient-fields:state-updated", {
     groupCount: groups.length,
@@ -824,7 +832,10 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
     pendingFields: reviewedGroups.reduce((total, group) => total + Object.values(group.confirmedFields || {}).filter((value) => !value).length, 0)
   };
   console.info("patient-transfer:confirmation-request", { confirmation: 2 });
-  const confirmed = window.confirm(`Resumen del traspaso\n\nPacientes nuevos: ${summary.newPatients}\nPacientes existentes: ${summary.existingPatients}\nNotas que se crearan: ${summary.notes}\nArchivos omitidos: ${summary.omittedFiles}\nPosibles duplicados: ${summary.possibleDuplicates}\nCampos pendientes: ${summary.pendingFields}\n\n¿Confirmar traspaso?`);
+  const confirmationMessage = launchContext.targetPatientLocked
+    ? `Resumen de la importación\n\nDestino: expediente abierto\nNotas que se crearán: ${summary.notes}\nArchivos omitidos: ${summary.omittedFiles}\nPosibles duplicados: ${summary.possibleDuplicates}\n\n¿Confirmar importación?`
+    : `Resumen del traspaso\n\nPacientes nuevos: ${summary.newPatients}\nPacientes existentes: ${summary.existingPatients}\nNotas que se crearan: ${summary.notes}\nArchivos omitidos: ${summary.omittedFiles}\nPosibles duplicados: ${summary.possibleDuplicates}\nCampos pendientes: ${summary.pendingFields}\n\n¿Confirmar traspaso?`;
+  const confirmed = window.confirm(confirmationMessage);
   console.info("patient-transfer:confirmation-result", { confirmation: 2, accepted: confirmed });
   if (!confirmed) {
     console.info("patient-transfer:save-reviewed-return", { reason: "confirmation-cancelled" });
@@ -922,7 +933,15 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
       studies: results.reduce((count, result) => count + Number(result.studiesCreated || 0), 0),
       treatments: results.reduce((count, result) => count + Number(result.treatmentsCreated || 0), 0)
     });
-    window.dispatchEvent(new CustomEvent("cognicion:patient-transfer-completed", { detail: { results } }));
+    window.dispatchEvent(new CustomEvent("cognicion:patient-transfer-completed", {
+      detail: {
+        results,
+        context: {
+          mode: launchContext.mode,
+          targetPatientId: launchContext.targetPatient?.id || ""
+        }
+      }
+    }));
   } catch (error) {
     console.error("[patient-transfer] save:failed", {
       stage: error?.stage || "save",
@@ -989,11 +1008,13 @@ async function handleConfirmTransferClick(event) {
   }
 }
 
-function resetAndOpen() {
+function resetAndOpen(options = {}) {
+  launchContext = normalizePatientTransferLaunchContext(options);
   resetPatientTransferState();
   setTransferSavingState(false);
   selectedFiles = [];
   analyzedGroups = [];
+  configurePatientTransferView(launchContext);
   openPatientTransferView();
   renderTransferFiles(selectedFiles);
   renderDetectedGroups([]);
@@ -1004,7 +1025,10 @@ function resetAndOpen() {
 
 function syncReviewedGroupsFromView() {
   if (!analyzedGroups.length) return;
-  analyzedGroups = resolveReviewedMedicationCandidates(readTransferReview(analyzedGroups));
+  analyzedGroups = lockTransferGroupsToTargetPatient(
+    resolveReviewedMedicationCandidates(readTransferReview(analyzedGroups)),
+    launchContext
+  );
   setPatientTransferGroups(analyzedGroups);
   syncBulkSelectionControls(analyzedGroups);
 
@@ -1210,7 +1234,7 @@ export function initializePatientTransfer() {
       return;
     }
     if (event.target.closest("[data-transfer-import-another]")) {
-      resetAndOpen();
+      resetAndOpen(launchContext);
       return;
     }
     const addAdministration = event.target.closest("[data-transfer-tx-schedule-add]");

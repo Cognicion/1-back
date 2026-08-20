@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="css/nota.css?v=20260813-hugo-receta-emblem-v1">
 <link rel="stylesheet" href="css/components/mis-apuntes-flotante.css">
 <link rel="stylesheet" href="css/components/diagnostico-manual-modal.css">
+<link rel="stylesheet" href="css/modules/patient-transfer.css?v=20260811-medication-presentation-concentration-ui-v1">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -182,6 +183,10 @@
 </div>
 
 <div class="acciones-escalas-nota">
+    <button id="btnImportarNotasExternas" type="button" class="boton-secundario" disabled>
+        Importar notas externas
+    </button>
+
     <button id="btnAbrirNotaPorVoz" type="button" class="boton-secundario" onclick="abrirModuloNotaPorVoz()">
         Generar desde dictado
     </button>
@@ -558,7 +563,7 @@ Cancelar edicion
     </article>
 </div>
 
-<script type="module" src="js/nota.js?v=20260820-apuntes-rich-folders-v1"></script>
+<script type="module" src="js/nota.js?v=20260820-patient-notes-import-v1"></script>
 <script type="module" src="js/components/misApuntesFlotante.js?v=20260820-apuntes-rich-v1"></script>
 <script type="module">import("./js/calculators/calculatorDialog.js");</script>
 

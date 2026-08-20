@@ -59,6 +59,7 @@
 // deployment marker: 2026-08-19-midc-allergy-context-v1
 // deployment marker: 2026-08-19-sofia-semantic-embeddings-v1 (+0.010)
 // deployment marker: 2026-08-20-apuntes-rich-folders-v1
+// deployment marker: 2026-08-20-patient-notes-import-v1
 // deployment marker: 2026-08-20-apuntes-edge-to-edge-v1
 export const APP_VERSION = "2.041";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;
