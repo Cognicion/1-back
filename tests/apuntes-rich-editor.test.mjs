@@ -18,11 +18,18 @@ import {
   esErrorConexionApunte,
   validarRevisionApunte
 } from "../js/apuntes-revision.js";
+import {
+  MAX_COLORES_RECIENTES,
+  normalizarColorHex,
+  normalizarColoresRecientes,
+  registrarColorReciente
+} from "../js/apuntes-color-history.js";
 
 const leer = (ruta) => readFileSync(new URL(ruta, import.meta.url), "utf8");
 const html = leer("../apuntes.html");
 const css = leer("../css/apuntes.css");
 const controlador = leer("../js/apuntes.js");
+const historialColores = leer("../js/apuntes-color-history.js");
 const sidebarControlador = leer("../js/apuntes-sidebar.js");
 const reportes = leer("../js/reportes.js");
 const encabezadoGlobal = leer("../js/components/globalAppHeader.js");
@@ -92,6 +99,22 @@ test("la revisión optimista impide guardar o eliminar una versión obsoleta", (
   assert.equal(esErrorConexionApunte({ code: "permission-denied" }, true), false);
 });
 
+test("los últimos colores usados se normalizan, no se duplican y conservan solo cinco", () => {
+  assert.equal(MAX_COLORES_RECIENTES, 5);
+  assert.equal(normalizarColorHex("#AbC"), "#aabbcc");
+  assert.equal(normalizarColorHex("#A1B2C3"), "#a1b2c3");
+  assert.equal(normalizarColorHex("rgb(1, 2, 3)"), "");
+
+  const recientes = normalizarColoresRecientes([
+    "#ABC", "#aabbcc", "#112233", "invalido", "#445566", "#778899", "#aabbcc", "#ccddee"
+  ]);
+  assert.deepEqual(recientes, ["#aabbcc", "#112233", "#445566", "#778899", "#ccddee"]);
+  assert.deepEqual(
+    registrarColorReciente(recientes, "#445566"),
+    ["#445566", "#aabbcc", "#112233", "#778899", "#ccddee"]
+  );
+});
+
 test("el HTML ofrece carpetas, formato accesible y accesos globales integrados", () => {
   assert.match(html, /id="nuevaCarpeta"/);
   assert.match(html, /id="sidebarApuntes"/);
@@ -103,6 +126,12 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /id="formatoNegrita"[\s\S]*aria-pressed="false"/);
   assert.match(html, /id="colorTexto" type="color"/);
   assert.match(html, /id="colorFondoTexto" type="color"/);
+  assert.match(html, /id="abrirColorTexto"[^>]*aria-controls="paletaColorTexto"/);
+  assert.match(html, /id="abrirColorFondoTexto"[^>]*aria-controls="paletaColorFondoTexto"/);
+  assert.match(html, /id="paletaColorTexto"[^>]*aria-label="Colores para el texto"/);
+  assert.match(html, /id="paletaColorFondoTexto"[^>]*aria-label="Colores para resaltar"/);
+  assert.match(html, /id="coloresRecientesTexto"/);
+  assert.match(html, /id="coloresRecientesFondoTexto"/);
   assert.match(html, /data-global-notifications-link="true"/);
   assert.match(html, /data-accesos-rapidos/);
   assert.match(html, /class="global-header-branding" data-global-header-branding/);
@@ -112,8 +141,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=20260820-apuntes-minimal-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260820-apuntes-minimal-v2/);
-  assert.match(html, /apuntes\.js\?v=20260820-apuntes-navbar-v1/);
+  assert.match(html, /apuntes\.css\?v=20260820-apuntes-colores-v1/);
+  assert.match(html, /apuntes\.js\?v=20260820-apuntes-colores-v1/);
   assert.match(encabezadoGlobal, /MIGRATED_PAGES = new Set\([^)]*"apuntes"/);
   assert.match(encabezadoGlobal, /pageId === "apuntes"\) return document\.querySelector\("header\.topbar-apuntes"\)/);
   assert.match(precargaTema, /globalAppHeader\.js\?v=20260820-apuntes-navbar-v1/);
@@ -121,6 +150,11 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(controladorTemaBiocelular, /document\.querySelector\("#login, \.login-container, #loginForm, \.login-form"\)/);
   assert.doesNotMatch(controladorTemaBiocelular, /\.login-form,\s*form|querySelector\(["'`]form["'`]\)/);
   assert.match(controladorTemaBiocelular, /classList\.toggle\("biocellular-login-page", Boolean\(login\)\)/);
+  assert.match(controlador, /import \{[\s\S]*registrarColorReciente[\s\S]*\} from "\.\/apuntes-color-history\.js"/);
+  assert.match(controlador, /const COLORES_PREDEFINIDOS/);
+  assert.match(controlador, /function aplicarColor\(tipo, color\)/);
+  assert.match(controlador, /cognicion:apuntes:colores-recientes:\$\{uidMedico\}/);
+  assert.match(historialColores, /MAX_COLORES_RECIENTES = 5/);
 });
 
 test("el layout usa el lienzo completo y evita controles flotantes", () => {
@@ -150,6 +184,9 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(css, /html:is\(\[data-theme="light"\], \[data-theme\^="light-"\]\) \.selector-carpeta select\s*\{[\s\S]*color-scheme:\s*light/);
   assert.match(css, /@media \(hover: none\)[\s\S]*\.carpeta-acciones\s*\{[\s\S]*opacity:\s*1/);
   assert.match(css, /\.editor-contenido:empty::before/);
+  assert.match(css, /\.paleta-color\s*\{[\s\S]*position:\s*absolute/);
+  assert.match(css, /\.paleta-color__cuadricula\s*\{[\s\S]*repeat\(5, minmax\(0, 1fr\)\)/);
+  assert.match(css, /\.apuntes-shell \.opcion-color\s*\{[\s\S]*background:\s*var\(--color-muestra\)/);
   assert.match(reportes, /contraerPorDefectoEnApuntes/);
   assert.match(reportes, /classList\.contains\("pagina-apuntes"\)/);
   assert.match(reportes, /function sincronizarEstadoReporteContraido\(raiz\)[\s\S]*"reporte-global-contraido"[\s\S]*classList\.contains\("reporte-widget-contraido"\)/);
@@ -233,5 +270,6 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-20-apuntes-collapsible-sidebar-v1/);
   assert.match(version, /2026-08-20-apuntes-global-navbar-layout-v1/);
   assert.match(version, /2026-08-20-apuntes-minimal-layout-v2/);
-  assert.match(version, /APP_VERSION = "2\.044"/);
+  assert.match(version, /2026-08-20-apuntes-colores-recientes-v1/);
+  assert.match(version, /APP_VERSION = "2\.045"/);
 });

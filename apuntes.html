@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260820-apuntes-minimal-v2">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260820-apuntes-colores-v1">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -94,22 +94,60 @@
           <strong aria-hidden="true">B</strong>
         </button>
         <span class="separador-formato" aria-hidden="true"></span>
-        <label class="control-color" title="Color de texto">
-          <span class="control-color__muestra control-color__muestra--texto" aria-hidden="true">A</span>
-          <span>Texto</span>
-          <input id="colorTexto" type="color" value="#f6e8d5" aria-label="Elegir color de texto">
-        </label>
-        <label class="control-color" title="Color de fondo del texto">
-          <span class="control-color__muestra control-color__muestra--fondo" aria-hidden="true">A</span>
-          <span>Fondo</span>
-          <input id="colorFondoTexto" type="color" value="#7a4d16" aria-label="Elegir color de fondo del texto">
-        </label>
+        <div class="selector-color">
+          <button id="abrirColorTexto" type="button" class="control-color" aria-haspopup="dialog" aria-expanded="false" aria-controls="paletaColorTexto" title="Color de texto">
+            <span class="control-color__muestra control-color__muestra--texto" aria-hidden="true">A</span>
+            <span>Texto</span>
+          </button>
+        </div>
+        <div class="selector-color">
+          <button id="abrirColorFondoTexto" type="button" class="control-color" aria-haspopup="dialog" aria-expanded="false" aria-controls="paletaColorFondoTexto" title="Resaltar texto">
+            <span class="control-color__muestra control-color__muestra--fondo" aria-hidden="true">A</span>
+            <span>Resaltar</span>
+          </button>
+        </div>
         <span class="separador-formato" aria-hidden="true"></span>
         <button id="quitarFormato" type="button" class="boton-formato boton-formato--ancho" aria-label="Quitar formato" title="Quitar formato de la selección">
           <span aria-hidden="true">Tx</span>
           <span>Limpiar</span>
         </button>
       </div>
+
+      <section id="paletaColorTexto" class="paleta-color" role="dialog" aria-label="Colores para el texto" hidden>
+        <div class="paleta-color__encabezado">
+          <strong>Color de texto</strong>
+          <label class="paleta-color__personalizado">
+            <span>Personalizado</span>
+            <input id="colorTexto" type="color" value="#f6e8d5" aria-label="Elegir color personalizado de texto">
+          </label>
+        </div>
+        <div class="paleta-color__seccion">
+          <span>Colores</span>
+          <div class="paleta-color__cuadricula" data-colores-predefinidos="texto" aria-label="Colores de texto sugeridos"></div>
+        </div>
+        <div class="paleta-color__seccion">
+          <span>Últimos usados</span>
+          <div id="coloresRecientesTexto" class="paleta-color__cuadricula paleta-color__cuadricula--recientes" aria-live="polite" aria-label="Últimos colores utilizados"></div>
+        </div>
+      </section>
+
+      <section id="paletaColorFondoTexto" class="paleta-color" role="dialog" aria-label="Colores para resaltar" hidden>
+        <div class="paleta-color__encabezado">
+          <strong>Resaltar texto</strong>
+          <label class="paleta-color__personalizado">
+            <span>Personalizado</span>
+            <input id="colorFondoTexto" type="color" value="#7a4d16" aria-label="Elegir color personalizado para resaltar">
+          </label>
+        </div>
+        <div class="paleta-color__seccion">
+          <span>Colores</span>
+          <div class="paleta-color__cuadricula" data-colores-predefinidos="fondo" aria-label="Colores de resaltado sugeridos"></div>
+        </div>
+        <div class="paleta-color__seccion">
+          <span>Últimos usados</span>
+          <div id="coloresRecientesFondoTexto" class="paleta-color__cuadricula paleta-color__cuadricula--recientes" aria-live="polite" aria-label="Últimos colores utilizados"></div>
+        </div>
+      </section>
 
       <div
         id="apunteContenido"
@@ -147,7 +185,7 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260820-apuntes-navbar-v1"></script>
+  <script type="module" src="js/apuntes.js?v=20260820-apuntes-colores-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>

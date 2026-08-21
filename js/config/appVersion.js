@@ -64,5 +64,6 @@
 // deployment marker: 2026-08-20-apuntes-collapsible-sidebar-v1
 // deployment marker: 2026-08-20-apuntes-global-navbar-layout-v1
 // deployment marker: 2026-08-20-apuntes-minimal-layout-v2
-export const APP_VERSION = "2.044";
+// deployment marker: 2026-08-20-apuntes-colores-recientes-v1
+export const APP_VERSION = "2.045";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

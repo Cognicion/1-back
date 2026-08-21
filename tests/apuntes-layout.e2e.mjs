@@ -698,7 +698,7 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
       const acciones = document.querySelector(".acciones-apuntes");
       const accionesRect = acciones.getBoundingClientRect();
       const estiloAcciones = getComputedStyle(acciones);
-      const colorTexto = document.querySelector("#colorTexto").closest(".control-color");
+      const colorTexto = document.querySelector("#abrirColorTexto");
       const etiquetaColor = colorTexto.querySelector("span:nth-child(2)");
       const etiquetaLimpiar = document.querySelector("#quitarFormato span:last-child");
       return {

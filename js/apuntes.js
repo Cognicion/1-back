@@ -3,6 +3,11 @@ import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { sanitizarHTMLRico } from "./apuntes-rich-text.js";
 import { inicializarSidebarApuntes } from "./apuntes-sidebar.js";
 import {
+  normalizarColorHex,
+  normalizarColoresRecientes,
+  registrarColorReciente
+} from "./apuntes-color-history.js";
+import {
   actualizarApunteConRevision,
   eliminarApunteConRevision,
   esConflictoApunte,
@@ -41,6 +46,32 @@ const ETIQUETAS_DESCARTAR = "Tienes cambios sin guardar. ¿Quieres descartarlos?
 const ETIQUETA_ERROR = "No se pudo completar la acción. Inténtalo de nuevo.";
 const ETIQUETA_CARPETA_SIN_ASIGNAR = "";
 const TAMANO_LOTE = 450;
+const COLORES_PREDEFINIDOS = Object.freeze({
+  texto: ["#f8fafc", "#fecaca", "#fdba74", "#fde68a", "#bef264", "#5eead4", "#7dd3fc", "#a5b4fc", "#d8b4fe", "#f9a8d4"],
+  fondo: ["#fef08a", "#fde68a", "#fdba74", "#fca5a5", "#f9a8d4", "#d8b4fe", "#a5b4fc", "#7dd3fc", "#99f6e4", "#bef264"]
+});
+const CONFIGURACION_COLORES = Object.freeze({
+  texto: Object.freeze({
+    botonId: "abrirColorTexto",
+    panelId: "paletaColorTexto",
+    controlId: "colorTexto",
+    recientesId: "coloresRecientesTexto",
+    muestraSelector: ".control-color__muestra--texto",
+    comando: "foreColor",
+    propiedadMuestra: "color",
+    etiqueta: "Color de texto"
+  }),
+  fondo: Object.freeze({
+    botonId: "abrirColorFondoTexto",
+    panelId: "paletaColorFondoTexto",
+    controlId: "colorFondoTexto",
+    recientesId: "coloresRecientesFondoTexto",
+    muestraSelector: ".control-color__muestra--fondo",
+    comando: "hiliteColor",
+    propiedadMuestra: "backgroundColor",
+    etiqueta: "Color para resaltar"
+  })
+});
 
 let uidMedico = "";
 let apuntes = [];
@@ -54,6 +85,7 @@ let guardandoApunte = false;
 let eliminandoApunte = false;
 let eliminandoCarpeta = false;
 let carpetasDisponibles = true;
+let coloresRecientes = [];
 
 iniciarMonitoreoSesion("Mis apuntes");
 
@@ -65,6 +97,7 @@ onAuthStateChanged(auth, async (user) => {
 
   uidMedico = user.uid;
   recuperarEstadoCarpetas();
+  recuperarColoresRecientes();
   inicializarInterfaz();
   document.body.classList.remove("bloqueado");
   ponerEdicionOcupada(true);
@@ -96,7 +129,7 @@ function inicializarInterfaz() {
     boton: document.getElementById("alternarSidebarApuntes")
   });
 
-  sincronizarColoresIniciales();
+  inicializarSelectorColores();
 
   buscador?.addEventListener("input", renderizarLista);
   document.getElementById("nuevoApunte")?.addEventListener("click", () => {
@@ -119,8 +152,6 @@ function inicializarInterfaz() {
   document.getElementById("formatoNegrita")?.addEventListener("click", () => ejecutarFormato("bold"));
   document.getElementById("quitarFormato")?.addEventListener("pointerdown", conservarFocoEditor);
   document.getElementById("quitarFormato")?.addEventListener("click", () => ejecutarFormato("removeFormat"));
-  configurarSelectorColor("colorTexto", "foreColor", ".control-color__muestra--texto", "color");
-  configurarSelectorColor("colorFondoTexto", "hiliteColor", ".control-color__muestra--fondo", "backgroundColor");
   document.addEventListener("selectionchange", guardarSeleccionEditor);
 
   document.getElementById("formularioCarpeta")?.addEventListener("submit", guardarCarpeta);
@@ -693,6 +724,7 @@ function ponerEdicionOcupada(ocupada) {
   ].filter(Boolean);
 
   controles.forEach((control) => { control.disabled = ocupada; });
+  if (ocupada) cerrarPaletasColor();
   actualizarDisponibilidadCarpetas(ocupada);
   if (editor) editor.contentEditable = String(!ocupada);
   if (lista) lista.inert = ocupada;
@@ -756,9 +788,10 @@ function conservarFocoEditor(evento) {
 }
 
 function ejecutarFormato(comando, valor = null) {
-  if (!restaurarSeleccionEditor()) return;
+  if (!restaurarSeleccionEditor()) return false;
+  let aplicado = false;
   try {
-    let aplicado = document.execCommand(comando, false, valor);
+    aplicado = document.execCommand(comando, false, valor);
     if (!aplicado && comando === "hiliteColor") {
       aplicado = document.execCommand("backColor", false, valor);
     }
@@ -768,28 +801,207 @@ function ejecutarFormato(comando, valor = null) {
   }
   guardarSeleccionEditor();
   actualizarEstadoFormato();
+  return aplicado;
 }
 
-function configurarSelectorColor(id, comando, selectorMuestra, propiedad) {
-  const control = document.getElementById(id);
-  const muestra = document.querySelector(selectorMuestra);
-  control?.addEventListener("input", () => {
-    if (muestra) muestra.style[propiedad] = control.value;
-  });
-  control?.addEventListener("change", () => ejecutarFormato(comando, control.value));
-}
-
-function sincronizarColoresIniciales() {
+function inicializarSelectorColores() {
   const temaClaro = document.documentElement.dataset.theme === "light";
   const colorTexto = document.getElementById("colorTexto");
   const colorFondo = document.getElementById("colorFondoTexto");
   if (colorTexto) colorTexto.value = temaClaro ? "#17211b" : "#f6e8d5";
   if (colorFondo) colorFondo.value = temaClaro ? "#fff0a6" : "#7a4d16";
 
-  const muestraTexto = document.querySelector(".control-color__muestra--texto");
-  const muestraFondo = document.querySelector(".control-color__muestra--fondo");
-  if (muestraTexto) muestraTexto.style.color = colorTexto?.value || "";
-  if (muestraFondo) muestraFondo.style.backgroundColor = colorFondo?.value || "";
+  Object.entries(CONFIGURACION_COLORES).forEach(([tipo, configuracion]) => {
+    const boton = document.getElementById(configuracion.botonId);
+    const panel = document.getElementById(configuracion.panelId);
+    const control = document.getElementById(configuracion.controlId);
+
+    actualizarMuestraColor(tipo, control?.value || "");
+    renderizarCuadriculaColores(
+      panel?.querySelector(`[data-colores-predefinidos="${tipo}"]`),
+      COLORES_PREDEFINIDOS[tipo],
+      tipo,
+      "sugerido"
+    );
+
+    boton?.addEventListener("pointerdown", conservarFocoEditor);
+    boton?.addEventListener("click", (evento) => {
+      evento.stopPropagation();
+      alternarPaletaColor(tipo);
+    });
+
+    panel?.addEventListener("pointerdown", (evento) => {
+      if (evento.target instanceof Element && evento.target.closest("button[data-color]")) {
+        evento.preventDefault();
+      }
+    });
+    panel?.addEventListener("click", (evento) => {
+      const botonColor = evento.target instanceof Element ? evento.target.closest("button[data-color]") : null;
+      if (!botonColor) return;
+      evento.preventDefault();
+      evento.stopPropagation();
+      aplicarColor(tipo, botonColor.dataset.color || "");
+    });
+
+    control?.addEventListener("input", () => actualizarMuestraColor(tipo, control.value));
+    control?.addEventListener("change", () => aplicarColor(tipo, control.value));
+  });
+
+  renderizarColoresRecientes();
+  document.addEventListener("click", cerrarPaletasAlHacerClickFuera);
+  document.addEventListener("keydown", cerrarPaletasConEscape);
+}
+
+function alternarPaletaColor(tipo) {
+  const configuracion = CONFIGURACION_COLORES[tipo];
+  const boton = document.getElementById(configuracion?.botonId);
+  const panel = document.getElementById(configuracion?.panelId);
+  if (!configuracion || !boton || !panel || boton.disabled) return;
+
+  const estabaAbierta = !panel.hidden;
+  cerrarPaletasColor();
+  if (estabaAbierta) return;
+
+  panel.hidden = false;
+  boton.setAttribute("aria-expanded", "true");
+  posicionarPaletaColor(panel, boton);
+}
+
+function posicionarPaletaColor(panel, boton) {
+  const editor = document.querySelector(".apuntes-editor");
+  if (!editor) return;
+
+  const rectEditor = editor.getBoundingClientRect();
+  const rectBoton = boton.getBoundingClientRect();
+  const anchoPanel = panel.getBoundingClientRect().width;
+  const margen = 10;
+  const izquierdaIdeal = rectBoton.left - rectEditor.left;
+  const izquierdaMaxima = Math.max(margen, rectEditor.width - anchoPanel - margen);
+  const izquierda = Math.min(Math.max(izquierdaIdeal, margen), izquierdaMaxima);
+
+  panel.style.left = `${Math.round(izquierda)}px`;
+  panel.style.top = `${Math.round(rectBoton.bottom - rectEditor.top + 8)}px`;
+}
+
+function cerrarPaletasColor({ devolverFoco = false } = {}) {
+  Object.values(CONFIGURACION_COLORES).forEach((configuracion) => {
+    const boton = document.getElementById(configuracion.botonId);
+    const panel = document.getElementById(configuracion.panelId);
+    if (!panel || panel.hidden) return;
+    panel.hidden = true;
+    boton?.setAttribute("aria-expanded", "false");
+    if (devolverFoco) boton?.focus();
+  });
+}
+
+function cerrarPaletasAlHacerClickFuera(evento) {
+  const destino = evento.target;
+  if (destino instanceof Element && destino.closest(".selector-color, .paleta-color")) return;
+  cerrarPaletasColor();
+}
+
+function cerrarPaletasConEscape(evento) {
+  if (evento.key !== "Escape" || !Object.values(CONFIGURACION_COLORES).some((configuracion) => !document.getElementById(configuracion.panelId)?.hidden)) return;
+  evento.preventDefault();
+  cerrarPaletasColor({ devolverFoco: true });
+}
+
+function aplicarColor(tipo, color) {
+  const configuracion = CONFIGURACION_COLORES[tipo];
+  const colorSeguro = normalizarColorHex(color);
+  if (!configuracion || !colorSeguro) return false;
+
+  const control = document.getElementById(configuracion.controlId);
+  if (control) control.value = colorSeguro;
+  actualizarMuestraColor(tipo, colorSeguro);
+  const aplicado = ejecutarFormato(configuracion.comando, colorSeguro);
+
+  coloresRecientes = registrarColorReciente(coloresRecientes, colorSeguro);
+  guardarColoresRecientes();
+  renderizarCuadriculaColores(
+    document.getElementById(configuracion.panelId)?.querySelector(`[data-colores-predefinidos="${tipo}"]`),
+    COLORES_PREDEFINIDOS[tipo],
+    tipo,
+    "sugerido"
+  );
+  renderizarColoresRecientes();
+  cerrarPaletasColor();
+  return aplicado;
+}
+
+function actualizarMuestraColor(tipo, color) {
+  const configuracion = CONFIGURACION_COLORES[tipo];
+  const colorSeguro = normalizarColorHex(color);
+  if (!configuracion || !colorSeguro) return;
+
+  const muestra = document.querySelector(configuracion.muestraSelector);
+  const boton = document.getElementById(configuracion.botonId);
+  if (muestra) muestra.style[configuracion.propiedadMuestra] = colorSeguro;
+  if (boton) {
+    boton.style.setProperty("--color-activo", colorSeguro);
+    boton.setAttribute("aria-label", `${configuracion.etiqueta}: ${colorSeguro}. Abrir paleta de colores`);
+  }
+}
+
+function renderizarColoresRecientes() {
+  Object.entries(CONFIGURACION_COLORES).forEach(([tipo, configuracion]) => {
+    renderizarCuadriculaColores(
+      document.getElementById(configuracion.recientesId),
+      coloresRecientes,
+      tipo,
+      "reciente"
+    );
+  });
+}
+
+function renderizarCuadriculaColores(destino, colores, tipo, origen) {
+  if (!destino) return;
+  destino.replaceChildren();
+
+  const lista = origen === "reciente"
+    ? normalizarColoresRecientes(colores)
+    : [...new Set((Array.isArray(colores) ? colores : []).map(normalizarColorHex).filter(Boolean))];
+  if (!lista.length) {
+    const vacio = document.createElement("span");
+    vacio.className = "paleta-color__sin-recientes";
+    vacio.textContent = origen === "reciente" ? "Aún no has usado colores." : "Sin colores disponibles.";
+    destino.append(vacio);
+    return;
+  }
+
+  const colorActual = normalizarColorHex(document.getElementById(CONFIGURACION_COLORES[tipo].controlId)?.value || "");
+  lista.forEach((color) => {
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.className = "opcion-color";
+    boton.dataset.color = color;
+    boton.dataset.tipoColor = tipo;
+    boton.style.setProperty("--color-muestra", color);
+    boton.setAttribute("aria-label", `Aplicar ${color} como ${CONFIGURACION_COLORES[tipo].etiqueta.toLowerCase()}`);
+    boton.setAttribute("aria-pressed", String(color === colorActual));
+    boton.title = color;
+    destino.append(boton);
+  });
+}
+
+function claveColoresRecientes() {
+  return `cognicion:apuntes:colores-recientes:${uidMedico}`;
+}
+
+function recuperarColoresRecientes() {
+  try {
+    coloresRecientes = normalizarColoresRecientes(JSON.parse(localStorage.getItem(claveColoresRecientes()) || "[]"));
+  } catch (_) {
+    coloresRecientes = [];
+  }
+}
+
+function guardarColoresRecientes() {
+  try {
+    localStorage.setItem(claveColoresRecientes(), JSON.stringify(coloresRecientes));
+  } catch (_) {
+    // La paleta sigue funcionando aunque el navegador no permita almacenamiento local.
+  }
 }
 
 function actualizarEstadoFormato() {

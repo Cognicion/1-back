@@ -267,6 +267,7 @@ body.pagina-apuntes > main.apuntes-shell {
 }
 
 .apuntes-editor {
+  position: relative;
   min-height: 0;
   min-width: 0;
   display: grid;
@@ -732,9 +733,12 @@ body.pagina-apuntes > main.apuntes-shell {
   background: var(--apuntes-borde);
 }
 
-.control-color {
-  position: relative;
+.selector-color {
   flex: 0 0 auto;
+}
+
+.apuntes-shell .control-color {
+  min-width: 0;
   min-height: 28px;
   display: inline-flex;
   align-items: center;
@@ -746,13 +750,29 @@ body.pagina-apuntes > main.apuntes-shell {
   cursor: pointer;
   font-size: 11px;
   font-weight: 700;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
 }
 
-.control-color:hover,
-.control-color:focus-within {
+.apuntes-shell .control-color::after {
+  content: "";
+  width: 5px;
+  height: 5px;
+  margin-left: 1px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: translateY(-1px) rotate(45deg);
+}
+
+.apuntes-shell .control-color:hover,
+.apuntes-shell .control-color:focus-visible,
+.apuntes-shell .control-color[aria-expanded="true"] {
   border-color: var(--apuntes-borde);
   color: var(--apuntes-texto);
   background: rgba(255, 255, 255, 0.045);
+  box-shadow: none;
+  transform: none;
 }
 
 .control-color__muestra {
@@ -785,14 +805,115 @@ body.pagina-apuntes > main.apuntes-shell {
   display: none;
 }
 
-.control-color input[type="color"] {
+.paleta-color {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  opacity: 0;
+  z-index: 8;
+  width: min(286px, calc(100% - 20px));
+  display: grid;
+  gap: 10px;
+  padding: 11px;
+  border: 1px solid var(--apuntes-borde-fuerte);
+  border-radius: 11px;
+  color: var(--apuntes-texto);
+  background: var(--control-bg, #151918);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28);
+}
+
+.paleta-color[hidden] {
+  display: none;
+}
+
+.paleta-color__encabezado,
+.paleta-color__personalizado,
+.paleta-color__seccion {
+  display: flex;
+  align-items: center;
+}
+
+.paleta-color__encabezado {
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.paleta-color__encabezado strong {
+  font-size: 12px;
+}
+
+.paleta-color__personalizado {
+  gap: 6px;
+  color: var(--apuntes-texto-suave);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.paleta-color__personalizado input[type="color"] {
+  width: 30px;
+  height: 30px;
+  padding: 2px;
+  border: 1px solid var(--apuntes-borde);
+  border-radius: 7px;
   cursor: pointer;
+  background: transparent;
+}
+
+.paleta-color__personalizado input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.paleta-color__personalizado input[type="color"]::-webkit-color-swatch {
+  border: 0;
+  border-radius: 4px;
+}
+
+.paleta-color__seccion {
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.paleta-color__seccion > span {
+  flex: 0 0 78px;
+  padding-top: 6px;
+  color: var(--apuntes-texto-suave);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.paleta-color__cuadricula {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.apuntes-shell .opcion-color {
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  min-height: 24px;
+  justify-self: center;
+  padding: 0;
+  border: 2px solid rgba(255, 255, 255, 0.28);
+  border-radius: 6px;
+  background: var(--color-muestra) !important;
+  box-shadow: none;
+  transform: none;
+}
+
+.apuntes-shell .opcion-color:hover:not(:disabled),
+.apuntes-shell .opcion-color:focus-visible,
+.apuntes-shell .opcion-color[aria-pressed="true"] {
+  border-color: var(--apuntes-texto);
+  box-shadow: 0 0 0 2px var(--apuntes-borde-fuerte);
+  transform: none;
+}
+
+.paleta-color__sin-recientes {
+  grid-column: 1 / -1;
+  padding: 5px 0;
+  color: var(--apuntes-texto-suave);
+  font-size: 10px;
+  font-style: italic;
 }
 
 .editor-contenido {
@@ -1217,6 +1338,28 @@ html[data-theme="light"] .apuntes-shell .boton-peligro {
 
   .control-color {
     min-width: 64px;
+  }
+
+  .paleta-color__personalizado input[type="color"] {
+    width: 40px;
+    height: 40px;
+  }
+
+  .apuntes-shell .opcion-color {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    min-height: 36px;
+  }
+
+  .paleta-color__seccion {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 5px;
+  }
+
+  .paleta-color__seccion > span {
+    padding-top: 0;
   }
 
   .barra-formato {
