@@ -289,10 +289,21 @@ test("el navbar común se monta una sola vez y deja el shell unido al encabezado
       const shell = document.querySelector(".apuntes-shell");
       const sidebar = document.querySelector(".apuntes-sidebar");
       const editor = document.querySelector(".apuntes-editor");
+      const branding = header.querySelector("[data-global-header-branding]");
+      const discovery = header.querySelector(".global-header-discovery");
+      const toolbar = document.querySelector(".barra-formato");
+      const contenido = document.querySelector(".editor-contenido");
+      const footer = document.querySelector(".acciones-apuntes");
+      const guardar = document.querySelector("#guardarApunte");
+      const eliminar = document.querySelector("#eliminarApunte");
       const rect = (elemento) => {
         const r = elemento.getBoundingClientRect();
         return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height };
       };
+      const estiloHeader = getComputedStyle(header);
+      const estiloDiscovery = getComputedStyle(discovery);
+      const estiloEditor = getComputedStyle(editor);
+      const estiloFooter = getComputedStyle(footer);
       return {
         mismoControlador: primero === segundo,
         pageId: primero?.pageId,
@@ -308,9 +319,34 @@ test("el navbar común se monta una sola vez y deja el shell unido al encabezado
         titulo: header.querySelector("[data-global-header-title]")?.textContent?.trim(),
         descripcion: header.querySelector("[data-global-header-description]")?.textContent?.trim(),
         header: rect(header),
+        headerPosition: estiloHeader.position,
         shell: rect(shell),
         sidebar: rect(sidebar),
         editor: rect(editor),
+        branding: rect(branding),
+        discovery: {
+          ...rect(discovery),
+          borde: [
+            estiloDiscovery.borderTopWidth,
+            estiloDiscovery.borderRightWidth,
+            estiloDiscovery.borderBottomWidth,
+            estiloDiscovery.borderLeftWidth
+          ]
+        },
+        discoveryButtons: [...discovery.querySelectorAll(".global-header-discovery__actions > :where(a, button):not([hidden])")].map(rect),
+        toolbar: rect(toolbar),
+        contenido: rect(contenido),
+        footer: rect(footer),
+        guardar: rect(guardar),
+        eliminar: rect(eliminar),
+        editorPadding: {
+          top: Number.parseFloat(estiloEditor.paddingTop),
+          right: Number.parseFloat(estiloEditor.paddingRight),
+          bottom: Number.parseFloat(estiloEditor.paddingBottom),
+          left: Number.parseFloat(estiloEditor.paddingLeft)
+        },
+        editorGap: Number.parseFloat(estiloEditor.rowGap),
+        footerPaddingRight: Number.parseFloat(estiloFooter.paddingRight),
         viewportWidth: innerWidth,
         viewportHeight: innerHeight,
         scrollHeight: document.documentElement.scrollHeight,
@@ -333,11 +369,40 @@ test("el navbar común se monta una sola vez y deja el shell unido al encabezado
     assertBorde(montaje.header.top, 0, "navbar real / borde superior");
     assertBorde(montaje.header.left, 0, "navbar real / borde izquierdo");
     assertBorde(montaje.header.right, montaje.viewportWidth, "navbar real / borde derecho");
+    assertBorde(montaje.header.height, 56, "navbar real / alto compacto");
+    assert.equal(montaje.headerPosition, "sticky");
     assertBorde(montaje.shell.top, montaje.header.bottom, "navbar real / shell pegado al header");
     assertBorde(montaje.shell.bottom, montaje.viewportHeight, "navbar real / shell al fondo");
     assertBorde(montaje.sidebar.bottom, montaje.shell.bottom, "navbar real / sidebar al fondo");
     assertBorde(montaje.editor.bottom, montaje.shell.bottom, "navbar real / editor al fondo");
     assertBorde(montaje.scrollHeight, montaje.viewportHeight, "navbar real / sin espacio muerto inferior");
+    assertBorde(montaje.branding.left, montaje.sidebar.left, "navbar real / branding alineado al sidebar");
+    assertBorde(montaje.branding.right, montaje.sidebar.right, "navbar real / branding termina en el divisor");
+    assertBorde(montaje.branding.right, montaje.editor.left, "navbar real / branding alineado al editor");
+    assertBorde(montaje.discovery.left, montaje.editor.left + 16, "navbar real / discovery dentro de la columna del editor");
+    assertBorde(montaje.discovery.height, 32, "navbar real / discovery compacto");
+    assert.deepEqual(montaje.discovery.borde, ["0px", "0px", "0px", "0px"]);
+    assert.equal(montaje.discoveryButtons.length, 2);
+    for (const boton of montaje.discoveryButtons) {
+      assertBorde(boton.width, 28, "navbar real / acción discovery ancho");
+      assertBorde(boton.height, 28, "navbar real / acción discovery alto");
+    }
+    assert.deepEqual(montaje.editorPadding, { top: 14, right: 16, bottom: 10, left: 16 });
+    assertBorde(montaje.editorGap, 8, "editor real / separación compacta");
+    assertBorde(montaje.contenido.left, montaje.editor.left + montaje.editorPadding.left, "canvas real / borde izquierdo útil");
+    assertBorde(montaje.contenido.right, montaje.editor.right - montaje.editorPadding.right, "canvas real / borde derecho útil");
+    assertBorde(montaje.contenido.top, montaje.toolbar.bottom + montaje.editorGap, "canvas real / unido a toolbar");
+    assertBorde(montaje.contenido.bottom + montaje.editorGap, montaje.footer.top, "canvas real / unido al footer");
+    assertBorde(montaje.footer.left, montaje.contenido.left, "footer real / alineado al canvas izquierdo");
+    assertBorde(montaje.footer.right, montaje.contenido.right, "footer real / alineado al canvas derecho");
+    assertBorde(montaje.footer.bottom, montaje.editor.bottom - montaje.editorPadding.bottom, "footer real / sin espacio muerto inferior");
+    assert.ok(montaje.contenido.height >= 640, `canvas real maximizado: ${JSON.stringify(montaje.contenido)}`);
+    assertBorde(montaje.footer.height, 36, "footer real / alto compacto");
+    assertBorde(montaje.footerPaddingRight, 205, "footer real / reserva Reportar expandido");
+    assertBorde(montaje.guardar.width, 96, "Guardar escritorio / ancho");
+    assertBorde(montaje.guardar.height, 36, "Guardar escritorio / alto");
+    assertBorde(montaje.eliminar.width, 92, "Eliminar escritorio / ancho");
+    assertBorde(montaje.eliminar.height, 36, "Eliminar escritorio / alto");
 
     await harness.waitForFunction("Boolean(document.querySelector('[data-acceso-toggle]'))");
     await harness.click("[data-acceso-toggle]");
@@ -361,6 +426,47 @@ test("el navbar común se monta una sola vez y deja el shell unido al encabezado
       await writeFile(process.env.APUNTES_NAVBAR_SCREENSHOT_PATH, Buffer.from(captura, "base64"));
     }
   } finally {
+    await harness.close();
+  }
+});
+
+test("Biocelular no confunde el formulario real de carpetas con una pantalla de login", async () => {
+  const harness = await launchChromeHarness({ rootDirectory: raiz, viewport: { width: 1024, height: 768 } });
+  try {
+    await harness.navigate("/tests/fixtures/apuntes-origin.html");
+    const { frameTree } = await harness.cdp.send("Page.getFrameTree");
+    await harness.cdp.send("Page.setDocumentContent", {
+      frameId: frameTree.frame.id,
+      html: documentoDemo({ accesosDemo: false })
+    });
+    await harness.waitForFunction("document.readyState === 'complete' && Boolean(document.querySelector('#formularioCarpeta'))");
+    await harness.evaluate("history.replaceState({}, '', '/apuntes.html')");
+    const moduloBiocelular = `${harness.origin}/js/themes/biocellularThemeController.js?qa=formulario-carpeta`;
+    const estado = await harness.evaluate(`import(${JSON.stringify(moduloBiocelular)}).then(async ({ activateBiocellularTheme }) => {
+      await activateBiocellularTheme();
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const formulario = document.querySelector("#formularioCarpeta");
+      const host = document.querySelector("#cognicion-biocellular-background");
+      return {
+        tagFormulario: formulario?.tagName,
+        formularioReal: formulario?.closest("#dialogoCarpeta")?.id === "dialogoCarpeta",
+        loginReal: Boolean(document.querySelector("#login, .login-container, #loginForm, .login-form")),
+        claseLogin: document.body.classList.contains("biocellular-login-page"),
+        hostCreado: Boolean(host),
+        canvasCreado: Boolean(host?.querySelector("canvas.biocellular-background"))
+      };
+    })`);
+
+    assert.deepEqual(estado, {
+      tagFormulario: "FORM",
+      formularioReal: true,
+      loginReal: false,
+      claseLogin: false,
+      hostCreado: true,
+      canvasCreado: true
+    });
+  } finally {
+    await harness.evaluate("globalThis.__cognicionBiocellularDeactivate?.()").catch(() => {});
     await harness.close();
   }
 });
@@ -608,7 +714,10 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
         accionesWidth: accionesRect.width,
         accionesPaddingRight: Number.parseFloat(estiloAcciones.paddingRight),
         accionesColumnas: estiloAcciones.gridTemplateColumns,
+        guardarWidth: guardar.width,
+        guardarHeight: guardar.height,
         eliminarWidth: eliminar.width,
+        eliminarHeight: eliminar.height,
         reporteContraido: document.querySelector("#reporteGlobalWidget").classList.contains("reporte-widget-contraido"),
         bodyReporteContraido: document.body.classList.contains("reporte-global-contraido"),
         diferenciaCentroFila: Math.max(
@@ -658,6 +767,8 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
     assert.ok(metricas.accionesPaddingRight >= 51 && metricas.accionesPaddingRight <= 53, detalleSolapamiento);
     assert.ok(metricas.espacioMuertoDerecha >= 51 && metricas.espacioMuertoDerecha <= 53, detalleSolapamiento);
     assert.ok(metricas.diferenciaCentroFila <= 1, `390px / status y acciones deben compartir fila: ${detalleSolapamiento}`);
+    assert.ok(metricas.guardarHeight >= 44, `390px táctil / Guardar: ${detalleSolapamiento}`);
+    assert.ok(metricas.eliminarHeight >= 44, `390px táctil / Eliminar: ${detalleSolapamiento}`);
     assert.ok(metricas.topbarHeight <= 60, detalleSolapamiento);
     assert.ok(metricas.colorTextoWidth >= 64, detalleSolapamiento);
     assert.notEqual(metricas.etiquetaColorDisplay, "none");
@@ -720,6 +831,8 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
           Math.abs(((estado.top + estado.bottom) / 2) - ((guardar.top + guardar.bottom) / 2)),
           Math.abs(((guardar.top + guardar.bottom) / 2) - ((eliminar.top + eliminar.bottom) / 2))
         ),
+        guardarHeight: guardar.height,
+        eliminarHeight: eliminar.height,
         reporteContraido: document.querySelector("#reporteGlobalWidget").classList.contains("reporte-widget-contraido"),
         bodyReporteContraido: document.body.classList.contains("reporte-global-contraido")
       };
@@ -733,6 +846,8 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
     assert.ok(telefonoCompacto.accionesPaddingRight >= 51 && telefonoCompacto.accionesPaddingRight <= 53, JSON.stringify(telefonoCompacto));
     assert.ok(telefonoCompacto.espacioMuertoDerecha >= 51 && telefonoCompacto.espacioMuertoDerecha <= 53, JSON.stringify(telefonoCompacto));
     assert.ok(telefonoCompacto.diferenciaCentroFila <= 1, `360px / status y acciones deben compartir fila: ${JSON.stringify(telefonoCompacto)}`);
+    assert.ok(telefonoCompacto.guardarHeight >= 44, `360px táctil / Guardar: ${JSON.stringify(telefonoCompacto)}`);
+    assert.ok(telefonoCompacto.eliminarHeight >= 44, `360px táctil / Eliminar: ${JSON.stringify(telefonoCompacto)}`);
 
     await harness.setViewport(1024, 768, { mobile: true });
     const tableta = await harness.evaluate(`(() => {
@@ -750,7 +865,11 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
         nuevaCarpetaHeight: document.querySelector("#nuevaCarpeta").getBoundingClientRect().height,
         alternarSidebarWidth: alternarSidebar.getBoundingClientRect().width,
         alternarSidebarHeight: alternarSidebar.getBoundingClientRect().height,
-        alternarSidebarDisplay: getComputedStyle(alternarSidebar).display
+        alternarSidebarDisplay: getComputedStyle(alternarSidebar).display,
+        guardarApunteHeight: document.querySelector("#guardarApunte").getBoundingClientRect().height,
+        eliminarApunteHeight: document.querySelector("#eliminarApunte").getBoundingClientRect().height,
+        eliminarRight: document.querySelector("#eliminarApunte").getBoundingClientRect().right,
+        contraerReporteLeft: document.querySelector(".reporte-contraer-btn").getBoundingClientRect().left
       };
     })()`);
     assert.ok(tableta.limpiarWidth >= 68);
@@ -760,6 +879,9 @@ test("apuntes conserva controles accesibles y sin desborde en móvil táctil", a
     assert.ok(tableta.nuevoApunteHeight >= 40);
     assert.ok(tableta.nuevaCarpetaHeight >= 40);
     assert.equal(tableta.alternarSidebarDisplay, "grid");
+    assert.ok(tableta.guardarApunteHeight >= 44, JSON.stringify(tableta));
+    assert.ok(tableta.eliminarApunteHeight >= 44, JSON.stringify(tableta));
+    assert.ok(tableta.eliminarRight <= tableta.contraerReporteLeft, JSON.stringify(tableta));
     assertBorde(tableta.alternarSidebarWidth, 44, "tableta táctil / ancho del toggle");
     assertBorde(tableta.alternarSidebarHeight, 44, "tableta táctil / alto del toggle");
   } finally {

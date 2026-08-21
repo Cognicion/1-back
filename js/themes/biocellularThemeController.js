@@ -50,9 +50,9 @@ function diagnoseLayout(host) {
     element.style.outline = `2px solid ${colors[index]}`;
     outlined.push([element, previous]);
   });
-  const login = document.querySelector("#login, .login-container, #loginForm, .login-form, form");
+  const login = document.querySelector("#login, .login-container, #loginForm, .login-form");
+  document.body.classList.toggle("biocellular-login-page", Boolean(login));
   if (login) {
-    document.body.classList.add("biocellular-login-page");
     const style = getComputedStyle(login);
     const rect = login.getBoundingClientRect();
     console.debug("[BIOCELULAR LOGIN] Elemento encontrado", login.id || login.className || login.tagName);
