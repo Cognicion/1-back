@@ -1,59 +1,34 @@
 import { obtenerHistorialNotas } from "./notas.js";
 import { listarEstudios } from "./estudios.js";
 import { listarNotasRapidas } from "./notasRapidas.js";
-
-const SECCIONES = [
-  ["motivo", "motivo de consulta|motivo de ingreso|motivo|motivoConsulta|motivoIngreso"],
-  ["padecimientoActual", "padecimiento actual|enfermedad actual|padecimientoActual"],
-  ["ahf", "antecedentes heredofamiliares|antecedentes familiares|ahf|antecedentesHeredofamiliares"],
-  ["app", "antecedentes personales patologicos|antecedentes personales patológicos|app|antecedentesPersonalesPatologicos"],
-  ["apnp", "antecedentes personales no patologicos|antecedentes personales no patológicos|apnp|antecedentesPersonalesNoPatologicos"],
-  ["antecedentesGinecoobstetricos", "antecedentes ginecoobstetricos|antecedentes ginecoobstétricos"],
-  ["hitosDesarrollo", "antecedentes del desarrollo|desarrollo psicomotor"],
-  ["historiaAcademica", "antecedentes escolares|historia academica|historia académica"],
-  ["historiaLaboral", "antecedentes laborales|historia laboral"],
-  ["historiaSocial", "antecedentes sociales|historia social"],
-  ["historiaFamiliar", "historia familiar|dinamica familiar|dinámica familiar|historiaFamiliar"],
-  ["sustancias", "consumo de sustancias|toxicomanias|toxicomanías|habitos toxicos|hábitos tóxicos|consumoSustancias"],
-  ["exploracionFisica", "exploracion fisica|exploración física|exploracionFisica"],
-  ["exploracionNeurologica", "exploracion neurologica|exploración neurológica|exploracionNeurologica"],
-  ["exploracionMental", "examen mental|exploracion mental|exploración mental|exploracionMental"],
-  ["diagnosticoClinico", "diagnostico|diagnósticos|impresion diagnostica|impresión diagnóstica|diagnosticos|diagnosticoClinico"],
-  ["tratamientoFarmacologico", "tratamiento|manejo farmacologico|manejo farmacológico|tratamientoFarmacologico"],
-  ["indicaciones", "indicaciones|indicaciones medicas|indicaciones médicas"],
-  ["plan", "plan terapeutico|plan terapéutico|plan"],
-  ["pronostico", "pronostico|pronóstico"],
-  ["observaciones", "observaciones|comentario clinico|comentario clínico"]
-];
+import {
+  construirDatosAutomaticos,
+  crearDeteccionHistoria,
+  detectarDatosHistoria,
+  obtenerDefinicionHistoria
+} from "./historiaClinicaDeteccion.js?v=20260821-detected-data-v1";
 const FAMILIARES = [["madre", /\bmadre\b/iu], ["padre", /\bpadre\b/iu], ["hermano", /\bherman[oa]s?\b/iu], ["hijo", /\bhij[oa]s?\b/iu], ["abuelo", /\babuel[oa]s?\b/iu], ["tio", /\bt[ií]o[as]?\b/iu], ["primo", /\bprim[oa]s?\b/iu], ["pareja", /\bpareja|conyuge|cónyuge|espos[oa]\b/iu]];
 const COMORBILIDADES = ["diabetes", "hipertension", "hipertensión", "cancer", "cáncer", "depresion", "depresión", "ansiedad", "bipolar", "esquizofrenia", "epilepsia", "cardiopatia", "cardiopatía", "alcoholismo", "suicidio", "demencia", "alzheimer", "parkinson", "obesidad", "tuberculosis", "enfermedad renal", "enfermedad tiroidea"];
 const texto = (valor) => String(valor ?? "").replace(/\s+/g, " ").trim();
 const normalizar = (valor) => texto(valor).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 const hash = (valor) => { let salida = 2166136261; for (const caracter of valor) { salida ^= caracter.charCodeAt(0); salida = Math.imul(salida, 16777619); } return (salida >>> 0).toString(36); };
+const CAMPOS_NARRATIVOS = new Set(["", "texto", "contenido", "nota", "notaeditada", "resumen", "resultado", "descripcion", "hallazgos", "textocompleto", "textoextraido"]);
 
 function textosDeObjeto(valor, salida = [], ruta = "") {
   if (typeof valor === "string") { if (valor.trim()) salida.push({ texto: valor, ruta }); return salida; }
+  if (typeof valor === "number" || typeof valor === "boolean") {
+    if (typeof valor !== "number" || Number.isFinite(valor)) salida.push({ texto: String(valor), ruta });
+    return salida;
+  }
+  if (Array.isArray(valor) && valor.every((item) => ["string", "number", "boolean"].includes(typeof item))) {
+    const combinado = valor.map(texto).filter(Boolean).join(", ");
+    if (combinado) salida.push({ texto: combinado, ruta });
+    return salida;
+  }
   if (!valor || typeof valor !== "object") return salida;
   if (typeof valor.toDate === "function" || typeof valor.seconds === "number") return salida;
   Object.entries(valor).forEach(([clave, dato]) => textosDeObjeto(dato, salida, ruta ? `${ruta}.${clave}` : clave));
   return salida;
-}
-
-function separarBloques(textoFuente = "") {
-  const encabezados = SECCIONES.flatMap(([, aliases]) => aliases.split("|"))
-    .sort((a, b) => b.length - a.length)
-    .map((alias) => alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
-    .join("|");
-  const expresion = new RegExp(`(?:^|\\n)\\s*(${encabezados})\\s*[:\\-]?\\s*`, "giu");
-  const encontrados = [];
-  let match;
-  while ((match = expresion.exec(textoFuente))) encontrados.push({ alias: match[1], indice: match.index, inicio: match.index + match[0].length });
-  return encontrados.map((actual, index) => ({ alias: normalizar(actual.alias), texto: textoFuente.slice(actual.inicio, encontrados[index + 1]?.indice || textoFuente.length).trim() })).filter((bloque) => bloque.texto);
-}
-
-function claveSeccion(alias = "") {
-  const normal = normalizar(alias);
-  return SECCIONES.find(([, aliases]) => aliases.split("|").some((item) => normal === normalizar(item)))?.[0] || "";
 }
 
 function frasesFuente(textoFuente = "") { return textoFuente.split(/(?<=[.!?;])\s+|\n+/u).map(texto).filter(Boolean); }
@@ -82,7 +57,18 @@ function extraerFamiliograma(fuentes = [], paciente = {}) {
 
 function construirFuentes({ paciente = {}, historia = {}, notas = [], estudios = [] } = {}) {
   const fuentes = [];
-  const agregar = (tipo, id, datos, fecha = "") => { const partes = textosDeObjeto(datos).map((item) => { const campo = item.ruta.split(".").pop(); return campo ? `${campo}: ${item.texto}` : item.texto; }); if (partes.length) fuentes.push({ tipo, id, fecha, texto: partes.join("\n") }); };
+  const agregar = (tipo, id, datos, fecha = "") => {
+    const campos = textosDeObjeto(datos);
+    const partes = campos.map((item) => {
+      const campo = item.ruta.split(".").pop();
+      return campo ? `${campo}: ${item.texto}` : item.texto;
+    });
+    const textoDeteccion = campos
+      .filter((item) => CAMPOS_NARRATIVOS.has(normalizar(item.ruta.split(".").pop())))
+      .map((item) => item.texto)
+      .join("\n");
+    if (partes.length) fuentes.push({ tipo, id, fecha, texto: partes.join("\n"), textoDeteccion, campos });
+  };
   agregar("paciente", "paciente", paciente, paciente.fechaCreacion);
   agregar("historia_clinica", "historiaInicial", historia, historia.fechaActualizacion);
   notas.forEach((nota) => agregar(nota.tipoFuente || "nota", nota.id || "nota", nota.notaEditada || nota, nota.fecha || nota.fechaCreacion || nota.fechaISO));
@@ -98,11 +84,32 @@ export async function generarHistoriaClinicaAutomatica({ uidPaciente, paciente =
   try { estudios = await listarEstudios(uidPaciente); } catch (error) { console.warn("No se pudieron cargar documentos oficiales para la historia automática", error?.code || error); }
   try { notasRapidas = await listarNotasRapidas(uidPaciente); } catch (error) { console.warn("No se pudieron cargar notas rápidas para la historia automática", error?.code || error); }
   const fuentes = construirFuentes({ paciente, historia, notas: [...notas, ...notasRapidas.map((nota) => ({ ...nota, tipoFuente: "nota_rapida" }))], estudios });
-  const secciones = {};
-  for (const fuente of fuentes) for (const bloque of separarBloques(fuente.texto)) { const clave = claveSeccion(bloque.alias); if (clave) secciones[clave] = [...(secciones[clave] || []), `[${fuente.tipo}] ${bloque.texto}`]; }
   const familiograma = extraerFamiliograma(fuentes, paciente);
   const historiaFamiliar = familiograma.personas.slice(1).map((persona) => `${persona.parentesco}: ${persona.antecedentes || "sin comorbilidades reportadas"}`).join("\n");
-  return { datos: Object.fromEntries(Object.entries(secciones).map(([clave, partes]) => [clave, [...new Set(partes)].join("\n\n").slice(0, 12000)])), familiograma: { ...familiograma, fuentes: fuentes.map(({ tipo, id, fecha }) => ({ tipo, id, fecha })) }, fuentes: fuentes.map(({ tipo, id, fecha }) => ({ tipo, id, fecha })), comorbilidadesFamiliares: familiograma.personas.slice(1).flatMap((persona) => persona.comorbilidades || []).filter((valor, index, lista) => lista.indexOf(valor) === index), historiaFamiliar };
+  const detecciones = detectarDatosHistoria(fuentes);
+  const definicionFamiliar = obtenerDefinicionHistoria("historiaFamiliar");
+  const familiarYaDetectada = detecciones.some((deteccion) => deteccion.clave === "historiaFamiliar" && normalizar(deteccion.valor) === normalizar(historiaFamiliar));
+  if (historiaFamiliar && definicionFamiliar && !familiarYaDetectada) {
+    const fuentesFamiliares = fuentes
+      .filter((fuente) => familiograma.personas.slice(1).some((persona) => (persona.fuentes || []).some((origen) => origen.tipo === fuente.tipo && origen.id === fuente.id)))
+      .map(({ tipo, id, fecha }) => ({ tipo, id, fecha }));
+    detecciones.push(crearDeteccionHistoria({
+      definicion: definicionFamiliar,
+      valor: historiaFamiliar,
+      fuentes: fuentesFamiliares,
+      metodo: "family_relationship_extraction",
+      confianza: 0.9
+    }));
+  }
+  const fuentesPublicas = fuentes.map(({ tipo, id, fecha }) => ({ tipo, id, fecha }));
+  return {
+    datos: construirDatosAutomaticos(detecciones),
+    detecciones,
+    familiograma: { ...familiograma, fuentes: fuentesPublicas },
+    fuentes: fuentesPublicas,
+    comorbilidadesFamiliares: familiograma.personas.slice(1).flatMap((persona) => persona.comorbilidades || []).filter((valor, index, lista) => lista.indexOf(valor) === index),
+    historiaFamiliar
+  };
 }
 
 export function combinarHistoriaAutomatica(datosActuales = {}, automatico = {}) {

@@ -90,6 +90,202 @@ body {
     gap: 12px;
 }
 
+.tab-datos-detectados {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.tab-contador {
+    min-width: 26px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: var(--accent-primary, #529866);
+    color: var(--surface-primary, #07110b);
+    font-size: 12px;
+    font-weight: 900;
+    text-align: center;
+}
+
+.tab-datos-detectados.tiene-pendientes:not(.activo) {
+    border-color: color-mix(in srgb, var(--accent-primary, #529866) 58%, transparent);
+}
+
+.seccion-datos-detectados {
+    min-width: 0;
+}
+
+.datos-detectados__encabezado {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 22px;
+}
+
+.datos-detectados__encabezado h3,
+.datos-detectados__encabezado p {
+    margin: 0;
+}
+
+.datos-detectados__encabezado > p {
+    max-width: 560px;
+    color: var(--text-secondary, #aab2a9);
+    line-height: 1.55;
+}
+
+.datos-detectados__eyebrow {
+    color: var(--accent-primary, #529866);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+.datos-detectados__resumen,
+.datos-detectados__vacio {
+    border: 1px solid var(--border-subtle, rgba(190,196,188,.2));
+    border-radius: 16px;
+    background: var(--surface-secondary, rgba(255,255,255,.04));
+}
+
+.datos-detectados__resumen {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+}
+
+.datos-detectados__resumen span,
+.datos-detectados__mensaje,
+.dato-detectado__metadatos,
+.dato-detectado__sin-destino,
+.datos-detectados__vacio p {
+    color: var(--text-secondary, #aab2a9);
+}
+
+.datos-detectados__mensaje {
+    min-height: 1.4em;
+    margin: 10px 2px 18px;
+    font-size: 13px;
+}
+
+.datos-detectados__mensaje.es-error {
+    color: var(--danger, #fb7185);
+}
+
+.datos-detectados__vacio {
+    padding: 24px;
+}
+
+.datos-detectados__vacio p {
+    margin-bottom: 0;
+    line-height: 1.55;
+}
+
+.datos-detectados__grupo {
+    margin-top: 24px;
+}
+
+.datos-detectados__grupo > h4 {
+    margin: 0 0 12px;
+    color: var(--text-primary, #f3f5ef);
+    font-size: 18px;
+}
+
+.datos-detectados__rejilla {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 14px;
+}
+
+.dato-detectado {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid var(--border-subtle, rgba(190,196,188,.2));
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--surface-secondary, #121a16) 90%, transparent);
+}
+
+.dato-detectado__cabecera {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.dato-detectado__cabecera h5 {
+    margin: 2px 0 0;
+    color: var(--text-primary, #f3f5ef);
+    font-size: 16px;
+}
+
+.dato-detectado__estado {
+    flex: 0 0 auto;
+    padding: 4px 8px;
+    border-radius: 999px;
+    color: var(--text-secondary, #aab2a9);
+    background: var(--surface-soft, rgba(255,255,255,.05));
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.dato-detectado__estado.esta-integrado {
+    color: var(--accent-primary, #78bd85);
+}
+
+.dato-detectado__estado.esta-pendiente {
+    color: var(--warning, #facc15);
+}
+
+.dato-detectado__valor {
+    max-height: 190px;
+    overflow: auto;
+    margin: 14px 0;
+    padding: 12px;
+    border-left: 3px solid var(--accent-primary, #529866);
+    border-radius: 0 10px 10px 0;
+    background: var(--surface-soft, rgba(255,255,255,.04));
+    color: var(--text-primary, #f3f5ef);
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.dato-detectado__metadatos {
+    display: grid;
+    gap: 5px;
+    font-size: 12px;
+}
+
+.dato-detectado__acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.dato-detectado__acciones .boton-principal,
+.dato-detectado__acciones .boton-secundario {
+    width: auto;
+    margin: 0;
+    padding: 9px 12px;
+}
+
+.dato-detectado__acciones button:disabled {
+    opacity: .62;
+    cursor: default;
+}
+
+.dato-detectado__sin-destino {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
 .sustancias-selector,
 .registro-previo-sustancias,
 .sustancia-bloque {
@@ -235,6 +431,17 @@ body {
     .sustancia-bloque summary {
         align-items: flex-start;
     }
+
+    .datos-detectados__encabezado,
+    .datos-detectados__resumen {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .dato-detectado__cabecera {
+        align-items: flex-start;
+        flex-direction: column;
+    }
 }
 
 @media print {
@@ -258,6 +465,10 @@ body {
     .sustancias-selector,
     .registro-previo-sustancias {
         display: none;
+    }
+
+    .seccion-datos-detectados {
+        display: none !important;
     }
 }
 
@@ -559,6 +770,53 @@ textarea {
     background: rgba(82, 152, 102, 0.12);
     color: white;
     border: 1px solid rgba(82, 152, 102, 0.28);
+}
+
+@media (max-width: 900px) {
+    .historia-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+        margin: 76px auto 36px;
+        padding: 0 12px;
+    }
+
+    .historia-sidebar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        padding: 12px;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        scrollbar-width: thin;
+    }
+
+    .historia-sidebar h1,
+    .historia-sidebar > p {
+        display: none;
+    }
+
+    .historia-sidebar .tab,
+    .historia-sidebar > .boton-secundario {
+        flex: 0 0 auto;
+        width: auto;
+        margin: 0;
+        white-space: nowrap;
+    }
+
+    .historia-sidebar .historia-tabs-adicionales {
+        display: contents;
+    }
+
+    .historia-contenido {
+        min-width: 0;
+        padding: 16px;
+    }
+
+    .historia-header {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
 }
 
 @media print {

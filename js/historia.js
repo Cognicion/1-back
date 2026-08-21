@@ -9,8 +9,10 @@ import { configurarCamposRedimensionables } from "./components/redimensionadorCa
 import { esPacienteMujer } from "./utils/sexo.js";
 import { crearGestorHitosDesarrolloHistoria } from "./components/hitosDesarrolloHistoria.js";
 import { crearGestorFamiliogramaHistoria } from "./components/familiogramaHistoria.js";
+import { crearGestorDatosDetectadosHistoria } from "./components/datosDetectadosHistoria.js?v=20260821-detected-data-v1";
 import { calcularIMC } from "./utils/imc.js";
-import { generarHistoriaClinicaAutomatica, combinarHistoriaAutomatica } from "./services/historiaClinicaAutomatica.js";
+import { generarHistoriaClinicaAutomatica, combinarHistoriaAutomatica } from "./services/historiaClinicaAutomatica.js?v=20260821-detected-data-v1";
+import { contieneDeteccion, valorDeteccionParaDestino } from "./services/historiaClinicaDeteccion.js?v=20260821-detected-data-v1";
 
 import {
   obtenerUsuario,
@@ -28,6 +30,7 @@ let pacienteActual = {};
 let gestorSustanciasHistoria = null;
 let gestorHitosDesarrollo = null;
 let gestorFamiliograma = null;
+let gestorDatosDetectados = null;
 let guardandoHistoria = false;
 let modoVistaHistoria = "completa";
 let etapaActual = "inicio";
@@ -144,6 +147,13 @@ async function inicializarHistoriaClinica() {
     edadPaciente: calcularEdad(obtenerFechaNacimiento(pacienteActual))
   });
   gestorFamiliograma = crearGestorFamiliogramaHistoria({ contenedor: document.getElementById("familiogramaHistoria") });
+  gestorDatosDetectados = crearGestorDatosDetectadosHistoria({
+    contenedor: document.getElementById("datosDetectadosHistoria"),
+    estaIntegrado: estaDeteccionIntegrada,
+    onAgregar: integrarDeteccionEnHistoria,
+    onAbrirApartado: abrirApartadoDeDeteccion,
+    onResumenCambio: actualizarContadorDatosDetectados
+  });
   await cargarHistoria();
   configurarCamposNarrativosHistoria();
   configurarVistaHistoria();
@@ -196,18 +206,25 @@ async function cargarHistoria() {
   };
 
   let datos = historia.exists() ? { ...raiz, ...historia.data() } : raiz;
+  let automatico = { datos: {}, detecciones: [], fuentes: [], familiograma: { personas: [] } };
   try {
-    const automatico = await generarHistoriaClinicaAutomatica({ uidPaciente, paciente: pacienteActual, historia: datos });
+    automatico = await generarHistoriaClinicaAutomatica({ uidPaciente, paciente: pacienteActual, historia: datos });
     datos = combinarHistoriaAutomatica(datos, automatico);
     const aviso = document.getElementById("avisoHistoriaAutomatica");
     if (aviso) {
       const totalFuentes = automatico.fuentes?.length || 0;
+      const totalDetecciones = automatico.detecciones?.length || 0;
       const totalFamiliares = Math.max(0, (automatico.familiograma?.personas?.length || 1) - 1);
-      aviso.textContent = `Historia prellenada con ${totalFuentes} fuentes clínicas y ${totalFamiliares} familiares detectados. Revisa y confirma antes de guardar.`;
+      aviso.textContent = `Se analizaron ${totalFuentes} fuentes clínicas y se detectaron ${totalDetecciones} datos organizables${totalFamiliares ? `, además de ${totalFamiliares} familiares` : ""}. Revisa la pestaña “Datos detectados” antes de guardar.`;
       aviso.hidden = false;
     }
   } catch (error) {
     console.warn("No se pudo generar el borrador automático de historia clínica:", error);
+    const aviso = document.getElementById("avisoHistoriaAutomatica");
+    if (aviso) {
+      aviso.textContent = "No fue posible revisar automáticamente las fuentes clínicas. La historia guardada permanece disponible.";
+      aviso.hidden = false;
+    }
   }
   historiaActualDatos = datos;
 
@@ -222,8 +239,104 @@ async function cargarHistoria() {
   });
   gestorHitosDesarrollo?.cargar(datos.hitosDesarrollo);
   gestorFamiliograma?.cargar(datos.familiograma);
+  gestorDatosDetectados?.cargar(automatico.detecciones || []);
   actualizarVisibilidadGinecoobstetricos(datos.antecedentesGinecoobstetricos);
   if (!datos.imc) calcularIMCHistoria();
+}
+
+function textoHistoria(valor = "") {
+  return String(valor ?? "").replace(/\s+/g, " ").trim();
+}
+
+function anexarTextoHistoria(valorActual = "", valorNuevo = "") {
+  const actual = String(valorActual || "").trim();
+  const nuevo = String(valorNuevo || "").trim();
+  if (!nuevo) return actual;
+  return actual ? `${actual}\n\n${nuevo}` : nuevo;
+}
+
+function valorActualDeDeteccion(deteccion = {}) {
+  const destino = deteccion.destino || {};
+  if (destino.tipo === "campo") return document.getElementById(destino.campoId)?.value || "";
+  if (destino.tipo === "sustancias") return gestorSustanciasHistoria?.obtenerDatos()?.observacionesGenerales || "";
+  if (destino.tipo === "hitos") return gestorHitosDesarrollo?.obtenerDatos()?.observacionesGenerales || "";
+  return "";
+}
+
+function estaDeteccionIntegrada(deteccion = {}) {
+  return contieneDeteccion(valorActualDeDeteccion(deteccion), deteccion);
+}
+
+function confirmarReemplazoCampo(elemento, deteccion) {
+  const actual = textoHistoria(elemento?.value);
+  if (!actual || contieneDeteccion(actual, deteccion)) return true;
+  return window.confirm(`El campo “${deteccion.etiqueta}” ya contiene información. ¿Deseas reemplazarla con el dato detectado?`);
+}
+
+function integrarDeteccionEnHistoria(deteccion = {}) {
+  if (estaDeteccionIntegrada(deteccion)) return false;
+  const destino = deteccion.destino || {};
+  const valor = valorDeteccionParaDestino(deteccion);
+
+  if (destino.tipo === "campo") {
+    const elemento = document.getElementById(destino.campoId);
+    if (!elemento || elemento.readOnly) {
+      throw Object.assign(new Error("DESTINO_NO_EDITABLE"), { code: "history/detected-target-readonly" });
+    }
+    if (elemento.tagName === "TEXTAREA") {
+      elemento.value = anexarTextoHistoria(elemento.value, valor);
+    } else {
+      if (!confirmarReemplazoCampo(elemento, deteccion)) return { status: "cancelled" };
+      const valorCampo = elemento.type === "number" ? numeroClinico(valor) : valor;
+      if (elemento.type === "number" && valorCampo === null) {
+        throw Object.assign(new Error("VALOR_NUMERICO_INVALIDO"), { code: "history/detected-invalid-number" });
+      }
+      elemento.value = String(valorCampo ?? "");
+    }
+    elemento.dispatchEvent(new Event("input", { bubbles: true }));
+    elemento.dispatchEvent(new Event("change", { bubbles: true }));
+    historiaActualDatos[destino.campoId] = elemento.value;
+    if (destino.campoId === "antecedentesGinecoobstetricos") actualizarVisibilidadGinecoobstetricos(elemento.value);
+  } else if (destino.tipo === "sustancias") {
+    const actuales = gestorSustanciasHistoria?.obtenerDatos() || { seleccionadas: [], observacionesGenerales: "" };
+    const actualizados = { ...actuales, observacionesGenerales: anexarTextoHistoria(actuales.observacionesGenerales, valor) };
+    gestorSustanciasHistoria?.cargar(actualizados);
+    historiaActualDatos.sustancias = actualizados;
+  } else if (destino.tipo === "hitos") {
+    const actuales = gestorHitosDesarrollo?.obtenerDatos() || { registros: [], observacionesGenerales: "" };
+    const actualizados = { ...actuales, observacionesGenerales: anexarTextoHistoria(actuales.observacionesGenerales, valor) };
+    gestorHitosDesarrollo?.cargar(actualizados);
+    historiaActualDatos.hitosDesarrollo = actualizados;
+  } else {
+    throw Object.assign(new Error("DESTINO_NO_DISPONIBLE"), { code: "history/detected-target-unavailable" });
+  }
+
+  gestorDatosDetectados?.actualizar();
+  console.debug("[HistoriaClinica:DatosDetectados]", { action: "candidate-integrated", target: destino.campoId || destino.tipo });
+  return true;
+}
+
+function abrirApartadoDeDeteccion(deteccion = {}) {
+  const seccionId = deteccion.destino?.seccionId;
+  if (!seccionId) return;
+  mostrarVistaHistoria(seccionId, [...document.querySelectorAll(".historia-sidebar .tab")]);
+  window.requestAnimationFrame(() => {
+    const objetivo = deteccion.destino?.campoId
+      ? document.getElementById(deteccion.destino.campoId)
+      : document.getElementById(seccionId);
+    objetivo?.scrollIntoView({ block: "center", behavior: "smooth" });
+    if (typeof objetivo?.focus === "function" && !objetivo.readOnly) objetivo.focus({ preventScroll: true });
+  });
+}
+
+function actualizarContadorDatosDetectados({ total = 0, pendientes = 0 } = {}) {
+  const contador = document.getElementById("contadorDatosDetectados");
+  const tab = document.querySelector('.tab[data-seccion="detectados"]');
+  if (contador) {
+    contador.textContent = String(pendientes || total);
+    contador.hidden = total === 0;
+  }
+  tab?.classList.toggle("tiene-pendientes", pendientes > 0);
 }
 
 function componerExploracionMentalNarrativa(datos = {}) {
@@ -543,7 +656,7 @@ function configurarVistaHistoria() {
   const navegacion = document.querySelector(".historia-sidebar");
   if (!navegacion || navegacion.dataset.vistaConfigurada === "true") return;
   navegacion.dataset.vistaConfigurada = "true";
-  const orden = ["completa", "ficha", "antecedentes", "desarrollo", "familiograma", "familiar", "academica", "laboral", "psiquiatria", "sustancias", "padecimiento", "mental", "diagnostico", "plan"];
+  const orden = ["completa", "detectados", "ficha", "antecedentes", "desarrollo", "familiograma", "familiar", "academica", "laboral", "psiquiatria", "sustancias", "padecimiento", "mental", "diagnostico", "plan"];
   const tabs = [...navegacion.querySelectorAll(".tab")];
   tabs.sort((a, b) => orden.indexOf(a.dataset.seccion) - orden.indexOf(b.dataset.seccion)).forEach((tab) => navegacion.insertBefore(tab, navegacion.querySelector(".boton-secundario")));
   navegacion.addEventListener("click", (evento) => {
@@ -556,14 +669,21 @@ function configurarVistaHistoria() {
 }
 
 function mostrarVistaHistoria(seccionId, tabs = [...document.querySelectorAll(".tab")]) {
-  const ordenClinico = ["ficha", "antecedentes", "desarrollo", "familiar", "familiograma", "academica", "laboral", "psiquiatria", "sustancias", "padecimiento", "mental", "diagnostico", "plan"];
+  const ordenClinico = ["detectados", "ficha", "antecedentes", "desarrollo", "familiar", "familiograma", "academica", "laboral", "psiquiatria", "sustancias", "padecimiento", "mental", "diagnostico", "plan"];
   const formulario = document.getElementById("formHistoria");
   const seccionesIniciales = [...document.querySelectorAll("#formHistoria > .seccion")];
   ordenClinico.forEach((id) => { const seccion = document.getElementById(id); if (seccion && seccionesIniciales.includes(seccion)) formulario?.appendChild(seccion); });
   const secciones = [...document.querySelectorAll("#formHistoria > .seccion")];
   modoVistaHistoria = seccionId === "completa" ? "completa" : "seccion";
   document.querySelector(".historia-contenido")?.classList.toggle("historia-vista-completa", modoVistaHistoria === "completa");
-  secciones.forEach((seccion) => seccion.classList.toggle("activa", modoVistaHistoria === "completa" || seccion.id === seccionId));
+  secciones.forEach((seccion) => {
+    const activa = seccionId === "detectados"
+      ? seccion.id === "detectados"
+      : modoVistaHistoria === "completa"
+        ? seccion.id !== "detectados"
+        : seccion.id === seccionId;
+    seccion.classList.toggle("activa", activa);
+  });
   tabs.forEach((tab) => { const activo = tab.dataset.seccion === seccionId; tab.classList.toggle("activo", activo); tab.setAttribute("aria-current", activo ? "page" : "false"); });
   console.debug("[HistoriaClinica:Vista]", { action: "view-changed", mode: modoVistaHistoria, section: seccionId });
 }

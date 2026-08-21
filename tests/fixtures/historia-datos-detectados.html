@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es" data-theme="biocelular">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Fixture · Datos detectados</title>
+  <link rel="stylesheet" href="../../css/theme.css">
+  <link rel="stylesheet" href="../../css/historia.css">
+  <link rel="stylesheet" href="../../css/theme/cognicion-theme.css">
+</head>
+<body>
+  <main class="historia-layout">
+    <aside class="historia-sidebar">
+      <h1>Cognición</h1>
+      <p>Historia clínica</p>
+      <button class="tab tab-datos-detectados activo" type="button">
+        <span>✨ Datos detectados</span><span class="tab-contador">3</span>
+      </button>
+      <button class="tab" type="button">Ficha</button>
+      <button class="tab" type="button">Antecedentes</button>
+    </aside>
+    <section class="historia-contenido">
+      <section class="seccion seccion-datos-detectados activa">
+        <div class="datos-detectados__encabezado">
+          <div><p class="datos-detectados__eyebrow">Revisión asistida</p><h3>Datos detectados</h3></div>
+          <p>Información encontrada en fuentes clínicas y organizada por el apartado al que puede incorporarse.</p>
+        </div>
+        <div id="datosDetectadosHistoria"></div>
+      </section>
+    </section>
+  </main>
+  <script type="module">
+    import { crearGestorDatosDetectadosHistoria } from "../../js/components/datosDetectadosHistoria.js";
+    const integradas = new Set(["ahf"]);
+    const detecciones = [
+      { id: "padecimiento", clave: "padecimientoActual", etiqueta: "Padecimiento actual", valor: "Insomnio de tres semanas, ansiedad anticipatoria y deterioro funcional.", confianzaExtraccion: .96, fuentes: [{ tipo: "nota", fecha: "2026-08-20" }], destino: { tipo: "campo", seccionId: "padecimiento", seccionEtiqueta: "Padecimiento actual", campoId: "padecimientoActual" } },
+      { id: "ahf", clave: "ahf", etiqueta: "Antecedentes heredofamiliares", valor: "Madre con diabetes mellitus e hipertensión arterial.", confianzaExtraccion: .96, fuentes: [{ tipo: "nota", fecha: "2026-08-18" }, { tipo: "documento_oficial", fecha: "2026-08-19" }], destino: { tipo: "campo", seccionId: "antecedentes", seccionEtiqueta: "Antecedentes", campoId: "ahf" } },
+      { id: "sustancias", clave: "sustancias", etiqueta: "Consumo de sustancias", valor: "Consumo ocasional de alcohol; niega otras sustancias.", confianzaExtraccion: .96, fuentes: [{ tipo: "nota_rapida", fecha: "2026-08-20" }], destino: { tipo: "sustancias", seccionId: "sustancias", seccionEtiqueta: "Consumo de sustancias", campoId: null } },
+      { id: "imc", clave: "imc", etiqueta: "IMC", valor: "24.1", confianzaExtraccion: 1, fuentes: [{ tipo: "paciente" }], destino: { tipo: "readonly", seccionId: "ficha", seccionEtiqueta: "Ficha de identificación", campoId: "imc" } },
+      { id: "fisica", clave: "exploracionFisica", etiqueta: "Exploración física", valor: "Sin hallazgos agudos descritos.", confianzaExtraccion: .96, fuentes: [{ tipo: "nota", fecha: "2026-08-20" }], destino: { tipo: "manual", seccionId: null, seccionEtiqueta: "Sin apartado compatible", campoId: null } }
+    ];
+    const gestor = crearGestorDatosDetectadosHistoria({
+      contenedor: document.getElementById("datosDetectadosHistoria"),
+      estaIntegrado: (dato) => integradas.has(dato.id),
+      onAgregar: async (dato) => { integradas.add(dato.id); return true; }
+    });
+    gestor.cargar(detecciones);
+    requestAnimationFrame(async () => {
+      const primerBoton = document.querySelector('[data-accion-detectado="agregar"]');
+      primerBoton?.click();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      const rect = document.querySelector(".historia-layout")?.getBoundingClientRect();
+      Object.assign(document.documentElement.dataset, {
+        fixtureReady: "true",
+        cardCount: String(document.querySelectorAll(".dato-detectado").length),
+        groupCount: String(document.querySelectorAll(".datos-detectados__grupo").length),
+        addWorked: String(document.querySelectorAll(".dato-detectado__estado.esta-integrado").length === 2),
+        insideViewport: String(Boolean(rect && rect.left >= 0 && rect.right <= document.documentElement.clientWidth)),
+        horizontalOverflow: String(document.documentElement.scrollWidth > document.documentElement.clientWidth)
+      });
+    });
+  </script>
+</body>
+</html>

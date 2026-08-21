@@ -67,5 +67,6 @@
 // deployment marker: 2026-08-20-apuntes-colores-recientes-v1
 // deployment marker: 2026-08-20-biocellular-debug-outlines-v1
 // deployment marker: 2026-08-21-patient-pattern-profile-v1 (+0.010)
-export const APP_VERSION = "2.056";
+// deployment marker: 2026-08-21-historia-datos-detectados-v1 (+0.010)
+export const APP_VERSION = "2.066";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;
