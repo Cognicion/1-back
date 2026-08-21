@@ -10,6 +10,7 @@ const { cleanText, sanitizeSupplementalValue } = require("./contextService");
 const CLINICAL_DOMAINS = Object.freeze([
   "demographics",
   "history",
+  "social",
   "diagnosis",
   "treatment",
   "symptoms",
@@ -60,6 +61,33 @@ const SOFIA_TOOL_DEFINITIONS = Object.freeze([
     strict: true
   },
   noArgsTool("get_detected_patterns", "Obtiene patrones temporales observacionales detectados en el paciente autorizado."),
+  noArgsTool("get_selected_patient_pattern_context", "Obtiene el PatientPatternProfile protegido del paciente activo: patrones actuales, evidencia trazable, instrumentos, variables matemáticas e historial. No incluye identidad ni razonamiento interno."),
+  {
+    type: "function",
+    name: "get_patient_pattern_evidence",
+    description: "Consulta únicamente la evidencia almacenada y verificable de un patrón del paciente activo.",
+    parameters: {
+      type: "object",
+      properties: { patternKey: { type: "string", maxLength: 120 } },
+      required: ["patternKey"],
+      additionalProperties: false
+    },
+    strict: true
+  },
+  {
+    type: "function",
+    name: "get_patient_pattern_trajectory",
+    description: "Consulta la serie temporal almacenada de un patrón o instrumento del paciente activo sin reconstruir observaciones nuevas.",
+    parameters: {
+      type: "object",
+      properties: { patternKey: { type: "string", maxLength: 120 } },
+      required: ["patternKey"],
+      additionalProperties: false
+    },
+    strict: true
+  },
+  noArgsTool("get_patient_instrument_results", "Consulta resultados BSS almacenados, cobertura, reactivos, faltantes y parámetros; una suma parcial nunca se devuelve como puntuación BSS completa."),
+  noArgsTool("show_patient_patterns", "Muestra en la página la sección compartida del Detector de Patrones del paciente activo."),
   noArgsTool("get_observational_associations", "Obtiene asociaciones y probabilidades empíricas con numerador, denominador e incertidumbre."),
   noArgsTool("get_platform_pattern_matrices", "Consulta hallazgos agregados y desidentificados ya filtrados por utilidad, redundancia, soporte y estabilidad. Requiere rol administrador y nunca devuelve filas individuales."),
   noArgsTool("get_platform_semantic_relations", "Consulta relaciones semánticas agregadas del índice de embeddings priorizadas por similitud, recurrencia, soporte entre pacientes y consistencia. Requiere rol administrador; no devuelve texto, vectores ni identidad."),
@@ -120,6 +148,12 @@ const SOFIA_TOOL_DEFINITIONS = Object.freeze([
 function patientRequired(context) {
   if (context.analysis) return null;
   return { ok: false, error: "patient_context_required", message: "Selecciona un paciente autorizado para usar esta herramienta." };
+}
+
+function selectedPatternContext(context) {
+  return typeof context.getSelectedPatientPatternContext === "function"
+    ? context.getSelectedPatientPatternContext()
+    : null;
 }
 
 function safeVariable(variable, identityTerms = []) {
@@ -243,6 +277,23 @@ function uniqueActions(actions) {
   });
 }
 
+function descriptiveDeltas(observations = [], valueKey = "normalizedValue") {
+  const numeric = observations
+    .filter((item) => item.superseded !== true && item.sourceAvailable !== false && item[valueKey] !== null && item[valueKey] !== undefined && Number.isFinite(Number(item[valueKey])))
+    .sort((a, b) => String(a.timestamp).localeCompare(String(b.timestamp)));
+  return numeric.slice(1).map((item, index) => {
+    const previous = numeric[index];
+    return {
+      from: previous.timestamp,
+      to: item.timestamp,
+      fromValue: Number(previous[valueKey]),
+      toValue: Number(item[valueKey]),
+      delta: Number(item[valueKey]) - Number(previous[valueKey]),
+      interpretation: "descriptive_change_only"
+    };
+  });
+}
+
 function createSofiaToolRegistry(context) {
   const actions = [];
   const trace = [];
@@ -315,9 +366,104 @@ function createSofiaToolRegistry(context) {
         case "get_detected_patterns": {
           result = patientRequired(context);
           if (result) break;
-          result = { ok: true, source: "cognicion_empirical", patterns: context.analysis.patterns.map(compactPattern) };
+          const profile = selectedPatternContext(context);
+          result = profile
+            ? {
+              ok: true,
+              source: "patient_pattern_profile",
+              patterns: profile.patterns.map((pattern) => ({
+                id: pattern.id,
+                key: pattern.key,
+                label: pattern.label,
+                category: pattern.category,
+                status: pattern.status,
+                value: pattern.value,
+                confidence: pattern.confidence,
+                currentState: pattern.currentState,
+                observationCount: pattern.observations.length
+              }))
+            }
+            : { ok: true, source: "cognicion_empirical", patterns: context.analysis.patterns.map(compactPattern) };
           break;
         }
+        case "get_selected_patient_pattern_context": {
+          result = patientRequired(context);
+          if (result) break;
+          const profile = selectedPatternContext(context);
+          result = profile
+            ? { ok: true, source: "patient_pattern_profile", ...profile }
+            : { ok: false, error: "patient_pattern_profile_unavailable" };
+          break;
+        }
+        case "get_patient_pattern_evidence": {
+          result = patientRequired(context);
+          if (result) break;
+          const profile = selectedPatternContext(context);
+          const patternKey = cleanText(args.patternKey || "", 120);
+          const pattern = profile?.patterns?.find((item) => item.key === patternKey || item.id === patternKey);
+          result = pattern
+            ? {
+              ok: true,
+              source: "patient_pattern_profile",
+              pattern: { key: pattern.key, label: pattern.label, status: pattern.status, confidence: pattern.confidence },
+              evidence: pattern.evidence,
+              explanationsLimitedToStoredEvidence: true
+            }
+            : { ok: false, error: "pattern_not_found", patternKey };
+          break;
+        }
+        case "get_patient_pattern_trajectory": {
+          result = patientRequired(context);
+          if (result) break;
+          const profile = selectedPatternContext(context);
+          const patternKey = cleanText(args.patternKey || "", 120).toLowerCase();
+          if (["bss", "beck", "suicidalideationbss"].includes(patternKey)) {
+            const observations = (profile?.instruments || []).map((item) => ({
+              timestamp: item.timestamp,
+              rawScore: item.rawScore,
+              normalizedScore: item.normalizedScore,
+              partialSum: item.partialSum,
+              scoreStatus: item.scoreStatus,
+              coverage: item.coverage,
+              clinicianReviewed: item.clinicianReviewed,
+              superseded: item.superseded === true,
+              sourceAvailable: item.sourceAvailable !== false
+            }));
+            result = {
+              ok: true,
+              source: "patient_pattern_profile",
+              patternKey: "suicidalIdeationBSS",
+              observations,
+              rawScoreDeltas: descriptiveDeltas(observations.filter((item) => item.scoreStatus === "complete"), "rawScore"),
+              normalizedScoreDeltas: descriptiveDeltas(observations.filter((item) => item.scoreStatus === "complete"), "normalizedScore"),
+              descriptiveOnly: true
+            };
+            break;
+          }
+          const pattern = profile?.patterns?.find((item) => item.key.toLowerCase() === patternKey || item.id.toLowerCase() === patternKey);
+          result = pattern
+            ? { ok: true, source: "patient_pattern_profile", patternKey: pattern.key, observations: pattern.observations, deltas: descriptiveDeltas(pattern.observations), descriptiveOnly: true }
+            : { ok: false, error: "pattern_not_found", patternKey };
+          break;
+        }
+        case "get_patient_instrument_results": {
+          result = patientRequired(context);
+          if (result) break;
+          const profile = selectedPatternContext(context);
+          result = {
+            ok: true,
+            source: "patient_pattern_profile",
+            instruments: profile?.instruments || [],
+            partialScoreIsFinalScore: false,
+            normalizedScoreIsOutcomeProbability: false
+          };
+          break;
+        }
+        case "show_patient_patterns":
+          result = context.analysis
+            ? addAction({ type: "show-section", section: "patient-patterns" })
+            : patientRequired(context);
+          break;
         case "get_observational_associations": {
           result = patientRequired(context);
           if (result) break;
@@ -457,5 +603,6 @@ module.exports = {
   CLINICAL_DOMAINS,
   SOFIA_TOOL_DEFINITIONS,
   createSofiaToolRegistry,
+  descriptiveDeltas,
   safeVariable
 };

@@ -38,6 +38,7 @@ export const OPCIONES_ACCESOS_RAPIDOS = Object.freeze([
   { value: "biblioteca.html", label: "Biblioteca médica", keywords: "biblioteca recursos lectura medicina" },
   { value: "foro.html", label: "Foro Cognición", keywords: "foro comunidad mensajes" },
   { value: "sofia.html", label: "SOFÍA", keywords: "asistente inteligencia artificial" },
+  { value: "detector-patrones.html", label: "Detector de Patrones Clínicos", keywords: "paciente patrones evidencia BSS Beck trayectoria" },
   { value: "perfil-profesional.html", label: "Perfil profesional", keywords: "perfil cédula especialidad" },
   { value: "configuracion.html", label: "Configuración", keywords: "apariencia tema cuenta" },
   { value: "admin.html", label: "Centro de Control", keywords: "admin administración reportes usuarios" }

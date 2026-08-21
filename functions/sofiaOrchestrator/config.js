@@ -1,4 +1,4 @@
-const SOFIA_ORCHESTRATOR_VERSION = "1.1.0";
+const SOFIA_ORCHESTRATOR_VERSION = "1.2.0";
 const SOFIA_UNIFIED_MODEL = "gpt-5.5";
 
 const SOFIA_ORCHESTRATOR_LIMITS = Object.freeze({
@@ -19,6 +19,7 @@ const SOFIA_PAGE_SECTIONS = Object.freeze([
   "timeline",
   "relationships",
   "structured-analysis",
+  "patient-patterns",
   "narrative",
   "clinical-reasoning",
   "monitoring",

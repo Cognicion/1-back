@@ -5,6 +5,7 @@ export const SOFIA_PAGE_SECTIONS = Object.freeze({
   timeline: "timelineSofia",
   relationships: "mapaSofia",
   "structured-analysis": "clinicalAnalysisSofia",
+  "patient-patterns": "clinicalAnalysisSofia",
   narrative: "narrativaSofia",
   "clinical-reasoning": "razonamientoSofia",
   monitoring: "labsSofia",

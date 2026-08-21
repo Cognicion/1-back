@@ -32,6 +32,7 @@ function diagnoseLayout(host) {
     ["biocellular-background", host],
     ["canvas", host?.querySelector("canvas")]
   ];
+  const visualDiagnosticsEnabled = host?.dataset.diagnostic === "true";
   const colors = ["#ff00ff", "#00ffff", "#ffff00", "#00ff00", "#ff8800", "#ffffff"];
   const outlined = [];
   entries.forEach(([name, element], index) => {
@@ -46,9 +47,11 @@ function diagnoseLayout(host) {
     console.debug("[BIOCELULAR LAYOUT] position", style.position);
     console.debug("[BIOCELULAR LAYOUT] display", style.display);
     console.debug("[BIOCELULAR LAYOUT] minHeight", style.minHeight);
-    const previous = element.style.outline;
-    element.style.outline = `2px solid ${colors[index]}`;
-    outlined.push([element, previous]);
+    if (visualDiagnosticsEnabled) {
+      const previous = element.style.outline;
+      element.style.outline = `2px solid ${colors[index]}`;
+      outlined.push([element, previous]);
+    }
   });
   const login = document.querySelector("#login, .login-container, #loginForm, .login-form");
   document.body.classList.toggle("biocellular-login-page", Boolean(login));
@@ -70,7 +73,9 @@ function diagnoseLayout(host) {
   } else {
     console.warn("[BIOCELULAR LOGIN] Elemento no encontrado");
   }
-  window.setTimeout(() => outlined.forEach(([element, outline]) => { element.style.outline = outline; }), 1500);
+  if (outlined.length) {
+    window.setTimeout(() => outlined.forEach(([element, outline]) => { element.style.outline = outline; }), 1500);
+  }
 }
 
 export async function activateBiocellularTheme() {

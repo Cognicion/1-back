@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es" data-theme="biocelular">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Fixture visual · PatientPatternProfile</title>
+  <link rel="stylesheet" href="../../css/sofia.css" />
+  <link rel="stylesheet" href="../../css/patient-pattern-detector.css" />
+  <link rel="stylesheet" href="../../css/theme/cognicion-theme.css" />
+</head>
+<body>
+  <main class="patient-pattern-page"><section id="fixture"></section></main>
+  <script type="module">
+    import { renderPatientPatternProfile } from "../../js/patient-patterns/patientPatternRenderer.js";
+    if (new URLSearchParams(location.search).get("theme") === "light") {
+      document.documentElement.dataset.theme = "light";
+    }
+    const evidence = (id, excerpt, date, polarity = "positive") => ({ id, sourceType: "note", sourceDocumentId: `usuarios/notasMedicas/${id}`, sourceDate: date, documentDate: date, estimatedClinicalTime: date, temporalPrecision: "day", excerpt, polarity, confidence: .92, ruleApplied: "fixture_explicit_rule", sourceAvailable: true });
+    const observation = (id, key, value, status, timestamp, evidenceId, instrumentResultId = null) => ({ id, patternKey: key, value, normalizedValue: value === true ? 1 : value === false ? 0 : null, status, timestamp, confidence: .92, coverage: 1, evidenceIds: [evidenceId], instrumentResultId, clinicianReviewed: false, sourceAvailable: true });
+    const ev1 = evidence("note-1", "Refiere ideas persistentes de quitarse la vida durante los últimos tres días.", "2026-08-18T10:00:00.000Z");
+    const ev2 = evidence("note-2", "En la evolución actual niega ideación suicida.", "2026-08-20T10:00:00.000Z", "negative");
+    const bssItems = Array.from({ length: 19 }, (_value, index) => ({ itemNumber: index + 1, value: index < 7 ? 2 : 0, status: "evaluated", confidence: .9, evidence: `Evidencia estructurada del reactivo ${index + 1}.`, sourceType: "note", sourceDate: "2026-08-18T10:00:00.000Z", estimatedClinicalTime: "2026-08-18T10:00:00.000Z", ruleApplied: "fixture_explicit_bss_item", clinicianReviewed: index < 3 }));
+    const bss = { id: "bss-1", instrumentId: "bss", instrumentName: "Escala de Ideación Suicida de Beck", abbreviation: "BSS", timestamp: "2026-08-18T10:00:00.000Z", rawScore: 14, normalizedScore: 14 / 38, partialSum: 14, maximumScore: 38, coverage: 1, coveredItems: 19, requiredItems: 19, missingItems: [], scoreStatus: "complete", itemResults: bssItems, parameters: [{ key: "plan", label: "Plan", value: "Presente" }, { key: "methodAccess", label: "Acceso al método", value: "No determinado" }, { key: "preparatoryBehavior", label: "Conducta preparatoria", value: "Ausente" }], clinicianReviewed: false, sourceAvailable: true };
+    const bssPrevious = { ...bss, id: "bss-0", timestamp: "2026-08-12T10:00:00.000Z", rawScore: 21, normalizedScore: 21 / 38 };
+    const suicidalObservations = [observation("obs-1", "suicidal_ideation", true, "present", ev1.sourceDate, ev1.id, bss.id), observation("obs-2", "suicidal_ideation", false, "absent", ev2.sourceDate, ev2.id)];
+    const pattern = (key, label, status, value, observations = [], evidenceItems = []) => ({ id: `pattern-${key}`, key, label, category: "other", status, value, confidence: observations.at(-1)?.confidence || 0, evidence: evidenceItems, observations, currentState: { value, status, confidence: observations.at(-1)?.confidence || 0, sourceObservationId: observations.at(-1)?.id || null, effectiveAt: observations.at(-1)?.timestamp || null }, temporalState: { observationCount: observations.length }, instruments: key === "suicidal_ideation" ? [bssPrevious, bss] : [] });
+    const profile = {
+      patientId: "fixture-patient",
+      generatedAt: "2026-08-21T10:00:00.000Z",
+      updatedAt: "2026-08-21T10:00:00.000Z",
+      analysisState: "current",
+      patterns: [
+        pattern("suicidal_ideation", "Ideación suicida", "absent", false, suicidalObservations, [ev1, ev2]),
+        pattern("treatment_abandonment", "Suspensión o abandono de tratamiento documentado", "present", true, [observation("obs-3", "treatment_abandonment", true, "present", "2026-08-17T10:00:00.000Z", "ev-3")], []),
+        pattern("substance_use", "Uso de sustancias", "historical", true, [observation("obs-4", "substance_use", true, "historical", "2025-02-10T10:00:00.000Z", "ev-4")], []),
+        pattern("inadequate_family_support", "Soporte familiar inadecuado", "insufficient_data", null),
+        pattern("chronic_medical_condition", "Enfermedad médica crónica", "present", true, [observation("obs-5", "chronic_medical_condition", true, "present", "2026-08-16T10:00:00.000Z", "ev-5")], [])
+      ],
+      instruments: [bssPrevious, bss],
+      clinicalVariables: [{ variableId: "suicidal_ideation", canonicalName: "ideacion_suicida", domain: "symptoms", value: false, displayValue: "negado", observedAt: ev2.sourceDate, confidence: .92, provenance: { sourceRecordType: "notasMedicas" } }, { variableId: "suicide_attempt", canonicalName: "intento_suicida", domain: "history", value: true, displayValue: "observado", observedAt: "2025-02-10T10:00:00.000Z", confidence: .84, provenance: { sourceRecordType: "historiaClinica" } }],
+      quantitativeFeatures: [{ feature: "suicidalIdeationBSS", rawValue: 14, normalizedValue: 14 / 38, coverage: 1, confidence: .9, timestamp: bss.timestamp, sourceInstrument: "BSS", meaning: "Puntaje BSS normalizado (BSS/38); no es una probabilidad de suicidio." }],
+      dataQuality: { observationCount: 5 },
+      notice: "Análisis de apoyo clínico. No sustituye el juicio profesional."
+    };
+    renderPatientPatternProfile(document.getElementById("fixture"), { patient: { id: "fixture-patient", label: "Paciente de prueba", age: 32, recordNumber: "PRUEBA-001" }, profile });
+    requestAnimationFrame(() => {
+      const dashboard = document.querySelector(".patient-pattern-dashboard");
+      const firstDetail = document.querySelector(".pattern-detail");
+      firstDetail?.querySelector("summary")?.click();
+      const rect = dashboard?.getBoundingClientRect();
+      Object.assign(document.documentElement.dataset, {
+        fixtureReady: "true",
+        dashboardCount: String(document.querySelectorAll(".patient-pattern-dashboard").length),
+        patternCardCount: String(document.querySelectorAll(".pattern-card").length),
+        dashboardWidth: String(Math.round(rect?.width || 0)),
+        dashboardHeight: String(Math.round(rect?.height || 0)),
+        viewportWidth: String(document.documentElement.clientWidth),
+        documentScrollWidth: String(document.documentElement.scrollWidth),
+        bodyScrollWidth: String(document.body.scrollWidth),
+        insideViewport: String(Boolean(rect && rect.left >= 0 && rect.right <= document.documentElement.clientWidth)),
+        detailsToggleWorked: String(firstDetail?.open === true),
+        horizontalOverflow: String(document.documentElement.scrollWidth > document.documentElement.clientWidth)
+      });
+    });
+  </script>
+</body>
+</html>

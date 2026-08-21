@@ -10,13 +10,23 @@ function valueToIso(value) {
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 
-async function readCollection(db, patientId, collectionName) {
+async function readCollectionAtRoot(db, patientId, collectionName, sourceRoot) {
   try {
-    const snap = await db.collection(`usuarios/${patientId}/${collectionName}`).get();
-    return snap.docs.map((doc) => ({ id: doc.id, ...doc.data(), _recordType: collectionName })).sort((a, b) => String(valueToIso(b.updatedAt || b.fecha || b.createdAt) || "").localeCompare(String(valueToIso(a.updatedAt || a.fecha || a.createdAt) || "")));
+    const snap = await db.collection(`${sourceRoot}/${patientId}/${collectionName}`).get();
+    return snap.docs.map((doc) => ({ id: doc.id, ...doc.data(), _recordType: collectionName, _sourceRoot: sourceRoot }));
   } catch {
     return [];
   }
+}
+
+async function readCollection(db, patientId, collectionName) {
+  const records = (await Promise.all([
+    readCollectionAtRoot(db, patientId, collectionName, "usuarios"),
+    readCollectionAtRoot(db, patientId, collectionName, "pacientes")
+  ])).flat();
+  const unique = new Map();
+  records.forEach((record) => unique.set(`${record._sourceRoot}:${record.id}`, record));
+  return [...unique.values()].sort((a, b) => String(valueToIso(b.updatedAt || b.fecha || b.createdAt) || "").localeCompare(String(valueToIso(a.updatedAt || a.fecha || a.createdAt) || "")));
 }
 
 async function buildPatientClinicalContext({ db, patientId, patient }) {
@@ -30,4 +40,4 @@ async function buildPatientClinicalContext({ db, patientId, patient }) {
   };
 }
 
-module.exports = { buildPatientClinicalContext, valueToIso, COLLECTIONS };
+module.exports = { buildPatientClinicalContext, valueToIso, COLLECTIONS, readCollection, readCollectionAtRoot };

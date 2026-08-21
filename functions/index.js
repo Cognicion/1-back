@@ -17,6 +17,12 @@ const {
   processClinicalPatientWrite
 } = require("./clinicalAnalytics/handlers");
 const { runUnifiedSofia } = require("./sofiaOrchestrator/orchestrator");
+const {
+  getPatientPatternProfile,
+  refreshPatientPatternProfileHandler,
+  reviewPatientPatternResult,
+  searchAuthorizedPatternPatients
+} = require("./clinicalAnalytics/patientPatternHandlers");
 
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 if (!admin.apps.length) admin.initializeApp();
@@ -459,6 +465,10 @@ exports.discoverTextPatterns = onCall({ region: "us-central1", timeoutSeconds: 3
 
 exports.analyzePatientClinicalContext = onCall({ region: "us-central1", timeoutSeconds: 120, memory: "1GiB" }, async (request) => analyzePatientClinicalContext({ request, db: adminDb }));
 exports.listAuthorizedSofiaPatients = onCall({ region: "us-central1", timeoutSeconds: 60 }, async (request) => listAuthorizedSofiaPatients({ request, db: adminDb }));
+exports.searchAuthorizedPatternPatients = onCall({ region: "us-central1", timeoutSeconds: 60 }, async (request) => searchAuthorizedPatternPatients({ request, db: adminDb }));
+exports.getPatientPatternProfile = onCall({ region: "us-central1", timeoutSeconds: 120, memory: "1GiB" }, async (request) => getPatientPatternProfile({ request, db: adminDb }));
+exports.refreshPatientPatternProfile = onCall({ region: "us-central1", timeoutSeconds: 120, memory: "1GiB" }, async (request) => refreshPatientPatternProfileHandler({ request, db: adminDb }));
+exports.reviewPatientPatternResult = onCall({ region: "us-central1", timeoutSeconds: 60 }, async (request) => reviewPatientPatternResult({ request, db: adminDb }));
 exports.getClinicalKnowledgeAdmin = onCall({ region: "us-central1", timeoutSeconds: 60 }, async (request) => getClinicalKnowledgeAdmin({ request, db: adminDb }));
 exports.rebuildClinicalPatternMatricesAdmin = onCall({ region: "us-central1", timeoutSeconds: 540, memory: "1GiB" }, async (request) => rebuildClinicalPatternMatricesAdmin({ request, db: adminDb }));
 exports.rebuildClinicalEmbeddingIndexAdmin = onCall({
@@ -483,6 +493,19 @@ exports.clinicalAnalyticsOnRecordWrite = onDocumentWritten({
   db: adminDb,
   apiKey: OPENAI_API_KEY.value(),
   OpenAIClass: OpenAI
+}));
+exports.clinicalAnalyticsOnLegacyPatientRecordWrite = onDocumentWritten({
+  region: "us-central1",
+  document: "pacientes/{patientId}/{collectionId}/{recordId}",
+  secrets: [OPENAI_API_KEY],
+  timeoutSeconds: 300,
+  memory: "1GiB"
+}, async (event) => processClinicalAnalyticsWrite({
+  event,
+  db: adminDb,
+  apiKey: OPENAI_API_KEY.value(),
+  OpenAIClass: OpenAI,
+  sourceRoot: "pacientes"
 }));
 exports.clinicalAnalyticsOnPatientWrite = onDocumentWritten({
   region: "us-central1",

@@ -4,9 +4,10 @@ import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase
 import { aplicarAparienciaGuardada } from "./services/apariencia.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 import { emitSofiaState } from "./sofia-mascota/mascotaEvents.js";
-import { analyzeSelectedPatient, listAuthorizedSofiaPatients, renderClinicalAnalysis, renderClinicalAnalysisError } from "./sofia/clinicalAnalysis/clinicalAnalysisController.js";
+import { analyzeSelectedPatient, listAuthorizedSofiaPatients, renderClinicalAnalysis, renderClinicalAnalysisError } from "./sofia/clinicalAnalysis/clinicalAnalysisController.js?v=20260821-patient-pattern-profile-v1";
 import { createSofiaUnifiedClient } from "./sofia/sofiaUnifiedClient.js";
-import { applySofiaPageActions, collectSofiaPageState } from "./sofia/pageTools.js";
+import { applySofiaPageActions, collectSofiaPageState } from "./sofia/pageTools.js?v=20260821-patient-pattern-profile-v1";
+import { listenForSofiaPatternContext } from "./patient-patterns/patternSofiaBridge.js";
 import {
   analizarInteraccionesMedicamentos,
   cargarExpedientePacienteSofia,
@@ -44,6 +45,8 @@ let expedienteActual = null;
 let timelineActual = [];
 let panelContextActual = {};
 let notaCriticaActual = [];
+let contextoPatronPendiente = null;
+let ultimaClaveContextoPatron = "";
 
 function agregarMensaje(texto, tipo, claseExtra = "") {
   const div = document.createElement("div");
@@ -64,6 +67,47 @@ function agregarTrazasHerramientas(messageElement, result = {}) {
     : `Herramientas utilizadas: ${names.join(", ")}.`;
   messageElement.appendChild(trace);
 }
+
+function sugerenciaPatron(patternId = "") {
+  const label = String(patternId || "este patrón").replace(/^pattern-/, "").replaceAll("_", " ");
+  return `¿Cómo se detectó ${label} y qué evidencia, parámetros e historial utilizaste?`;
+}
+
+async function aplicarContextoPatronSofia(context = {}) {
+  const patientId = String(context.patientId || "");
+  const patternId = String(context.patternId || "");
+  if (!patientId || !patternId || !pacientesSofia.length) {
+    contextoPatronPendiente = context;
+    return;
+  }
+  const authorized = pacientesSofia.some((patient) => patient.id === patientId);
+  if (!authorized) return;
+  const key = `${patientId}:${patternId}:${context.instrumentId || ""}`;
+  if (key === ultimaClaveContextoPatron) return;
+  ultimaClaveContextoPatron = key;
+  contextoPatronPendiente = null;
+  if (selectorPaciente.value !== patientId) {
+    selectorPaciente.value = patientId;
+    await cargarPacienteSeleccionado(patientId);
+  }
+  const suggestion = sugerenciaPatron(patternId);
+  if (mensajeSofia) {
+    mensajeSofia.value = suggestion;
+    mensajeSofia.focus();
+  }
+  agregarMensaje("Contexto del Detector de Patrones recibido. Puedes preguntar: ¿Cómo se detectó?, ¿con qué notas?, ¿cómo se calculó BSS?, ¿qué información falta? o ¿cómo cambió con el tiempo?", "sofia");
+  document.getElementById("chatBox")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+}
+
+listenForSofiaPatternContext((context) => { void aplicarContextoPatronSofia(context); });
+document.addEventListener("sofia:ask-pattern", (event) => {
+  const detail = event.detail || {};
+  if (mensajeSofia) {
+    mensajeSofia.value = sugerenciaPatron(detail.patternId);
+    mensajeSofia.focus();
+  }
+  document.getElementById("chatBox")?.scrollIntoView({ behavior: "smooth", block: "center" });
+});
 
 function bloquearAcceso(mensaje) {
   estadoAcceso.textContent = mensaje;
@@ -126,6 +170,7 @@ async function cargarSelectorPacientes() {
     return;
   }
   selectorPaciente.innerHTML = `<option value="">Selecciona un paciente</option>` + pacientesSofia.map((p) => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.label || "Paciente")}</option>`).join("");
+  if (contextoPatronPendiente) await aplicarContextoPatronSofia(contextoPatronPendiente);
 }
 
 selectorPaciente?.addEventListener("change", () => {

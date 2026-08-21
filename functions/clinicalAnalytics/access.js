@@ -43,6 +43,23 @@ async function assertAuthorizedProfessional(request, db, patientId) {
   return { actor, patient: patientSnap.data() || {}, patientSnap, isAdmin: true };
 }
 
+async function assertAuthorizedPatientClinician(request, db, patientId) {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Autenticación requerida.");
+  if (!patientId || typeof patientId !== "string" || patientId.length > 160) throw new HttpsError("invalid-argument", "Paciente inválido.");
+  const actorSnap = await db.doc(`usuarios/${request.auth.uid}`).get();
+  const actor = actorSnap.exists ? actorSnap.data() || {} : {};
+  if (!isProfessional(actor)) {
+    throw new HttpsError("permission-denied", "El perfil individual está disponible únicamente para personal clínico autorizado.");
+  }
+  const patientSnap = await db.doc(`usuarios/${patientId}`).get();
+  if (!patientSnap.exists) throw new HttpsError("not-found", "Paciente no encontrado.");
+  const patient = patientSnap.data() || {};
+  if (!patientAllowsProfessionalAccess(patient, request.auth.uid)) {
+    throw new HttpsError("permission-denied", "No tienes acceso a este paciente.");
+  }
+  return { actor, patient, patientSnap, isAdmin: isAdmin(actor, request.auth) };
+}
+
 async function assertAdmin(request, db) {
   if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Autenticación requerida.");
   const actorSnap = await db.doc(`usuarios/${request.auth.uid}`).get();
@@ -50,4 +67,12 @@ async function assertAdmin(request, db) {
   return actorSnap.data() || {};
 }
 
-module.exports = { normalized, isAdmin, isProfessional, patientAllowsProfessionalAccess, assertAuthorizedProfessional, assertAdmin };
+module.exports = {
+  normalized,
+  isAdmin,
+  isProfessional,
+  patientAllowsProfessionalAccess,
+  assertAuthorizedProfessional,
+  assertAuthorizedPatientClinician,
+  assertAdmin
+};

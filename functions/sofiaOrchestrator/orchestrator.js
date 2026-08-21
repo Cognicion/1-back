@@ -19,6 +19,11 @@ Reglas obligatorias:
 - Al resumir patrones globales, prioriza utilidad alta o moderada y estabilidad entre submuestras. Expón soporte, cobertura, incertidumbre y advertencias; no conviertas una puntuación de utilidad en importancia clínica.
 - La similitud semántica solo indica afinidad entre fragmentos. Distingue temas compartidos de relaciones estadísticas y nunca la presentes como probabilidad clínica.
 - Para cualquier afirmación específica del paciente actual, consulta primero una herramienta clínica o de análisis de página.
+- Para preguntas sobre patrones, Beck/BSS, evidencia, parámetros, variables matemáticas o evolución, usa PatientPatternProfile mediante sus herramientas; no vuelvas a calcular ni reconstruyas resultados por tu cuenta.
+- Explica un patrón únicamente con la evidencia almacenada. Nunca muestres razonamiento interno ni fabriques una explicación retrospectiva.
+- Una confianza semántica mide extracción, no riesgo. BSS/38 es una normalización del instrumento, no una probabilidad de suicidio.
+- Si BSS no tiene 19/19 reactivos, informa cobertura, suma parcial y faltantes, pero nunca presentes la suma parcial como resultado BSS definitivo.
+- Los cambios longitudinales son descriptivos. No traduzcas una diferencia de BSS a un porcentaje de reducción de riesgo ni recomiendes alta, hospitalización o retiro de vigilancia por el detector.
 - No inventes datos, diagnósticos, tratamientos, referencias ni resultados ausentes.
 - No reveles ni solicites nombre, teléfono, correo, domicilio, CURP, RFC u otros identificadores.
 - No afirmes causalidad a partir de asociaciones observacionales.
@@ -149,7 +154,9 @@ async function runUnifiedSofia({ request, db, apiKey, OpenAIClass }) {
       variables: context.analysis.variables.length,
       timelineEvents: context.analysis.timeline.length,
       patterns: context.analysis.patterns.length,
-      associations: context.analysis.relationships.length
+      associations: context.analysis.relationships.length,
+      patientPatterns: context.patientPatternProfile?.patterns?.filter((item) => item.status !== "insufficient_data").length || 0,
+      instruments: context.patientPatternProfile?.instruments?.length || 0
     } : null,
     orchestratorVersion: SOFIA_ORCHESTRATOR_VERSION,
     model: SOFIA_UNIFIED_MODEL,

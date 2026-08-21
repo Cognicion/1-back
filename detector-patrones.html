@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="biocelular">
+<head>
+  <script src="js/theme-preload.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detector de Patrones Clínicos | Cognición Labs</title>
+  <link rel="icon" href="assets/favicon-cognicion.png" />
+  <link rel="stylesheet" href="css/sofia.css" />
+  <link rel="stylesheet" href="css/patient-pattern-detector.css" />
+  <link rel="stylesheet" href="css/theme/cognicion-theme.css" />
+  <script type="module" src="js/services/themeBootstrap.js"></script>
+</head>
+<body>
+  <header class="sofia-topbar">
+    <a class="brand" href="dashboard.html" aria-label="Volver al dashboard">
+      <img src="assets/favicon-cognicion.png" alt="Cognición" />
+      <span><strong>COGNICIÓN Labs</strong><small>Detector de Patrones Clínicos</small></span>
+    </a>
+    <nav class="top-actions" aria-label="Navegación principal">
+      <a href="sofia.html" class="ghost-link">Abrir SOFÍA</a>
+      <a href="medico.html" class="ghost-link">Panel médico</a>
+      <a href="dashboard.html" class="ghost-link">Dashboard</a>
+    </nav>
+  </header>
+
+  <main class="patient-pattern-page">
+    <section class="patient-pattern-search" aria-labelledby="patientPatternTitle">
+      <div>
+        <p class="eyebrow">COGNICIÓN / PERFIL CENTRAL DE PATRONES</p>
+        <h1 id="patientPatternTitle">Detector de Patrones Clínicos por Paciente</h1>
+        <p class="subtitle">Selecciona exclusivamente un paciente autorizado para recorrer patrones, historial, evidencia, instrumentos y variables matemáticas desde una única fuente de verdad.</p>
+      </div>
+      <label for="patientPatternSearch">Buscar paciente</label>
+      <div class="patient-pattern-search__row">
+        <input id="patientPatternSearch" type="search" autocomplete="off" placeholder="Nombre, expediente, identificador interno o CURP autorizada…" />
+        <button id="patientPatternSearchButton" type="button">Buscar</button>
+      </div>
+      <p id="patientPatternStatus" class="patient-pattern-status" role="status" aria-live="polite">Verificando sesión…</p>
+      <div id="patientPatternResults" class="patient-search-results" aria-label="Resultados de pacientes"></div>
+    </section>
+    <section id="patientPatternHost" class="patient-pattern-host" aria-live="polite">
+      <p class="empty-state">Selecciona un paciente para cargar su perfil protegido.</p>
+    </section>
+  </main>
+
+  <script type="module" src="js/patient-patterns/patientPatternPage.js"></script>
+  <script type="module" src="js/components/accesosRapidos.js"></script>
+  <script type="module" src="js/reportes.js"></script>
+</body>
+</html>

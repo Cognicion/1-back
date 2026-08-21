@@ -41,7 +41,7 @@
 
     if (theme === "biocelular") {
       try {
-        const { activateBiocellularTheme } = await import("./themes/biocellularThemeController.js");
+        const { activateBiocellularTheme } = await import("./themes/biocellularThemeController.js?v=2.046-diagnostico-visual");
         await activateBiocellularTheme();
       } catch (error) {
         console.warn("[PUBLIC HOME] No se pudo activar el fondo biocelular.", error);
@@ -49,7 +49,7 @@
     } else if (previousTheme === "biocelular") {
       if (globalThis.__cognicionBiocellularDeactivate) globalThis.__cognicionBiocellularDeactivate();
       else {
-        void import("./themes/biocellularThemeController.js")
+        void import("./themes/biocellularThemeController.js?v=2.046-diagnostico-visual")
           .then(({ deactivateBiocellularTheme }) => deactivateBiocellularTheme())
           .catch((error) => console.warn("[PUBLIC HOME] No se pudo limpiar el fondo biocelular.", error));
       }

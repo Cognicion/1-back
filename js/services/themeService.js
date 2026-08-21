@@ -70,12 +70,12 @@ export function applyTheme(theme) {
     ? "#e9ede6"
     : normalizedTheme === "biocelular" ? "#120609" : "#050505";
   if (normalizedTheme === "biocelular") {
-    void import("../themes/biocellularThemeController.js")
+    void import("../themes/biocellularThemeController.js?v=2.046-diagnostico-visual")
       .then(({ activateBiocellularTheme }) => { console.debug("[BIOCELULAR] Módulo cargado"); return activateBiocellularTheme(); })
       .catch((error) => console.error("[BIOCELULAR] Error al importar el controlador", error));
   } else {
     if (globalThis.__cognicionBiocellularDeactivate) globalThis.__cognicionBiocellularDeactivate();
-    else void import("../themes/biocellularThemeController.js").then(({ deactivateBiocellularTheme }) => deactivateBiocellularTheme()).catch((error) => console.error("[BIOCELULAR] Error al limpiar el controlador", error));
+    else void import("../themes/biocellularThemeController.js?v=2.046-diagnostico-visual").then(({ deactivateBiocellularTheme }) => deactivateBiocellularTheme()).catch((error) => console.error("[BIOCELULAR] Error al limpiar el controlador", error));
   }
   updateThemeSelectorUI(normalizedTheme);
   return normalizedTheme;

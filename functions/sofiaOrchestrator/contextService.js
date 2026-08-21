@@ -1,17 +1,10 @@
 const { HttpsError } = require("firebase-functions/v2/https");
 const {
-  assertAuthorizedProfessional,
+  assertAuthorizedPatientClinician,
   isAdmin,
   isProfessional
 } = require("../clinicalAnalytics/access");
-const { buildPatientClinicalContext } = require("../clinicalAnalytics/contextBuilder");
-const { extractClinicalVariables } = require("../clinicalAnalytics/variableExtractor");
-const { analyzePatientTimeline } = require("../clinicalAnalytics/timelineAnalyzer");
-const {
-  detectPatientPatterns,
-  buildObservationalRelationships
-} = require("../clinicalAnalytics/patternAnalyzer");
-const { calculateEmpiricalProbability } = require("../clinicalAnalytics/probabilityEngine");
+const { getOrBuildPatientPatternProfile, analysisFromProfile } = require("../clinicalAnalytics/patientPatternProfileService");
 const { stripIdentifiers } = require("../clinicalAnalytics/deidentification");
 const { readClinicalMatrices } = require("../clinicalAnalytics/matrixPersistence");
 const { readClinicalEmbeddingKnowledge } = require("../clinicalAnalytics/embeddingPersistence");
@@ -110,19 +103,111 @@ async function assertAuthorizedSofiaActor(request, db) {
   return { actor, isAdmin: actorIsAdmin };
 }
 
-function buildAnalysis(context) {
-  const variables = extractClinicalVariables(context);
-  const timeline = analyzePatientTimeline(variables);
-  const patterns = detectPatientPatterns(timeline);
-  const relationships = buildObservationalRelationships(timeline).map((relationship) => ({
-    ...relationship,
-    probability: calculateEmpiricalProbability({
-      numerator: relationship.numerator,
-      denominator: relationship.denominator,
-      cohort: { condition: relationship.condition, outcome: relationship.outcome }
-    })
-  }));
-  return { variables, timeline, patterns, relationships };
+function buildAnalysis(profile) {
+  return analysisFromProfile(profile);
+}
+
+function getSelectedPatientPatternContext(context = {}) {
+  const profile = context.patientPatternProfile;
+  if (!profile) return null;
+  const identityTerms = context.identityTerms || [];
+  return {
+    analysisState: profile.analysisState,
+    generatedAt: profile.generatedAt,
+    updatedAt: profile.updatedAt,
+    notice: cleanText(profile.notice, 500, identityTerms),
+    patterns: (profile.patterns || []).map((pattern) => ({
+      id: pattern.id,
+      key: pattern.key,
+      label: pattern.label,
+      category: pattern.category,
+      status: pattern.status,
+      value: sanitizeSupplementalValue(pattern.value, 0, identityTerms),
+      confidence: pattern.confidence,
+      currentState: sanitizeSupplementalValue(pattern.currentState, 0, identityTerms),
+      evidence: (pattern.evidence || []).map((item) => ({
+        evidenceId: item.id,
+        sourceType: item.sourceType,
+        sourceDate: item.sourceDate,
+        documentDate: item.documentDate,
+        estimatedClinicalTime: item.estimatedClinicalTime,
+        temporalPrecision: item.temporalPrecision,
+        clinicalTimeWindow: item.clinicalTimeWindow,
+        excerpt: cleanText(item.excerpt, 500, identityTerms),
+        polarity: item.polarity,
+        confidence: item.confidence,
+        ruleApplied: item.ruleApplied
+      })),
+      observations: (pattern.observations || []).map((item) => ({
+        id: item.id,
+        timestamp: item.timestamp,
+        documentDate: item.documentDate,
+        estimatedClinicalTime: item.estimatedClinicalTime,
+        temporalPrecision: item.temporalPrecision,
+        clinicalTimeWindow: item.clinicalTimeWindow,
+        value: sanitizeSupplementalValue(item.value, 0, identityTerms),
+        normalizedValue: item.normalizedValue,
+        status: item.status,
+        confidence: item.confidence,
+        coverage: item.coverage,
+        instrumentResultId: item.instrumentResultId,
+        clinicianReviewed: item.clinicianReviewed === true,
+        sourceAvailable: item.sourceAvailable !== false,
+        superseded: item.superseded === true
+      }))
+    })),
+    instruments: (profile.instruments || []).map((instrument) => ({
+      id: instrument.id,
+      instrumentId: instrument.instrumentId,
+      instrumentName: instrument.instrumentName,
+      abbreviation: instrument.abbreviation,
+      timestamp: instrument.timestamp,
+      rawScore: instrument.rawScore,
+      normalizedScore: instrument.normalizedScore,
+      partialSum: instrument.partialSum,
+      maximumScore: instrument.maximumScore,
+      coverage: instrument.coverage,
+      coveredItems: instrument.coveredItems,
+      requiredItems: instrument.requiredItems,
+      missingItems: instrument.missingItems,
+      scoreStatus: instrument.scoreStatus,
+      sourceAvailable: instrument.sourceAvailable !== false,
+      superseded: instrument.superseded === true,
+      parameters: sanitizeSupplementalValue(instrument.parameters, 0, identityTerms),
+      itemResults: (instrument.itemResults || []).map((item) => ({
+        itemNumber: item.itemNumber,
+        value: item.value,
+        status: item.status,
+        confidence: item.confidence,
+        evidence: cleanText(item.evidence, 500, identityTerms),
+        sourceType: item.sourceType,
+        sourceDate: item.sourceDate,
+        estimatedClinicalTime: item.estimatedClinicalTime,
+        temporalPrecision: item.temporalPrecision,
+        ruleApplied: item.ruleApplied,
+        clinicianReviewed: item.clinicianReviewed === true
+      })),
+      clinicianReviewed: instrument.clinicianReviewed === true
+    })),
+    quantitativeFeatures: (profile.quantitativeFeatures || []).map((feature) => ({
+      feature: feature.feature,
+      patternKey: feature.patternKey || null,
+      rawValue: feature.rawValue,
+      normalizedValue: feature.normalizedValue,
+      coverage: feature.coverage,
+      confidence: feature.confidence,
+      timestamp: feature.timestamp,
+      sourceInstrument: feature.sourceInstrument,
+      meaning: feature.meaning
+    })),
+    snapshots: (profile.snapshots || []).map((snapshot) => ({
+      timestamp: snapshot.timestamp,
+      featureValues: snapshot.featureValues
+    })),
+    dataQuality: profile.dataQuality,
+    directIdentifiersIncluded: false,
+    rawReasoningIncluded: false
+  };
 }
 
 async function buildAuthorizedSofiaContext({ request, db }) {
@@ -135,6 +220,7 @@ async function buildAuthorizedSofiaContext({ request, db }) {
       isAdmin: access.isAdmin,
       patientId: null,
       analysis: null,
+      patientPatternProfile: null,
       pageState: sanitizePageState(request.data?.pageState),
       identityTerms: [],
       loadPlatformMatrices: access.isAdmin ? () => readClinicalMatrices({ db, limit: 60 }) : null,
@@ -142,30 +228,35 @@ async function buildAuthorizedSofiaContext({ request, db }) {
     };
   }
 
-  const access = await assertAuthorizedProfessional(request, db, patientId);
-  const clinicalContext = await buildPatientClinicalContext({
+  const access = await assertAuthorizedPatientClinician(request, db, patientId);
+  const patternResult = await getOrBuildPatientPatternProfile({
     db,
     patientId,
-    patient: access.patient
+    patient: access.patient,
+    actorUid: request.auth.uid
   });
   const identityTerms = patientIdentityTerms(access.patient);
-  return {
+  const context = {
     mode: "patient",
     actorUid: request.auth.uid,
     isAdmin: access.isAdmin,
     patientId,
-    analysis: buildAnalysis(clinicalContext),
+    analysis: patternResult.analysis,
+    patientPatternProfile: patternResult.profile,
     pageState: sanitizePageState(request.data?.pageState, identityTerms),
     identityTerms,
     loadPlatformMatrices: access.isAdmin ? () => readClinicalMatrices({ db, limit: 60 }) : null,
     loadPlatformSemanticKnowledge: access.isAdmin ? () => readClinicalEmbeddingKnowledge({ db }) : null
   };
+  context.getSelectedPatientPatternContext = () => getSelectedPatientPatternContext(context);
+  return context;
 }
 
 module.exports = {
   buildAnalysis,
   buildAuthorizedSofiaContext,
   cleanText,
+  getSelectedPatientPatternContext,
   patientIdentityTerms,
   redactKnownIdentifiers,
   sanitizePageState,

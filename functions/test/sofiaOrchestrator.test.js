@@ -38,19 +38,43 @@ function createContext() {
 }
 
 function createFakeDb({ actor, patient }) {
+  const stored = new Map();
+  function reference(path) {
+    return {
+      path,
+      async get() {
+        if (path === "usuarios/doctor-1") return { exists: true, data: () => actor };
+        if (path === "usuarios/patient-1") return { exists: true, data: () => patient };
+        return { exists: stored.has(path), data: () => stored.get(path) || {} };
+      },
+      async set(value, options = {}) {
+        stored.set(path, options.merge ? { ...(stored.get(path) || {}), ...value } : value);
+      },
+      collection(name) {
+        return collection(`${path}/${name}`);
+      }
+    };
+  }
+  function collection(path) {
+    return {
+      doc(id) { return reference(`${path}/${id}`); },
+      async get() {
+        const prefix = `${path}/`;
+        const docs = [...stored.entries()].filter(([key]) => key.startsWith(prefix) && !key.slice(prefix.length).includes("/")).map(([key, value]) => ({ id: key.slice(prefix.length), data: () => value }));
+        return { docs };
+      }
+    };
+  }
   return {
-    doc(path) {
+    doc(path) { return reference(path); },
+    collection(path) { return collection(path); },
+    batch() {
+      const operations = [];
       return {
-        async get() {
-          if (path === "usuarios/doctor-1") return { exists: true, data: () => actor };
-          if (path === "usuarios/patient-1") return { exists: true, data: () => patient };
-          return { exists: false, data: () => ({}) };
-        }
+        set(ref, value, options) { operations.push(() => ref.set(value, options)); },
+        async commit() { for (const operation of operations) await operation(); }
       };
     },
-    collection() {
-      return { async get() { return { docs: [] }; } };
-    }
   };
 }
 
