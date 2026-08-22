@@ -8,6 +8,8 @@ import { analyzeSelectedPatient, listAuthorizedSofiaPatients, renderClinicalAnal
 import { createSofiaUnifiedClient } from "./sofia/sofiaUnifiedClient.js";
 import { applySofiaPageActions, collectSofiaPageState } from "./sofia/pageTools.js?v=20260821-patient-pattern-profile-v1";
 import { listenForSofiaPatternContext } from "./patient-patterns/patternSofiaBridge.js";
+import { renderEcgInterpretation } from "./sofia/electrocardiogram/ecgRenderer.js?v=20260821-sofia-ecg-v1";
+import { interpretPatientElectrocardiogram } from "./services/sofiaElectrocardiograma.js?v=20260821-sofia-ecg-v1";
 import {
   analizarInteraccionesMedicamentos,
   cargarExpedientePacienteSofia,
@@ -221,13 +223,15 @@ async function cargarPacienteSeleccionado(idPaciente) {
     const alertas = generarAlertasInteligentes(expedienteActual);
     const monitorizacion = generarRecomendacionesLaboratorio(expedienteActual);
     const interacciones = analizarInteraccionesMedicamentos(expedienteActual.tratamientos || []);
+    const electrocardiogram = interpretPatientElectrocardiogram(expedienteActual);
     panelContextActual = construirContextoHerramientasPagina({
       digital,
       narrativa,
       razonamiento,
       alertas,
       monitorizacion,
-      interacciones
+      interacciones,
+      electrocardiogram
     });
     renderPacienteDigital(digital);
     renderTimeline(timelineActual);
@@ -238,6 +242,7 @@ async function cargarPacienteSeleccionado(idPaciente) {
     renderStack("prediccionSofia", digital.riesgos.map((r) => ({ titulo: r.titulo, nivel: r.nivel, detalle: `Factores: ${(r.factores || []).join(", ")}`, accion: `Variables faltantes: ${(r.faltantes || []).join(", ")}` })));
     renderStack("labsSofia", monitorizacion.map((r) => ({ titulo: r.estudio, nivel: r.prioridad, detalle: r.motivo, accion: `${r.periodicidad}. ${r.relacion}` })));
     renderFarmaco(expedienteActual);
+    renderEcgInterpretation(document.getElementById("ecgSofia"), electrocardiogram);
     emitSofiaState("completed", "patient-selection", { duration: 1600, fallbackState: "idle" });
   } catch (error) {
     console.error(error);
@@ -343,7 +348,7 @@ function renderFarmaco(expediente) {
   renderStack("farmacoSofia", tarjetas);
 }
 
-function construirContextoHerramientasPagina({ digital, narrativa, razonamiento, alertas, monitorizacion, interacciones }) {
+function construirContextoHerramientasPagina({ digital, narrativa, razonamiento, alertas, monitorizacion, interacciones, electrocardiogram }) {
   const diagnosticos = (digital.diagnosticos || []).slice(0, 12).map((diagnostico) => ({
     code: diagnostico.codigo || null,
     system: diagnostico.sistema || null,
@@ -406,7 +411,8 @@ function construirContextoHerramientasPagina({ digital, narrativa, razonamiento,
         consequence: item.consecuencia || null,
         professionalReview: item.conducta || null
       }))
-    }
+    },
+    electrocardiogram: electrocardiogram || null
   };
 }
 
@@ -437,7 +443,7 @@ function filtrarTimeline(valor) {
 
 function setLoadingPanels(texto) {
   emitSofiaState("analyzing", "panel-loading");
-  ["pacienteDigitalSofia", "alertasSofia", "prediccionSofia", "timelineSofia", "mapaSofia", "narrativaSofia", "razonamientoSofia", "labsSofia", "farmacoSofia"].forEach((id) => {
+  ["pacienteDigitalSofia", "alertasSofia", "prediccionSofia", "timelineSofia", "mapaSofia", "narrativaSofia", "razonamientoSofia", "labsSofia", "farmacoSofia", "ecgSofia"].forEach((id) => {
     const el = document.getElementById(id);
     if (el) { el.className = `${el.className.split(" ")[0]} empty-state`; el.textContent = texto; }
   });

@@ -10,6 +10,7 @@ export const SOFIA_PAGE_SECTIONS = Object.freeze({
   "clinical-reasoning": "razonamientoSofia",
   monitoring: "labsSofia",
   pharmacology: "farmacoSofia",
+  electrocardiogram: "ecgSofia",
   "note-review": "criticaNotaSofia",
   chat: "chatBox"
 });

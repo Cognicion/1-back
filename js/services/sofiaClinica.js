@@ -50,11 +50,31 @@ export async function cargarExpedientePacienteSofia(idPaciente) {
   const snap = await getDoc(doc(db, "usuarios", idPaciente));
   if (!snap.exists()) throw new Error("Paciente no encontrado");
   const paciente = { id: snap.id, ...snap.data() };
-  const [tratamientos, notas, notasRapidas, estudios, escalasUsuario, escalasPaciente] = await Promise.all([
+  const [
+    tratamientos,
+    notas,
+    notasRapidas,
+    estudiosUsuario,
+    estudiosPaciente,
+    laboratoriosUsuario,
+    laboratoriosPaciente,
+    escalasUsuario,
+    escalasPaciente
+  ] = await Promise.all([
     leerSubcoleccionUsuario(idPaciente, "tratamientos"), leerSubcoleccionUsuario(idPaciente, "notas"), leerSubcoleccionUsuario(idPaciente, "notasRapidas"),
-    leerSubcoleccionUsuario(idPaciente, "estudios"), leerSubcoleccionUsuario(idPaciente, "escalasAplicadas"), leerSubcoleccionPaciente(idPaciente, "escalasAplicadas")
+    leerSubcoleccionUsuario(idPaciente, "estudios"), leerSubcoleccionPaciente(idPaciente, "estudios"),
+    leerSubcoleccionUsuario(idPaciente, "laboratorios"), leerSubcoleccionPaciente(idPaciente, "laboratorios"),
+    leerSubcoleccionUsuario(idPaciente, "escalasAplicadas"), leerSubcoleccionPaciente(idPaciente, "escalasAplicadas")
   ]);
-  return { paciente, tratamientos, notas, notasRapidas, estudios, escalas: mezclarPorId([...escalasUsuario, ...escalasPaciente]) };
+  return {
+    paciente,
+    tratamientos,
+    notas,
+    notasRapidas,
+    estudios: mezclarPorId([...estudiosUsuario, ...estudiosPaciente]),
+    laboratorios: mezclarPorId([...laboratoriosUsuario, ...laboratoriosPaciente]),
+    escalas: mezclarPorId([...escalasUsuario, ...escalasPaciente])
+  };
 }
 
 export function construirPacienteDigital(expediente) {
@@ -308,7 +328,9 @@ async function leerColeccionConId(ref) {
     snap.forEach((docSnap) => docs.push({ id: docSnap.id, ...docSnap.data() }));
     return docs.sort((a, b) => (obtenerFechaDocumento(b)?.getTime() || 0) - (obtenerFechaDocumento(a)?.getTime() || 0));
   } catch (error) {
-    console.warn("SOFIA no pudo leer subcoleccion", error);
+    console.warn("SOFIA no pudo leer subcoleccion", {
+      code: String(error?.code || error?.name || "unknown").slice(0, 80)
+    });
     return [];
   }
 }

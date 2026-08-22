@@ -24,6 +24,7 @@ const SOFIA_PAGE_SECTIONS = Object.freeze([
   "clinical-reasoning",
   "monitoring",
   "pharmacology",
+  "electrocardiogram",
   "note-review",
   "chat"
 ]);
@@ -36,6 +37,7 @@ const SOFIA_PAGE_ANALYSIS_SECTIONS = Object.freeze([
   "clinical_reasoning",
   "monitoring",
   "pharmacology",
+  "electrocardiogram",
   "note_review"
 ]);
 

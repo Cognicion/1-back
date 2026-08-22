@@ -87,6 +87,7 @@ const SOFIA_TOOL_DEFINITIONS = Object.freeze([
     strict: true
   },
   noArgsTool("get_patient_instrument_results", "Consulta resultados BSS almacenados, cobertura, reactivos, faltantes y parámetros; una suma parcial nunca se devuelve como puntuación BSS completa."),
+  noArgsTool("get_patient_electrocardiogram_interpretation", "Consulta la interpretación ECG contextual ya calculada por la página autorizada: datos medidos, QTc derivado, diagnósticos, comorbilidades, laboratorios, fármacos, límites y fuentes. No interpreta imágenes ni reemplaza la lectura médica."),
   noArgsTool("show_patient_patterns", "Muestra en la página la sección compartida del Detector de Patrones del paciente activo."),
   noArgsTool("get_observational_associations", "Obtiene asociaciones y probabilidades empíricas con numerador, denominador e incertidumbre."),
   noArgsTool("get_platform_pattern_matrices", "Consulta hallazgos agregados y desidentificados ya filtrados por utilidad, redundancia, soporte y estabilidad. Requiere rol administrador y nunca devuelve filas individuales."),
@@ -457,6 +458,21 @@ function createSofiaToolRegistry(context) {
             partialScoreIsFinalScore: false,
             normalizedScoreIsOutcomeProbability: false
           };
+          break;
+        }
+        case "get_patient_electrocardiogram_interpretation": {
+          result = patientRequired(context);
+          if (result) break;
+          const electrocardiogram = context.pageState.panelContext.electrocardiogram;
+          result = electrocardiogram === undefined
+            ? { ok: false, error: "electrocardiogram_analysis_unavailable" }
+            : {
+              ok: true,
+              source: "authorized_client_derived",
+              interpretation: electrocardiogram,
+              waveformAnalyzed: false,
+              clinicalDecisionAllowed: false
+            };
           break;
         }
         case "show_patient_patterns":

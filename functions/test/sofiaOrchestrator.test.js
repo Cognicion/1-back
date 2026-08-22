@@ -26,14 +26,20 @@ function createContext() {
       relationships: []
     },
     pageState: sanitizePageState({
-      capabilities: ["patient-overview", "timeline", "chat", "not-allowed"],
+      capabilities: ["patient-overview", "timeline", "electrocardiogram", "chat", "not-allowed"],
       hasNoteDraft: true,
       panelContext: {
         patient_overview: { age: 34, name: "Nombre privado" },
         pharmacology: { activeTreatments: [{ medication: "Medicamento X" }] },
+        electrocardiogram: {
+          status: "available",
+          reportExcerpt: "ECG de Nombre privado: QTc 480 ms",
+          patientId: "patient-real-id",
+          waveformAvailable: false
+        },
         arbitrary: { secret: true }
       }
-    })
+    }, ["Nombre privado"])
   };
 }
 
@@ -82,6 +88,7 @@ async function run() {
   assert.ok(SOFIA_TOOL_DEFINITIONS.length >= 10);
   assert.ok(SOFIA_TOOL_DEFINITIONS.some((tool) => tool.name === "get_platform_pattern_matrices"));
   assert.ok(SOFIA_TOOL_DEFINITIONS.some((tool) => tool.name === "get_platform_semantic_relations"));
+  assert.ok(SOFIA_TOOL_DEFINITIONS.some((tool) => tool.name === "get_patient_electrocardiogram_interpretation"));
   assert.strictEqual(new Set(SOFIA_TOOL_DEFINITIONS.map((tool) => tool.name)).size, SOFIA_TOOL_DEFINITIONS.length);
   SOFIA_TOOL_DEFINITIONS.forEach((tool) => {
     assert.strictEqual(tool.type, "function");
@@ -90,7 +97,7 @@ async function run() {
   });
 
   const context = createContext();
-  assert.deepStrictEqual(context.pageState.capabilities, ["patient-overview", "timeline", "chat"]);
+  assert.deepStrictEqual(context.pageState.capabilities, ["patient-overview", "timeline", "electrocardiogram", "chat"]);
   assert.strictEqual(context.pageState.panelContext.patient_overview.name, undefined);
   assert.strictEqual(context.pageState.panelContext.arbitrary, undefined);
 
@@ -100,6 +107,19 @@ async function run() {
   assert.strictEqual(overview.identityIncluded, false);
   assert.ok(!JSON.stringify(overview).includes("patient-real-id"));
   assert.ok(!JSON.stringify(overview).includes("Nombre privado"));
+
+  const ecg = await registry.execute("get_patient_electrocardiogram_interpretation", {});
+  assert.strictEqual(ecg.ok, true);
+  assert.strictEqual(ecg.waveformAnalyzed, false);
+  assert.strictEqual(ecg.clinicalDecisionAllowed, false);
+  assert.ok(ecg.interpretation.reportExcerpt.includes("[paciente actual]"));
+  assert.ok(!JSON.stringify(ecg).includes("patient-real-id"));
+  assert.ok(!JSON.stringify(ecg).includes("Nombre privado"));
+
+  const ecgEvidence = await registry.execute("get_methodological_evidence", { domain: "electrocardiography" });
+  assert.strictEqual(ecgEvidence.ok, true);
+  assert.ok(ecgEvidence.evidence.some((item) => item.evidenceId === "aha-ecg-standardization-part-iv"));
+  assert.ok(ecgEvidence.evidence.some((item) => item.evidenceId === "aha-torsade-prevention"));
 
   const action = await registry.execute("show_page_section", { section: "timeline" });
   assert.strictEqual(action.ok, true);

@@ -68,5 +68,7 @@
 // deployment marker: 2026-08-20-biocellular-debug-outlines-v1
 // deployment marker: 2026-08-21-patient-pattern-profile-v1 (+0.010)
 // deployment marker: 2026-08-21-historia-datos-detectados-v1 (+0.010)
-export const APP_VERSION = "2.066";
+// deployment marker: 2026-08-21-sofia-ecg-context-v1 (+0.010)
+// deployment marker: 2026-08-22-farmacologia-layout-minimalista-v1
+export const APP_VERSION = "2.077";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

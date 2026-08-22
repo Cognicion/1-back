@@ -1,3 +1,5 @@
+import { calculateCorrectedQt } from "../clinical/ecg/qtcCalculator.js";
+
 const round = (value, digits = 2) => {
   if (!Number.isFinite(value)) return null;
   const factor = 10 ** digits;
@@ -386,19 +388,20 @@ export const CALCULADORAS_MEDICAS = [
     calculate(inputs) {
       const missingData = required(inputs, ["qt", "fc"]);
       if (missingData.length) return result({ value: null, missingData });
-      const qt = n(inputs, "qt");
-      const fc = n(inputs, "fc");
-      const rr = 60 / fc;
-      const bazett = qt / Math.sqrt(rr);
-      const fridericia = qt / Math.cbrt(rr);
-      const framingham = qt + 154 * (1 - rr);
-      const hodges = qt + 1.75 * (fc - 60);
+      const calculation = calculateCorrectedQt({ qtMs: inputs.qt, heartRate: inputs.fc });
+      if (!calculation.calculable) return result({ value: null, warnings: [calculation.message] });
       return result({
-        value: round(fridericia, 0),
+        value: calculation.primaryValueMs,
         unit: "ms",
         category: "QTc Fridericia principal",
         interpretation: "Bazett puede sobre/subcorregir con frecuencias extremas; revise todos los métodos.",
-        details: { Bazett: round(bazett, 0), Fridericia: round(fridericia, 0), Framingham: round(framingham, 0), Hodges: round(hodges, 0) }
+        details: {
+          Bazett: calculation.values.bazettMs,
+          Fridericia: calculation.values.fridericiaMs,
+          Framingham: calculation.values.framinghamMs,
+          Hodges: calculation.values.hodgesMs
+        },
+        warnings: calculation.warnings
       });
     },
     bibliography: []

@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SOFIA Clinica | Cognicion Labs</title>
   <link rel="icon" href="assets/favicon-cognicion.png" />
-  <link rel="stylesheet" href="css/sofia.css" />
+  <link rel="stylesheet" href="css/sofia.css?v=20260821-sofia-ecg-v1" />
   <link rel="stylesheet" href="./css/sofia-mascota.css" />
   <link rel="stylesheet" href="./css/clinical-analysis.css" />
   <link rel="stylesheet" href="./css/patient-pattern-detector.css?v=20260821-patient-pattern-profile-v1" />
@@ -95,6 +95,11 @@
         <div id="farmacoSofia" class="stack-list empty-state">Sin tratamiento activo.</div>
       </article>
 
+      <article class="sofia-panel span-2" id="electrocardiogramaSofiaSection">
+        <div class="panel-title"><span>Interpretación de electrocardiograma</span><small>ECG + contexto del paciente</small></div>
+        <div id="ecgSofia" class="ecg-analysis empty-state" aria-live="polite">Selecciona un paciente para revisar datos ECG, diagnósticos, comorbilidades y fármacos.</div>
+      </article>
+
       <article class="sofia-panel span-2">
         <div class="panel-title"><span>Critica de nota medica</span><small>No guarda ni modifica texto</small></div>
         <textarea id="notaCriticaSofia" class="sofia-textarea" placeholder="Pega aqui una nota clinica para que SOFIA senale omisiones, riesgos o inconsistencias. La nota no se guarda automaticamente."></textarea>
@@ -118,7 +123,7 @@
     </section>
   </main>
 
-  <script type="module" src="js/sofia.js?v=20260821-patient-pattern-profile-v1"></script>
+  <script type="module" src="js/sofia.js?v=20260821-sofia-ecg-v1"></script>
   <script type="module" src="./js/sofia-mascota-loader.js"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
