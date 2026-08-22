@@ -916,18 +916,148 @@ body.pagina-apuntes > main.apuntes-shell {
   font-style: italic;
 }
 
-.editor-contenido {
+.panel-objeto,
+.menu-exportacion {
+  position: absolute;
+  z-index: 9;
+  width: min(298px, calc(100% - 20px));
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--apuntes-borde-fuerte);
+  border-radius: 11px;
+  color: var(--apuntes-texto);
+  background: var(--control-bg, #151918);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28);
+}
+
+.panel-objeto[hidden],
+.menu-exportacion[hidden] {
+  display: none;
+}
+
+.panel-objeto {
+  right: 16px;
+  top: 66px;
+}
+
+.menu-exportacion {
+  right: 16px;
+  top: 66px;
+}
+
+.panel-objeto__encabezado,
+.menu-exportacion > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.panel-objeto__encabezado strong,
+.menu-exportacion strong {
+  font-size: 12px;
+}
+
+.panel-objeto__encabezado button {
+  width: 26px;
+  min-width: 26px;
+  height: 26px;
+  min-height: 26px;
+  padding: 0;
+  border-color: var(--apuntes-borde);
+  color: var(--apuntes-texto);
+  background: transparent;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.panel-objeto label {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  color: var(--apuntes-texto-suave);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.panel-objeto select,
+.panel-objeto input[type="color"] {
+  min-width: 0;
+  height: 32px;
+  padding: 0 7px;
+  border: 1px solid var(--apuntes-borde);
+  border-radius: 7px;
+  color: var(--apuntes-texto);
+  background: var(--apuntes-superficie-suave);
+}
+
+.panel-objeto input[type="color"] {
+  padding: 2px;
+}
+
+.panel-objeto__ayuda,
+.menu-exportacion p {
+  margin: 0;
+  color: var(--apuntes-texto-suave);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.panel-objeto .boton-peligro,
+.menu-exportacion button {
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 11px;
+}
+
+.menu-exportacion > div {
+  justify-content: flex-start;
+}
+
+.menu-exportacion button {
+  color: var(--apuntes-texto);
+  border-color: var(--apuntes-borde);
+  background: var(--apuntes-superficie-hover);
+}
+
+.apunte-exportacion-temporal {
+  position: fixed;
+  left: -200vw;
+  top: 0;
+  width: 794px;
+  min-height: 1123px;
+  overflow: hidden;
+  background: #fff;
+  color: #121417;
+}
+
+.lienzo-apunte {
+  position: relative;
   min-width: 0;
   min-height: 0;
   height: 100%;
-  padding: 14px;
   overflow: auto;
   overscroll-behavior: contain;
-  scrollbar-gutter: stable;
   border: 1px solid var(--apuntes-borde);
   border-radius: 12px;
-  color: var(--apuntes-texto);
   background: var(--apuntes-superficie-suave);
+}
+
+.editor-contenido {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+  min-height: 100%;
+  height: auto;
+  padding: 14px;
+  overflow: visible;
+  border: 0;
+  border-radius: 11px;
+  color: var(--apuntes-texto);
+  background: transparent;
   font-size: 14px;
   line-height: 1.52;
   white-space: pre-wrap;
@@ -945,6 +1075,112 @@ body.pagina-apuntes > main.apuntes-shell {
 .editor-contenido :where(div, p) {
   margin: 0;
   min-height: 1.52em;
+}
+
+.capa-objetos-apunte {
+  position: absolute;
+  inset: 0;
+  min-height: 100%;
+  pointer-events: none;
+}
+
+.capa-objetos-apunte--detras {
+  z-index: 1;
+}
+
+.capa-objetos-apunte--delante {
+  z-index: 3;
+}
+
+.objeto-apunte {
+  position: absolute;
+  left: var(--objeto-x);
+  top: var(--objeto-y);
+  width: var(--objeto-ancho);
+  height: var(--objeto-alto);
+  min-width: 70px;
+  min-height: 34px;
+  box-sizing: border-box;
+  color: var(--objeto-color);
+  pointer-events: auto;
+}
+
+.objeto-apunte--texto {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 12px;
+  align-items: stretch;
+  border: 1px solid color-mix(in srgb, var(--objeto-color) 76%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--apuntes-superficie) 84%, transparent);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+.objeto-apunte--cuadrado {
+  border-radius: 0;
+  background: var(--apuntes-superficie);
+}
+
+.objeto-apunte--flecha {
+  min-height: 24px;
+  cursor: move;
+}
+
+.objeto-apunte--flecha svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.objeto-apunte--flecha :where(path, marker path) {
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+.objeto-apunte[data-seleccionado="true"] {
+  outline: 2px solid var(--apuntes-borde-fuerte);
+  outline-offset: 3px;
+}
+
+.objeto-apunte__mango,
+.objeto-apunte__redimensionar {
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: grab;
+}
+
+.objeto-apunte__mango {
+  font-size: 17px;
+  line-height: 1;
+}
+
+.objeto-apunte__mango:active,
+.objeto-apunte--flecha:active {
+  cursor: grabbing;
+}
+
+.objeto-apunte__texto {
+  min-width: 0;
+  padding: 7px 3px;
+  outline: 0;
+  white-space: pre-wrap;
+  overflow: auto;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.objeto-apunte__redimensionar {
+  align-self: end;
+  justify-self: end;
+  width: 11px;
+  height: 11px;
+  margin: 2px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  cursor: nwse-resize;
 }
 
 .acciones-apuntes {

@@ -10,6 +10,7 @@
  */
 
 import { REGLAS_INTERACCIONES_CLINICAS } from "./reglasClinicasMedicamentosExtendidas.js?v=20260818-clinical-extraction-v1";
+import { integrarAntibioticosRegulatorios } from "./antibioticosRegulatorios.js?v=20260822-fda-cofepris-v1";
 
 export const CATALOGO_FARMACOLOGICO_METADATA = Object.freeze({
   esquema: "cognicion.catalogo-farmacologico.v2",
@@ -19,7 +20,7 @@ export const CATALOGO_FARMACOLOGICO_METADATA = Object.freeze({
   fuentePresentaciones: "https://lhncbc.nlm.nih.gov/RxNav/APIs/RxNormAPIs.html"
 });
 
-export const CATALOGO_FARMACOLOGICO_MAESTRO = [
+const CATALOGO_FARMACOLOGICO_PREEXISTENTE = [
   {
     "id": "acamprosato",
     "legacyIds": [],
@@ -90924,6 +90925,10 @@ export const CATALOGO_FARMACOLOGICO_MAESTRO = [
   }
 ];
 
+export const CATALOGO_FARMACOLOGICO_MAESTRO = Object.freeze(
+  integrarAntibioticosRegulatorios(CATALOGO_FARMACOLOGICO_PREEXISTENTE)
+);
+
 function listaUnica(...listas) {
   return [...new Set(listas.flatMap((lista) => Array.isArray(lista) ? lista : [lista]).filter((valor) => valor !== undefined && valor !== null && valor !== ""))];
 }
@@ -91003,7 +91008,8 @@ function adaptarRegistroMaestro(medicamento) {
     indications: datos.indicaciones || [],
     contraindications: datos.contraindicaciones || [],
     precautions: datos.precauciones || [],
-    warnings: datos.advertencias || [],
+    warnings: listaUnica(datos.advertencias || [], (datos.advertenciasEstructuradas || []).map((advertencia) => advertencia.texto)),
+    warningDetails: datos.advertenciasEstructuradas || [],
     monitoring: datos.monitorizacion || [],
     mecanismoAccion: cinetica.mecanismoAccion || "",
     vidaMedia: cinetica.vidaMedia || "",
@@ -91021,6 +91027,7 @@ function adaptarRegistroMaestro(medicamento) {
     estadoFuente: fuente.estado || "fuente_pendiente",
     fuente: fuente.fuente || "fuente pendiente",
     fuentes: fuente.fuentes || [],
+    regulatorySources: medicamento.fuentesRegulatorias || [],
     paginaSeccion: fuente.paginaSeccion || "fuente pendiente",
     confianza: fuente.confianza || "no evaluada",
     active: medicamento.activo !== false,

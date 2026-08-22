@@ -1,7 +1,7 @@
 import { db } from "../firebase.js";
 import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
 import { normalizarTextoFrecuencia } from "../utils/frecuencias.js";
-import { CATALOGO_FARMACOLOGICO_OFICIAL } from "../data/catalogoFarmacologicoUnificado.js?v=20260814-ieca-c09aa-v1";
+import { CATALOGO_FARMACOLOGICO_OFICIAL } from "../data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
 import { evaluarMedicamentosPaciente } from "./motorClinicoMedicamentos.js?v=20260811-pharmacology-files-consolidated-v1";
 import { collection, doc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 

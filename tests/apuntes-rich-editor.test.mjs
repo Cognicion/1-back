@@ -141,12 +141,17 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=20260820-apuntes-minimal-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260820-apuntes-colores-v1/);
-  assert.match(html, /apuntes\.js\?v=20260820-apuntes-colores-v1/);
+  assert.match(html, /apuntes\.css\?v=20260822-apuntes-objetos-export-v1/);
+  assert.match(html, /apuntes\.js\?v=20260822-apuntes-objetos-export-v1/);
+  assert.match(html, /id="insertarCuadroTexto"/);
+  assert.match(html, /id="insertarFlecha"/);
+  assert.match(html, /id="propiedadesObjeto"[^>]*aria-label="Propiedades del objeto"/);
+  assert.match(html, /id="menuExportacionApunte"[^>]*aria-label="Descargar apunte"/);
+  assert.match(html, /id="lienzoApunte"/);
   assert.match(encabezadoGlobal, /MIGRATED_PAGES = new Set\([^)]*"apuntes"/);
   assert.match(encabezadoGlobal, /pageId === "apuntes"\) return document\.querySelector\("header\.topbar-apuntes"\)/);
   assert.match(precargaTema, /globalAppHeader\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(precargaTema, /biocellularThemeController\.js\?v=20260820-login-detection-v1/);
+  assert.match(precargaTema, /biocellularThemeController\.js\?v=2\.046-diagnostico-visual/);
   assert.match(controladorTemaBiocelular, /document\.querySelector\("#login, \.login-container, #loginForm, \.login-form"\)/);
   assert.doesNotMatch(controladorTemaBiocelular, /\.login-form,\s*form|querySelector\(["'`]form["'`]\)/);
   assert.match(controladorTemaBiocelular, /classList\.toggle\("biocellular-login-page", Boolean\(login\)\)/);
@@ -200,6 +205,10 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
 test("la persistencia rica mantiene texto plano y sanea el HTML", () => {
   assert.match(controlador, /contenidoHtmlActualizado:\s*fechaActualizacion/);
   assert.match(controlador, /contenidoHtmlActualizado === apunte\.fechaActualizacion/);
+  assert.match(controlador, /objetosLienzoActualizado:\s*fechaActualizacion/);
+  assert.match(controlador, /objetosLienzoActualizado === apunte\.fechaActualizacion/);
+  assert.match(controlador, /import \{ inicializarObjetosApunte, textoObjetosApunte \} from "\.\/apuntes-objetos\.js"/);
+  assert.match(controlador, /import \{ descargarApuntePdf, descargarApunteWord \} from "\.\/apuntes-export\.js"/);
   assert.match(controlador, /import \{ sanitizarHTMLRico \} from "\.\/apuntes-rich-text\.js"/);
   assert.match(textoRico, /new Set\(\["B", "STRONG", "BR", "DIV", "P", "SPAN", "FONT"\]\)/);
   assert.match(textoRico, /new Set\(\["SCRIPT", "STYLE", "IFRAME", "OBJECT", "EMBED", "SVG", "MATH"\]\)/);
@@ -227,7 +236,9 @@ test("el editor flotante invalida formato solo cuando cambia el contenido", () =
   assert.match(flotante, /const contenidoCambio = !original \|\| contenido !== String\(original\.contenido/);
   assert.match(flotante, /payload\.contenidoHtml = deleteField\(\)/);
   assert.match(flotante, /payload\.contenidoHtmlActualizado = fechaActualizacion/);
-  assert.match(flotante, /Al cambiar el contenido se quitará su formato/);
+  assert.match(flotante, /payload\.objetosLienzo = deleteField\(\)/);
+  assert.match(flotante, /payload\.objetosLienzoActualizado = fechaActualizacion/);
+  assert.match(flotante, /Al cambiar el contenido se quitarán el formato, los cuadros y las flechas/);
   assert.match(flotante, /ponerPanelApuntesOcupado\(true\)/);
   assert.match(flotante, /panel\?\.querySelectorAll\("button, input, textarea"\)/);
   assert.match(flotante, /confirmarDescartarCambiosPanel/);
@@ -249,6 +260,8 @@ test("el editor flotante invalida formato solo cuando cambia el contenido", () =
     assert.match(consumidorLegacy, /contenidoCambio/);
     assert.match(consumidorLegacy, /payload\.contenidoHtml = deleteField\(\)/);
     assert.match(consumidorLegacy, /payload\.contenidoHtmlActualizado = fechaActualizacion/);
+    assert.match(consumidorLegacy, /payload\.objetosLienzo = deleteField\(\)/);
+    assert.match(consumidorLegacy, /payload\.objetosLienzoActualizado = fechaActualizacion/);
     assert.match(consumidorLegacy, /actualizarApunteConRevision/);
     assert.match(consumidorLegacy, /aria-current/);
   }
@@ -271,5 +284,6 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-20-apuntes-global-navbar-layout-v1/);
   assert.match(version, /2026-08-20-apuntes-minimal-layout-v2/);
   assert.match(version, /2026-08-20-apuntes-colores-recientes-v1/);
-  assert.match(version, /APP_VERSION = "2\.045"/);
+  assert.match(version, /2026-08-22-apuntes-objetos-export-v1/);
+  assert.match(version, /APP_VERSION = "2\.082"/);
 });

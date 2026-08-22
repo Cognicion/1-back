@@ -1,4 +1,4 @@
-import { COBERTURA_FARMACOLOGICA, MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES, medicamentoPorTexto } from "./data/catalogoFarmacologicoUnificado.js?v=20260814-ieca-c09aa-v1";
+import { COBERTURA_FARMACOLOGICA, MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES, medicamentoPorTexto } from "./data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
 import { CIE10 } from "./data/catalogoDiagnosticos.js?v=20260816-cie10-cde-v1";
 import {
   evaluarMedicamentosPaciente,
@@ -324,6 +324,17 @@ function renderFichaMedicamento(medEvaluado) {
   const campo = (titulo, contenido) => contenido
     ? `<p class="farmaco-ficha-linea"><span class="farmaco-ficha-categoria">${valor(titulo)}:</span> ${valor(contenido)}</p>`
     : "";
+  const enlaceFuente = (fuente = {}) => {
+    const url = String(fuente.url || "");
+    const titulo = fuente.titulo || fuente.organismo || "Fuente regulatoria";
+    if (!/^https:\/\//i.test(url)) return escapar(titulo);
+    return `<a href="${escapar(url)}" target="_blank" rel="noopener noreferrer">${escapar(titulo)}</a>`;
+  };
+  const advertenciasConFuente = (ficha.warningDetails || []).slice(0, 4).map((advertencia) => {
+    const fuentes = (advertencia.fuentes || []).map(enlaceFuente).join("; ");
+    return `<p class="farmaco-ficha-linea"><span class="farmaco-ficha-categoria">${valor(advertencia.titulo || "Advertencia") }:</span> ${valor(advertencia.texto || "")} ${fuentes ? `<small>Fuente: ${fuentes}</small>` : ""}</p>`;
+  }).join("");
+  const fuentesRegulatorias = (ficha.regulatorySources || []).slice(0, 2).map((fuente) => `<li>${enlaceFuente(fuente)}${fuente.alcance ? `: ${valor(fuente.alcance)}` : ""}</li>`).join("");
   const farmacocinetica = unir([
     ficha.vidaMedia ? `Vida media: ${ficha.vidaMedia}` : "",
     ficha.inicioAccion ? `Inicio: ${ficha.inicioAccion}` : "",
@@ -345,11 +356,10 @@ function renderFichaMedicamento(medEvaluado) {
         <strong>${valor(ficha.nombre)}</strong>
         <small>${valor(ficha.clase || "Medicamento")}</small>
         ${lista("Presentaciones detectadas", presentacionesDetectadas)}
-        ${campo("Dosis de catálogo (no verificada en fuente farmacológica)", ficha.dosisHabitual)}
-        ${campo("Vida media", "fuente pendiente")}
-        ${campo("Metabolismo/CYP", "fuente pendiente")}
-        ${campo("Indicaciones, contraindicaciones, precauciones y vigilancia", "fuente pendiente")}
-        ${campo("Fuente", "fuente pendiente")}
+        ${advertenciasConFuente}
+        ${fuentesRegulatorias ? `<p class="farmaco-ficha-linea"><span class="farmaco-ficha-categoria">Fuentes regulatorias:</span></p><ul>${fuentesRegulatorias}</ul>` : ""}
+        ${campo("Estado de evidencia", ficha.confianza || "fuente pendiente")}
+        ${campo("Propiedades clínicas restantes", "fuente pendiente de extracción y revisión por molécula")}
       </li>
     `;
   }
@@ -368,6 +378,7 @@ function renderFichaMedicamento(medEvaluado) {
       ${lista("Contraindicaciones", ficha.contraindicaciones || ficha.contraindications)}
       ${lista("Contraindicaciones relativas", ficha.contraindicacionesRelativas)}
       ${lista("Precaución", ficha.precauciones || ficha.precautions)}
+      ${advertenciasConFuente}
       ${lista("Efectos adversos", ficha.efectosAdversos)}
       ${lista("Vigilancia sugerida", vigilancia)}
       ${lista("Laboratorios sugeridos", ficha.parametrosLaboratorio)}

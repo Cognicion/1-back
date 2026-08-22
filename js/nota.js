@@ -3900,7 +3900,7 @@ window.guardarBorradoresMedico = async function() {
     id
     && contenidoCambio
     && original?.contenidoHtml
-    && !confirm("Este panel usa texto simple. Al cambiar el contenido se quitará su formato de negrita y color. ¿Continuar?")
+    && !confirm("Este panel usa texto simple. Al cambiar el contenido se quitarán el formato, los cuadros y las flechas. ¿Continuar?")
   ) return;
 
   const fechaActualizacion = new Date().toISOString();
@@ -3918,12 +3918,19 @@ window.guardarBorradoresMedico = async function() {
       if (contenidoCambio) {
         payload.contenidoHtml = deleteField();
         payload.contenidoHtmlActualizado = deleteField();
+        payload.objetosLienzo = deleteField();
+        payload.objetosLienzoActualizado = deleteField();
       } else if (
         original?.contenidoHtml
         && original.contenidoHtmlActualizado === original.fechaActualizacion
       ) {
         payload.contenidoHtmlActualizado = fechaActualizacion;
       }
+      if (
+        !contenidoCambio
+        && original?.objetosLienzo
+        && original.objetosLienzoActualizado === original.fechaActualizacion
+      ) payload.objetosLienzoActualizado = fechaActualizacion;
       await actualizarApunteConRevision({
         db,
         referencia: doc(db, "usuarios", uidMedicoActual, "apuntesMedico", id),

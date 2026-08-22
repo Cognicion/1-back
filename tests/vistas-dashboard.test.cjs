@@ -55,6 +55,21 @@ async function medirLista(pagina) {
   assert.equal(inicial.scrollHorizontal, false);
   assert.ok(inicial.alturas.every((altura) => altura >= 52 && altura <= 64), JSON.stringify(inicial.alturas));
   assert.ok(inicial.filasEnViewport >= 7, String(inicial.filasEnViewport));
+  const filasInteractivas = await escritorio.evaluate(() => {
+    const visibles = [...document.querySelectorAll("[data-vista-tarjetas] .module-card")]
+      .filter((fila) => getComputedStyle(fila).display !== "none");
+    const insigniasOmitidas = [...document.querySelectorAll(".badge.insignia-omitida-en-lista")];
+    return {
+      navegables: visibles.filter((fila) => fila.querySelector(":scope > .fila-modulo-enlace")).length,
+      omitidas: insigniasOmitidas.map((insignia) => ({
+        texto: insignia.textContent.trim(),
+        display: getComputedStyle(insignia).display
+      }))
+    };
+  });
+  assert.ok(filasInteractivas.navegables >= inicial.filas - 1, String(filasInteractivas.navegables));
+  assert.ok(filasInteractivas.omitidas.length >= 3);
+  assert.ok(filasInteractivas.omitidas.every((insignia) => insignia.display === "none"));
 
   await escritorio.click('[data-seleccionar-vista="orbita"]');
   assert.equal(await escritorio.getAttribute("orbita-panel-principal", "data-pausada"), null);
@@ -71,6 +86,7 @@ async function medirLista(pagina) {
   await escritorio.click('[data-seleccionar-vista="tarjetas"]');
   assert.equal(await escritorio.getAttribute("orbita-panel-principal", "data-pausada"), "");
   assert.equal(await escritorio.isVisible("[data-vista-tarjetas]"), true);
+  assert.notEqual(await escritorio.locator(".badge.insignia-omitida-en-lista").first().evaluate((insignia) => getComputedStyle(insignia).display), "none");
 
   await escritorio.click('[data-seleccionar-vista="lista"]');
   assert.equal(await escritorio.evaluate(() => localStorage.getItem("cognicion:dashboard:vista-modulos")), "lista");
@@ -102,7 +118,14 @@ async function medirLista(pagina) {
     await movil.screenshot({ path: process.env.CAPTURA_DASHBOARD_MOVIL, fullPage: true });
   }
 
-  console.log(JSON.stringify({ escritorio: inicial, tableta: intermedio, movil: compacto }, null, 2));
+  const navegacionFila = await navegador.newPage({ viewport: { width: 1280, height: 800 } });
+  await prepararPagina(navegacionFila);
+  const primeraFila = navegacionFila.locator("[data-vista-tarjetas] .module-card:visible").first();
+  const destinoFila = await primeraFila.locator(":scope > .fila-modulo-enlace").getAttribute("href");
+  await primeraFila.click({ position: { x: 180, y: 28 } });
+  await navegacionFila.waitForURL((url) => url.pathname.endsWith(`/${destinoFila}`));
+
+  console.log(JSON.stringify({ escritorio: inicial, tableta: intermedio, movil: compacto, filasInteractivas }, null, 2));
   await navegador.close();
 })().catch((error) => {
   console.error(error);

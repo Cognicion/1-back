@@ -1,4 +1,4 @@
-import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260819-midc-allergy-context-v1";
+import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
 import { ClinicalCandidate } from "../core/ClinicalCandidate.js";
 import { ClinicalEvidence } from "../core/ClinicalEvidence.js";
 import { evaluateConfidence, requiresReviewForConfidence } from "../confidence/confidenceEngine.js";

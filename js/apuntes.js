@@ -2,6 +2,8 @@ import { auth, db } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { sanitizarHTMLRico } from "./apuntes-rich-text.js";
 import { inicializarSidebarApuntes } from "./apuntes-sidebar.js";
+import { inicializarObjetosApunte, textoObjetosApunte } from "./apuntes-objetos.js";
+import { descargarApuntePdf, descargarApunteWord } from "./apuntes-export.js";
 import {
   normalizarColorHex,
   normalizarColoresRecientes,
@@ -14,11 +16,14 @@ import {
   esErrorConexionApunte
 } from "./services/apuntesMedicoPersistence.js";
 import {
+  aplanarCarpetasJerarquicas,
   agruparApuntes,
   crearVistaPreviaApunte,
   escaparHTML,
   filtrarApuntes,
+  jerarquizarCarpetas,
   nombreCarpetaDisponible,
+  normalizarCarpetaPadreId,
   normalizarTexto,
   obtenerTituloVisibleApunte,
   ordenarCarpetas,
@@ -86,6 +91,7 @@ let eliminandoApunte = false;
 let eliminandoCarpeta = false;
 let carpetasDisponibles = true;
 let coloresRecientes = [];
+let objetosApunteController = null;
 
 iniciarMonitoreoSesion("Mis apuntes");
 
@@ -130,6 +136,7 @@ function inicializarInterfaz() {
   });
 
   inicializarSelectorColores();
+  inicializarObjetosApunteUI();
 
   buscador?.addEventListener("input", renderizarLista);
   document.getElementById("nuevoApunte")?.addEventListener("click", () => {
@@ -152,6 +159,27 @@ function inicializarInterfaz() {
   document.getElementById("formatoNegrita")?.addEventListener("click", () => ejecutarFormato("bold"));
   document.getElementById("quitarFormato")?.addEventListener("pointerdown", conservarFocoEditor);
   document.getElementById("quitarFormato")?.addEventListener("click", () => ejecutarFormato("removeFormat"));
+  document.getElementById("listaPuntos")?.addEventListener("pointerdown", conservarFocoEditor);
+  document.getElementById("listaPuntos")?.addEventListener("click", () => ejecutarLista("puntos"));
+  document.getElementById("listaNumeros")?.addEventListener("pointerdown", conservarFocoEditor);
+  document.getElementById("listaNumeros")?.addEventListener("click", () => ejecutarLista("numeros"));
+  document.getElementById("listaLetras")?.addEventListener("pointerdown", conservarFocoEditor);
+  document.getElementById("listaLetras")?.addEventListener("click", () => ejecutarLista("letras"));
+  document.getElementById("aumentarSublista")?.addEventListener("pointerdown", conservarFocoEditor);
+  document.getElementById("aumentarSublista")?.addEventListener("click", () => ejecutarFormato("indent"));
+  document.getElementById("reducirSublista")?.addEventListener("pointerdown", conservarFocoEditor);
+  document.getElementById("reducirSublista")?.addEventListener("click", () => ejecutarFormato("outdent"));
+  document.getElementById("insertarCuadroTexto")?.addEventListener("click", () => insertarObjetoApunte("texto"));
+  document.getElementById("insertarFlecha")?.addEventListener("click", () => insertarObjetoApunte("flecha"));
+  document.getElementById("abrirPropiedadesObjeto")?.addEventListener("click", alternarPropiedadesObjeto);
+  document.getElementById("cerrarPropiedadesObjeto")?.addEventListener("click", cerrarPropiedadesObjeto);
+  document.getElementById("selectorObjeto")?.addEventListener("change", seleccionarObjetoDesdePanel);
+  document.getElementById("ajusteObjeto")?.addEventListener("change", actualizarAjusteObjeto);
+  document.getElementById("colorObjeto")?.addEventListener("change", actualizarColorObjeto);
+  document.getElementById("eliminarObjeto")?.addEventListener("click", eliminarObjetoSeleccionado);
+  document.getElementById("abrirExportacionApunte")?.addEventListener("click", alternarMenuExportacion);
+  document.getElementById("descargarApunteWord")?.addEventListener("click", () => exportarApunte("word"));
+  document.getElementById("descargarApuntePdf")?.addEventListener("click", () => exportarApunte("pdf"));
   document.addEventListener("selectionchange", guardarSeleccionEditor);
 
   document.getElementById("formularioCarpeta")?.addEventListener("submit", guardarCarpeta);
@@ -222,10 +250,11 @@ function renderizarSelectorCarpetas() {
   if (!selector) return;
 
   const valorActual = selector.value;
+  const carpetasPlanas = aplanarCarpetasJerarquicas(carpetas);
   selector.innerHTML = [
     '<option value="">Sin carpeta</option>',
-    ...carpetas.map((carpeta) => (
-      `<option value="${escaparHTML(carpeta.id)}">${escaparHTML(carpeta.nombre)}</option>`
+    ...carpetasPlanas.map((carpeta) => (
+      `<option value="${escaparHTML(carpeta.id)}">${"— ".repeat(carpeta.profundidad)}${escaparHTML(carpeta.nombre)}</option>`
     ))
   ].join("");
 
@@ -243,8 +272,13 @@ function renderizarLista() {
 
   const filtrados = filtrarApuntes(apuntes, busqueda);
   const hayBusqueda = Boolean(normalizarTexto(busqueda));
-  let grupos = agruparApuntes(filtrados, carpetas);
-  if (hayBusqueda) grupos = grupos.filter((grupo) => grupo.apuntes.length > 0);
+  const arbol = jerarquizarCarpetas(carpetas);
+  const hayResultadosEnRama = (carpeta) => (
+    filtrados.some((apunte) => apunte.carpetaId === carpeta.id)
+    || (carpeta.hijas || []).some(hayResultadosEnRama)
+  );
+  const carpetasVisibles = hayBusqueda ? arbol.filter(hayResultadosEnRama) : arbol;
+  const sinCarpeta = filtrados.filter((apunte) => !apunte.carpetaId || !carpetas.some((carpeta) => carpeta.id === apunte.carpetaId));
 
   if (contador) {
     contador.textContent = hayBusqueda
@@ -252,49 +286,75 @@ function renderizarLista() {
       : `${apuntes.length}`;
   }
 
-  if (!grupos.length) {
+  if (!carpetasVisibles.length && !sinCarpeta.length) {
     lista.innerHTML = '<p class="vacio">No se encontraron apuntes.</p>';
     return;
   }
 
-  lista.innerHTML = grupos.map((grupo, indice) => renderizarGrupo(grupo, indice, activo, hayBusqueda)).join("");
+  const carpetasHtml = carpetasVisibles.map((carpeta, indice) => (
+    renderizarCarpeta(carpeta, `carpeta-${indice}`, activo, filtrados, hayBusqueda)
+  )).join("");
+  lista.innerHTML = `${carpetasHtml}${renderizarGrupoSinCarpeta(sinCarpeta, activo, hayBusqueda)}`;
 }
 
-function renderizarGrupo(grupo, indice, activo, forzarAbierto) {
-  const idSeguro = escaparHTML(grupo.id);
-  const contenidoId = `carpeta-contenido-${indice}`;
-  const estaAbierta = forzarAbierto || !carpetasCerradas.has(grupo.id);
-  const acciones = grupo.esSistema
-    ? `<button type="button" class="carpeta-accion" data-accion="nuevo-en-carpeta" data-carpeta-id="" title="Nuevo apunte sin carpeta" aria-label="Nuevo apunte sin carpeta">＋</button>`
-    : [
-      `<button type="button" class="carpeta-accion" data-accion="nuevo-en-carpeta" data-carpeta-id="${idSeguro}" title="Nuevo apunte en ${escaparHTML(grupo.nombre)}" aria-label="Nuevo apunte en ${escaparHTML(grupo.nombre)}">＋</button>`,
-      `<button type="button" class="carpeta-accion" data-accion="renombrar-carpeta" data-carpeta-id="${idSeguro}" title="Renombrar carpeta" aria-label="Renombrar ${escaparHTML(grupo.nombre)}">✎</button>`,
-      `<button type="button" class="carpeta-accion" data-accion="eliminar-carpeta" data-carpeta-id="${idSeguro}" title="Eliminar carpeta" aria-label="Eliminar ${escaparHTML(grupo.nombre)}">×</button>`
-    ].join("");
+function contarApuntesEnRama(carpeta, filtrados) {
+  return filtrados.filter((apunte) => apunte.carpetaId === carpeta.id).length
+    + (carpeta.hijas || []).reduce((total, hija) => total + contarApuntesEnRama(hija, filtrados), 0);
+}
 
-  const contenido = grupo.apuntes.length
-    ? grupo.apuntes.map((apunte) => renderizarApunte(apunte, activo)).join("")
-    : '<p class="carpeta-vacia">Carpeta vacía</p>';
+function renderizarCarpeta(carpeta, identificador, activo, filtrados, forzarAbierto, profundidad = 0) {
+  const idSeguro = escaparHTML(carpeta.id);
+  const contenidoId = `carpeta-contenido-${identificador}`;
+  const estaAbierta = forzarAbierto || !carpetasCerradas.has(carpeta.id);
+  const apuntesDirectos = filtrados.filter((apunte) => apunte.carpetaId === carpeta.id);
+  const hijasVisibles = forzarAbierto
+    ? (carpeta.hijas || []).filter((hija) => contarApuntesEnRama(hija, filtrados) > 0)
+    : (carpeta.hijas || []);
+  const cantidad = contarApuntesEnRama(carpeta, filtrados);
+  const acciones = [
+    `<button type="button" class="carpeta-accion" data-accion="nuevo-en-carpeta" data-carpeta-id="${idSeguro}" title="Nuevo apunte en ${escaparHTML(carpeta.nombre)}" aria-label="Nuevo apunte en ${escaparHTML(carpeta.nombre)}">＋</button>`,
+    `<button type="button" class="carpeta-accion" data-accion="nueva-subcarpeta" data-carpeta-id="${idSeguro}" title="Nueva subcarpeta" aria-label="Crear una subcarpeta dentro de ${escaparHTML(carpeta.nombre)}">⊞</button>`,
+    `<button type="button" class="carpeta-accion" data-accion="renombrar-carpeta" data-carpeta-id="${idSeguro}" title="Renombrar o mover carpeta" aria-label="Renombrar o mover ${escaparHTML(carpeta.nombre)}">✎</button>`,
+    `<button type="button" class="carpeta-accion" data-accion="eliminar-carpeta" data-carpeta-id="${idSeguro}" title="Eliminar carpeta" aria-label="Eliminar ${escaparHTML(carpeta.nombre)}">×</button>`
+  ].join("");
+  const contenidoDirecto = apuntesDirectos.map((apunte) => renderizarApunte(apunte, activo)).join("");
+  const hijas = hijasVisibles.map((hija, indice) => (
+    renderizarCarpeta(hija, `${identificador}-${indice}`, activo, filtrados, forzarAbierto, profundidad + 1)
+  )).join("");
+  const vacia = !contenidoDirecto && !hijas ? '<p class="carpeta-vacia">Carpeta vacía</p>' : "";
 
   return `
-    <section class="carpeta-apuntes" data-grupo-id="${idSeguro}">
+    <section class="carpeta-apuntes" data-grupo-id="${idSeguro}" style="--carpeta-profundidad:${profundidad}">
       <div class="carpeta-cabecera">
-        <button
-          type="button"
-          class="carpeta-toggle"
-          data-accion="alternar-carpeta"
-          data-carpeta-id="${idSeguro}"
-          aria-expanded="${estaAbierta}"
-          aria-controls="${contenidoId}"
-        >
+        <button type="button" class="carpeta-toggle" data-accion="alternar-carpeta" data-carpeta-id="${idSeguro}" aria-expanded="${estaAbierta}" aria-controls="${contenidoId}">
           <span class="carpeta-toggle__flecha" aria-hidden="true">›</span>
           <span class="carpeta-toggle__icono" aria-hidden="true"></span>
-          <span class="carpeta-toggle__nombre">${escaparHTML(grupo.nombre)}</span>
-          <span class="carpeta-toggle__cantidad">${grupo.apuntes.length}</span>
+          <span class="carpeta-toggle__nombre">${escaparHTML(carpeta.nombre)}</span>
+          <span class="carpeta-toggle__cantidad">${cantidad}</span>
         </button>
         <div class="carpeta-acciones">${acciones}</div>
       </div>
-      <div id="${contenidoId}" class="carpeta-contenido" ${estaAbierta ? "" : "hidden"}>${contenido}</div>
+      <div id="${contenidoId}" class="carpeta-contenido" ${estaAbierta ? "" : "hidden"}>${contenidoDirecto}${hijas}${vacia}</div>
+    </section>
+  `;
+}
+
+function renderizarGrupoSinCarpeta(apuntesSinCarpeta, activo, forzarAbierto) {
+  if (!apuntesSinCarpeta.length && forzarAbierto) return "";
+  const contenidoId = "carpeta-contenido-sin-carpeta";
+  const estaAbierta = forzarAbierto || !carpetasCerradas.has(SIN_CARPETA);
+  return `
+    <section class="carpeta-apuntes" data-grupo-id="${SIN_CARPETA}">
+      <div class="carpeta-cabecera">
+        <button type="button" class="carpeta-toggle" data-accion="alternar-carpeta" data-carpeta-id="${SIN_CARPETA}" aria-expanded="${estaAbierta}" aria-controls="${contenidoId}">
+          <span class="carpeta-toggle__flecha" aria-hidden="true">›</span>
+          <span class="carpeta-toggle__icono" aria-hidden="true"></span>
+          <span class="carpeta-toggle__nombre">Sin carpeta</span>
+          <span class="carpeta-toggle__cantidad">${apuntesSinCarpeta.length}</span>
+        </button>
+        <div class="carpeta-acciones"><button type="button" class="carpeta-accion" data-accion="nuevo-en-carpeta" data-carpeta-id="" title="Nuevo apunte sin carpeta" aria-label="Nuevo apunte sin carpeta">＋</button></div>
+      </div>
+      <div id="${contenidoId}" class="carpeta-contenido" ${estaAbierta ? "" : "hidden"}>${apuntesSinCarpeta.map((apunte) => renderizarApunte(apunte, activo)).join("") || '<p class="carpeta-vacia">Carpeta vacía</p>'}</div>
     </section>
   `;
 }
@@ -381,6 +441,15 @@ function seleccionarApunte(id, { omitirConfirmacion = false, restaurarFoco = fal
     else editor.textContent = apunte.contenido || "";
   }
 
+  if (accion === "nueva-subcarpeta") {
+    abrirDialogoCarpeta("", carpetaId);
+    return;
+  }
+  const objetosVigentes = apunte.objetosLienzo
+    && apunte.objetosLienzoActualizado
+    && apunte.objetosLienzoActualizado === apunte.fechaActualizacion;
+  objetosApunteController?.cargar(objetosVigentes ? apunte.objetosLienzo : []);
+
   const grupoId = carpetaValida ? apunte.carpetaId : SIN_CARPETA;
   carpetasCerradas.delete(grupoId);
   guardarEstadoCarpetas();
@@ -410,6 +479,7 @@ function nuevoApunte(carpetaId = ETIQUETA_CARPETA_SIN_ASIGNAR) {
 
   const editor = obtenerEditor();
   if (editor) editor.innerHTML = "";
+  objetosApunteController?.cargar([]);
 
   carpetasCerradas.delete(carpetaValida || SIN_CARPETA);
   guardarEstadoCarpetas();
@@ -429,6 +499,7 @@ async function guardarApunte() {
   const titulo = document.getElementById("apunteTitulo").value.trim() || "Sin título";
   const contenido = obtenerContenidoPlano();
   const contenidoHtml = contenido ? sanitizarHTMLRico(obtenerEditor()?.innerHTML || "") : "";
+  const objetosLienzo = objetosApunteController?.serializar() || { version: 1, objetos: [] };
   const original = apuntes.find((apunte) => apunte.id === id);
   const carpetaId = carpetasDisponibles
     ? obtenerCarpetaActual() || null
@@ -445,6 +516,8 @@ async function guardarApunte() {
     contenido,
     contenidoHtml,
     contenidoHtmlActualizado: fechaActualizacion,
+    objetosLienzo,
+    objetosLienzoActualizado: fechaActualizacion,
     carpetaId,
     fechaActualizacion,
     fechaActualizacionServidor: serverTimestamp()
@@ -713,6 +786,7 @@ function ponerBotonOcupado(boton, ocupado, etiquetaTemporal = "") {
 
 function ponerEdicionOcupada(ocupada) {
   const editor = obtenerEditor();
+  const lienzo = document.getElementById("lienzoApunte");
   const panel = document.querySelector(".apuntes-editor");
   const lista = document.getElementById("listaApuntes");
   const controles = [
@@ -720,13 +794,14 @@ function ponerEdicionOcupada(ocupada) {
     document.getElementById("guardarApunte"),
     document.getElementById("eliminarApunte"),
     document.getElementById("nuevoApunte"),
-    ...document.querySelectorAll(".barra-formato button, .barra-formato input")
+    ...document.querySelectorAll(".barra-formato button, .barra-formato input, .panel-objeto button, .panel-objeto input, .panel-objeto select, .menu-exportacion button")
   ].filter(Boolean);
 
   controles.forEach((control) => { control.disabled = ocupada; });
   if (ocupada) cerrarPaletasColor();
   actualizarDisponibilidadCarpetas(ocupada);
   if (editor) editor.contentEditable = String(!ocupada);
+  if (lienzo) lienzo.inert = ocupada;
   if (lista) lista.inert = ocupada;
   panel?.setAttribute("aria-busy", String(ocupada));
 }
@@ -746,12 +821,176 @@ function obtenerEditor() {
   return document.getElementById("apunteContenido");
 }
 
+function inicializarObjetosApunteUI() {
+  objetosApunteController = inicializarObjetosApunte({
+    lienzo: document.getElementById("lienzoApunte"),
+    capaDelante: document.getElementById("objetosApunteDelante"),
+    capaDetras: document.getElementById("objetosApunteDetras"),
+    alCambiar: () => {
+      actualizarPanelObjetos();
+      marcarCambios();
+    },
+    alSeleccionar: () => actualizarPanelObjetos()
+  });
+  actualizarPanelObjetos();
+}
+
+function insertarObjetoApunte(tipo) {
+  if (guardandoApunte || eliminandoApunte || eliminandoCarpeta || !objetosApunteController) return;
+  cerrarMenuExportacion();
+  cerrarPaletasColor();
+  const objeto = objetosApunteController.agregar(tipo);
+  actualizarPanelObjetos();
+  abrirPropiedadesObjeto();
+  requestAnimationFrame(() => {
+    if (tipo !== "texto") return;
+    [...document.querySelectorAll("[data-objeto-id]")]
+      .find((elemento) => elemento.dataset.objetoId === objeto.id)
+      ?.querySelector(".objeto-apunte__texto")?.focus();
+  });
+}
+
+function objetosDisponibles() {
+  return objetosApunteController?.serializar?.().objetos || [];
+}
+
+function actualizarPanelObjetos() {
+  const selector = document.getElementById("selectorObjeto");
+  const ajuste = document.getElementById("ajusteObjeto");
+  const color = document.getElementById("colorObjeto");
+  const eliminar = document.getElementById("eliminarObjeto");
+  const ayuda = document.getElementById("ayudaObjeto");
+  const seleccion = objetosApunteController?.obtenerSeleccionado?.() || null;
+  const objetos = objetosDisponibles();
+  if (selector) {
+    selector.replaceChildren(...objetos.map((objeto, indice) => {
+      const opcion = document.createElement("option");
+      opcion.value = objeto.id;
+      opcion.textContent = `${objeto.tipo === "flecha" ? "Flecha" : "Cuadro de texto"} ${indice + 1}`;
+      return opcion;
+    }));
+    selector.value = seleccion?.id || "";
+    selector.disabled = !objetos.length;
+  }
+  if (ajuste) {
+    ajuste.value = seleccion?.ajuste || "delante";
+    ajuste.disabled = !seleccion;
+  }
+  if (color) {
+    color.value = seleccion?.color || "#f6e8d5";
+    color.disabled = !seleccion;
+  }
+  if (eliminar) eliminar.disabled = !seleccion;
+  if (ayuda) {
+    ayuda.textContent = seleccion
+      ? "Arrastra el mango para moverlo o la esquina para cambiar el tamaño. Las flechas se mueven y redimensionan igual."
+      : objetos.length
+        ? "Selecciona un objeto de la lista para ajustar su capa y color."
+        : "Inserta un cuadro o una flecha para empezar.";
+  }
+}
+
+function abrirPropiedadesObjeto() {
+  const panel = document.getElementById("propiedadesObjeto");
+  const boton = document.getElementById("abrirPropiedadesObjeto");
+  if (!panel || !boton) return;
+  cerrarMenuExportacion();
+  cerrarPaletasColor();
+  panel.hidden = false;
+  boton.setAttribute("aria-expanded", "true");
+  actualizarPanelObjetos();
+}
+
+function cerrarPropiedadesObjeto({ devolverFoco = false } = {}) {
+  const panel = document.getElementById("propiedadesObjeto");
+  const boton = document.getElementById("abrirPropiedadesObjeto");
+  if (!panel || panel.hidden) return;
+  panel.hidden = true;
+  boton?.setAttribute("aria-expanded", "false");
+  if (devolverFoco) boton?.focus();
+}
+
+function alternarPropiedadesObjeto() {
+  const panel = document.getElementById("propiedadesObjeto");
+  if (!panel || document.getElementById("abrirPropiedadesObjeto")?.disabled) return;
+  if (panel.hidden) abrirPropiedadesObjeto();
+  else cerrarPropiedadesObjeto();
+}
+
+function seleccionarObjetoDesdePanel(evento) {
+  objetosApunteController?.seleccionar(evento.target.value);
+}
+
+function actualizarAjusteObjeto(evento) {
+  const objeto = objetosApunteController?.obtenerSeleccionado?.();
+  if (objeto) objetosApunteController.actualizar(objeto.id, { ajuste: evento.target.value });
+}
+
+function actualizarColorObjeto(evento) {
+  const objeto = objetosApunteController?.obtenerSeleccionado?.();
+  if (objeto) objetosApunteController.actualizar(objeto.id, { color: evento.target.value });
+}
+
+function eliminarObjetoSeleccionado() {
+  if (!objetosApunteController?.obtenerSeleccionado?.()) return;
+  if (!window.confirm("¿Eliminar el objeto seleccionado?")) return;
+  objetosApunteController.eliminarSeleccionado();
+}
+
+function modeloExportacionApunte() {
+  return {
+    titulo: document.getElementById("apunteTitulo")?.value.trim() || "Apunte",
+    contenidoHtml: sanitizarHTMLRico(obtenerEditor()?.innerHTML || ""),
+    objetos: objetosDisponibles()
+  };
+}
+
+function alternarMenuExportacion() {
+  const menu = document.getElementById("menuExportacionApunte");
+  const boton = document.getElementById("abrirExportacionApunte");
+  if (!menu || !boton || boton.disabled) return;
+  const estabaAbierto = !menu.hidden;
+  cerrarPaletasColor();
+  cerrarPropiedadesObjeto();
+  menu.hidden = estabaAbierto;
+  boton.setAttribute("aria-expanded", String(!estabaAbierto));
+}
+
+function cerrarMenuExportacion({ devolverFoco = false } = {}) {
+  const menu = document.getElementById("menuExportacionApunte");
+  const boton = document.getElementById("abrirExportacionApunte");
+  if (!menu || menu.hidden) return;
+  menu.hidden = true;
+  boton?.setAttribute("aria-expanded", "false");
+  if (devolverFoco) boton?.focus();
+}
+
+async function exportarApunte(formato) {
+  if (guardandoApunte || eliminandoApunte) return;
+  const datos = modeloExportacionApunte();
+  const boton = document.getElementById(formato === "pdf" ? "descargarApuntePdf" : "descargarApunteWord");
+  try {
+    ponerBotonOcupado(boton, true, "Preparando...");
+    if (formato === "pdf") await descargarApuntePdf(datos);
+    else descargarApunteWord(datos);
+    ponerEstado(`Descarga ${formato.toUpperCase()} iniciada`);
+    cerrarMenuExportacion();
+  } catch (error) {
+    console.error("[APUNTES] No se pudo exportar el apunte", error);
+    ponerEstado(`No se pudo crear el archivo ${formato.toUpperCase()}.`, true);
+  } finally {
+    ponerBotonOcupado(boton, false);
+  }
+}
+
 function obtenerCarpetaActual() {
   return document.getElementById("apunteCarpeta")?.value || "";
 }
 
 function obtenerContenidoPlano() {
-  return (obtenerEditor()?.innerText || "").replace(/\u00a0/g, " ").replace(/\n{3,}/g, "\n\n").trimEnd();
+  const textoPrincipal = (obtenerEditor()?.innerText || "").replace(/\u00a0/g, " ").replace(/\n{3,}/g, "\n\n").trimEnd();
+  const textoObjetos = textoObjetosApunte(objetosApunteController?.serializar?.().objetos || []);
+  return [textoPrincipal, textoObjetos].filter(Boolean).join(textoPrincipal && textoObjetos ? "\n\n" : "").trimEnd();
 }
 
 function normalizarEditorVacio() {
@@ -896,14 +1135,21 @@ function cerrarPaletasColor({ devolverFoco = false } = {}) {
 
 function cerrarPaletasAlHacerClickFuera(evento) {
   const destino = evento.target;
-  if (destino instanceof Element && destino.closest(".selector-color, .paleta-color")) return;
+  if (destino instanceof Element && destino.closest(".selector-color, .paleta-color, .panel-objeto, .menu-exportacion, #abrirPropiedadesObjeto, #abrirExportacionApunte")) return;
   cerrarPaletasColor();
+  cerrarPropiedadesObjeto();
+  cerrarMenuExportacion();
 }
 
 function cerrarPaletasConEscape(evento) {
-  if (evento.key !== "Escape" || !Object.values(CONFIGURACION_COLORES).some((configuracion) => !document.getElementById(configuracion.panelId)?.hidden)) return;
+  const hayPanelAbierto = Object.values(CONFIGURACION_COLORES).some((configuracion) => !document.getElementById(configuracion.panelId)?.hidden)
+    || !document.getElementById("propiedadesObjeto")?.hidden
+    || !document.getElementById("menuExportacionApunte")?.hidden;
+  if (evento.key !== "Escape" || !hayPanelAbierto) return;
   evento.preventDefault();
   cerrarPaletasColor({ devolverFoco: true });
+  cerrarPropiedadesObjeto({ devolverFoco: true });
+  cerrarMenuExportacion({ devolverFoco: true });
 }
 
 function aplicarColor(tipo, color) {

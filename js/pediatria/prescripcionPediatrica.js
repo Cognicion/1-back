@@ -5,7 +5,7 @@ import {
   normalizarMedicamento,
   normalizarNombreMedicamento,
   textoMedicamentoParaBusqueda
-} from "../data/catalogoFarmacologicoUnificado.js?v=20260814-ieca-c09aa-v1";
+} from "../data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
 import {
   normalizarConcentracionMgMl,
   normalizarPesoKg,

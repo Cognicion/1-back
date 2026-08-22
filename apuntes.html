@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260820-apuntes-colores-v1">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260822-apuntes-objetos-export-v1">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -111,6 +111,19 @@
           <span aria-hidden="true">Tx</span>
           <span>Limpiar</span>
         </button>
+        <span class="separador-formato" aria-hidden="true"></span>
+        <button id="insertarCuadroTexto" type="button" class="boton-formato boton-formato--ancho" title="Insertar cuadro de texto movible">
+          <span aria-hidden="true">▣</span><span>Texto</span>
+        </button>
+        <button id="insertarFlecha" type="button" class="boton-formato boton-formato--ancho" title="Insertar flecha movible">
+          <span aria-hidden="true">→</span><span>Flecha</span>
+        </button>
+        <button id="abrirPropiedadesObjeto" type="button" class="boton-formato boton-formato--ancho" aria-haspopup="dialog" aria-expanded="false" aria-controls="propiedadesObjeto" title="Propiedades del objeto seleccionado">
+          <span aria-hidden="true">⚙</span><span>Objeto</span>
+        </button>
+        <button id="abrirExportacionApunte" type="button" class="boton-formato boton-formato--ancho" aria-haspopup="dialog" aria-expanded="false" aria-controls="menuExportacionApunte" title="Descargar apunte">
+          <span aria-hidden="true">⇩</span><span>Exportar</span>
+        </button>
       </div>
 
       <section id="paletaColorTexto" class="paleta-color" role="dialog" aria-label="Colores para el texto" hidden>
@@ -149,16 +162,54 @@
         </div>
       </section>
 
-      <div
-        id="apunteContenido"
-        class="editor-contenido"
-        contenteditable="true"
-        role="textbox"
-        aria-multiline="true"
-        aria-label="Contenido del apunte"
-        data-placeholder="Escribe tus apuntes, ideas clínicas o borradores..."
-        spellcheck="true"
-      ></div>
+      <section id="propiedadesObjeto" class="panel-objeto" role="dialog" aria-label="Propiedades del objeto" hidden>
+        <div class="panel-objeto__encabezado">
+          <strong>Objeto</strong>
+          <button id="cerrarPropiedadesObjeto" type="button" aria-label="Cerrar propiedades">×</button>
+        </div>
+        <label>
+          <span>Seleccionado</span>
+          <select id="selectorObjeto" aria-label="Objeto seleccionado"></select>
+        </label>
+        <label>
+          <span>Ajuste visual</span>
+          <select id="ajusteObjeto" aria-label="Ajuste visual del objeto">
+            <option value="delante">Delante del texto</option>
+            <option value="detras">Detrás del texto</option>
+            <option value="cuadrado">Cuadrado (marco)</option>
+          </select>
+        </label>
+        <label>
+          <span>Color</span>
+          <input id="colorObjeto" type="color" value="#f6e8d5" aria-label="Color del objeto">
+        </label>
+        <button id="eliminarObjeto" type="button" class="boton-peligro">Eliminar objeto</button>
+        <p id="ayudaObjeto" class="panel-objeto__ayuda">Inserta un cuadro o una flecha para empezar.</p>
+      </section>
+
+      <section id="menuExportacionApunte" class="menu-exportacion" role="dialog" aria-label="Descargar apunte" hidden>
+        <strong>Descargar apunte</strong>
+        <p>Incluye el texto, cuadros y flechas visibles.</p>
+        <div>
+          <button id="descargarApunteWord" type="button">Word (.docx)</button>
+          <button id="descargarApuntePdf" type="button">PDF (.pdf)</button>
+        </div>
+      </section>
+
+      <div id="lienzoApunte" class="lienzo-apunte" aria-label="Lienzo del apunte">
+        <div id="objetosApunteDetras" class="capa-objetos-apunte capa-objetos-apunte--detras"></div>
+        <div
+          id="apunteContenido"
+          class="editor-contenido"
+          contenteditable="true"
+          role="textbox"
+          aria-multiline="true"
+          aria-label="Contenido del apunte"
+          data-placeholder="Escribe tus apuntes, ideas clínicas o borradores..."
+          spellcheck="true"
+        ></div>
+        <div id="objetosApunteDelante" class="capa-objetos-apunte capa-objetos-apunte--delante" aria-label="Objetos movibles del apunte"></div>
+      </div>
 
       <div class="acciones-apuntes">
         <span id="estadoApuntes" role="status">Sin guardar</span>
@@ -185,7 +236,7 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260820-apuntes-colores-v1"></script>
+  <script type="module" src="js/apuntes.js?v=20260822-apuntes-objetos-export-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>

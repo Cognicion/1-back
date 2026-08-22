@@ -190,7 +190,7 @@ window.guardarApunteMedicoPaciente = async function() {
     id
     && contenidoCambio
     && original?.contenidoHtml
-    && !confirm("Este panel usa texto simple. Al cambiar el contenido se quitará su formato de negrita y color. ¿Continuar?")
+    && !confirm("Este panel usa texto simple. Al cambiar el contenido se quitarán el formato, los cuadros y las flechas. ¿Continuar?")
   ) return;
 
   ponerEstadoApuntes("Guardando...");
@@ -210,12 +210,19 @@ window.guardarApunteMedicoPaciente = async function() {
       if (contenidoCambio) {
         payload.contenidoHtml = deleteField();
         payload.contenidoHtmlActualizado = deleteField();
+        payload.objetosLienzo = deleteField();
+        payload.objetosLienzoActualizado = deleteField();
       } else if (
         original?.contenidoHtml
         && original.contenidoHtmlActualizado === original.fechaActualizacion
       ) {
         payload.contenidoHtmlActualizado = fechaActualizacion;
       }
+      if (
+        !contenidoCambio
+        && original?.objetosLienzo
+        && original.objetosLienzoActualizado === original.fechaActualizacion
+      ) payload.objetosLienzoActualizado = fechaActualizacion;
       await actualizarApunteConRevision({
         db,
         referencia: doc(db, "usuarios", auth.currentUser.uid, "apuntesMedico", id),
@@ -261,8 +268,13 @@ function actualizarCacheApuntePanel({ id, titulo, contenido, contenidoCambio, or
   if (contenidoCambio) {
     delete actualizado.contenidoHtml;
     delete actualizado.contenidoHtmlActualizado;
+    delete actualizado.objetosLienzo;
+    delete actualizado.objetosLienzoActualizado;
   } else if (original?.contenidoHtml && original.contenidoHtmlActualizado === original.fechaActualizacion) {
     actualizado.contenidoHtmlActualizado = fechaActualizacion;
+  }
+  if (!contenidoCambio && original?.objetosLienzo && original.objetosLienzoActualizado === original.fechaActualizacion) {
+    actualizado.objetosLienzoActualizado = fechaActualizacion;
   }
   apuntesMedicoCache = [actualizado, ...apuntesMedicoCache.filter((apunte) => apunte.id !== id)];
 }

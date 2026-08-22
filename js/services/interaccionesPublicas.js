@@ -1,4 +1,4 @@
-import { buscarMedicamentos, normalizarNombreMedicamento } from "../data/catalogoFarmacologicoUnificado.js?v=20260814-ieca-c09aa-v1";
+import { buscarMedicamentos, normalizarNombreMedicamento } from "../data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
 import {
   evaluarInteraccionesClinicas,
   normalizarMedicamentoClinico

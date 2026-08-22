@@ -2,6 +2,7 @@ const CLAVE_VISTA_MODULOS = "cognicion:dashboard:vista-modulos";
 const VISTA_PREDETERMINADA = "lista";
 const VISTAS_DISPONIBLES = new Set(["orbita", "tarjetas", "lista"]);
 const RUTAS_PRECARGADAS = new Set();
+const INSIGNIAS_OCULTAS_EN_LISTA = new Set(["COGNICION LABS", "NUEVO", "PRINCIPAL"]);
 const MODULOS_PRINCIPALES_POR_RUTA = new Map([
   ["medico.html", "js/medico.js?v=1.866"],
   ["mi-salud.html", "js/mi-salud.js?v=20260731-admin-access"],
@@ -50,6 +51,39 @@ function conectarPrecargaPorIntencion(elemento, ruta) {
   const precargar = () => precargarDestino(ruta);
   elemento.addEventListener("pointerenter", precargar, { once: true, passive: true });
   elemento.addEventListener("focus", precargar, { once: true });
+}
+
+function normalizarTextoVisible(texto = "") {
+  return String(texto)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+}
+
+function prepararFilasInteractivas(contenedor) {
+  contenedor.querySelectorAll(".module-card").forEach((tarjeta) => {
+    const insignia = tarjeta.querySelector(".badge");
+    const ocultarInsignia = INSIGNIAS_OCULTAS_EN_LISTA.has(normalizarTextoVisible(insignia?.textContent));
+    insignia?.classList.toggle("insignia-omitida-en-lista", ocultarInsignia);
+    tarjeta.classList.toggle("sin-insignia-lista", ocultarInsignia);
+
+    if (tarjeta.querySelector(":scope > .fila-modulo-enlace")) return;
+    const accionPrincipal = [...tarjeta.querySelectorAll(".card-actions :is(a, button)")]
+      .find((accion) => !accion.disabled && accion.getAttribute("aria-disabled") !== "true");
+    const ruta = obtenerRutaDesdeAccion(accionPrincipal);
+    if (!ruta) return;
+
+    const titulo = tarjeta.querySelector("h3")?.textContent?.trim() || "módulo";
+    const enlaceFila = document.createElement("a");
+    enlaceFila.className = "fila-modulo-enlace";
+    enlaceFila.href = ruta;
+    enlaceFila.setAttribute("aria-label", `Abrir ${titulo}`);
+    enlaceFila.dataset.rutaModulo = ruta;
+    conectarPrecargaPorIntencion(enlaceFila, ruta);
+    tarjeta.prepend(enlaceFila);
+  });
 }
 
 function normalizarVistaModulos(valor = "") {
@@ -404,6 +438,7 @@ function inicializarVistaModulosDashboard() {
   const botonesVista = [...document.querySelectorAll("[data-seleccionar-vista]")];
   if (!seccion || !contenedorTarjetas || !orbita || !botonesVista.length) return;
 
+  prepararFilasInteractivas(contenedorTarjetas);
   contenedorTarjetas.querySelectorAll(".card-actions :is(a, button)").forEach((accion) => {
     conectarPrecargaPorIntencion(accion, obtenerRutaDesdeAccion(accion));
   });

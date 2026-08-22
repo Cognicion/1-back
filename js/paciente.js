@@ -4,7 +4,7 @@ import {
   MEDICAMENTOS_MAESTROS,
   buscarMedicamentos,
   medicamentoPorTexto
-} from "./data/catalogoFarmacologicoUnificado.js?v=20260814-ieca-c09aa-v1";
+} from "./data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
 import { CIE10, CIE11 } from "./data/catalogoDiagnosticos.js?v=20260816-cie10-cde-v1";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
@@ -2244,7 +2244,7 @@ window.guardarApunteMedicoPaciente = async function() {
     id
     && contenidoCambio
     && original?.contenidoHtml
-    && !confirm("Este panel usa texto simple. Al cambiar el contenido se quitará su formato de negrita y color. ¿Continuar?")
+    && !confirm("Este panel usa texto simple. Al cambiar el contenido se quitarán el formato, los cuadros y las flechas. ¿Continuar?")
   ) return;
 
   const fechaActualizacion = new Date().toISOString();
@@ -2264,12 +2264,19 @@ window.guardarApunteMedicoPaciente = async function() {
       if (contenidoCambio) {
         payload.contenidoHtml = deleteField();
         payload.contenidoHtmlActualizado = deleteField();
+        payload.objetosLienzo = deleteField();
+        payload.objetosLienzoActualizado = deleteField();
       } else if (
         original?.contenidoHtml
         && original.contenidoHtmlActualizado === original.fechaActualizacion
       ) {
         payload.contenidoHtmlActualizado = fechaActualizacion;
       }
+      if (
+        !contenidoCambio
+        && original?.objetosLienzo
+        && original.objetosLienzoActualizado === original.fechaActualizacion
+      ) payload.objetosLienzoActualizado = fechaActualizacion;
       await actualizarApunteConRevision({
         db,
         referencia: doc(db, "usuarios", auth.currentUser.uid, "apuntesMedico", id),
@@ -2317,8 +2324,13 @@ function actualizarCacheApuntePaciente({ id, titulo, contenido, contenidoCambio,
   if (contenidoCambio) {
     delete actualizado.contenidoHtml;
     delete actualizado.contenidoHtmlActualizado;
+    delete actualizado.objetosLienzo;
+    delete actualizado.objetosLienzoActualizado;
   } else if (original?.contenidoHtml && original.contenidoHtmlActualizado === original.fechaActualizacion) {
     actualizado.contenidoHtmlActualizado = fechaActualizacion;
+  }
+  if (!contenidoCambio && original?.objetosLienzo && original.objetosLienzoActualizado === original.fechaActualizacion) {
+    actualizado.objetosLienzoActualizado = fechaActualizacion;
   }
   apuntesMedicoPacienteCache = [
     actualizado,

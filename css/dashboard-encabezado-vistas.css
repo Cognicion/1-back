@@ -241,6 +241,7 @@ body > header .cognicion-theme-selector small {
 }
 
 .dashboard-section[data-vista-modulos="lista"] .module-card {
+  position: relative;
   min-height: 0;
   display: grid;
   grid-template-columns: 134px minmax(180px, .62fr) minmax(260px, 1.35fr) auto;
@@ -250,6 +251,34 @@ body > header .cognicion-theme-selector small {
   border-radius: 12px;
   content-visibility: visible;
   contain-intrinsic-size: none;
+}
+
+.fila-modulo-enlace {
+  display: none;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .fila-modulo-enlace {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: block;
+  border-radius: inherit;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .fila-modulo-enlace:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -3px;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-card > :not(.fila-modulo-enlace) {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-card > .card-actions,
+.dashboard-section[data-vista-modulos="lista"] .module-card > .card-actions :is(a, button) {
+  pointer-events: auto;
 }
 
 .dashboard-section[data-vista-modulos="lista"] .module-top {
@@ -272,6 +301,14 @@ body > header .cognicion-theme-selector small {
   font-size: .55rem;
   line-height: 1.05;
   text-align: center;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .badge.insignia-omitida-en-lista {
+  display: none;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-card.sin-insignia-lista > p {
+  grid-column: 3 / 5;
 }
 
 .dashboard-section[data-vista-modulos="lista"] .module-card h3 {
@@ -770,6 +807,11 @@ html[data-theme="biocelular"] .dashboard-section[data-vista-modulos="lista"] .mo
     margin-top: 2px;
   }
 
+  .dashboard-section[data-vista-modulos="lista"] .badge.insignia-omitida-en-lista,
+  .dashboard-section[data-vista-modulos="lista"] .module-top .badge.insignia-omitida-en-lista {
+    display: none;
+  }
+
   .dashboard-section[data-vista-modulos="lista"] .module-card > p {
     grid-column: 2;
     grid-row: 3;
@@ -778,6 +820,12 @@ html[data-theme="biocelular"] .dashboard-section[data-vista-modulos="lista"] .mo
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     white-space: normal;
+  }
+
+
+  .dashboard-section[data-vista-modulos="lista"] .module-card.sin-insignia-lista > p {
+    grid-column: 2;
+    grid-row: 2 / 4;
   }
 
   .dashboard-section[data-vista-modulos="lista"] .module-card .card-actions {
