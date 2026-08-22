@@ -1,0 +1,524 @@
+/* Encabezado y presentaciones del espacio de trabajo del Dashboard. */
+body > header[data-global-app-header],
+body > header {
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--line) 82%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+body > header .topbar {
+  width: min(100% - 32px, 1560px);
+  min-height: 72px;
+  gap: clamp(16px, 2vw, 32px);
+}
+
+body > header .brand {
+  flex: 0 0 auto;
+  gap: 10px;
+}
+
+body > header .brand img {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  box-shadow: none;
+}
+
+body > header .brand-name {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  letter-spacing: .025em;
+}
+
+body > header .brand-subtitle {
+  max-width: 190px;
+  margin-top: 1px;
+  font-size: .68rem;
+  line-height: 1.2;
+}
+
+body > header .topbar-actions {
+  min-width: 0;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+body > header .topbar-actions > :is(a, button),
+body > header .logout-button,
+body > header .notifications-button {
+  min-height: 36px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 7px;
+  font-size: .76rem;
+  text-decoration: none;
+}
+
+body > header .notifications-button {
+  width: auto;
+  min-width: 38px;
+}
+
+body > header .navegacion-dashboard-activa {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #ff5367;
+  border-bottom: 2px solid currentColor;
+  background: transparent;
+}
+
+body > header .cognicion-theme-selector {
+  min-height: 36px;
+  padding: 2px;
+  border-radius: 7px;
+}
+
+body > header .cognicion-theme-label {
+  display: none;
+}
+
+body > header .cognicion-theme-selector button {
+  min-height: 30px;
+  padding: 4px 8px;
+  font-size: .66rem;
+}
+
+body > header .cognicion-theme-selector small {
+  display: none;
+}
+
+.dashboard-intro {
+  padding: 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.dashboard-intro .hero-grid {
+  display: block;
+}
+
+.dashboard-intro-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.1fr) minmax(260px, .85fr) minmax(300px, 1fr);
+  align-items: stretch;
+  padding: 16px 0;
+}
+
+.dashboard-intro-item {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 4px clamp(16px, 2.2vw, 34px);
+  border-left: 1px solid var(--line);
+}
+
+.dashboard-intro-item:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.dashboard-intro-icono {
+  flex: 0 0 auto;
+  color: #ff5367;
+  font-size: 1.35rem;
+}
+
+.dashboard-intro #bienvenida {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(.96rem, 1.3vw, 1.14rem);
+  line-height: 1.25;
+}
+
+.dashboard-intro .clinical-phrase,
+.dashboard-intro .hero-subtitle {
+  max-width: none;
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: .72rem;
+  line-height: 1.48;
+  text-align: left;
+}
+
+.dashboard-intro-descubrimiento > [data-global-header-discovery-host] {
+  width: 100%;
+}
+
+.dashboard-intro .global-header-discovery {
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: .72rem;
+}
+
+.dashboard-section {
+  padding-top: 22px;
+}
+
+.dashboard-section .section-heading {
+  display: grid;
+  grid-template-columns: minmax(260px, auto) minmax(260px, 1fr) auto;
+  align-items: end;
+  gap: 22px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.dashboard-section .section-heading h2 {
+  margin-top: 5px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.55rem, 2vw, 2rem);
+}
+
+.dashboard-section .section-description {
+  padding-bottom: 3px;
+  font-size: .75rem;
+}
+
+.selector-vista-modulos {
+  gap: 2px;
+  padding: 2px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+}
+
+.boton-vista-modulos {
+  min-width: 42px;
+  min-height: 34px;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.boton-vista-modulos[aria-pressed="true"] {
+  color: #ff5367;
+  border-color: color-mix(in srgb, #ff5367 55%, transparent);
+  background: color-mix(in srgb, #ff5367 10%, transparent);
+}
+
+.dashboard-section[data-vista-modulos="tarjetas"] .module-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.dashboard-section[data-vista-modulos="tarjetas"] .module-card {
+  min-height: 218px;
+  padding: 18px;
+  border-radius: 15px;
+}
+
+.dashboard-section[data-vista-modulos="tarjetas"] .module-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 1rem;
+}
+
+.dashboard-section[data-vista-modulos="tarjetas"] .module-card h3 {
+  margin: 16px 0 6px;
+  font-size: 1.05rem;
+}
+
+.dashboard-section[data-vista-modulos="tarjetas"] .module-card p {
+  font-size: .78rem;
+  line-height: 1.45;
+}
+
+.dashboard-section[data-vista-modulos="tarjetas"] .module-card .card-actions {
+  padding-top: 14px;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-grid {
+  grid-template-columns: 1fr;
+  gap: 7px;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-card {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 134px minmax(180px, .62fr) minmax(260px, 1.35fr) auto;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  content-visibility: visible;
+  contain-intrinsic-size: none;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-icon {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  font-size: .82rem;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .badge {
+  max-width: 82px;
+  padding: 4px 6px;
+  font-size: .55rem;
+  line-height: 1.05;
+  text-align: center;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-card h3 {
+  margin: 0;
+  font-size: .94rem;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-card > p {
+  margin: 0;
+  font-size: .74rem;
+  line-height: 1.4;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-subareas {
+  grid-column: 3;
+  margin-top: -5px;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-card .card-actions {
+  grid-column: 4;
+  grid-row: 1 / span 2;
+  margin: 0;
+  padding: 0;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-card .card-actions :is(a, button) {
+  min-height: 34px;
+  padding: 0 12px;
+  white-space: nowrap;
+  font-size: .72rem;
+}
+
+html[data-theme="biocelular"] .dashboard-intro,
+html[data-theme="biocelular"] .dashboard-section .section-heading {
+  border-color: rgb(185 42 59 / 28%);
+}
+
+html[data-theme="biocelular"] .dashboard-section[data-vista-modulos="tarjetas"] .module-card,
+html[data-theme="biocelular"] .dashboard-section[data-vista-modulos="lista"] .module-card {
+  border-color: rgb(185 42 59 / 28%);
+  background: linear-gradient(145deg, rgb(25 9 14 / 90%), rgb(49 14 22 / 72%));
+}
+
+@media (max-width: 1180px) {
+  body > header .cognicion-theme-selector {
+    display: none;
+  }
+
+  .dashboard-intro-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dashboard-intro-descubrimiento {
+    grid-column: 1 / -1;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .dashboard-section[data-vista-modulos="tarjetas"] .module-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  body > header .topbar {
+    min-height: 64px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding-block: 9px;
+  }
+
+  body > header .topbar-actions {
+    flex-basis: 100%;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: thin;
+  }
+
+  .dashboard-section .section-heading {
+    grid-template-columns: 1fr auto;
+  }
+
+  .dashboard-section .section-description {
+    display: none;
+  }
+
+  .dashboard-section[data-vista-modulos="tarjetas"] .module-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-section[data-vista-modulos="lista"] .module-card {
+    grid-template-columns: 122px minmax(150px, .7fr) minmax(200px, 1fr) auto;
+  }
+}
+
+@media (max-width: 620px) {
+  body > header .topbar {
+    width: calc(100% - 20px);
+    flex-direction: row;
+  }
+
+  body > header .topbar-actions > :is(a, button),
+  body > header .logout-button {
+    flex: 0 0 auto;
+  }
+
+  .dashboard-intro-grid {
+    grid-template-columns: 1fr;
+    padding: 10px 0;
+  }
+
+  .dashboard-intro-item,
+  .dashboard-intro-item:first-child {
+    padding: 9px 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .dashboard-intro-item:first-child {
+    border-top: 0;
+  }
+
+  .dashboard-intro-descubrimiento {
+    grid-column: auto;
+    margin-top: 0;
+  }
+
+  .dashboard-section .section-heading {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 10px;
+  }
+
+  .selector-vista-modulos {
+    width: 100%;
+  }
+
+  .boton-vista-modulos {
+    flex: 1 1 0;
+  }
+
+  .dashboard-section[data-vista-modulos="tarjetas"] .module-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-section[data-vista-modulos="lista"] .module-card {
+    grid-template-columns: 50px minmax(0, 1fr) auto;
+    gap: 7px 10px;
+  }
+
+  .dashboard-section[data-vista-modulos="lista"] .module-card > p,
+  .dashboard-section[data-vista-modulos="lista"] .module-subareas {
+    grid-column: 2 / -1;
+  }
+
+  .dashboard-section[data-vista-modulos="lista"] .module-card .card-actions {
+    grid-column: 2 / -1;
+    grid-row: auto;
+  }
+
+  .dashboard-section[data-vista-modulos="lista"] .module-card .card-actions :is(a, button) {
+    width: 100%;
+  }
+
+  .dashboard-section[data-vista-modulos="lista"] .module-top .badge {
+    display: none;
+  }
+}
+
+/* Prevalece sobre la densidad general únicamente dentro del Dashboard. */
+body:has(.dashboard-section) > header[data-global-app-header] .topbar {
+  min-height: 72px;
+  flex-flow: row nowrap;
+  gap: clamp(16px, 2vw, 32px);
+}
+
+body:has(.dashboard-section) > header[data-global-app-header] .brand {
+  gap: 10px;
+}
+
+body:has(.dashboard-section) > header[data-global-app-header] .brand img {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+}
+
+body:has(.dashboard-section) > header[data-global-app-header] .brand-name {
+  font-size: 1rem;
+}
+
+body:has(.dashboard-section) > header[data-global-app-header] .brand-subtitle {
+  margin-top: 1px;
+  font-size: .68rem;
+}
+
+body:has(.dashboard-section) > header[data-global-app-header] :is(.logout-button, .primary-button, .secondary-button, .ghost-button) {
+  min-height: 36px;
+  padding-inline: 12px;
+}
+
+body:has(.dashboard-section) .dashboard-intro {
+  padding: 0;
+}
+
+body:has(.dashboard-section) .dashboard-intro .hero-subtitle {
+  max-width: none;
+  margin: 4px 0 0;
+  font-size: .72rem;
+  line-height: 1.48;
+}
+
+body:has(.dashboard-section) .dashboard-intro .clinical-phrase {
+  margin-top: 4px;
+  font-size: .72rem;
+}
+
+body:has(.dashboard-section) .dashboard-intro #bienvenida {
+  margin: 0;
+  font-size: clamp(.96rem, 1.3vw, 1.14rem);
+}
+
+body:has(.dashboard-section) .dashboard-section {
+  padding-top: 18px;
+}
+
+.dashboard-intro .global-header-discovery {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboard-intro .global-header-discovery__text {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.dashboard-intro .global-header-discovery__actions {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 860px) {
+  body:has(.dashboard-section) > header[data-global-app-header] .topbar {
+    min-height: 64px;
+    flex-flow: row wrap;
+  }
+}

@@ -1345,6 +1345,7 @@ html[data-theme="light"] .ghost-button:hover,
 html[data-theme="light"] .logout-button:hover { color: var(--text-primary); background: var(--action-secondary-hover); border-color: var(--accent-primary); box-shadow: none; transform: none; }
 html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px, 1440px); }
 </style>
+<link rel="stylesheet" href="css/dashboard-encabezado-vistas.css?v=2.079">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
 
@@ -1359,14 +1360,16 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
                 <div class="brand-name">Cognición</div>
 
                 <div class="brand-subtitle">
-                    Así como la cognición integra múltiples procesos mentales
-                    para comprender al individuo, Cognición integra múltiples
-                    herramientas tecnológicas para comprender al paciente.
+                    Plataforma clínica integral.
                 </div>
             </div>
         </div>
 
         <div class="topbar-actions">
+            <a class="navegacion-dashboard-activa" href="dashboard.html" aria-current="page">
+                <span aria-hidden="true">⌂</span> Inicio
+            </a>
+
             <div data-cognicion-theme-selector></div>
 
             <div class="notifications-wrapper">
@@ -1497,18 +1500,26 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
 </section>
 
 <main class="app-shell">
-    <section class="hero">
+    <section class="hero dashboard-intro">
         <div class="brain-background" aria-hidden="true">
             <span></span><span></span><span></span><span></span>
         </div>
         <div class="hero-grid">
-            <div class="hero-copy">
-                <div class="eyebrow">PLATAFORMA CLÍNICA DIGITAL</div>
-                <h1>Salud mental y medicina de precisión</h1>
-                <p class="hero-subtitle">Evaluación clínica, seguimiento terapéutico y herramientas digitales para comprender al paciente de forma integral.</p>
-                <h2 id="bienvenida">Cargando...</h2>
-                <p id="fraseClinica" class="clinical-phrase">La evidencia guía mejores decisiones clínicas.</p>
-
+            <div class="dashboard-intro-grid">
+                <div class="dashboard-intro-item dashboard-intro-bienvenida">
+                    <span class="dashboard-intro-icono" aria-hidden="true">♙</span>
+                    <div>
+                        <h2 id="bienvenida">Cargando...</h2>
+                        <p id="fraseClinica" class="clinical-phrase">La evidencia guía mejores decisiones clínicas.</p>
+                    </div>
+                </div>
+                <div class="dashboard-intro-item">
+                    <span class="dashboard-intro-icono" aria-hidden="true">♢</span>
+                    <p class="hero-subtitle">Evaluación clínica, seguimiento terapéutico y herramientas digitales para comprender al paciente de forma integral.</p>
+                </div>
+                <div class="dashboard-intro-item dashboard-intro-descubrimiento">
+                    <div data-global-header-discovery-host></div>
+                </div>
             </div>
         </div>
     </section>
@@ -1523,8 +1534,9 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
             </div>
             <p class="section-description">Accesos pensados para retomar tu trabajo médico sin fricción.</p>
             <div class="selector-vista-modulos" role="group" aria-label="Presentación de los módulos">
-                <button type="button" class="boton-vista-modulos" data-seleccionar-vista="orbita" aria-pressed="true">Órbita</button>
-                <button type="button" class="boton-vista-modulos" data-seleccionar-vista="tarjetas" aria-pressed="false">Tarjetas</button>
+                <button type="button" class="boton-vista-modulos" data-seleccionar-vista="orbita" aria-pressed="true" title="Vista orbital"><span aria-hidden="true">◉</span><span>Órbita</span></button>
+                <button type="button" class="boton-vista-modulos" data-seleccionar-vista="tarjetas" aria-pressed="false" title="Vista en cuadrícula"><span aria-hidden="true">▦</span><span>Cuadrícula</span></button>
+                <button type="button" class="boton-vista-modulos" data-seleccionar-vista="lista" aria-pressed="false" title="Vista en lista"><span aria-hidden="true">☷</span><span>Lista</span></button>
             </div>
         </div>
 
@@ -1751,7 +1763,7 @@ document.addEventListener("DOMContentLoaded", function () {
   console.timeEnd?.("COGNICION dashboard | primera fase HTML");
 }, { once: true });
 </script>
-<script type="module" src="js/componentes/vista-orbital-panel-principal.js?v=1.866"></script>
+<script type="module" src="js/componentes/vista-orbital-panel-principal.js?v=2.079-vistas-dashboard"></script>
 <script type="module" src="js/dashboard.js?v=20260727-colaboradores-v1"></script>
 <script type="module" src="js/services/visitasBootstrap.js"></script>
 <script type="module" src="js/components/accesosRapidos.js"></script>

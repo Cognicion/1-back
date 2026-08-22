@@ -1,6 +1,6 @@
 const CLAVE_VISTA_MODULOS = "cognicion:dashboard:vista-modulos";
 const VISTA_PREDETERMINADA = "orbita";
-const VISTAS_DISPONIBLES = new Set(["orbita", "tarjetas"]);
+const VISTAS_DISPONIBLES = new Set(["orbita", "tarjetas", "lista"]);
 const RUTAS_PRECARGADAS = new Set();
 const MODULOS_PRINCIPALES_POR_RUTA = new Map([
   ["medico.html", "js/medico.js?v=1.866"],
