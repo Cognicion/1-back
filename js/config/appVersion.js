@@ -73,5 +73,6 @@
 // deployment marker: 2026-08-22-antibioticos-fda-cofepris-v1
 // deployment marker: 2026-08-22-apuntes-objetos-export-v1
 // deployment marker: 2026-08-22-apuntes-subcarpetas-listas-v1
-export const APP_VERSION = "2.083";
+// deployment marker: 2026-08-22-apuntes-subcarpetas-hotfix-v1
+export const APP_VERSION = "2.084";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

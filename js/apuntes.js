@@ -399,6 +399,11 @@ function gestionarClickLista(evento) {
     return;
   }
 
+  if (accion === "nueva-subcarpeta") {
+    abrirDialogoCarpeta("", carpetaId);
+    return;
+  }
+
   if (accion === "renombrar-carpeta") {
     abrirDialogoCarpeta(carpetaId);
     return;
@@ -440,10 +445,6 @@ function seleccionarApunte(id, { omitirConfirmacion = false, restaurarFoco = fal
     else editor.textContent = apunte.contenido || "";
   }
 
-  if (accion === "nueva-subcarpeta") {
-    abrirDialogoCarpeta("", carpetaId);
-    return;
-  }
   const objetosVigentes = apunte.objetosLienzo
     && apunte.objetosLienzoActualizado
     && apunte.objetosLienzoActualizado === apunte.fechaActualizacion;

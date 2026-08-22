@@ -168,7 +168,7 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /theme-preload\.js\?v=20260820-apuntes-minimal-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
   assert.match(html, /apuntes\.css\?v=20260822-apuntes-subcarpetas-listas-v1/);
-  assert.match(html, /apuntes\.js\?v=20260822-apuntes-subcarpetas-listas-v1/);
+  assert.match(html, /apuntes\.js\?v=20260822-apuntes-subcarpetas-hotfix-v1/);
   assert.match(html, /id="insertarCuadroTexto"/);
   assert.match(html, /id="insertarFlecha"/);
   assert.match(html, /id="propiedadesObjeto"[^>]*aria-label="Propiedades del objeto"/);
@@ -196,6 +196,9 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(controlador, /ejecutarFormato\(evento\.shiftKey \? "outdent" : "indent"\)/);
   assert.match(controlador, /carpetaPadreId: carpetaPadreId \|\| null/);
   assert.match(controlador, /data-accion="nueva-subcarpeta"/);
+  assert.match(controlador, /if \(accion === "nueva-subcarpeta"\) \{\s*abrirDialogoCarpeta\("", carpetaId\);\s*return;\s*\}\s*\n\s*if \(accion === "renombrar-carpeta"\)/);
+  const seleccionApunte = controlador.match(/function seleccionarApunte\([\s\S]*?\n\}/)?.[0] || "";
+  assert.doesNotMatch(seleccionApunte, /accion === "nueva-subcarpeta"/);
   assert.match(controlador, /cognicion:apuntes:colores-recientes:\$\{uidMedico\}/);
   assert.match(historialColores, /MAX_COLORES_RECIENTES = 5/);
 });
@@ -325,5 +328,6 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-20-apuntes-colores-recientes-v1/);
   assert.match(version, /2026-08-22-apuntes-objetos-export-v1/);
   assert.match(version, /2026-08-22-apuntes-subcarpetas-listas-v1/);
-  assert.match(version, /APP_VERSION = "2\.083"/);
+  assert.match(version, /2026-08-22-apuntes-subcarpetas-hotfix-v1/);
+  assert.match(version, /APP_VERSION = "2\.084"/);
 });
