@@ -1,5 +1,5 @@
 const CLAVE_VISTA_MODULOS = "cognicion:dashboard:vista-modulos";
-const VISTA_PREDETERMINADA = "orbita";
+const VISTA_PREDETERMINADA = "lista";
 const VISTAS_DISPONIBLES = new Set(["orbita", "tarjetas", "lista"]);
 const RUTAS_PRECARGADAS = new Set();
 const MODULOS_PRINCIPALES_POR_RUTA = new Map([
@@ -194,6 +194,10 @@ class OrbitaPanelPrincipal extends HTMLElement {
           --public-green: #ff9d5c;
           --orbita-fondo: rgba(24, 3, 8, .44);
           --orbita-borde: rgba(255, 157, 92, .24);
+        }
+
+        :host([data-pausada]) * {
+          animation-play-state: paused !important;
         }
 
         .contenedor-orbital {
@@ -411,6 +415,7 @@ function inicializarVistaModulosDashboard() {
   const aplicarVista = (vistaSolicitada, guardar = false) => {
     const vista = guardar ? guardarVistaModulos(vistaSolicitada) : normalizarVistaModulos(vistaSolicitada);
     const mostrarOrbita = vista === "orbita";
+    orbita.toggleAttribute("data-pausada", !mostrarOrbita);
     orbita.hidden = !mostrarOrbita;
     contenedorTarjetas.hidden = mostrarOrbita;
     seccion.dataset.vistaModulos = vista;

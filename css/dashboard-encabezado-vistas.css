@@ -100,9 +100,9 @@ body > header .cognicion-theme-selector small {
 
 .dashboard-intro-grid {
   display: grid;
-  grid-template-columns: minmax(280px, 1.1fr) minmax(260px, .85fr) minmax(300px, 1fr);
+  grid-template-columns: minmax(280px, .9fr) minmax(360px, 1.1fr);
   align-items: stretch;
-  padding: 16px 0;
+  padding: 10px 0;
 }
 
 .dashboard-intro-item {
@@ -520,5 +520,285 @@ body:has(.dashboard-section) .dashboard-section {
   body:has(.dashboard-section) > header[data-global-app-header] .topbar {
     min-height: 64px;
     flex-flow: row wrap;
+  }
+}
+
+/* Lista minimalista: conserva el catálogo real y cambia únicamente su presentación. */
+.dashboard-section[data-vista-modulos="lista"] {
+  padding-top: 14px;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .section-heading {
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 0;
+  padding-bottom: 8px;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .section-heading h2 {
+  margin-top: 2px;
+  font-size: clamp(1.35rem, 1.7vw, 1.72rem);
+  line-height: 1.08;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .section-description {
+  padding-bottom: 0;
+  font-size: .69rem;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .selector-vista-modulos {
+  gap: 4px;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .boton-vista-modulos {
+  position: relative;
+  width: 34px;
+  min-width: 34px;
+  min-height: 32px;
+  padding: 0;
+  justify-content: center;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .boton-vista-modulos > span:first-child {
+  font-size: .9rem;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .boton-vista-modulos > span:last-child {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  border-top: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-card {
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: 38px minmax(170px, .72fr) 104px minmax(220px, 1.4fr) auto;
+  grid-template-rows: auto;
+  align-items: center;
+  gap: 8px 14px;
+  padding: 8px 14px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  content-visibility: visible;
+  contain-intrinsic-size: none;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-card:hover,
+.dashboard-section[data-vista-modulos="lista"] .module-card:focus-within {
+  transform: none;
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+  box-shadow: none;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-top {
+  display: contents;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-icon {
+  grid-column: 1;
+  grid-row: 1;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  font-size: .66rem;
+  line-height: 1;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-card h3 {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: .88rem;
+  line-height: 1.2;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .badge {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: start;
+  max-width: 100%;
+  padding: 3px 5px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+  font-size: .49rem;
+  line-height: 1;
+  letter-spacing: .055em;
+  white-space: nowrap;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-card > p {
+  grid-column: 4;
+  grid-row: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: .69rem;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-subareas {
+  display: none;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-card .card-actions {
+  grid-column: 5;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-card .card-actions :is(a, button) {
+  min-width: 30px;
+  min-height: 30px;
+  height: 30px;
+  padding: 0 7px;
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--accent) !important;
+  font-size: 0;
+  white-space: nowrap;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-card .card-actions :is(a, button)::after {
+  content: "→";
+  display: inline-block;
+  font-size: 1rem;
+  line-height: 1;
+  transition: transform 180ms ease;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-card:hover .card-actions :is(a, button)::after,
+.dashboard-section[data-vista-modulos="lista"] .module-card .card-actions :is(a, button):focus-visible::after {
+  transform: translateX(3px);
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-card .card-actions.dual-actions :is(a, button) {
+  width: auto;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, transparent) !important;
+  border-radius: 0;
+  font-size: .62rem;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-card .card-actions.dual-actions :is(a, button)::after {
+  content: none;
+}
+
+html[data-theme="biocelular"] .dashboard-section[data-vista-modulos="lista"] .module-card {
+  border: 0;
+  border-bottom: 1px solid rgb(185 42 59 / 24%);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+html[data-theme="biocelular"] .dashboard-section[data-vista-modulos="lista"] .module-card:hover,
+html[data-theme="biocelular"] .dashboard-section[data-vista-modulos="lista"] .module-card:focus-within {
+  background: rgb(185 42 59 / 7%);
+}
+
+@media (max-width: 1000px) {
+  .dashboard-section[data-vista-modulos="lista"] .module-card {
+    grid-template-columns: 38px minmax(150px, .8fr) 90px minmax(170px, 1fr) auto;
+    gap-inline: 10px;
+  }
+}
+
+@media (max-width: 700px) {
+  .dashboard-section[data-vista-modulos="lista"] .section-heading {
+    grid-template-columns: 1fr auto;
+  }
+
+  .dashboard-section[data-vista-modulos="lista"] .selector-vista-modulos {
+    width: auto;
+  }
+
+  .dashboard-section[data-vista-modulos="lista"] .boton-vista-modulos {
+    flex: 0 0 34px;
+  }
+
+  .dashboard-section[data-vista-modulos="lista"] .module-card {
+    min-height: 74px;
+    grid-template-columns: 38px minmax(0, 1fr) 30px;
+    grid-template-rows: auto auto auto;
+    gap: 2px 10px;
+    padding: 9px 8px;
+  }
+
+  .dashboard-section[data-vista-modulos="lista"] .module-icon {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    align-self: start;
+  }
+
+  .dashboard-section[data-vista-modulos="lista"] .module-card h3 {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .dashboard-section[data-vista-modulos="lista"] .badge,
+  .dashboard-section[data-vista-modulos="lista"] .module-top .badge {
+    display: inline-flex;
+    grid-column: 2;
+    grid-row: 2;
+    margin-top: 2px;
+  }
+
+  .dashboard-section[data-vista-modulos="lista"] .module-card > p {
+    grid-column: 2;
+    grid-row: 3;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
+  }
+
+  .dashboard-section[data-vista-modulos="lista"] .module-card .card-actions {
+    grid-column: 3;
+    grid-row: 1 / -1;
+    align-self: stretch;
+  }
+
+  .dashboard-section[data-vista-modulos="lista"] .module-card .card-actions :is(a, button) {
+    width: 30px;
+    padding: 0;
+  }
+
+  .dashboard-section[data-vista-modulos="lista"] .module-card .card-actions.dual-actions {
+    grid-column: 2 / -1;
+    grid-row: 4;
+    justify-content: flex-start;
+  }
+
+  .dashboard-section[data-vista-modulos="lista"] .module-card .card-actions.dual-actions :is(a, button) {
+    width: auto;
+    padding-inline: 6px;
   }
 }
