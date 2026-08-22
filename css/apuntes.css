@@ -279,7 +279,7 @@ body.pagina-apuntes > main.apuntes-shell {
 }
 
 .apuntes-shell :where(input[type="text"], input[type="search"], input:not([type]), select),
-.dialogo-carpeta input {
+.dialogo-carpeta :is(input, select) {
   width: 100%;
   min-width: 0;
   border-radius: 11px;
@@ -290,9 +290,18 @@ body.pagina-apuntes > main.apuntes-shell {
   font: inherit;
 }
 
+.dialogo-carpeta select {
+  color-scheme: dark;
+}
+
+.dialogo-carpeta select option {
+  color: #fff5e6;
+  background: #1f0b11;
+}
+
 .apuntes-shell :where(input, select):focus-visible,
 .editor-contenido:focus-visible,
-.dialogo-carpeta input:focus-visible {
+.dialogo-carpeta :is(input, select):focus-visible {
   outline: 2px solid var(--apuntes-borde-fuerte);
   outline-offset: 1px;
   border-color: var(--apuntes-acento);
@@ -669,6 +678,10 @@ body.pagina-apuntes > main.apuntes-shell {
   color-scheme: dark;
   outline-offset: -2px;
   font-size: 12px;
+}
+
+.carpeta-contenido > .carpeta-apuntes {
+  margin-top: 3px;
 }
 
 .apuntes-shell .selector-carpeta select option,
@@ -1077,6 +1090,24 @@ body.pagina-apuntes > main.apuntes-shell {
   min-height: 1.52em;
 }
 
+.editor-contenido :where(ul, ol) {
+  margin: 0.3em 0;
+  padding-inline-start: 1.65em;
+  white-space: normal;
+}
+
+.editor-contenido ol[type="a"] {
+  list-style-type: lower-alpha;
+}
+
+.editor-contenido :where(ul, ol) :where(ul, ol) {
+  margin: 0.15em 0;
+}
+
+.editor-contenido li {
+  min-height: 1.52em;
+}
+
 .capa-objetos-apunte {
   position: absolute;
   inset: 0;
@@ -1388,6 +1419,15 @@ html[data-theme="light"] .apunte-item__preview {
 }
 
 html[data-theme="light"] .dialogo-carpeta {
+  color: var(--apuntes-texto);
+  background: var(--surface-elevated, #fff);
+}
+
+html[data-theme="light"] .dialogo-carpeta select {
+  color-scheme: light;
+}
+
+html[data-theme="light"] .dialogo-carpeta select option {
   color: var(--apuntes-texto);
   background: var(--surface-elevated, #fff);
 }

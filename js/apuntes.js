@@ -1,6 +1,6 @@
 import { auth, db } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
-import { sanitizarHTMLRico } from "./apuntes-rich-text.js";
+import { sanitizarHTMLRico } from "./apuntes-rich-text.js?v=20260822-apuntes-subcarpetas-listas-v1";
 import { inicializarSidebarApuntes } from "./apuntes-sidebar.js";
 import { inicializarObjetosApunte, textoObjetosApunte } from "./apuntes-objetos.js";
 import { descargarApuntePdf, descargarApunteWord } from "./apuntes-export.js";
@@ -17,7 +17,6 @@ import {
 } from "./services/apuntesMedicoPersistence.js";
 import {
   aplanarCarpetasJerarquicas,
-  agruparApuntes,
   crearVistaPreviaApunte,
   escaparHTML,
   filtrarApuntes,
@@ -28,7 +27,7 @@ import {
   obtenerTituloVisibleApunte,
   ordenarCarpetas,
   SIN_CARPETA
-} from "./apuntes-core.js";
+} from "./apuntes-core.js?v=20260822-apuntes-subcarpetas-listas-v1";
 
 import {
   onAuthStateChanged
@@ -625,18 +624,38 @@ async function eliminarApunte() {
   }
 }
 
-function abrirDialogoCarpeta(carpetaId = "") {
+function abrirDialogoCarpeta(carpetaId = "", padrePreseleccionado = "") {
   const dialogo = document.getElementById("dialogoCarpeta");
   const carpeta = carpetas.find((item) => item.id === carpetaId);
   idCarpetaEdicion = carpeta?.id || "";
+  const padreActual = carpeta
+    ? normalizarCarpetaPadreId(carpeta.carpetaPadreId, carpetas, carpeta.id)
+    : normalizarCarpetaPadreId(padrePreseleccionado, carpetas);
   document.getElementById("tituloDialogoCarpeta").textContent = carpeta ? "Renombrar carpeta" : "Nueva carpeta";
   document.getElementById("guardarCarpeta").textContent = carpeta ? "Guardar cambios" : "Guardar carpeta";
   document.getElementById("nombreCarpeta").value = carpeta?.nombre || "";
+  renderizarSelectorPadreCarpeta(padreActual, carpeta?.id || "");
   document.getElementById("errorCarpeta").textContent = "";
 
   if (typeof dialogo?.showModal === "function") dialogo.showModal();
   else dialogo?.setAttribute("open", "");
   requestAnimationFrame(() => document.getElementById("nombreCarpeta")?.focus());
+}
+
+function renderizarSelectorPadreCarpeta(padreSeleccionado = "", idExcluido = "") {
+  const selector = document.getElementById("carpetaPadre");
+  if (!selector) return;
+  const opciones = aplanarCarpetasJerarquicas(carpetas).filter((carpeta) => (
+    carpeta.id !== idExcluido
+    && normalizarCarpetaPadreId(carpeta.id, carpetas, idExcluido) === carpeta.id
+  ));
+  selector.innerHTML = [
+    '<option value="">Carpeta raíz</option>',
+    ...opciones.map((carpeta) => (
+      `<option value="${escaparHTML(carpeta.id)}">${"— ".repeat(carpeta.profundidad)}${escaparHTML(carpeta.nombre)}</option>`
+    ))
+  ].join("");
+  selector.value = opciones.some((carpeta) => carpeta.id === padreSeleccionado) ? padreSeleccionado : "";
 }
 
 function cerrarDialogoCarpeta() {
@@ -655,6 +674,8 @@ function limpiarDialogoCarpeta() {
 async function guardarCarpeta(evento) {
   evento.preventDefault();
   const nombre = normalizarTexto(document.getElementById("nombreCarpeta")?.value);
+  const padreSolicitado = document.getElementById("carpetaPadre")?.value || "";
+  const carpetaPadreId = normalizarCarpetaPadreId(padreSolicitado, carpetas, idCarpetaEdicion);
   const error = document.getElementById("errorCarpeta");
   const boton = document.getElementById("guardarCarpeta");
 
@@ -662,8 +683,12 @@ async function guardarCarpeta(evento) {
     error.textContent = "Escribe un nombre para la carpeta.";
     return;
   }
-  if (!nombreCarpetaDisponible(nombre, carpetas, idCarpetaEdicion)) {
-    error.textContent = "Ya existe una carpeta con ese nombre.";
+  if (padreSolicitado && !carpetaPadreId) {
+    error.textContent = "No puedes colocar una carpeta dentro de sí misma o de una subcarpeta.";
+    return;
+  }
+  if (!nombreCarpetaDisponible(nombre, carpetas, idCarpetaEdicion, carpetaPadreId)) {
+    error.textContent = "Ya existe una carpeta con ese nombre en esta ubicación.";
     return;
   }
 
@@ -673,12 +698,14 @@ async function guardarCarpeta(evento) {
     if (idCarpetaEdicion) {
       await updateDoc(doc(db, "usuarios", uidMedico, "carpetasApuntes", idCarpetaEdicion), {
         nombre,
+        carpetaPadreId: carpetaPadreId || null,
         fechaActualizacion: new Date().toISOString(),
         fechaActualizacionServidor: serverTimestamp()
       });
     } else {
       const creada = await addDoc(refCarpetas(), {
         nombre,
+        carpetaPadreId: carpetaPadreId || null,
         fechaCreacion: new Date().toISOString(),
         fechaActualizacionServidor: serverTimestamp()
       });
@@ -698,9 +725,13 @@ async function eliminarCarpeta(carpetaId) {
   const carpeta = carpetas.find((item) => item.id === carpetaId);
   if (!carpeta) return;
   const cantidadLocal = apuntes.filter((apunte) => apunte.carpetaId === carpetaId).length;
-  const detalle = cantidadLocal
-    ? ` Los ${cantidadLocal} apuntes que contiene pasarán a “Sin carpeta”.`
-    : "";
+  const cantidadHijas = carpetas.filter((item) => item.carpetaPadreId === carpetaId).length;
+  const padreDestino = normalizarCarpetaPadreId(carpeta.carpetaPadreId, carpetas, carpeta.id) || null;
+  const destino = padreDestino ? "su carpeta superior" : "la raíz";
+  const detalle = [
+    cantidadLocal ? ` Sus ${cantidadLocal} apuntes pasarán a ${destino}.` : "",
+    cantidadHijas ? ` Sus ${cantidadHijas} subcarpetas se moverán a ${destino}.` : ""
+  ].join("");
   if (!window.confirm(`¿Eliminar la carpeta “${carpeta.nombre}”?${detalle}`)) return;
   if (!confirmarDescartarCambios()) return;
 
@@ -709,32 +740,46 @@ async function eliminarCarpeta(carpetaId) {
   ponerEstado("Eliminando carpeta...");
   try {
     while (true) {
-      const snapActual = await getDocs(query(refApuntes(), where("carpetaId", "==", carpetaId)));
-      const documentos = snapActual.docs;
-      const referenciasApuntes = documentos.slice(0, TAMANO_LOTE).map((apunte) => apunte.ref);
-      const finalizar = documentos.length <= TAMANO_LOTE;
+      const [snapActual, snapHijas] = await Promise.all([
+        getDocs(query(refApuntes(), where("carpetaId", "==", carpetaId))),
+        getDocs(query(refCarpetas(), where("carpetaPadreId", "==", carpetaId)))
+      ]);
+      const movimientos = [
+        ...snapActual.docs.map((apunte) => ({ tipo: "apunte", referencia: apunte.ref })),
+        ...snapHijas.docs.map((hija) => ({ tipo: "carpeta", referencia: hija.ref }))
+      ].slice(0, TAMANO_LOTE);
+      const finalizar = movimientos.length === snapActual.docs.length + snapHijas.docs.length;
       const referenciaCarpeta = doc(db, "usuarios", uidMedico, "carpetasApuntes", carpetaId);
 
       await runTransaction(db, async (transaccion) => {
         const referencias = finalizar
-          ? [...referenciasApuntes, referenciaCarpeta]
-          : referenciasApuntes;
+          ? [...movimientos.map((movimiento) => movimiento.referencia), referenciaCarpeta]
+          : movimientos.map((movimiento) => movimiento.referencia);
         const lecturas = await Promise.all(referencias.map((referencia) => transaccion.get(referencia)));
         const fechaMovimiento = new Date().toISOString();
 
-        lecturas.slice(0, referenciasApuntes.length).forEach((apunteActual) => {
-          if (!apunteActual.exists()) return;
-          const datos = apunteActual.data();
+        lecturas.slice(0, movimientos.length).forEach((documentoActual, indice) => {
+          if (!documentoActual.exists()) return;
+          const datos = documentoActual.data();
+          if (movimientos[indice].tipo === "carpeta") {
+            if (datos.carpetaPadreId === carpetaId) {
+              transaccion.update(documentoActual.ref, {
+                carpetaPadreId: padreDestino,
+                fechaActualizacion: fechaMovimiento,
+                fechaActualizacionServidor: serverTimestamp()
+              });
+            }
+            return;
+          }
           if (datos.carpetaId !== carpetaId) return;
           const cambios = {
-            carpetaId: null,
+            carpetaId: padreDestino,
             fechaActualizacion: fechaMovimiento,
             fechaActualizacionServidor: serverTimestamp()
           };
-          if (datos.contenidoHtml && datos.contenidoHtmlActualizado === datos.fechaActualizacion) {
-            cambios.contenidoHtmlActualizado = fechaMovimiento;
-          }
-          transaccion.update(apunteActual.ref, cambios);
+          if (datos.contenidoHtml && datos.contenidoHtmlActualizado === datos.fechaActualizacion) cambios.contenidoHtmlActualizado = fechaMovimiento;
+          if (datos.objetosLienzo && datos.objetosLienzoActualizado === datos.fechaActualizacion) cambios.objetosLienzoActualizado = fechaMovimiento;
+          transaccion.update(documentoActual.ref, cambios);
         });
 
         const carpetaActual = finalizar ? lecturas.at(-1) : null;
@@ -1043,6 +1088,25 @@ function ejecutarFormato(comando, valor = null) {
   return aplicado;
 }
 
+function obtenerListaSeleccionada() {
+  const seleccion = window.getSelection();
+  if (!seleccion?.rangeCount) return null;
+  const nodo = seleccion.getRangeAt(0).commonAncestorContainer;
+  const elemento = nodo.nodeType === Node.ELEMENT_NODE ? nodo : nodo.parentElement;
+  return elemento?.closest?.("ol, ul") || null;
+}
+
+function ejecutarLista(tipo) {
+  const comando = tipo === "puntos" ? "insertUnorderedList" : "insertOrderedList";
+  if (!ejecutarFormato(comando)) return;
+  if (tipo !== "letras") return;
+  const lista = obtenerListaSeleccionada();
+  if (lista?.tagName === "OL") {
+    lista.setAttribute("type", "a");
+    marcarCambios();
+  }
+}
+
 function inicializarSelectorColores() {
   const temaClaro = document.documentElement.dataset.theme === "light";
   const colorTexto = document.getElementById("colorTexto");
@@ -1262,6 +1326,11 @@ function actualizarEstadoFormato() {
 
 function gestionarAtajosEditor(evento) {
   const tecla = evento.key.toLocaleLowerCase("es");
+  if (tecla === "tab" && obtenerListaSeleccionada()) {
+    evento.preventDefault();
+    ejecutarFormato(evento.shiftKey ? "outdent" : "indent");
+    return;
+  }
   if ((evento.ctrlKey || evento.metaKey) && tecla === "b") {
     evento.preventDefault();
     guardarSeleccionEditor();

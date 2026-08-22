@@ -1,4 +1,4 @@
-const ETIQUETAS_PERMITIDAS = new Set(["B", "STRONG", "BR", "DIV", "P", "SPAN", "FONT"]);
+const ETIQUETAS_PERMITIDAS = new Set(["B", "STRONG", "BR", "DIV", "P", "SPAN", "FONT", "UL", "OL", "LI"]);
 const ETIQUETAS_DESCARTADAS = new Set(["SCRIPT", "STYLE", "IFRAME", "OBJECT", "EMBED", "SVG", "MATH"]);
 
 export function sanitizarHTMLRico(html, documento = document) {
@@ -29,6 +29,10 @@ function limpiarNodoRico(nodo, documento) {
   const fondo = colorCSSSeguro(nodo.style?.backgroundColor || nodo.getAttribute("bgcolor"));
   if (color) limpio.style.color = color;
   if (fondo) limpio.style.backgroundColor = fondo;
+  if (etiqueta === "OL") {
+    const tipoLista = nodo.getAttribute("type");
+    if (["1", "a", "A"].includes(tipoLista)) limpio.setAttribute("type", tipoLista);
+  }
   nodo.childNodes.forEach((hijo) => limpio.appendChild(limpiarNodoRico(hijo, documento)));
   return limpio;
 }

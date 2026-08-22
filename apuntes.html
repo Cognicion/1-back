@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260822-apuntes-objetos-export-v1">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260822-apuntes-subcarpetas-listas-v1">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -110,6 +110,22 @@
         <button id="quitarFormato" type="button" class="boton-formato boton-formato--ancho" aria-label="Quitar formato" title="Quitar formato de la selección">
           <span aria-hidden="true">Tx</span>
           <span>Limpiar</span>
+        </button>
+        <span class="separador-formato" aria-hidden="true"></span>
+        <button id="listaPuntos" type="button" class="boton-formato" aria-label="Lista con viñetas" title="Lista con viñetas">
+          <span aria-hidden="true">•</span>
+        </button>
+        <button id="listaNumeros" type="button" class="boton-formato" aria-label="Lista numerada" title="Lista numerada">
+          <span aria-hidden="true">1.</span>
+        </button>
+        <button id="listaLetras" type="button" class="boton-formato" aria-label="Lista alfabética" title="Lista alfabética">
+          <span aria-hidden="true">A.</span>
+        </button>
+        <button id="aumentarSublista" type="button" class="boton-formato" aria-label="Crear sublista" title="Crear sublista (Tab)">
+          <span aria-hidden="true">↳</span>
+        </button>
+        <button id="reducirSublista" type="button" class="boton-formato" aria-label="Reducir nivel de lista" title="Reducir nivel de lista (Mayús+Tab)">
+          <span aria-hidden="true">↰</span>
         </button>
         <span class="separador-formato" aria-hidden="true"></span>
         <button id="insertarCuadroTexto" type="button" class="boton-formato boton-formato--ancho" title="Insertar cuadro de texto movible">
@@ -228,6 +244,12 @@
         <span>Nombre de la carpeta</span>
         <input id="nombreCarpeta" maxlength="60" autocomplete="off" required placeholder="Ej. Cardiología">
       </label>
+      <label>
+        <span>Dentro de</span>
+        <select id="carpetaPadre" aria-label="Carpeta superior">
+          <option value="">Carpeta raíz</option>
+        </select>
+      </label>
       <span id="errorCarpeta" class="error-carpeta" role="alert"></span>
       <div class="dialogo-carpeta__acciones">
         <button id="cancelarCarpeta" type="button" class="boton-secundario-apuntes">Cancelar</button>
@@ -236,7 +258,7 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260822-apuntes-objetos-export-v1"></script>
+  <script type="module" src="js/apuntes.js?v=20260822-apuntes-subcarpetas-listas-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>

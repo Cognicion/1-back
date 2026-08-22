@@ -3,11 +3,14 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 import {
+  aplanarCarpetasJerarquicas,
   agruparApuntes,
   crearVistaPreviaApunte,
   escaparHTML,
   filtrarApuntes,
+  jerarquizarCarpetas,
   nombreCarpetaDisponible,
+  normalizarCarpetaPadreId,
   obtenerTituloVisibleApunte,
   SIN_CARPETA
 } from "../js/apuntes-core.js";
@@ -99,6 +102,29 @@ test("la revisión optimista impide guardar o eliminar una versión obsoleta", (
   assert.equal(esErrorConexionApunte({ code: "permission-denied" }, true), false);
 });
 
+test("las subcarpetas preservan su árbol, orden y previenen ciclos", () => {
+  const carpetas = [
+    { id: "raiz", nombre: "Estudio" },
+    { id: "hija", nombre: "Farmacología", carpetaPadreId: "raiz" },
+    { id: "nieta", nombre: "Antibióticos", carpetaPadreId: "hija" },
+    { id: "ciclo-a", nombre: "A", carpetaPadreId: "ciclo-b" },
+    { id: "ciclo-b", nombre: "B", carpetaPadreId: "ciclo-a" }
+  ];
+  const arbol = jerarquizarCarpetas(carpetas);
+  const planas = aplanarCarpetasJerarquicas(carpetas);
+
+  assert.deepEqual(arbol.map((carpeta) => carpeta.id), ["ciclo-a", "ciclo-b", "raiz"]);
+  assert.deepEqual(arbol.at(-1).hijas.map((carpeta) => carpeta.id), ["hija"]);
+  assert.deepEqual(arbol.at(-1).hijas[0].hijas.map((carpeta) => carpeta.id), ["nieta"]);
+  assert.deepEqual(planas.map(({ id, profundidad }) => [id, profundidad]), [
+    ["ciclo-a", 0], ["ciclo-b", 0], ["raiz", 0], ["hija", 1], ["nieta", 2]
+  ]);
+  assert.equal(normalizarCarpetaPadreId("nieta", carpetas, "raiz"), "");
+  assert.equal(normalizarCarpetaPadreId("raiz", carpetas, "nieta"), "raiz");
+  assert.equal(nombreCarpetaDisponible("Farmacologia", carpetas, "", "raiz"), false);
+  assert.equal(nombreCarpetaDisponible("Farmacologia", carpetas, "", ""), true);
+});
+
 test("los últimos colores usados se normalizan, no se duplican y conservan solo cinco", () => {
   assert.equal(MAX_COLORES_RECIENTES, 5);
   assert.equal(normalizarColorHex("#AbC"), "#aabbcc");
@@ -141,13 +167,19 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=20260820-apuntes-minimal-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260822-apuntes-objetos-export-v1/);
-  assert.match(html, /apuntes\.js\?v=20260822-apuntes-objetos-export-v1/);
+  assert.match(html, /apuntes\.css\?v=20260822-apuntes-subcarpetas-listas-v1/);
+  assert.match(html, /apuntes\.js\?v=20260822-apuntes-subcarpetas-listas-v1/);
   assert.match(html, /id="insertarCuadroTexto"/);
   assert.match(html, /id="insertarFlecha"/);
   assert.match(html, /id="propiedadesObjeto"[^>]*aria-label="Propiedades del objeto"/);
   assert.match(html, /id="menuExportacionApunte"[^>]*aria-label="Descargar apunte"/);
   assert.match(html, /id="lienzoApunte"/);
+  assert.match(html, /id="listaPuntos"/);
+  assert.match(html, /id="listaNumeros"/);
+  assert.match(html, /id="listaLetras"/);
+  assert.match(html, /id="aumentarSublista"/);
+  assert.match(html, /id="reducirSublista"/);
+  assert.match(html, /id="carpetaPadre" aria-label="Carpeta superior"/);
   assert.match(encabezadoGlobal, /MIGRATED_PAGES = new Set\([^)]*"apuntes"/);
   assert.match(encabezadoGlobal, /pageId === "apuntes"\) return document\.querySelector\("header\.topbar-apuntes"\)/);
   assert.match(precargaTema, /globalAppHeader\.js\?v=20260820-apuntes-navbar-v1/);
@@ -158,6 +190,12 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(controlador, /import \{[\s\S]*registrarColorReciente[\s\S]*\} from "\.\/apuntes-color-history\.js"/);
   assert.match(controlador, /const COLORES_PREDEFINIDOS/);
   assert.match(controlador, /function aplicarColor\(tipo, color\)/);
+  assert.match(controlador, /function ejecutarLista\(tipo\)/);
+  assert.match(controlador, /insertUnorderedList/);
+  assert.match(controlador, /insertOrderedList/);
+  assert.match(controlador, /ejecutarFormato\(evento\.shiftKey \? "outdent" : "indent"\)/);
+  assert.match(controlador, /carpetaPadreId: carpetaPadreId \|\| null/);
+  assert.match(controlador, /data-accion="nueva-subcarpeta"/);
   assert.match(controlador, /cognicion:apuntes:colores-recientes:\$\{uidMedico\}/);
   assert.match(historialColores, /MAX_COLORES_RECIENTES = 5/);
 });
@@ -209,8 +247,9 @@ test("la persistencia rica mantiene texto plano y sanea el HTML", () => {
   assert.match(controlador, /objetosLienzoActualizado === apunte\.fechaActualizacion/);
   assert.match(controlador, /import \{ inicializarObjetosApunte, textoObjetosApunte \} from "\.\/apuntes-objetos\.js"/);
   assert.match(controlador, /import \{ descargarApuntePdf, descargarApunteWord \} from "\.\/apuntes-export\.js"/);
-  assert.match(controlador, /import \{ sanitizarHTMLRico \} from "\.\/apuntes-rich-text\.js"/);
-  assert.match(textoRico, /new Set\(\["B", "STRONG", "BR", "DIV", "P", "SPAN", "FONT"\]\)/);
+  assert.match(controlador, /import \{ sanitizarHTMLRico \} from "\.\/apuntes-rich-text\.js\?v=20260822-apuntes-subcarpetas-listas-v1"/);
+  assert.match(textoRico, /new Set\(\["B", "STRONG", "BR", "DIV", "P", "SPAN", "FONT", "UL", "OL", "LI"\]\)/);
+  assert.match(textoRico, /etiqueta === "OL"/);
   assert.match(textoRico, /new Set\(\["SCRIPT", "STYLE", "IFRAME", "OBJECT", "EMBED", "SVG", "MATH"\]\)/);
   assert.match(controlador, /addEventListener\("paste", pegarComoTextoSeguro\)/);
   assert.match(controlador, /runTransaction/);
@@ -285,5 +324,6 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-20-apuntes-minimal-layout-v2/);
   assert.match(version, /2026-08-20-apuntes-colores-recientes-v1/);
   assert.match(version, /2026-08-22-apuntes-objetos-export-v1/);
-  assert.match(version, /APP_VERSION = "2\.082"/);
+  assert.match(version, /2026-08-22-apuntes-subcarpetas-listas-v1/);
+  assert.match(version, /APP_VERSION = "2\.083"/);
 });
