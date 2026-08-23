@@ -639,8 +639,50 @@ body.pagina-apuntes > main.apuntes-shell {
 
 .editor-cabecera {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.editor-cabecera__campos {
+  min-width: 0;
+  display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(180px, 24%);
   gap: 8px;
+}
+
+.editor-cabecera__campos[hidden] {
+  display: none;
+}
+
+.editor-cabecera__controles {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.apuntes-shell .boton-alternar-editor {
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0;
+  border: 1px solid var(--apuntes-borde);
+  border-radius: 7px;
+  color: var(--apuntes-texto-suave);
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+  font-size: 13px;
+}
+
+.apuntes-shell .boton-alternar-editor:hover,
+.apuntes-shell .boton-alternar-editor:focus-visible,
+.apuntes-shell .boton-alternar-editor[aria-expanded="false"] {
+  color: var(--apuntes-texto);
+  border-color: var(--apuntes-borde-fuerte);
+  background: var(--apuntes-superficie-hover);
+  box-shadow: none;
+  transform: none;
 }
 
 .campo-titulo {
@@ -750,6 +792,10 @@ body.pagina-apuntes > main.apuntes-shell {
   flex: 0 0 auto;
 }
 
+.barra-formato[hidden] {
+  display: none;
+}
+
 .apuntes-shell .control-color {
   min-width: 0;
   min-height: 28px;
@@ -815,6 +861,18 @@ body.pagina-apuntes > main.apuntes-shell {
 }
 
 .control-color__muestra--fondo::after {
+  display: none;
+}
+
+.control-color__muestra--lienzo {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--apuntes-borde);
+  border-radius: 3px;
+  background: var(--apuntes-superficie-suave);
+}
+
+.control-color__muestra--lienzo::after {
   display: none;
 }
 
@@ -929,8 +987,10 @@ body.pagina-apuntes > main.apuntes-shell {
   font-style: italic;
 }
 
+.menu-insertar,
 .panel-objeto,
-.menu-exportacion {
+.menu-exportacion,
+.menu-contextual-texto {
   position: absolute;
   z-index: 9;
   width: min(298px, calc(100% - 20px));
@@ -944,9 +1004,35 @@ body.pagina-apuntes > main.apuntes-shell {
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28);
 }
 
+.menu-insertar[hidden],
 .panel-objeto[hidden],
-.menu-exportacion[hidden] {
+.menu-exportacion[hidden],
+.menu-contextual-texto[hidden] {
   display: none;
+}
+
+.menu-insertar {
+  left: 16px;
+  top: 66px;
+  width: min(210px, calc(100% - 32px));
+}
+
+.menu-insertar strong {
+  font-size: 12px;
+}
+
+.menu-insertar button {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border-color: var(--apuntes-borde);
+  border-radius: 7px;
+  color: var(--apuntes-texto);
+  background: var(--apuntes-superficie-hover);
+  font-size: 11px;
+  text-align: left;
 }
 
 .panel-objeto {
@@ -957,6 +1043,41 @@ body.pagina-apuntes > main.apuntes-shell {
 .menu-exportacion {
   right: 16px;
   top: 66px;
+}
+
+.menu-contextual-texto {
+  width: min(238px, calc(100% - 20px));
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  padding: 7px;
+}
+
+.menu-contextual-texto button {
+  min-height: 29px;
+  padding: 0 7px;
+  border-color: var(--apuntes-borde);
+  border-radius: 6px;
+  color: var(--apuntes-texto);
+  background: var(--apuntes-superficie-hover);
+  font-size: 10px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.menu-contextual-texto button:hover,
+.menu-contextual-texto button:focus-visible {
+  border-color: var(--apuntes-borde-fuerte);
+  background: color-mix(in srgb, var(--apuntes-borde-fuerte) 14%, var(--apuntes-superficie-hover));
+}
+
+.paleta-fondo-apunte__restablecer {
+  min-height: 30px;
+  padding: 0 9px;
+  border-color: var(--apuntes-borde) !important;
+  border-radius: 7px;
+  color: var(--apuntes-texto) !important;
+  background: var(--apuntes-superficie-hover) !important;
+  font-size: 11px;
 }
 
 .panel-objeto__encabezado,
@@ -1056,7 +1177,7 @@ body.pagina-apuntes > main.apuntes-shell {
   overscroll-behavior: contain;
   border: 1px solid var(--apuntes-borde);
   border-radius: 12px;
-  background: var(--apuntes-superficie-suave);
+  background: var(--apunte-fondo, var(--apuntes-superficie-suave));
 }
 
 .editor-contenido {
@@ -1069,7 +1190,7 @@ body.pagina-apuntes > main.apuntes-shell {
   overflow: visible;
   border: 0;
   border-radius: 11px;
-  color: var(--apuntes-texto);
+  color: var(--apunte-texto, var(--apuntes-texto));
   background: transparent;
   font-size: 14px;
   line-height: 1.52;
@@ -1137,9 +1258,6 @@ body.pagina-apuntes > main.apuntes-shell {
 }
 
 .objeto-apunte--texto {
-  display: grid;
-  grid-template-columns: 20px minmax(0, 1fr) 12px;
-  align-items: stretch;
   border: 1px solid color-mix(in srgb, var(--objeto-color) 76%, transparent);
   border-radius: 8px;
   background: color-mix(in srgb, var(--apuntes-superficie) 84%, transparent);
@@ -1152,14 +1270,20 @@ body.pagina-apuntes > main.apuntes-shell {
 }
 
 .objeto-apunte--flecha {
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
   min-height: 24px;
-  cursor: move;
+  cursor: default;
+  pointer-events: none;
 }
 
 .objeto-apunte--flecha svg {
   width: 100%;
   height: 100%;
   overflow: visible;
+  pointer-events: stroke;
 }
 
 .objeto-apunte--flecha :where(path, marker path) {
@@ -1167,35 +1291,107 @@ body.pagina-apuntes > main.apuntes-shell {
   stroke: currentColor;
 }
 
+.objeto-apunte--flecha > svg > path {
+  fill: none;
+  stroke-width: 0.5;
+}
+
+.objeto-apunte--flecha[data-seleccionado="true"] {
+  outline: 0 !important;
+}
+
+.objeto-apunte--flecha[data-seleccionado="true"] > svg > path {
+  stroke-width: 0.8;
+  filter: drop-shadow(0 0 1px var(--apuntes-borde-fuerte));
+}
+
 .objeto-apunte[data-seleccionado="true"] {
   outline: 2px solid var(--apuntes-borde-fuerte);
   outline-offset: 3px;
 }
 
-.objeto-apunte__mango,
+.objeto-apunte__mover,
 .objeto-apunte__redimensionar {
+  position: absolute;
+  z-index: 2;
   min-width: 0;
   min-height: 0;
   padding: 0;
-  border: 0;
-  color: inherit;
-  background: transparent;
+  color: var(--apuntes-texto) !important;
+  background: var(--apuntes-superficie-hover) !important;
+  box-shadow: none !important;
+}
+
+.objeto-apunte__mover {
+  top: -32px;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--apuntes-borde) !important;
+  border-radius: 7px;
+  transform: translateX(-50%);
   cursor: grab;
 }
 
-.objeto-apunte__mango {
-  font-size: 17px;
-  line-height: 1;
+.objeto-apunte__mover svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
 }
 
-.objeto-apunte__mango:active,
-.objeto-apunte--flecha:active {
+.objeto-apunte__mover:active {
   cursor: grabbing;
+}
+
+.objeto-apunte__control-flecha {
+  position: absolute;
+  z-index: 4;
+  left: var(--flecha-x);
+  top: var(--flecha-y);
+  width: 12px;
+  min-width: 12px;
+  height: 12px;
+  min-height: 12px;
+  padding: 0;
+  border: 1px solid var(--objeto-color) !important;
+  border-radius: 50%;
+  color: transparent !important;
+  background: var(--apuntes-superficie) !important;
+  box-shadow: none !important;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+  cursor: crosshair;
+}
+
+.objeto-apunte__control-flecha--mover {
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  min-height: 16px;
+  border-color: var(--apuntes-borde-fuerte) !important;
+  cursor: move;
+}
+
+.apuntes-shell .objeto-apunte__control-flecha:hover:not(:disabled),
+.apuntes-shell .objeto-apunte__control-flecha:focus-visible {
+  transform: translate(-50%, -50%);
+  background: var(--apuntes-superficie-hover) !important;
+}
+
+.apuntes-shell .objeto-apunte__mover:hover:not(:disabled),
+.apuntes-shell .objeto-apunte__mover:focus-visible {
+  transform: translateX(-50%);
 }
 
 .objeto-apunte__texto {
   min-width: 0;
-  padding: 7px 3px;
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 7px 9px;
   outline: 0;
   white-space: pre-wrap;
   overflow: auto;
@@ -1204,14 +1400,59 @@ body.pagina-apuntes > main.apuntes-shell {
 }
 
 .objeto-apunte__redimensionar {
-  align-self: end;
-  justify-self: end;
-  width: 11px;
-  height: 11px;
-  margin: 2px;
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  cursor: nwse-resize;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--objeto-color) !important;
+  border-radius: 3px;
+  transform: translate(-50%, -50%);
+}
+
+.objeto-apunte__redimensionar--n { left: 50%; top: 0; cursor: ns-resize; }
+.objeto-apunte__redimensionar--ne { left: 100%; top: 0; cursor: nesw-resize; }
+.objeto-apunte__redimensionar--e { left: 100%; top: 50%; cursor: ew-resize; }
+.objeto-apunte__redimensionar--se { left: 100%; top: 100%; cursor: nwse-resize; }
+.objeto-apunte__redimensionar--s { left: 50%; top: 100%; cursor: ns-resize; }
+.objeto-apunte__redimensionar--sw { left: 0; top: 100%; cursor: nesw-resize; }
+.objeto-apunte__redimensionar--w { left: 0; top: 50%; cursor: ew-resize; }
+.objeto-apunte__redimensionar--nw { left: 0; top: 0; cursor: nwse-resize; }
+
+.apuntes-shell .objeto-apunte__redimensionar:hover:not(:disabled),
+.apuntes-shell .objeto-apunte__redimensionar:focus-visible {
+  transform: translate(-50%, -50%);
+}
+
+.menu-contextual-objeto {
+  position: absolute;
+  z-index: 7;
+  min-width: 118px;
+  padding: 4px;
+  border: 1px solid var(--apuntes-borde-fuerte);
+  border-radius: 7px;
+  background: var(--apuntes-superficie);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
+}
+
+.menu-contextual-objeto[hidden] {
+  display: none;
+}
+
+.menu-contextual-objeto button {
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 5px;
+  color: var(--apuntes-peligro);
+  background: transparent;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.menu-contextual-objeto button:hover,
+.menu-contextual-objeto button:focus-visible {
+  background: color-mix(in srgb, var(--apuntes-peligro) 15%, transparent);
+  cursor: pointer;
 }
 
 .acciones-apuntes {
@@ -1573,7 +1814,8 @@ html[data-theme="light"] .apuntes-shell .boton-peligro {
   }
 
   .apuntes-shell .carpeta-accion,
-  .apuntes-shell .boton-formato {
+  .apuntes-shell .boton-formato,
+  .apuntes-shell .boton-alternar-editor {
     width: 40px;
     height: 40px;
   }
@@ -1704,6 +1946,10 @@ html[data-theme="light"] .apuntes-shell .boton-peligro {
   }
 
   .editor-cabecera {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .editor-cabecera__campos {
     grid-template-columns: 1fr;
   }
 

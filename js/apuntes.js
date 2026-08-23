@@ -88,9 +88,14 @@ let idCarpetaEdicion = "";
 let guardandoApunte = false;
 let eliminandoApunte = false;
 let eliminandoCarpeta = false;
+let fondoApunteActual = "";
 let carpetasDisponibles = true;
 let coloresRecientes = [];
 let objetosApunteController = null;
+const parametrosEntradaApuntes = new URLSearchParams(window.location.search);
+const apunteSolicitado = String(parametrosEntradaApuntes.get("apunte") || "").trim().slice(0, 160);
+const crearApunteSolicitado = parametrosEntradaApuntes.get("nuevo") === "1";
+const entradaDesdeMiNube = parametrosEntradaApuntes.get("origen") === "mi-nube";
 
 iniciarMonitoreoSesion("Mis apuntes");
 
@@ -104,11 +109,15 @@ onAuthStateChanged(auth, async (user) => {
   recuperarEstadoCarpetas();
   recuperarColoresRecientes();
   inicializarInterfaz();
+  prepararRegresoAMiNube();
   document.body.classList.remove("bloqueado");
   ponerEdicionOcupada(true);
 
   try {
-    await cargarDatos();
+    await cargarDatos({
+      seleccionarId: crearApunteSolicitado ? "" : apunteSolicitado,
+      crearNuevo: crearApunteSolicitado
+    });
   } catch (error) {
     console.error("[APUNTES] No se pudieron cargar los apuntes", error);
     ponerEstado("No se pudieron cargar los apuntes", true);
@@ -158,6 +167,8 @@ function inicializarInterfaz() {
   document.getElementById("formatoNegrita")?.addEventListener("click", () => ejecutarFormato("bold"));
   document.getElementById("quitarFormato")?.addEventListener("pointerdown", conservarFocoEditor);
   document.getElementById("quitarFormato")?.addEventListener("click", () => ejecutarFormato("removeFormat"));
+  document.getElementById("quitarResaltado")?.addEventListener("pointerdown", conservarFocoEditor);
+  document.getElementById("quitarResaltado")?.addEventListener("click", quitarResaltadoSeleccion);
   document.getElementById("listaPuntos")?.addEventListener("pointerdown", conservarFocoEditor);
   document.getElementById("listaPuntos")?.addEventListener("click", () => ejecutarLista("puntos"));
   document.getElementById("listaNumeros")?.addEventListener("pointerdown", conservarFocoEditor);
@@ -168,6 +179,7 @@ function inicializarInterfaz() {
   document.getElementById("aumentarSublista")?.addEventListener("click", () => ejecutarFormato("indent"));
   document.getElementById("reducirSublista")?.addEventListener("pointerdown", conservarFocoEditor);
   document.getElementById("reducirSublista")?.addEventListener("click", () => ejecutarFormato("outdent"));
+  document.getElementById("abrirInsertarApunte")?.addEventListener("click", alternarMenuInsertar);
   document.getElementById("insertarCuadroTexto")?.addEventListener("click", () => insertarObjetoApunte("texto"));
   document.getElementById("insertarFlecha")?.addEventListener("click", () => insertarObjetoApunte("flecha"));
   document.getElementById("abrirPropiedadesObjeto")?.addEventListener("click", alternarPropiedadesObjeto);
@@ -179,6 +191,11 @@ function inicializarInterfaz() {
   document.getElementById("abrirExportacionApunte")?.addEventListener("click", alternarMenuExportacion);
   document.getElementById("descargarApunteWord")?.addEventListener("click", () => exportarApunte("word"));
   document.getElementById("descargarApuntePdf")?.addEventListener("click", () => exportarApunte("pdf"));
+  document.getElementById("alternarTituloApunte")?.addEventListener("click", () => alternarSeccionEditor("titulo"));
+  document.getElementById("alternarBarraFormato")?.addEventListener("click", () => alternarSeccionEditor("formato"));
+  editor?.addEventListener("contextmenu", abrirMenuContextualTexto);
+  document.getElementById("menuContextualTexto")?.addEventListener("click", ejecutarAccionMenuContextualTexto);
+  document.getElementById("menuContextualTexto")?.addEventListener("pointerdown", conservarFocoEditor);
   document.addEventListener("selectionchange", guardarSeleccionEditor);
 
   document.getElementById("formularioCarpeta")?.addEventListener("submit", guardarCarpeta);
@@ -200,7 +217,7 @@ function refCarpetas() {
   return collection(db, "usuarios", uidMedico, "carpetasApuntes");
 }
 
-async function cargarDatos({ seleccionarId = "" } = {}) {
+async function cargarDatos({ seleccionarId = "", crearNuevo = false } = {}) {
   const idActual = seleccionarId || document.getElementById("apunteId")?.value || "";
   const [resultadoApuntes, resultadoCarpetas] = await Promise.allSettled([
     getDocs(query(refApuntes(), orderBy("fechaActualizacion", "desc"))),
@@ -222,6 +239,13 @@ async function cargarDatos({ seleccionarId = "" } = {}) {
 
   renderizarSelectorCarpetas();
 
+  if (crearNuevo) {
+    nuevoApunte(ETIQUETA_CARPETA_SIN_ASIGNAR);
+    actualizarDisponibilidadCarpetas();
+    if (!carpetasDisponibles) ponerEstado("Nuevo apunte · Carpetas no disponibles", true);
+    return;
+  }
+
   const idSeleccionable = apuntes.some((apunte) => apunte.id === idActual)
     ? idActual
     : apuntes[0]?.id;
@@ -233,6 +257,18 @@ async function cargarDatos({ seleccionarId = "" } = {}) {
   }
   actualizarDisponibilidadCarpetas();
   if (!carpetasDisponibles) ponerEstado("Guardado · Carpetas no disponibles", true);
+}
+
+function prepararRegresoAMiNube() {
+  if (!entradaDesdeMiNube || document.querySelector("[data-volver-mi-nube]")) return;
+  const navegacion = document.querySelector("header.topbar-apuntes nav, .global-header-actions");
+  if (!navegacion) return;
+  const enlace = document.createElement("a");
+  enlace.href = "mi-nube.html?filtro=notes";
+  enlace.className = "topbar-apuntes__enlace";
+  enlace.dataset.volverMiNube = "true";
+  enlace.textContent = "Volver a Mi nube";
+  navegacion.prepend(enlace);
 }
 
 async function cargarCarpetas() {
@@ -444,6 +480,7 @@ function seleccionarApunte(id, { omitirConfirmacion = false, restaurarFoco = fal
     if (htmlEstaVigente) editor.innerHTML = sanitizarHTMLRico(apunte.contenidoHtml);
     else editor.textContent = apunte.contenido || "";
   }
+  aplicarFondoApunte(apunte.fondoLienzo, { marcar: false });
 
   const objetosVigentes = apunte.objetosLienzo
     && apunte.objetosLienzoActualizado
@@ -479,6 +516,7 @@ function nuevoApunte(carpetaId = ETIQUETA_CARPETA_SIN_ASIGNAR) {
 
   const editor = obtenerEditor();
   if (editor) editor.innerHTML = "";
+  aplicarFondoApunte("", { marcar: false });
   objetosApunteController?.cargar([]);
 
   carpetasCerradas.delete(carpetaValida || SIN_CARPETA);
@@ -518,6 +556,7 @@ async function guardarApunte() {
     contenidoHtmlActualizado: fechaActualizacion,
     objetosLienzo,
     objetosLienzoActualizado: fechaActualizacion,
+    fondoLienzo: fondoApunteActual || null,
     carpetaId,
     fechaActualizacion,
     fechaActualizacionServidor: serverTimestamp()
@@ -840,7 +879,7 @@ function ponerEdicionOcupada(ocupada) {
     document.getElementById("guardarApunte"),
     document.getElementById("eliminarApunte"),
     document.getElementById("nuevoApunte"),
-    ...document.querySelectorAll(".barra-formato button, .barra-formato input, .panel-objeto button, .panel-objeto input, .panel-objeto select, .menu-exportacion button")
+    ...document.querySelectorAll(".barra-formato button, .barra-formato input, .menu-insertar button, .panel-objeto button, .panel-objeto input, .panel-objeto select, .menu-exportacion button")
   ].filter(Boolean);
 
   controles.forEach((control) => { control.disabled = ocupada; });
@@ -872,6 +911,7 @@ function inicializarObjetosApunteUI() {
     lienzo: document.getElementById("lienzoApunte"),
     capaDelante: document.getElementById("objetosApunteDelante"),
     capaDetras: document.getElementById("objetosApunteDetras"),
+    menuContextual: document.getElementById("menuContextualObjeto"),
     alCambiar: () => {
       actualizarPanelObjetos();
       marcarCambios();
@@ -883,11 +923,11 @@ function inicializarObjetosApunteUI() {
 
 function insertarObjetoApunte(tipo) {
   if (guardandoApunte || eliminandoApunte || eliminandoCarpeta || !objetosApunteController) return;
+  cerrarMenuInsertar();
   cerrarMenuExportacion();
   cerrarPaletasColor();
   const objeto = objetosApunteController.agregar(tipo);
   actualizarPanelObjetos();
-  abrirPropiedadesObjeto();
   requestAnimationFrame(() => {
     if (tipo !== "texto") return;
     [...document.querySelectorAll("[data-objeto-id]")]
@@ -929,7 +969,9 @@ function actualizarPanelObjetos() {
   if (eliminar) eliminar.disabled = !seleccion;
   if (ayuda) {
     ayuda.textContent = seleccion
-      ? "Arrastra el mango para moverlo o la esquina para cambiar el tamaño. Las flechas se mueven y redimensionan igual."
+      ? seleccion.tipo === "flecha"
+        ? "Arrastra un extremo hacia un cuadro para conectarlo. El punto central mueve la flecha y los extremos la giran."
+        : "Usa la cruz sobre el objeto para moverlo; arrastra sus aristas o vértices para cambiar el tamaño."
       : objetos.length
         ? "Selecciona un objeto de la lista para ajustar su capa y color."
         : "Inserta un cuadro o una flecha para empezar.";
@@ -940,6 +982,7 @@ function abrirPropiedadesObjeto() {
   const panel = document.getElementById("propiedadesObjeto");
   const boton = document.getElementById("abrirPropiedadesObjeto");
   if (!panel || !boton) return;
+  cerrarMenuInsertar();
   cerrarMenuExportacion();
   cerrarPaletasColor();
   panel.hidden = false;
@@ -998,6 +1041,7 @@ function alternarMenuExportacion() {
   const estabaAbierto = !menu.hidden;
   cerrarPaletasColor();
   cerrarPropiedadesObjeto();
+  cerrarMenuInsertar();
   menu.hidden = estabaAbierto;
   boton.setAttribute("aria-expanded", String(!estabaAbierto));
 }
@@ -1009,6 +1053,34 @@ function cerrarMenuExportacion({ devolverFoco = false } = {}) {
   menu.hidden = true;
   boton?.setAttribute("aria-expanded", "false");
   if (devolverFoco) boton?.focus();
+}
+
+function abrirMenuInsertar() {
+  const menu = document.getElementById("menuInsertarApunte");
+  const boton = document.getElementById("abrirInsertarApunte");
+  if (!menu || !boton) return;
+  cerrarPaletasColor();
+  cerrarPropiedadesObjeto();
+  cerrarMenuExportacion();
+  menu.hidden = false;
+  boton.setAttribute("aria-expanded", "true");
+}
+
+function cerrarMenuInsertar({ devolverFoco = false } = {}) {
+  const menu = document.getElementById("menuInsertarApunte");
+  const boton = document.getElementById("abrirInsertarApunte");
+  if (!menu || menu.hidden) return;
+  menu.hidden = true;
+  boton?.setAttribute("aria-expanded", "false");
+  if (devolverFoco) boton?.focus();
+}
+
+function alternarMenuInsertar() {
+  const menu = document.getElementById("menuInsertarApunte");
+  const boton = document.getElementById("abrirInsertarApunte");
+  if (!menu || !boton || boton.disabled) return;
+  if (menu.hidden) abrirMenuInsertar();
+  else cerrarMenuInsertar();
 }
 
 async function exportarApunte(formato) {
@@ -1089,6 +1161,64 @@ function ejecutarFormato(comando, valor = null) {
   return aplicado;
 }
 
+function quitarResaltadoSeleccion() {
+  return ejecutarFormato("hiliteColor", "transparent");
+}
+
+function colorTextoAutomatico(fondo) {
+  const color = normalizarColorHex(fondo);
+  if (!color) return "";
+  const componentes = [1, 3, 5].map((indice) => Number.parseInt(color.slice(indice, indice + 2), 16) / 255);
+  const [rojo, verde, azul] = componentes.map((componente) => componente <= 0.04045
+    ? componente / 12.92
+    : ((componente + 0.055) / 1.055) ** 2.4);
+  const luminancia = (0.2126 * rojo) + (0.7152 * verde) + (0.0722 * azul);
+  return luminancia > 0.4 ? "#111827" : "#f8fafc";
+}
+
+function actualizarMuestraFondoApunte() {
+  const muestra = document.querySelector(".control-color__muestra--lienzo");
+  if (!muestra) return;
+  muestra.style.backgroundColor = fondoApunteActual || "var(--apuntes-superficie-suave)";
+}
+
+function aplicarFondoApunte(color, { marcar = true } = {}) {
+  const fondo = normalizarColorHex(color);
+  const lienzo = document.getElementById("lienzoApunte");
+  fondoApunteActual = fondo;
+  if (lienzo) {
+    if (fondo) {
+      lienzo.style.setProperty("--apunte-fondo", fondo);
+      lienzo.style.setProperty("--apunte-texto", colorTextoAutomatico(fondo));
+    } else {
+      lienzo.style.removeProperty("--apunte-fondo");
+      lienzo.style.removeProperty("--apunte-texto");
+    }
+  }
+  const control = document.getElementById("colorFondoApunte");
+  if (control && fondo) control.value = fondo;
+  actualizarMuestraFondoApunte();
+  if (marcar) marcarCambios();
+}
+
+function alternarSeccionEditor(seccion) {
+  const configuracion = seccion === "titulo"
+    ? { contenidoId: "camposCabeceraApunte", botonId: "alternarTituloApunte", mostrar: "Mostrar título y carpeta", ocultar: "Ocultar título y carpeta" }
+    : { contenidoId: "barraFormatoApunte", botonId: "alternarBarraFormato", mostrar: "Mostrar barra de opciones", ocultar: "Ocultar barra de opciones" };
+  const contenido = document.getElementById(configuracion.contenidoId);
+  const boton = document.getElementById(configuracion.botonId);
+  if (!contenido || !boton) return;
+  contenido.hidden = !contenido.hidden;
+  const expandido = !contenido.hidden;
+  boton.setAttribute("aria-expanded", String(expandido));
+  boton.setAttribute("aria-label", expandido ? configuracion.ocultar : configuracion.mostrar);
+  boton.title = expandido ? configuracion.ocultar : configuracion.mostrar;
+  if (!expandido && seccion === "formato") {
+    cerrarPaletasColor();
+    cerrarMenuContextualTexto();
+  }
+}
+
 function obtenerListaSeleccionada() {
   const seleccion = window.getSelection();
   if (!seleccion?.rangeCount) return null;
@@ -1151,9 +1281,56 @@ function inicializarSelectorColores() {
     control?.addEventListener("change", () => aplicarColor(tipo, control.value));
   });
 
+  const botonFondoApunte = document.getElementById("abrirFondoApunte");
+  const paletaFondoApunte = document.getElementById("paletaFondoApunte");
+  const controlFondoApunte = document.getElementById("colorFondoApunte");
+  botonFondoApunte?.addEventListener("pointerdown", conservarFocoEditor);
+  botonFondoApunte?.addEventListener("click", alternarPaletaFondoApunte);
+  paletaFondoApunte?.addEventListener("pointerdown", (evento) => {
+    if (evento.target instanceof Element && evento.target.closest("button[data-fondo-apunte]")) evento.preventDefault();
+  });
+  paletaFondoApunte?.addEventListener("click", (evento) => {
+    const boton = evento.target instanceof Element ? evento.target.closest("button[data-fondo-apunte]") : null;
+    if (!boton) return;
+    evento.preventDefault();
+    aplicarFondoApunte(boton.dataset.fondoApunte || "");
+    cerrarPaletaFondoApunte();
+  });
+  controlFondoApunte?.addEventListener("change", () => {
+    aplicarFondoApunte(controlFondoApunte.value);
+    cerrarPaletaFondoApunte();
+  });
+  document.getElementById("restablecerFondoApunte")?.addEventListener("click", () => {
+    aplicarFondoApunte("");
+    cerrarPaletaFondoApunte();
+  });
+  actualizarMuestraFondoApunte();
+
   renderizarColoresRecientes();
   document.addEventListener("click", cerrarPaletasAlHacerClickFuera);
   document.addEventListener("keydown", cerrarPaletasConEscape);
+}
+
+function alternarPaletaFondoApunte() {
+  const panel = document.getElementById("paletaFondoApunte");
+  const boton = document.getElementById("abrirFondoApunte");
+  if (!panel || !boton || boton.disabled) return;
+  const estabaAbierta = !panel.hidden;
+  cerrarPaletasColor();
+  cerrarMenuContextualTexto();
+  if (estabaAbierta) return;
+  panel.hidden = false;
+  boton.setAttribute("aria-expanded", "true");
+  posicionarPaletaColor(panel, boton);
+}
+
+function cerrarPaletaFondoApunte({ devolverFoco = false } = {}) {
+  const panel = document.getElementById("paletaFondoApunte");
+  const boton = document.getElementById("abrirFondoApunte");
+  if (!panel || panel.hidden) return;
+  panel.hidden = true;
+  boton?.setAttribute("aria-expanded", "false");
+  if (devolverFoco) boton?.focus();
 }
 
 function alternarPaletaColor(tipo) {
@@ -1164,6 +1341,7 @@ function alternarPaletaColor(tipo) {
 
   const estabaAbierta = !panel.hidden;
   cerrarPaletasColor();
+  cerrarPaletaFondoApunte();
   if (estabaAbierta) return;
 
   panel.hidden = false;
@@ -1196,25 +1374,79 @@ function cerrarPaletasColor({ devolverFoco = false } = {}) {
     boton?.setAttribute("aria-expanded", "false");
     if (devolverFoco) boton?.focus();
   });
+  cerrarPaletaFondoApunte({ devolverFoco });
 }
 
 function cerrarPaletasAlHacerClickFuera(evento) {
   const destino = evento.target;
-  if (destino instanceof Element && destino.closest(".selector-color, .paleta-color, .panel-objeto, .menu-exportacion, #abrirPropiedadesObjeto, #abrirExportacionApunte")) return;
+  if (destino instanceof Element && destino.closest(".selector-color, .paleta-color, .menu-contextual-texto, .menu-insertar, .panel-objeto, .menu-exportacion, #abrirInsertarApunte, #abrirPropiedadesObjeto, #abrirExportacionApunte")) return;
   cerrarPaletasColor();
+  cerrarMenuContextualTexto();
+  cerrarMenuInsertar();
   cerrarPropiedadesObjeto();
   cerrarMenuExportacion();
 }
 
 function cerrarPaletasConEscape(evento) {
   const hayPanelAbierto = Object.values(CONFIGURACION_COLORES).some((configuracion) => !document.getElementById(configuracion.panelId)?.hidden)
+    || !document.getElementById("paletaFondoApunte")?.hidden
+    || !document.getElementById("menuContextualTexto")?.hidden
     || !document.getElementById("propiedadesObjeto")?.hidden
+    || !document.getElementById("menuInsertarApunte")?.hidden
     || !document.getElementById("menuExportacionApunte")?.hidden;
   if (evento.key !== "Escape" || !hayPanelAbierto) return;
   evento.preventDefault();
   cerrarPaletasColor({ devolverFoco: true });
+  cerrarMenuContextualTexto({ devolverFoco: true });
+  cerrarMenuInsertar({ devolverFoco: true });
   cerrarPropiedadesObjeto({ devolverFoco: true });
   cerrarMenuExportacion({ devolverFoco: true });
+}
+
+function abrirMenuContextualTexto(evento) {
+  const editor = obtenerEditor();
+  const menu = document.getElementById("menuContextualTexto");
+  const contenedor = document.querySelector(".apuntes-editor");
+  if (!editor || !menu || !contenedor || guardandoApunte || eliminandoApunte) return;
+  evento.preventDefault();
+  guardarSeleccionEditor();
+  cerrarPaletasColor();
+  cerrarMenuInsertar();
+  cerrarPropiedadesObjeto();
+  cerrarMenuExportacion();
+
+  const rectContenedor = contenedor.getBoundingClientRect();
+  const ancho = menu.offsetWidth || 238;
+  const alto = menu.offsetHeight || 170;
+  const izquierda = Math.min(Math.max(8, evento.clientX - rectContenedor.left), Math.max(8, rectContenedor.width - ancho - 8));
+  const arriba = Math.min(Math.max(8, evento.clientY - rectContenedor.top), Math.max(8, rectContenedor.height - alto - 8));
+  menu.style.left = `${Math.round(izquierda)}px`;
+  menu.style.top = `${Math.round(arriba)}px`;
+  menu.hidden = false;
+}
+
+function cerrarMenuContextualTexto({ devolverFoco = false } = {}) {
+  const menu = document.getElementById("menuContextualTexto");
+  if (!menu || menu.hidden) return;
+  menu.hidden = true;
+  if (devolverFoco) restaurarSeleccionEditor();
+}
+
+function ejecutarAccionMenuContextualTexto(evento) {
+  const boton = evento.target instanceof Element ? evento.target.closest("button[data-accion-texto]") : null;
+  const accion = boton?.dataset.accionTexto;
+  if (!accion) return;
+  evento.preventDefault();
+  cerrarMenuContextualTexto();
+  if (accion === "texto") return alternarPaletaColor("texto");
+  if (accion === "resaltar") return alternarPaletaColor("fondo");
+  if (accion === "fondo-apunte") return alternarPaletaFondoApunte();
+  if (accion === "bold") return ejecutarFormato("bold");
+  if (accion === "quitar-resaltado") return quitarResaltadoSeleccion();
+  if (accion === "limpiar") return ejecutarFormato("removeFormat");
+  if (accion === "sublista") return ejecutarFormato("indent");
+  if (accion === "reducir-sublista") return ejecutarFormato("outdent");
+  return ejecutarLista(accion);
 }
 
 function aplicarColor(tipo, color) {

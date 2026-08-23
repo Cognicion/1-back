@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="biocelular" data-enable-light-theme="true">
+<head>
+  <script src="js/theme-preload.js?v=20260822-mi-nube-v1"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Espacio personal para archivos y acceso a Mis apuntes en Cognición.">
+  <title>Mi nube | Cognición</title>
+  <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+  <link rel="stylesheet" href="css/theme/cognicion-theme.css">
+  <link rel="stylesheet" href="css/mi-nube.css?v=20260822-mi-nube-v1">
+</head>
+
+<body class="pagina-mi-nube bloqueado">
+  <header class="cloud-topbar topbar-mi-nube" data-global-header-host>
+    <div class="global-header-branding" data-global-header-branding>
+      <button
+        id="cloudSidebarToggle"
+        class="cloud-icon-button cloud-sidebar-toggle"
+        type="button"
+        aria-label="Abrir navegación de Mi nube"
+        aria-controls="cloudSidebar"
+        aria-expanded="false"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+      </button>
+
+      <a class="cloud-brand" href="dashboard.html" aria-label="Ir al inicio de Cognición">
+        <img src="assets/favicon-cognicion.png" alt="" width="44" height="44">
+        <span class="global-header-identity">
+          <h1 data-global-header-title>Mi nube</h1>
+          <span data-global-header-description>Tu espacio personal de archivos.</span>
+        </span>
+      </a>
+    </div>
+
+    <nav class="cloud-topbar-actions global-header-actions" aria-label="Navegación de Mi nube">
+      <a href="apuntes.html">Mis apuntes</a>
+      <a href="dashboard.html">Inicio</a>
+      <a
+        class="cloud-icon-button cloud-notifications-link"
+        href="dashboard.html#avisosDashboardModulo"
+        aria-label="Abrir notificaciones"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path>
+        </svg>
+      </a>
+      <div data-accesos-rapidos data-global-header-access></div>
+    </nav>
+  </header>
+
+  <div class="cloud-app" id="cloudApp">
+    <button
+      id="cloudSidebarBackdrop"
+      class="cloud-sidebar-backdrop"
+      type="button"
+      aria-label="Cerrar navegación de Mi nube"
+      tabindex="-1"
+      hidden
+    ></button>
+
+    <aside id="cloudSidebar" class="cloud-sidebar" aria-label="Secciones de Mi nube">
+      <div class="cloud-sidebar-heading">
+        <span>Mi nube</span>
+        <button
+          id="cloudSidebarClose"
+          class="cloud-icon-button cloud-sidebar-close"
+          type="button"
+          aria-label="Cerrar navegación"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+        </button>
+      </div>
+
+      <nav class="cloud-filter-nav" aria-label="Filtrar contenido">
+        <button class="cloud-filter is-active" type="button" data-cloud-filter="all" aria-pressed="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"></path></svg>
+          <span>Todos</span>
+        </button>
+        <button class="cloud-filter" type="button" data-cloud-filter="files" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6zM14 3v5h5"></path></svg>
+          <span>Archivos</span>
+        </button>
+        <button class="cloud-filter" type="button" data-cloud-filter="images" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="m4 17 5-4 3 3 3-2 5 4"></path></svg>
+          <span>Imágenes</span>
+        </button>
+        <button class="cloud-filter" type="button" data-cloud-filter="pdf" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6zM14 3v5h5M8 16h8M8 12h5"></path></svg>
+          <span>PDF</span>
+        </button>
+        <button class="cloud-filter" type="button" data-cloud-filter="text" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"></path></svg>
+          <span>Texto</span>
+        </button>
+        <button class="cloud-filter" type="button" data-cloud-filter="notes" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14v18H5zM9 7h6M9 11h6M9 15h4"></path></svg>
+          <span>Mis apuntes</span>
+          <small>Acceso alternativo</small>
+        </button>
+      </nav>
+
+      <div class="cloud-sidebar-separator" role="separator"></div>
+
+      <nav class="cloud-filter-nav" aria-label="Papelera">
+        <button class="cloud-filter" type="button" data-cloud-filter="trash" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14M10 11v6M14 11v6"></path></svg>
+          <span>Papelera</span>
+        </button>
+      </nav>
+
+      <section class="cloud-quota" aria-labelledby="cloudQuotaTitle">
+        <div class="cloud-quota-heading">
+          <h2 id="cloudQuotaTitle">Almacenamiento</h2>
+        </div>
+        <div id="cloudUsageBar" class="cloud-usage-bar" role="progressbar" aria-label="Almacenamiento utilizado" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <span aria-hidden="true"></span>
+        </div>
+        <p id="cloudUsageText">0 MB de 250 MB</p>
+        <p id="cloudUsageReserved" class="cloud-quota-help">La papelera sigue ocupando espacio.</p>
+        <p class="cloud-quota-help">Solo cuentan los archivos físicos de Mi nube.</p>
+        <p class="cloud-quota-trash">Los archivos de la papelera siguen ocupando espacio.</p>
+        <p id="cloudQuotaError" class="cloud-inline-error" role="alert"></p>
+        <button id="cloudReconcile" class="cloud-reconcile-button" type="button">Revisar almacenamiento</button>
+      </section>
+    </aside>
+
+    <main class="cloud-workspace" aria-labelledby="cloudWorkspaceTitle">
+      <h2 id="cloudWorkspaceTitle" class="sr-only">Contenido de Mi nube</h2>
+
+      <div class="cloud-toolbar">
+        <label class="cloud-search" for="cloudSearch">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+          <span class="sr-only">Buscar en Mi nube</span>
+          <input
+            id="cloudSearch"
+            type="search"
+            placeholder="Buscar en Mi nube..."
+            autocomplete="off"
+            spellcheck="false"
+            aria-describedby="cloudSearchHelp"
+          >
+          <button id="cloudSearchClear" class="cloud-search-clear" type="button" aria-label="Limpiar búsqueda" hidden>×</button>
+        </label>
+        <span id="cloudSearchHelp" class="sr-only">Busca archivos por nombre, extensión o tipo, y apuntes por título o contenido.</span>
+
+        <div class="cloud-new-control">
+          <button
+            id="cloudNewButton"
+            class="cloud-primary-button"
+            type="button"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            aria-controls="cloudNewMenu"
+          >
+            <span aria-hidden="true">＋</span>
+            <span>Nuevo</span>
+          </button>
+          <div id="cloudNewMenu" class="cloud-new-menu" role="menu" hidden>
+            <button id="cloudUploadAction" type="button" role="menuitem" data-cloud-new="upload">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"></path></svg>
+              Subir archivo
+            </button>
+            <button id="cloudCreateFolderAction" type="button" role="menuitem" data-cloud-new="folder">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h7l2 2h9v11H3zM12 11v5M9.5 13.5h5"></path></svg>
+              Crear carpeta
+            </button>
+            <button id="cloudCreateNoteAction" type="button" role="menuitem" data-cloud-new="note">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14v18H5zM9 7h6M9 11h6M9 15h4"></path></svg>
+              Nuevo apunte
+            </button>
+          </div>
+        </div>
+        <input
+          id="cloudFileInput"
+          class="sr-only"
+          type="file"
+          accept=".jpg,.jpeg,.png,.webp,.gif,.pdf,.txt,.md,image/jpeg,image/png,image/webp,image/gif,application/pdf,text/plain,text/markdown"
+          multiple
+          tabindex="-1"
+        >
+      </div>
+
+      <nav class="cloud-mobile-filter-row" aria-label="Filtrar contenido">
+        <button type="button" data-cloud-filter="all" aria-pressed="true">Todos</button>
+        <button type="button" data-cloud-filter="files" aria-pressed="false">Archivos</button>
+        <button type="button" data-cloud-filter="images" aria-pressed="false">Imágenes</button>
+        <button type="button" data-cloud-filter="pdf" aria-pressed="false">PDF</button>
+        <button type="button" data-cloud-filter="text" aria-pressed="false">Texto</button>
+        <button type="button" data-cloud-filter="notes" aria-pressed="false">Mis apuntes</button>
+        <button type="button" data-cloud-filter="trash" aria-pressed="false">Papelera</button>
+      </nav>
+
+      <div class="cloud-location-bar">
+        <nav id="cloudBreadcrumbs" class="cloud-breadcrumbs" aria-label="Ruta de carpetas">
+          <ol>
+            <li><button type="button" data-folder-id="" aria-current="page">Mi nube</button></li>
+          </ol>
+        </nav>
+
+        <div class="cloud-display-controls">
+          <label class="cloud-sort-control" for="cloudSortSelect">
+            <span class="sr-only">Ordenar por</span>
+            <select id="cloudSort" aria-label="Ordenar contenido">
+              <option value="recent">Más recientes</option>
+              <option value="name-asc">Nombre A-Z</option>
+              <option value="name-desc">Nombre Z-A</option>
+            </select>
+          </label>
+
+          <div class="cloud-view-switch" role="group" aria-label="Modo de visualización">
+            <button id="cloudGridButton" type="button" aria-label="Vista de cuadrícula" aria-pressed="true" title="Cuadrícula">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"></path></svg>
+            </button>
+            <button id="cloudListButton" type="button" aria-label="Vista de lista" aria-pressed="false" title="Lista">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"></path></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <section id="cloudBrowser" class="cloud-browser" aria-label="Archivos, carpetas y apuntes">
+        <div id="cloudListHeader" class="cloud-list-header" aria-hidden="true">
+          <span>Nombre</span>
+          <span>Tipo</span>
+          <span>Tamaño</span>
+          <span>Fecha</span>
+          <span>Acciones</span>
+        </div>
+
+        <div
+          id="cloudItems"
+          class="cloud-items"
+          data-view="grid"
+          aria-live="polite"
+          aria-busy="true"
+        ></div>
+
+        <section id="cloudLoadingState" class="cloud-state" role="status">
+          <span class="cloud-spinner" aria-hidden="true"></span>
+          <h3>Cargando tu nube…</h3>
+          <p>Estamos preparando tus archivos y apuntes.</p>
+        </section>
+
+        <section id="cloudEmptyState" class="cloud-state" hidden>
+          <span class="cloud-state-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 7h7l2 2h9v10H3zM8 14h8"></path></svg>
+          </span>
+          <h3>Tu nube está vacía</h3>
+          <p>Sube imágenes, documentos PDF, archivos de texto o crea tu primer apunte.</p>
+          <button id="cloudEmptyUploadButton" class="cloud-primary-button" type="button">Subir archivo</button>
+        </section>
+
+        <section id="cloudFolderEmptyState" class="cloud-state cloud-state-compact" hidden>
+          <h3>Esta carpeta está vacía.</h3>
+          <p>Puedes subir archivos o crear una subcarpeta aquí.</p>
+        </section>
+
+        <section id="cloudNoResultsState" class="cloud-state cloud-state-compact" hidden>
+          <h3>No encontramos archivos con ese nombre.</h3>
+          <p>Prueba otra búsqueda o cambia el filtro.</p>
+        </section>
+
+        <section id="cloudErrorState" class="cloud-state cloud-state-error" role="alert" hidden>
+          <span class="cloud-state-icon" aria-hidden="true">!</span>
+          <h3>No pudimos cargar Mi nube</h3>
+          <p id="cloudErrorMessage">Revisa tu conexión e inténtalo de nuevo.</p>
+          <button id="cloudRetryButton" class="cloud-secondary-button" type="button">Reintentar</button>
+        </section>
+
+        <div class="cloud-pagination">
+          <button id="cloudLoadMore" class="cloud-secondary-button" type="button" hidden>Cargar más</button>
+          <span id="cloudPaginationStatus" class="sr-only" role="status" aria-live="polite"></span>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <aside id="cloudUploadPanel" class="cloud-upload-panel" aria-labelledby="cloudUploadTitle" aria-live="polite">
+    <div class="cloud-upload-panel-heading">
+      <div>
+        <h2 id="cloudUploadTitle">Cargas</h2>
+        <p id="cloudUploadSummary">Progreso individual de tus archivos.</p>
+      </div>
+    </div>
+    <div id="cloudUploadQueue" class="cloud-upload-queue"></div>
+  </aside>
+
+  <div id="cloudDropOverlay" class="cloud-drop-overlay" role="status" aria-live="assertive" hidden>
+    <div class="cloud-drop-message">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"></path></svg>
+      <strong>Suelta los archivos aquí</strong>
+      <span>Imágenes, PDF, TXT o Markdown</span>
+    </div>
+  </div>
+
+  <div id="cloudContextMenu" class="cloud-context-menu" role="menu" aria-label="Acciones del elemento" hidden>
+    <button type="button" role="menuitem" data-cloud-action="open">Abrir</button>
+    <button type="button" role="menuitem" data-cloud-action="preview">Previsualizar</button>
+    <button type="button" role="menuitem" data-cloud-action="rename">Renombrar</button>
+    <button type="button" role="menuitem" data-cloud-action="move">Mover</button>
+    <button type="button" role="menuitem" data-cloud-action="download">Descargar</button>
+    <span role="separator"></span>
+    <button class="cloud-menu-danger" type="button" role="menuitem" data-cloud-action="delete">Eliminar</button>
+  </div>
+
+  <dialog id="cloudPreviewDialog" class="cloud-dialog cloud-preview-dialog" aria-labelledby="cloudPreviewTitle">
+    <div class="cloud-dialog-shell">
+      <header class="cloud-dialog-header">
+        <div>
+          <h2 id="cloudPreviewTitle">Vista previa</h2>
+          <p id="cloudPreviewMeta"></p>
+        </div>
+        <div class="cloud-preview-actions">
+          <button id="cloudPreviewZoomOut" class="cloud-icon-button" type="button" aria-label="Alejar vista">−</button>
+          <button id="cloudPreviewFit" class="cloud-secondary-button cloud-compact-button" type="button">Ajustar</button>
+          <button id="cloudPreviewZoomIn" class="cloud-icon-button" type="button" aria-label="Acercar vista">＋</button>
+          <button id="cloudPreviewDownload" class="cloud-secondary-button cloud-compact-button" type="button">Descargar</button>
+          <button id="cloudPreviewClose" class="cloud-icon-button" type="button" aria-label="Cerrar vista previa">×</button>
+        </div>
+      </header>
+
+      <div id="cloudPreviewContainer" class="cloud-preview-viewport">
+        <div id="cloudPreviewLoading" class="cloud-preview-state" role="status">
+          <span class="cloud-spinner" aria-hidden="true"></span>
+          <span>Preparando vista previa…</span>
+        </div>
+        <img id="cloudImagePreview" alt="" hidden>
+        <iframe id="cloudPdfPreview" title="Vista previa del documento PDF" hidden></iframe>
+        <article id="cloudTextPreview" class="cloud-text-preview" tabindex="0" hidden></article>
+        <div id="cloudPreviewUnavailable" class="cloud-preview-state" role="alert" hidden>
+          <strong>No se pudo mostrar la vista previa.</strong>
+          <span>Puedes intentar descargar el archivo.</span>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="cloudFolderDialog" class="cloud-dialog cloud-form-dialog" aria-labelledby="cloudFolderDialogTitle">
+    <form id="cloudFolderForm" method="dialog">
+      <header class="cloud-form-dialog-header">
+        <div>
+          <h2 id="cloudFolderDialogTitle">Nueva carpeta</h2>
+          <p>Organiza tus archivos sin modificar Mis apuntes.</p>
+        </div>
+        <button class="cloud-icon-button" type="button" data-cloud-dialog-close aria-label="Cerrar">×</button>
+      </header>
+      <label class="cloud-field" for="cloudFolderInput">
+        <span>Nombre de la carpeta</span>
+        <input id="cloudFolderInput" name="name" maxlength="100" autocomplete="off" required>
+      </label>
+      <label class="cloud-field" for="cloudFolderParent">
+        <span>Dentro de</span>
+        <select id="cloudFolderParent" name="parentFolderId">
+          <option value="">Mi nube</option>
+        </select>
+      </label>
+      <p id="cloudFolderError" class="cloud-inline-error" role="alert"></p>
+      <footer class="cloud-dialog-actions">
+        <button class="cloud-secondary-button" type="button" data-cloud-dialog-close>Cancelar</button>
+        <button id="cloudFolderSubmit" class="cloud-primary-button" type="submit">Crear carpeta</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog id="cloudRenameDialog" class="cloud-dialog cloud-form-dialog" aria-labelledby="cloudRenameDialogTitle">
+    <form id="cloudRenameForm" method="dialog">
+      <header class="cloud-form-dialog-header">
+        <div>
+          <h2 id="cloudRenameDialogTitle">Renombrar</h2>
+          <p id="cloudRenameDescription">Escribe un nombre nuevo.</p>
+        </div>
+        <button class="cloud-icon-button" type="button" data-cloud-dialog-close aria-label="Cerrar">×</button>
+      </header>
+      <input id="cloudRenameItemId" name="itemId" type="hidden">
+      <label class="cloud-field" for="cloudRenameInput">
+        <span>Nombre</span>
+        <input id="cloudRenameInput" name="name" maxlength="180" autocomplete="off" required>
+      </label>
+      <p id="cloudRenameHint" class="cloud-field-hint">La extensión del archivo se conservará.</p>
+      <p id="cloudRenameError" class="cloud-inline-error" role="alert"></p>
+      <footer class="cloud-dialog-actions">
+        <button class="cloud-secondary-button" type="button" data-cloud-dialog-close>Cancelar</button>
+        <button id="cloudRenameSubmit" class="cloud-primary-button" type="submit">Guardar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog id="cloudMoveDialog" class="cloud-dialog cloud-form-dialog cloud-move-dialog" aria-labelledby="cloudMoveDialogTitle">
+    <form id="cloudMoveForm" method="dialog">
+      <header class="cloud-form-dialog-header">
+        <div>
+          <h2 id="cloudMoveDialogTitle">Mover a</h2>
+          <p id="cloudMoveDescription">Selecciona una carpeta de destino.</p>
+        </div>
+        <button class="cloud-icon-button" type="button" data-cloud-dialog-close aria-label="Cerrar">×</button>
+      </header>
+      <input id="cloudMoveItemId" name="itemId" type="hidden">
+      <input id="cloudMoveSelect" name="parentFolderId" type="hidden" value="">
+      <section class="cloud-move-browser" aria-label="Elegir carpeta de destino">
+        <div class="cloud-move-browser-heading">
+          <button id="cloudMoveUp" class="cloud-secondary-button cloud-compact-button" type="button" disabled>Subir</button>
+          <p id="cloudMoveBreadcrumbs">Mi nube</p>
+        </div>
+        <div id="cloudMoveFolderList" class="cloud-move-folder-list" role="listbox" aria-label="Subcarpetas"></div>
+        <button id="cloudMoveLoadMore" class="cloud-secondary-button cloud-compact-button" type="button" hidden>Cargar más carpetas</button>
+      </section>
+      <p id="cloudMoveError" class="cloud-inline-error" role="alert"></p>
+      <footer class="cloud-dialog-actions">
+        <button class="cloud-secondary-button" type="button" data-cloud-dialog-close>Cancelar</button>
+        <button id="cloudMoveSubmit" class="cloud-primary-button" type="submit">Mover aquí</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <template id="cloudGridItemTemplate">
+    <article class="cloud-item cloud-item-grid" role="listitem" tabindex="0">
+      <button class="cloud-item-open" type="button" aria-label="Abrir elemento">
+        <span class="cloud-item-preview" aria-hidden="true"></span>
+        <span class="cloud-item-copy">
+          <strong class="cloud-item-name"></strong>
+          <span class="cloud-item-details"></span>
+          <span class="cloud-item-source"></span>
+        </span>
+      </button>
+      <button class="cloud-item-menu-button cloud-icon-button" type="button" aria-label="Más acciones" aria-haspopup="menu">⋮</button>
+    </article>
+  </template>
+
+  <template id="cloudListItemTemplate">
+    <article class="cloud-item cloud-item-list" role="listitem" tabindex="0">
+      <button class="cloud-item-open" type="button" aria-label="Abrir elemento">
+        <span class="cloud-item-preview" aria-hidden="true"></span>
+        <span class="cloud-item-name"></span>
+        <span class="cloud-item-type"></span>
+        <span class="cloud-item-size"></span>
+        <time class="cloud-item-date"></time>
+      </button>
+      <button class="cloud-item-menu-button cloud-icon-button" type="button" aria-label="Más acciones" aria-haspopup="menu">⋮</button>
+    </article>
+  </template>
+
+  <template id="cloudUploadItemTemplate">
+    <article class="cloud-upload-item">
+      <div class="cloud-upload-item-heading">
+        <strong class="cloud-upload-name"></strong>
+        <span class="cloud-upload-percent">0 %</span>
+      </div>
+      <progress class="cloud-upload-progress" max="100" value="0">0 %</progress>
+      <div class="cloud-upload-item-footer">
+        <span class="cloud-upload-status" role="status"></span>
+        <button class="cloud-upload-cancel" type="button">Cancelar</button>
+      </div>
+    </article>
+  </template>
+
+  <p id="cloudStatus" class="cloud-status" role="status" aria-live="polite" aria-atomic="true"></p>
+  <div id="cloudToastRegion" class="cloud-toast-region" aria-live="polite" aria-atomic="true"></div>
+
+  <script type="module" src="js/mi-nube.js?v=20260822-mi-nube-v1"></script>
+</body>
+</html>

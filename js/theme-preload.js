@@ -6,8 +6,10 @@
   const LEGACY_KEYS = ["cognicion.apariencia.modoInterfaz", "theme"];
   const DEFAULT_THEME = "biocelular";
   const root = document.documentElement;
-  // Claro permanece implementado, pero está temporalmente fuera de la selección activa.
-  const isValid = (value) => value === "dark" || value === "biocelular";
+  // Claro permanece fuera de la selección global, salvo en páginas que declaran
+  // explícitamente soporte completo mediante data-enable-light-theme.
+  const allowLight = root.dataset.enableLightTheme === "true";
+  const isValid = (value) => value === "dark" || value === "biocelular" || (allowLight && value === "light");
   const read = (key) => {
     try { return localStorage.getItem(key); } catch (_) { return null; }
   };
@@ -64,7 +66,7 @@
   window.addEventListener("pageshow", apply);
   // El encabezado se carga de forma diferida y solo monta la fase autenticada validada.
   window.addEventListener("DOMContentLoaded", () => {
-    void import("./components/globalAppHeader.js?v=20260820-apuntes-navbar-v1")
+    void import("./components/globalAppHeader.js?v=20260822-mi-nube-v1")
       .then(({ scheduleGlobalAppHeader }) => scheduleGlobalAppHeader())
       .catch((error) => console.warn("[GLOBAL HEADER] Error de carga", error));
   }, { once: true });

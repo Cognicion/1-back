@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260822-apuntes-subcarpetas-listas-v1">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260822-apuntes-flechas-ancladas-v1">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -77,19 +77,29 @@
             <path class="boton-alternar-sidebar__flecha" d="m15 9-3 3 3 3"></path>
           </svg>
         </button>
-        <label class="campo-titulo">
-          <span class="sr-only">Título del apunte</span>
-          <input id="apunteTitulo" autocomplete="off" placeholder="Título del apunte">
-        </label>
-        <label class="selector-carpeta">
-          <span>Carpeta</span>
-          <select id="apunteCarpeta" aria-label="Carpeta del apunte">
-            <option value="">Sin carpeta</option>
-          </select>
-        </label>
+        <div id="camposCabeceraApunte" class="editor-cabecera__campos">
+          <label class="campo-titulo">
+            <span class="sr-only">Título del apunte</span>
+            <input id="apunteTitulo" autocomplete="off" placeholder="Título del apunte">
+          </label>
+          <label class="selector-carpeta">
+            <span>Carpeta</span>
+            <select id="apunteCarpeta" aria-label="Carpeta del apunte">
+              <option value="">Sin carpeta</option>
+            </select>
+          </label>
+        </div>
+        <div class="editor-cabecera__controles" aria-label="Mostrar u ocultar opciones del editor">
+          <button id="alternarTituloApunte" type="button" class="boton-alternar-editor" aria-controls="camposCabeceraApunte" aria-expanded="true" aria-label="Ocultar título y carpeta" title="Ocultar título y carpeta">
+            <span aria-hidden="true">T</span>
+          </button>
+          <button id="alternarBarraFormato" type="button" class="boton-alternar-editor" aria-controls="barraFormatoApunte" aria-expanded="true" aria-label="Ocultar barra de opciones" title="Ocultar barra de opciones">
+            <span aria-hidden="true">☰</span>
+          </button>
+        </div>
       </div>
 
-      <div class="barra-formato" role="toolbar" aria-label="Formato de texto">
+      <div id="barraFormatoApunte" class="barra-formato" role="toolbar" aria-label="Formato de texto">
         <button id="formatoNegrita" type="button" class="boton-formato" data-command="bold" aria-label="Negrita" aria-pressed="false" title="Negrita (Ctrl+B)">
           <strong aria-hidden="true">B</strong>
         </button>
@@ -104,6 +114,15 @@
           <button id="abrirColorFondoTexto" type="button" class="control-color" aria-haspopup="dialog" aria-expanded="false" aria-controls="paletaColorFondoTexto" title="Resaltar texto">
             <span class="control-color__muestra control-color__muestra--fondo" aria-hidden="true">A</span>
             <span>Resaltar</span>
+          </button>
+        </div>
+        <button id="quitarResaltado" type="button" class="boton-formato boton-formato--ancho" aria-label="Quitar resaltado" title="Quitar resaltado de la selección">
+          <span aria-hidden="true">▧</span><span>Quitar resaltado</span>
+        </button>
+        <div class="selector-color">
+          <button id="abrirFondoApunte" type="button" class="control-color" aria-haspopup="dialog" aria-expanded="false" aria-controls="paletaFondoApunte" title="Fondo del apunte">
+            <span class="control-color__muestra control-color__muestra--lienzo" aria-hidden="true"></span>
+            <span>Fondo</span>
           </button>
         </div>
         <span class="separador-formato" aria-hidden="true"></span>
@@ -128,14 +147,8 @@
           <span aria-hidden="true">↰</span>
         </button>
         <span class="separador-formato" aria-hidden="true"></span>
-        <button id="insertarCuadroTexto" type="button" class="boton-formato boton-formato--ancho" title="Insertar cuadro de texto movible">
-          <span aria-hidden="true">▣</span><span>Texto</span>
-        </button>
-        <button id="insertarFlecha" type="button" class="boton-formato boton-formato--ancho" title="Insertar flecha movible">
-          <span aria-hidden="true">→</span><span>Flecha</span>
-        </button>
-        <button id="abrirPropiedadesObjeto" type="button" class="boton-formato boton-formato--ancho" aria-haspopup="dialog" aria-expanded="false" aria-controls="propiedadesObjeto" title="Propiedades del objeto seleccionado">
-          <span aria-hidden="true">⚙</span><span>Objeto</span>
+        <button id="abrirInsertarApunte" type="button" class="boton-formato boton-formato--ancho" aria-haspopup="dialog" aria-expanded="false" aria-controls="menuInsertarApunte" title="Insertar en el apunte">
+          <span aria-hidden="true">＋</span><span>Insertar</span>
         </button>
         <button id="abrirExportacionApunte" type="button" class="boton-formato boton-formato--ancho" aria-haspopup="dialog" aria-expanded="false" aria-controls="menuExportacionApunte" title="Descargar apunte">
           <span aria-hidden="true">⇩</span><span>Exportar</span>
@@ -178,6 +191,41 @@
         </div>
       </section>
 
+      <section id="paletaFondoApunte" class="paleta-color paleta-fondo-apunte" role="dialog" aria-label="Fondo del apunte" hidden>
+        <div class="paleta-color__encabezado">
+          <strong>Fondo del apunte</strong>
+          <label class="paleta-color__personalizado">
+            <span>Personalizado</span>
+            <input id="colorFondoApunte" type="color" value="#101814" aria-label="Elegir fondo personalizado para el apunte">
+          </label>
+        </div>
+        <div class="paleta-color__seccion">
+          <span>Fondos</span>
+          <div id="coloresFondoApunte" class="paleta-color__cuadricula" aria-label="Fondos sugeridos">
+            <button type="button" class="opcion-color" data-fondo-apunte="#ffffff" style="--color-muestra:#ffffff" aria-label="Fondo blanco"></button>
+            <button type="button" class="opcion-color" data-fondo-apunte="#f6eddc" style="--color-muestra:#f6eddc" aria-label="Fondo crema"></button>
+            <button type="button" class="opcion-color" data-fondo-apunte="#e7f4ec" style="--color-muestra:#e7f4ec" aria-label="Fondo verde claro"></button>
+            <button type="button" class="opcion-color" data-fondo-apunte="#dcecff" style="--color-muestra:#dcecff" aria-label="Fondo azul claro"></button>
+            <button type="button" class="opcion-color" data-fondo-apunte="#231015" style="--color-muestra:#231015" aria-label="Fondo vino oscuro"></button>
+            <button type="button" class="opcion-color" data-fondo-apunte="#101010" style="--color-muestra:#101010" aria-label="Fondo negro"></button>
+          </div>
+        </div>
+        <button id="restablecerFondoApunte" type="button" class="paleta-fondo-apunte__restablecer">Usar fondo del tema</button>
+      </section>
+
+      <section id="menuInsertarApunte" class="menu-insertar" role="dialog" aria-label="Insertar en el apunte" hidden>
+        <strong>Insertar</strong>
+        <button id="insertarCuadroTexto" type="button" title="Insertar cuadro de texto movible">
+          <span aria-hidden="true">▣</span><span>Cuadro de texto</span>
+        </button>
+        <button id="insertarFlecha" type="button" title="Insertar flecha movible">
+          <span aria-hidden="true">→</span><span>Flecha</span>
+        </button>
+        <button id="abrirPropiedadesObjeto" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="propiedadesObjeto" title="Propiedades del objeto seleccionado">
+          <span aria-hidden="true">⚙</span><span>Objeto</span>
+        </button>
+      </section>
+
       <section id="propiedadesObjeto" class="panel-objeto" role="dialog" aria-label="Propiedades del objeto" hidden>
         <div class="panel-objeto__encabezado">
           <strong>Objeto</strong>
@@ -200,7 +248,7 @@
           <input id="colorObjeto" type="color" value="#f6e8d5" aria-label="Color del objeto">
         </label>
         <button id="eliminarObjeto" type="button" class="boton-peligro">Eliminar objeto</button>
-        <p id="ayudaObjeto" class="panel-objeto__ayuda">Inserta un cuadro o una flecha para empezar.</p>
+        <p id="ayudaObjeto" class="panel-objeto__ayuda">Inserta un cuadro de texto o una flecha para empezar.</p>
       </section>
 
       <section id="menuExportacionApunte" class="menu-exportacion" role="dialog" aria-label="Descargar apunte" hidden>
@@ -210,6 +258,20 @@
           <button id="descargarApunteWord" type="button">Word (.docx)</button>
           <button id="descargarApuntePdf" type="button">PDF (.pdf)</button>
         </div>
+      </section>
+
+      <section id="menuContextualTexto" class="menu-contextual-texto" role="menu" aria-label="Opciones del texto" hidden>
+        <button type="button" data-accion-texto="bold" role="menuitem">Negrita</button>
+        <button type="button" data-accion-texto="texto" role="menuitem">Color de texto</button>
+        <button type="button" data-accion-texto="resaltar" role="menuitem">Resaltar</button>
+        <button type="button" data-accion-texto="quitar-resaltado" role="menuitem">Quitar resaltado</button>
+        <button type="button" data-accion-texto="limpiar" role="menuitem">Limpiar formato</button>
+        <button type="button" data-accion-texto="puntos" role="menuitem">Lista con puntos</button>
+        <button type="button" data-accion-texto="numeros" role="menuitem">Lista numerada</button>
+        <button type="button" data-accion-texto="letras" role="menuitem">Lista por letras</button>
+        <button type="button" data-accion-texto="sublista" role="menuitem">Crear sublista</button>
+        <button type="button" data-accion-texto="reducir-sublista" role="menuitem">Reducir sublista</button>
+        <button type="button" data-accion-texto="fondo-apunte" role="menuitem">Fondo del apunte</button>
       </section>
 
       <div id="lienzoApunte" class="lienzo-apunte" aria-label="Lienzo del apunte">
@@ -225,6 +287,9 @@
           spellcheck="true"
         ></div>
         <div id="objetosApunteDelante" class="capa-objetos-apunte capa-objetos-apunte--delante" aria-label="Objetos movibles del apunte"></div>
+        <div id="menuContextualObjeto" class="menu-contextual-objeto" role="menu" aria-label="Acciones del objeto" hidden>
+          <button type="button" data-accion-menu-objeto="eliminar" role="menuitem">Eliminar</button>
+        </div>
       </div>
 
       <div class="acciones-apuntes">
@@ -258,7 +323,7 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260822-apuntes-subcarpetas-hotfix-v1"></script>
+  <script type="module" src="js/apuntes.js?v=20260822-apuntes-flechas-ancladas-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>

@@ -10,9 +10,7 @@ import {
   collection,
   query,
   where,
-  getDocs,
-  getDoc,
-  updateDoc
+  getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import { registrarEventoAuditoria } from "./services/auditoria.js";
@@ -25,6 +23,7 @@ import {
 import { abrirLegalModal } from "./legal/legalModal.js";
 import { betaConsent, privacyNotice } from "./legal/legalDocuments.js";
 import { guardarConsentimientosLegales } from "./legal/legalConsentService.js";
+import { registrarProfesionalConCodigo } from "./services/professionalRegistrationService.js";
 
 const VERSION_AVISO_PRIVACIDAD = "2026-08-01";
 
@@ -67,30 +66,6 @@ function configurarTipoCuenta() {
   });
 }
 
-function normalizarCodigo(codigo = "") {
-  return String(codigo || "").trim().toUpperCase().replace(/\s+/g, "");
-}
-
-async function validarCodigoAutorizacionMedico(codigo) {
-  const codigoNormalizado = normalizarCodigo(codigo);
-  if (!codigoNormalizado) throw new Error("Ingresa el codigo de autorizacion profesional.");
-
-  const codigoRef = doc(db, "codigosAutorizacionMedico", codigoNormalizado);
-  const codigoSnap = await getDoc(codigoRef);
-
-  if (!codigoSnap.exists()) throw new Error("El codigo de autorizacion no existe.");
-
-  const datosCodigo = codigoSnap.data();
-  const expiraEn = datosCodigo.expiraEn ? new Date(datosCodigo.expiraEn) : null;
-
-  if (datosCodigo.usado) throw new Error("El codigo de autorizacion ya fue utilizado.");
-  if (!expiraEn || Number.isNaN(expiraEn.getTime()) || expiraEn.getTime() < Date.now()) {
-    throw new Error("El codigo de autorizacion expiro. Solicita uno nuevo al administrador.");
-  }
-
-  return { codigo: codigoNormalizado, ref: codigoRef, datos: datosCodigo };
-}
-
 async function crearCuentaProfesional({ nombre, email, password, codigoAutorizacion, aceptaAviso, aceptaBeta, aceptaComunicaciones, mensaje, rol }) {
   const rolProfesional = rol === "psicologo"
     ? "psicologo"
@@ -118,34 +93,17 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
     return;
   }
 
-  mensaje.textContent = "Validando codigo de autorizacion...";
-  const autorizacion = await validarCodigoAutorizacionMedico(codigoAutorizacion);
-
   mensaje.textContent = `Creando cuenta de ${etiquetaRol}...`;
-  const credencial = await createUserWithEmailAndPassword(auth, email, password);
+  const credencial = auth.currentUser?.email?.toLowerCase() === email
+    ? { user: auth.currentUser }
+    : await createUserWithEmailAndPassword(auth, email, password);
   const uidProfesional = credencial.user.uid;
-  const fechaActual = new Date().toISOString();
-
-  await setDoc(doc(db, "usuarios", uidProfesional), {
+  const registroProfesional = await registrarProfesionalConCodigo({
     nombre,
-    email,
     rol: rolProfesional,
-    tieneCuenta: true,
-    estado: "activo",
-    unidad: "",
-    especialidad: rolProfesional === "psicologo"
-      ? "Psicologia"
-      : rolProfesional === ROL_ENFERMERIA_SALUD_MENTAL
-        ? "Enfermeria / Salud Mental"
-        : "",
-    institucion: "",
-    cedula: "",
-    aceptoAvisoPrivacidad: true,
-    fechaAceptacionAviso: fechaActual,
-    versionAvisoPrivacidad: VERSION_AVISO_PRIVACIDAD,
-    fechaCreacion: fechaActual,
-    creadoConCodigoAutorizacion: autorizacion.codigo,
-    autorizadoPorAdminUid: autorizacion.datos.creadoPorUid || ""
+    codigoAutorizacion,
+    aceptaAviso,
+    aceptaBeta
   });
 
   console.log("[LEGAL][SIGNUP] Cuenta creada");
@@ -158,15 +116,6 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
     throw errorConsentimientos;
   }
 
-  await updateDoc(autorizacion.ref, {
-    usado: true,
-    usadoPorUid: uidProfesional,
-    usadoPorEmail: email,
-    usadoPorNombre: nombre,
-    usadoPorRol: rolProfesional,
-    usadoEn: fechaActual
-  });
-
   try {
     await registrarEventoAuditoria({
       accion: `crear_cuenta_${rolProfesional}_codigo_admin`,
@@ -177,7 +126,7 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
       usuarioRol: rolProfesional,
       exito: true,
       detalles: {
-        codigoAutorizacion: autorizacion.codigo,
+        registroReintentado: registroProfesional.alreadyRegistered === true,
         versionAvisoPrivacidad: VERSION_AVISO_PRIVACIDAD
       }
     });

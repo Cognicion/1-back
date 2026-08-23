@@ -3,7 +3,7 @@ import { getPageHeader, isPublicPage, pageIdFromLocation } from "./pageHeaderReg
 
 const DEBUG_PREFIX = "[GLOBAL HEADER]";
 const RECENT_KEY = "cognicion.globalHeader.featureRecent";
-const MIGRATED_PAGES = new Set(["dashboard", "medico", "paciente", "nota", "historia", "apuntes"]);
+const MIGRATED_PAGES = new Set(["dashboard", "medico", "paciente", "nota", "historia", "apuntes", "mi-nube"]);
 let stylesPromise;
 
 function log(message, data) { console.debug(`${DEBUG_PREFIX} ${message}`, data ?? ""); }
@@ -34,6 +34,7 @@ function findHeader(pageId) {
   if (pageId === "paciente") return document.querySelector(".topbar") || null;
   if (pageId === "nota") return document.querySelector(".barra-superior") || null;
   if (pageId === "apuntes") return document.querySelector("header.topbar-apuntes") || null;
+  if (pageId === "mi-nube") return document.querySelector("header.topbar-mi-nube") || null;
   if (pageId === "historia") {
     let header = document.querySelector("[data-global-header-host]");
     if (!header) {

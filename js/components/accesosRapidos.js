@@ -20,6 +20,7 @@ export const OPCIONES_ACCESOS_RAPIDOS = Object.freeze([
   { value: "historia.html", label: "Historia clínica", keywords: "antecedentes ficha exploración" },
   { value: "agenda.html", label: "Agenda médica", keywords: "citas calendario" },
   { value: "apuntes.html", label: "Mis apuntes", keywords: "apuntes notas personales" },
+  { value: "mi-nube.html", label: "Mi nube", keywords: "archivos carpetas pdf imagenes texto almacenamiento personal" },
   { value: "mi-salud.html", label: "Mi Salud", keywords: "paciente salud tratamiento" },
   { value: "escalas.html", label: "Escalas clínicas", keywords: "tamizajes phq gad ciwa cognitivo" },
   { value: "calculadoras-medicas.html", label: "Calculadoras y escalas clínicas", keywords: "calculadoras medicina riesgo dosis" },

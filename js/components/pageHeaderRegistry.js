@@ -19,6 +19,7 @@ export const PAGE_HEADER_REGISTRY = Object.freeze({
   "rehabilitacion-evc": { title: "Rehabilitación post-EVC", description: "Evaluación funcional y planificación cognitiva personalizada.", featureCategories: ["rehabilitacion", "pacientes"] },
   sofia: { title: "SOFÍA", description: "Asistente para organizar conocimiento y documentación.", featureCategories: ["sofia"] },
   apuntes: { title: "Mis apuntes", description: "Notas personales, recordatorios y pendientes.", featureCategories: ["apuntes"] },
+  "mi-nube": { title: "Mi nube", description: "Archivos personales privados y organizados.", featureCategories: ["archivos", "apuntes"] },
   configuracion: { title: "Configuración", description: "Preferencias, apariencia y cuenta.", featureCategories: ["configuracion"] },
   admin: { title: "Centro de Control", description: "Actividad, permisos y reportes de la plataforma.", featureCategories: ["admin"] },
   "laboratorio-farmacologia": { title: "Laboratorio de Farmacología", description: "Consulta de fármacos e interacciones.", featureCategories: ["farmacologia"] },

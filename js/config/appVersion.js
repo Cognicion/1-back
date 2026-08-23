@@ -74,5 +74,10 @@
 // deployment marker: 2026-08-22-apuntes-objetos-export-v1
 // deployment marker: 2026-08-22-apuntes-subcarpetas-listas-v1
 // deployment marker: 2026-08-22-apuntes-subcarpetas-hotfix-v1
-export const APP_VERSION = "2.084";
+// deployment marker: 2026-08-22-mi-nube-v1
+// deployment marker: 2026-08-22-apuntes-insertar-controles-v1
+// deployment marker: 2026-08-22-apuntes-contexto-fondo-retraible-v1
+// deployment marker: 2026-08-22-apuntes-flechas-ancladas-v1
+// deployment marker: 2026-08-22-mi-nube-infraestructura-segura-v1
+export const APP_VERSION = "2.089";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

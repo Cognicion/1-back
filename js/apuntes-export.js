@@ -22,7 +22,11 @@ function objetoHtml(objeto) {
   const base = `left:${objeto.x}%;top:${objeto.y}%;width:${objeto.ancho}%;height:${objeto.alto}%;`;
   const orden = objeto.ajuste === "detras" ? "z-index:1;opacity:.7;" : "z-index:3;";
   if (objeto.tipo === "flecha") {
-    return `<div class="objeto-exportable objeto-exportable--flecha" style="${base}${orden}color:${escaparHTML(objeto.color)}"><svg viewBox="0 0 100 40" aria-hidden="true"><defs><marker id="punta-export-${escaparHTML(objeto.id)}" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="currentColor"/></marker></defs><path d="M5 20 H91" stroke="currentColor" stroke-width="3" fill="none" marker-end="url(#punta-export-${escaparHTML(objeto.id)})"/></svg></div>`;
+    const inicioX = Number(objeto.inicioX).toFixed(3);
+    const inicioY = Number(objeto.inicioY).toFixed(3);
+    const finX = Number(objeto.finX).toFixed(3);
+    const finY = Number(objeto.finY).toFixed(3);
+    return `<div class="objeto-exportable objeto-exportable--flecha" style="left:0;top:0;width:100%;height:100%;${orden}color:${escaparHTML(objeto.color)}"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><defs><marker id="punta-export-${escaparHTML(objeto.id)}" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="currentColor"/></marker></defs><path d="M${inicioX} ${inicioY} L${finX} ${finY}" stroke="currentColor" stroke-width=".5" fill="none" marker-end="url(#punta-export-${escaparHTML(objeto.id)})"/></svg></div>`;
   }
   const claseAjuste = objeto.ajuste === "cuadrado" ? " objeto-exportable--cuadrado" : "";
   return `<div class="objeto-exportable objeto-exportable--texto${claseAjuste}" style="${base}${orden}color:${escaparHTML(objeto.color)}">${escaparHTML(objeto.texto).replace(/\n/g, "<br>")}</div>`;
