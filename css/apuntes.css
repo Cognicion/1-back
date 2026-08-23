@@ -1196,7 +1196,8 @@ body.pagina-apuntes > main.apuntes-shell {
   line-height: 1.52;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  caret-color: var(--apuntes-texto);
+  /* El cursor sigue el contraste automático del lienzo, incluso con fondo blanco. */
+  caret-color: var(--apunte-texto, var(--apuntes-texto));
 }
 
 .editor-contenido:empty::before {

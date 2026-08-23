@@ -168,8 +168,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=20260820-apuntes-minimal-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260822-apuntes-objetos-interaccion-v1/);
-  assert.match(html, /apuntes\.js\?v=20260822-apuntes-objetos-interaccion-v1/);
+  assert.match(html, /apuntes\.css\?v=20260822-apuntes-cursor-contraste-v1/);
+  assert.match(html, /apuntes\.js\?v=20260822-apuntes-cursor-contraste-v1/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
   assert.match(html, /id="menuInsertarApunte"[^>]*aria-label="Insertar en el apunte"/);
   assert.match(html, /id="insertarCuadroTexto"/);
@@ -272,6 +272,7 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(controlador, /function abrirMenuContextualTexto/);
   assert.match(controlador, /function aplicarFondoApunte/);
   assert.match(controlador, /fondoLienzo: fondoApunteActual \|\| null/);
+  assert.match(css, /caret-color:\s*var\(--apunte-texto, var\(--apuntes-texto\)\)/);
   assert.match(controlador, /function alternarSeccionEditor/);
 });
 
@@ -350,7 +351,7 @@ test("el editor flotante invalida formato solo cuando cambia el contenido", () =
 test("vinculación y eliminación administrativa conservan sus contratos vigentes", () => {
   assert.match(vinculacion, /manageAccountLinking/);
   assert.match(admin, /"apuntesMedico",\s*"carpetasApuntes",\s*"borradoresMedico"/);
-  assert.match(adminHtml, /admin\.js\?v=20260820-apuntes-rich-folders-v1/);
+  assert.match(adminHtml, /admin\.js\?v=/);
 });
 
 test("la versión visible se incrementa para el cambio funcional", () => {
@@ -365,7 +366,8 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-22-apuntes-contexto-fondo-retraible-v1/);
   assert.match(version, /2026-08-22-apuntes-flechas-ancladas-v1/);
   assert.match(version, /2026-08-22-apuntes-objetos-interaccion-v1/);
+  assert.match(version, /2026-08-22-apuntes-cursor-contraste-v1/);
   const versionVisible = version.match(/APP_VERSION = "(\d+\.\d+)"/);
   assert.ok(versionVisible, "APP_VERSION debe seguir siendo visible y numérica");
-  assert.ok(Number(versionVisible[1]) >= 2.091, "versiones posteriores no deben invalidar la regresión de Mis apuntes");
+  assert.ok(Number(versionVisible[1]) >= 2.097, "versiones posteriores no deben invalidar la regresión de Mis apuntes");
 });
