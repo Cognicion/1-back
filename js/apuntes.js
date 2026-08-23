@@ -207,11 +207,20 @@ function inicializarInterfaz() {
   document.getElementById("formatoHoja")?.addEventListener("change", aplicarDisposicionDesdeControles);
   document.getElementById("orientacionHoja")?.addEventListener("change", aplicarDisposicionDesdeControles);
   document.getElementById("tamanoFuenteHoja")?.addEventListener("change", aplicarDisposicionDesdeControles);
+  document.getElementById("tamanoFuenteRapido")?.addEventListener("change", (evento) => {
+    aplicarDisposicionHoja({ ...disposicionHojaActual, tamanioFuente: evento.target.value });
+  });
   ["margenSuperiorHoja", "margenDerechoHoja", "margenInferiorHoja", "margenIzquierdoHoja"].forEach((id) => {
     document.getElementById(id)?.addEventListener("change", aplicarDisposicionDesdeControles);
   });
   document.getElementById("zoomHojaMenos")?.addEventListener("click", () => cambiarZoomHoja(-10));
   document.getElementById("zoomHojaMas")?.addEventListener("click", () => cambiarZoomHoja(10));
+  document.getElementById("zoomHojaMenosVista")?.addEventListener("click", () => cambiarZoomHoja(-10));
+  document.getElementById("zoomHojaMasVista")?.addEventListener("click", () => cambiarZoomHoja(10));
+  document.getElementById("zoomHojaBarra")?.addEventListener("input", (evento) => {
+    aplicarDisposicionHoja({ ...disposicionHojaActual, zoom: evento.target.value });
+  });
+  document.getElementById("lienzoApunte")?.addEventListener("wheel", manejarZoomHojaConRueda, { passive: false });
   editor?.addEventListener("contextmenu", abrirMenuContextualTexto);
   document.getElementById("menuContextualTexto")?.addEventListener("click", ejecutarAccionMenuContextualTexto);
   document.getElementById("menuContextualTexto")?.addEventListener("pointerdown", conservarFocoEditor);
@@ -901,7 +910,7 @@ function ponerEdicionOcupada(ocupada) {
     document.getElementById("guardarApunte"),
     document.getElementById("eliminarApunte"),
     document.getElementById("nuevoApunte"),
-    ...document.querySelectorAll(".barra-formato button, .barra-formato input, .menu-insertar button, .panel-objeto button, .panel-objeto input, .panel-objeto select, .panel-disposicion-hoja button, .panel-disposicion-hoja input, .panel-disposicion-hoja select, .menu-exportacion button")
+    ...document.querySelectorAll(".barra-formato button, .barra-formato input, .barra-formato select, .menu-insertar button, .panel-objeto button, .panel-objeto input, .panel-objeto select, .panel-disposicion-hoja button, .panel-disposicion-hoja input, .panel-disposicion-hoja select, .menu-exportacion button")
   ].filter(Boolean);
 
   controles.forEach((control) => { control.disabled = ocupada; });
@@ -1261,6 +1270,7 @@ function actualizarControlesDisposicionHoja() {
     formatoHoja: disposicion.formato,
     orientacionHoja: disposicion.orientacion,
     tamanoFuenteHoja: String(disposicion.tamanioFuente),
+    tamanoFuenteRapido: String(disposicion.tamanioFuente),
     margenSuperiorHoja: String(margenes.superior),
     margenDerechoHoja: String(margenes.derecho),
     margenInferiorHoja: String(margenes.inferior),
@@ -1272,6 +1282,10 @@ function actualizarControlesDisposicionHoja() {
   });
   const zoom = document.getElementById("zoomHojaValor");
   if (zoom) zoom.textContent = `${disposicion.zoom}%`;
+  const barraZoom = document.getElementById("zoomHojaBarra");
+  const etiquetaZoom = document.getElementById("zoomHojaEtiquetaVista");
+  if (barraZoom) barraZoom.value = String(disposicion.zoom);
+  if (etiquetaZoom) etiquetaZoom.textContent = `${disposicion.zoom}%`;
   const etiqueta = etiquetaDisposicionHoja(disposicion);
   const medidas = document.getElementById("medidasHoja");
   const vista = document.getElementById("etiquetaVistaHoja");
@@ -1311,6 +1325,12 @@ function aplicarDisposicionDesdeControles() {
 
 function cambiarZoomHoja(delta) {
   aplicarDisposicionHoja({ ...disposicionHojaActual, zoom: disposicionHojaActual.zoom + delta });
+}
+
+function manejarZoomHojaConRueda(evento) {
+  if (!evento.ctrlKey) return;
+  evento.preventDefault();
+  cambiarZoomHoja(evento.deltaY < 0 ? 10 : -10);
 }
 
 function abrirDisposicionHoja() {

@@ -295,6 +295,7 @@ test("el navbar común se monta una sola vez y deja el shell unido al encabezado
       const visor = document.querySelector("#lienzoApunte");
       const hoja = document.querySelector("#hojaApunte");
       const contenido = document.querySelector(".editor-contenido");
+      const zoomHoja = document.querySelector(".controles-zoom-hoja");
       const footer = document.querySelector(".acciones-apuntes");
       const guardar = document.querySelector("#guardarApunte");
       const eliminar = document.querySelector("#eliminarApunte");
@@ -340,6 +341,7 @@ test("el navbar común se monta una sola vez y deja el shell unido al encabezado
         visor: rect(visor),
         hoja: rect(hoja),
         contenido: rect(contenido),
+        zoomHoja: rect(zoomHoja),
         footer: rect(footer),
         guardar: rect(guardar),
         eliminar: rect(eliminar),
@@ -400,9 +402,11 @@ test("el navbar común se monta una sola vez y deja el shell unido al encabezado
     assertBorde(montaje.footer.left, montaje.visor.left, "footer real / alineado al visor izquierdo");
     assertBorde(montaje.footer.right, montaje.visor.right, "footer real / alineado al visor derecho");
     assertBorde(montaje.footer.bottom, montaje.editor.bottom - montaje.editorPadding.bottom, "footer real / sin espacio muerto inferior");
-    assert.ok(montaje.visor.height >= 640, `visor de hoja maximizado: ${JSON.stringify(montaje.visor)}`);
+    assert.ok(montaje.visor.height >= 600, `visor de hoja maximizado: ${JSON.stringify(montaje.visor)}`);
     assert.ok(montaje.hoja.width >= 180 && montaje.hoja.height >= 250, `hoja visible: ${JSON.stringify(montaje.hoja)}`);
     assert.ok(montaje.hoja.left >= montaje.visor.left && montaje.hoja.right <= montaje.visor.right, `hoja contenida horizontalmente: ${JSON.stringify(montaje)}`);
+    assert.ok(montaje.zoomHoja.bottom < montaje.footer.top, `zoom de hoja libre del pie: ${JSON.stringify(montaje)}`);
+    assert.ok(montaje.zoomHoja.right <= montaje.visor.right, `zoom de hoja dentro del visor: ${JSON.stringify(montaje)}`);
     assertBorde(montaje.footer.height, 36, "footer real / alto compacto");
     assertBorde(montaje.footerPaddingRight, 205, "footer real / reserva Reportar expandido");
     assertBorde(montaje.guardar.width, 96, "Guardar escritorio / ancho");

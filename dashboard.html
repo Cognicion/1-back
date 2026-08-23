@@ -1372,7 +1372,7 @@ html[data-theme="light"] .ghost-button:hover,
 html[data-theme="light"] .logout-button:hover { color: var(--text-primary); background: var(--action-secondary-hover); border-color: var(--accent-primary); box-shadow: none; transform: none; }
 html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px, 1440px); }
 </style>
-    <link rel="stylesheet" href="css/dashboard-encabezado-vistas.css?v=2.100">
+    <link rel="stylesheet" href="css/dashboard-encabezado-vistas.css?v=2.101">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
 
@@ -1585,7 +1585,7 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
         <div class="hero-grid">
             <div class="dashboard-intro-grid">
                 <div class="dashboard-intro-item dashboard-intro-bienvenida">
-                    <span class="dashboard-intro-icono" aria-hidden="true">♙</span>
+                    <div id="dashboardAvatar" class="dashboard-intro-avatar avatar-predeterminado" role="img" aria-label="Avatar predeterminado del usuario">DR</div>
                     <div>
                         <h2 id="bienvenida">Cargando...</h2>
                         <p id="fraseClinica" class="clinical-phrase">La evidencia guía mejores decisiones clínicas.</p>
@@ -1608,9 +1608,9 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
             </div>
             <p class="section-description">Accesos pensados para retomar tu trabajo médico sin fricción.</p>
             <div class="selector-vista-modulos" role="group" aria-label="Presentación de los módulos">
-                <button type="button" class="boton-vista-modulos" data-seleccionar-vista="orbita" aria-pressed="false" title="Vista orbital"><span aria-hidden="true">◉</span><span>Órbita</span></button>
-                <button type="button" class="boton-vista-modulos" data-seleccionar-vista="tarjetas" aria-pressed="false" title="Vista en cuadrícula"><span aria-hidden="true">▦</span><span>Cuadrícula</span></button>
-                <button type="button" class="boton-vista-modulos" data-seleccionar-vista="lista" aria-pressed="true" title="Vista en lista"><span aria-hidden="true">☷</span><span>Lista</span></button>
+                <button type="button" class="boton-vista-modulos" data-seleccionar-vista="orbita" aria-pressed="false" title="Órbita"><span aria-hidden="true">◉</span><span>Órbita</span></button>
+                <button type="button" class="boton-vista-modulos" data-seleccionar-vista="tarjetas" aria-pressed="false" title="Cuadrícula"><span aria-hidden="true">▦</span><span>Cuadrícula</span></button>
+                <button type="button" class="boton-vista-modulos" data-seleccionar-vista="lista" aria-pressed="true" title="Lista"><span aria-hidden="true">☷</span><span>Lista</span></button>
             </div>
         </div>
 
@@ -1819,8 +1819,8 @@ document.addEventListener("DOMContentLoaded", function () {
   console.timeEnd?.("COGNICION dashboard | primera fase HTML");
 }, { once: true });
 </script>
-<script type="module" src="js/componentes/vista-orbital-panel-principal.js?v=2.100-laboratorios-fila"></script>
-<script type="module" src="js/dashboard.js?v=2.100-laboratorios-fila"></script>
+<script type="module" src="js/componentes/vista-orbital-panel-principal.js?v=2.101-dashboard-lista"></script>
+<script type="module" src="js/dashboard.js?v=2.101-dashboard-lista"></script>
 <script type="module" src="js/services/visitasBootstrap.js"></script>
 <script type="module" src="js/components/accesosRapidos.js"></script>
 <script type="module" src="js/components/themeSelector.js"></script>

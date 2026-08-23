@@ -90,5 +90,7 @@
 // deployment marker: 2026-08-22-dashboard-laboratorios-fila-v1 (+0.001)
 // deployment marker: 2026-08-22-apuntes-disposicion-hoja-v1
 // deployment marker: 2026-08-22-dashboard-laboratorios-fila-v1 (+0.001)
-export const APP_VERSION = "2.100";
+// deployment marker: 2026-08-22-dashboard-lista-referencia-visual-v1 (+0.001)
+// deployment marker: 2026-08-22-apuntes-zoom-fuente-rapida-v1
+export const APP_VERSION = "2.102";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

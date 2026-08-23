@@ -499,6 +499,8 @@ function inicializarVistaModulosDashboard() {
     });
     if (mostrarOrbita) sincronizarAccesos();
     console.info(`[ÓRBITA DASHBOARD] Vista activa: ${vista}.`);
+    console.info(`[DASHBOARD] Vista activa: ${vista}`);
+    if (vista === "lista") console.info("[DASHBOARD] Lista renderizada");
   };
 
   botonesVista.forEach((boton) => {

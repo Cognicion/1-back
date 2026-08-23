@@ -792,6 +792,52 @@ body.pagina-apuntes > main.apuntes-shell {
   flex: 0 0 auto;
 }
 
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.control-tamano-fuente {
+  flex: 0 0 auto;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--apuntes-texto-suave);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.apuntes-shell .control-tamano-fuente select {
+  width: 38px;
+  min-width: 38px;
+  height: 24px;
+  padding: 0 2px;
+  border: 0;
+  border-radius: 4px;
+  color: var(--apuntes-texto);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.control-tamano-fuente:focus-within,
+.control-tamano-fuente:hover {
+  border-color: var(--apuntes-borde);
+  color: var(--apuntes-texto);
+  background: rgba(255, 255, 255, 0.045);
+}
+
 .barra-formato[hidden] {
   display: none;
 }
@@ -1333,6 +1379,62 @@ body.pagina-apuntes > main.apuntes-shell {
   font-size: 10px;
   white-space: nowrap;
   pointer-events: none;
+}
+
+.controles-zoom-hoja {
+  position: absolute;
+  right: 220px;
+  bottom: 62px;
+  z-index: 12;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 6px;
+  border: 1px solid var(--apuntes-borde);
+  border-radius: 9px;
+  color: var(--apuntes-texto-suave);
+  background: color-mix(in srgb, var(--apuntes-superficie) 94%, transparent);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+body.reporte-global-contraido .controles-zoom-hoja {
+  right: 64px;
+}
+
+.controles-zoom-hoja button {
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  color: var(--apuntes-texto);
+  background: transparent;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.controles-zoom-hoja button:hover,
+.controles-zoom-hoja button:focus-visible {
+  background: var(--apuntes-superficie-hover);
+}
+
+.controles-zoom-hoja input[type="range"] {
+  width: 104px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--apuntes-borde-fuerte);
+  cursor: ew-resize;
+}
+
+.controles-zoom-hoja output {
+  width: 36px;
+  color: var(--apuntes-texto);
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
 }
 
 .editor-contenido {
@@ -2040,6 +2142,27 @@ html[data-theme="light"] .apuntes-shell .boton-peligro {
 
   .control-color {
     min-width: 64px;
+  }
+
+  .control-tamano-fuente {
+    min-height: 40px;
+  }
+
+  .apuntes-shell .control-tamano-fuente select {
+    width: 42px;
+    min-width: 42px;
+    height: 36px;
+  }
+
+  .controles-zoom-hoja {
+    bottom: 70px;
+  }
+
+  .controles-zoom-hoja button {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    min-height: 36px;
   }
 
   .paleta-color__personalizado input[type="color"] {

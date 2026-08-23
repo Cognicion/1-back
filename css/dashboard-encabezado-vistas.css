@@ -546,6 +546,14 @@ html[data-theme="biocelular"] .dashboard-section[data-vista-modulos="lista"] .mo
   }
 }
 
+@media (max-width: 620px) {
+  .dashboard-intro-avatar {
+    flex-basis: 40px;
+    width: 40px;
+    height: 40px;
+  }
+}
+
 /* Prevalece sobre la densidad general únicamente dentro del Dashboard. */
 body:has(.dashboard-section) > header[data-global-app-header] .topbar {
   min-height: 72px;
@@ -617,6 +625,32 @@ body:has(.dashboard-section) .dashboard-section {
   flex: 0 0 auto;
 }
 
+.dashboard-intro-bienvenida {
+  gap: 14px;
+}
+
+.dashboard-intro-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--accent) 78%, var(--line));
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--surface) 88%, var(--accent));
+  color: var(--text-primary);
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
+.dashboard-intro-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 @media (max-width: 860px) {
   body:has(.dashboard-section) > header[data-global-app-header] .topbar {
     min-height: 64px;
@@ -686,7 +720,7 @@ body:has(.dashboard-section) .dashboard-section {
 .dashboard-section[data-vista-modulos="lista"] .module-card {
   min-height: 58px;
   display: grid;
-  grid-template-columns: 38px minmax(170px, .72fr) 104px minmax(220px, 1.4fr) auto;
+  grid-template-columns: 40px minmax(190px, .72fr) minmax(220px, 1.4fr) auto;
   grid-template-rows: auto;
   align-items: center;
   gap: 8px 14px;
@@ -740,21 +774,11 @@ body:has(.dashboard-section) .dashboard-section {
 }
 
 .dashboard-section[data-vista-modulos="lista"] .badge {
-  grid-column: 3;
-  grid-row: 1;
-  justify-self: start;
-  max-width: 100%;
-  padding: 3px 5px;
-  border-radius: 5px;
-  background: color-mix(in srgb, var(--accent) 4%, transparent);
-  font-size: .49rem;
-  line-height: 1;
-  letter-spacing: .055em;
-  white-space: nowrap;
+  display: none !important;
 }
 
 .dashboard-section[data-vista-modulos="lista"] .module-card > p {
-  grid-column: 4;
+  grid-column: 3;
   grid-row: 1;
   min-width: 0;
   margin: 0;
@@ -771,7 +795,7 @@ body:has(.dashboard-section) .dashboard-section {
 }
 
 .dashboard-section[data-vista-modulos="lista"] .module-card .card-actions {
-  grid-column: 5;
+  grid-column: 4;
   grid-row: 1;
   display: flex;
   align-items: center;
@@ -833,8 +857,16 @@ html[data-theme="biocelular"] .dashboard-section[data-vista-modulos="lista"] .mo
 
 @media (max-width: 1000px) {
   .dashboard-section[data-vista-modulos="lista"] .module-card {
-    grid-template-columns: 38px minmax(150px, .8fr) 90px minmax(170px, 1fr) auto;
+    grid-template-columns: 40px minmax(150px, .8fr) minmax(170px, 1fr) auto;
     gap-inline: 10px;
+  }
+}
+
+@media (max-width: 860px) {
+  .dashboard-intro-avatar {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
   }
 }
 
