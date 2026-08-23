@@ -4,6 +4,8 @@ const TIPOS_VALIDOS = new Set(["texto", "flecha"]);
 const DIRECCIONES_REDIMENSION = ["n", "ne", "e", "se", "s", "sw", "w", "nw"];
 const LADOS_ANCLA = new Set(["izquierda", "derecha", "arriba", "abajo"]);
 const DISTANCIA_IMAN_PORCENTAJE = 2.5;
+const FONDOS_TEXTO_VALIDOS = new Set(["color", "sin-fondo"]);
+const CONTORNOS_TEXTO_VALIDOS = new Set(["linea", "punteado", "sin-contorno"]);
 
 function idObjeto() {
   return globalThis.crypto?.randomUUID?.() || `objeto-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -81,7 +83,11 @@ export function normalizarObjetoApunte(objeto = {}) {
     ancho: numeroSeguro(objeto.ancho, anchoPredeterminado, tipo === "flecha" ? 12 : 14, 92),
     alto: numeroSeguro(objeto.alto, altoPredeterminado, tipo === "flecha" ? 5 : 8, 70),
     texto: tipo === "texto" ? textoSeguro(objeto.texto || "Escribe aquí") : "",
-    color: colorSeguro(objeto.color, tipo === "flecha" ? "#f6c85f" : "#f6e8d5")
+    color: colorSeguro(objeto.color, tipo === "flecha" ? "#f6c85f" : "#f6e8d5"),
+    fondo: tipo === "texto" && FONDOS_TEXTO_VALIDOS.has(objeto.fondo) ? objeto.fondo : "color",
+    colorFondo: colorSeguro(objeto.colorFondo, "#101814"),
+    contorno: tipo === "texto" && CONTORNOS_TEXTO_VALIDOS.has(objeto.contorno) ? objeto.contorno : "linea",
+    grosorContorno: numeroSeguro(objeto.grosorContorno, 1, 0, 8)
   };
   if (tipo !== "flecha") return Object.freeze(base);
   return Object.freeze({
@@ -234,6 +240,12 @@ function crearElementoObjeto(controlador, objeto, indice) {
   elemento.style.setProperty("--objeto-ancho", `${objeto.ancho}%`);
   elemento.style.setProperty("--objeto-alto", `${objeto.alto}%`);
   elemento.style.setProperty("--objeto-color", objeto.color);
+  if (objeto.tipo === "texto") {
+    elemento.style.setProperty("--objeto-fondo", objeto.fondo === "sin-fondo" ? "transparent" : objeto.colorFondo);
+    elemento.style.setProperty("--objeto-contorno", objeto.contorno === "sin-contorno" ? "transparent" : objeto.color);
+    elemento.style.setProperty("--objeto-contorno-estilo", objeto.contorno === "punteado" ? "dotted" : "solid");
+    elemento.style.setProperty("--objeto-contorno-grosor", `${objeto.grosorContorno}px`);
+  }
   if (controlador.idSeleccionado === objeto.id) elemento.dataset.seleccionado = "true";
 
   if (objeto.tipo === "texto") {
@@ -274,6 +286,15 @@ function crearElementoObjeto(controlador, objeto, indice) {
     } else {
       elemento.append(crearBotonMover(objeto, indice), crearTiradoresRedimension(objeto, indice));
     }
+  }
+
+  if (objeto.tipo === "texto" && controlador.arrastre?.modo === "extremo-flecha") {
+    ["izquierda", "derecha", "arriba", "abajo"].forEach((lado) => {
+      const punto = document.createElement("span");
+      punto.className = `objeto-apunte__punto-ancla objeto-apunte__punto-ancla--${lado}`;
+      punto.setAttribute("aria-hidden", "true");
+      elemento.append(punto);
+    });
   }
 
   elemento.querySelectorAll("[data-accion-objeto]").forEach((control) => {
@@ -450,6 +471,7 @@ export function inicializarObjetosApunte({ lienzo, capaDelante, capaDetras, menu
         capturador,
         pointerId: evento.pointerId
       };
+      this.renderizar();
       documentoActivo().addEventListener("pointermove", mover);
       documentoActivo().addEventListener("pointerup", terminar);
       documentoActivo().addEventListener("pointercancel", terminar);
@@ -548,6 +570,7 @@ export function inicializarObjetosApunte({ lienzo, capaDelante, capaDetras, menu
       // El elemento puede haberse reemplazado durante el renderizado del arrastre.
     }
     controlador.arrastre = null;
+    controlador.renderizar();
     documentoActivo().removeEventListener("pointermove", mover);
     documentoActivo().removeEventListener("pointerup", terminar);
     documentoActivo().removeEventListener("pointercancel", terminar);

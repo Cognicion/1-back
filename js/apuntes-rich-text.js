@@ -27,14 +27,22 @@ function limpiarNodoRico(nodo, documento) {
   const limpio = documento.createElement(etiquetaSalida);
   const color = colorCSSSeguro(nodo.getAttribute("color") || nodo.style?.color);
   const fondo = colorCSSSeguro(nodo.style?.backgroundColor || nodo.getAttribute("bgcolor"));
+  const interlineado = interlineadoSeguro(nodo.style?.lineHeight);
   if (color) limpio.style.color = color;
   if (fondo) limpio.style.backgroundColor = fondo;
+  if (interlineado) limpio.style.lineHeight = interlineado;
   if (etiqueta === "OL") {
     const tipoLista = nodo.getAttribute("type");
     if (["1", "a", "A"].includes(tipoLista)) limpio.setAttribute("type", tipoLista);
   }
   nodo.childNodes.forEach((hijo) => limpio.appendChild(limpiarNodoRico(hijo, documento)));
   return limpio;
+}
+
+function interlineadoSeguro(valor) {
+  const candidato = String(valor || "").trim();
+  if (!/^(?:1|1\.15|1\.5|2|2\.5|3)$/.test(candidato)) return "";
+  return candidato;
 }
 
 export function colorCSSSeguro(valor) {

@@ -927,6 +927,38 @@ body.pagina-apuntes > main.apuntes-shell {
   background: rgba(255, 255, 255, 0.045);
 }
 
+.control-interlineado {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 5px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--apuntes-texto-suave);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.control-interlineado:focus-within,
+.control-interlineado:hover {
+  border-color: var(--apuntes-borde);
+  color: var(--apuntes-texto);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.apuntes-shell .control-interlineado select {
+  width: 42px;
+  min-width: 42px;
+  height: 24px;
+  padding: 0 2px;
+  border: 0;
+  border-radius: 4px;
+  color: var(--apuntes-texto);
+  background: transparent;
+  font: inherit;
+}
+
 .barra-formato[hidden] {
   display: none;
 }
@@ -1332,6 +1364,57 @@ body.pagina-apuntes > main.apuntes-shell {
   background: color-mix(in srgb, var(--apuntes-borde-fuerte) 14%, var(--apuntes-superficie-hover));
 }
 
+.propiedades-objeto__grupo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 86px 40px;
+  align-items: center;
+  gap: 6px;
+  color: var(--apuntes-texto-suave);
+  font-size: 10px;
+}
+
+.propiedades-objeto__grupo strong {
+  grid-column: 1 / -1;
+  font-size: 10px;
+}
+
+.propiedades-objeto__grupo select,
+.propiedades-objeto__grupo input[type="color"],
+.propiedad-grosor input {
+  min-width: 0;
+  width: 100%;
+  height: 28px;
+  padding: 0 4px;
+  border: 1px solid var(--apuntes-borde);
+  border-radius: 6px;
+  color: var(--apuntes-texto);
+  background: var(--apuntes-superficie-suave);
+}
+
+.propiedad-grosor {
+  display: contents;
+}
+
+.menu-contextual-objeto__grosor {
+  display: grid;
+  grid-template-columns: 1fr 58px;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  color: var(--apuntes-texto-suave);
+  font-size: 10px;
+}
+
+.menu-contextual-objeto__grosor input {
+  width: 58px;
+  height: 24px;
+  padding: 0 4px;
+  border: 1px solid var(--apuntes-borde);
+  border-radius: 5px;
+  color: var(--apuntes-texto);
+  background: var(--apuntes-superficie-suave);
+}
+
 .paleta-fondo-apunte__restablecer {
   min-height: 30px;
   padding: 0 9px;
@@ -1632,9 +1715,9 @@ body.reporte-global-contraido .controles-zoom-hoja {
 }
 
 .objeto-apunte--texto {
-  border: 1px solid color-mix(in srgb, var(--objeto-color) 76%, transparent);
+  border: var(--objeto-contorno-grosor, 1px) var(--objeto-contorno-estilo, solid) var(--objeto-contorno, var(--objeto-color));
   border-radius: 8px;
-  background: color-mix(in srgb, var(--apuntes-superficie) 84%, transparent);
+  background: var(--objeto-fondo, color-mix(in srgb, var(--apuntes-superficie) 84%, transparent));
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
 }
 
@@ -1657,7 +1740,9 @@ body.reporte-global-contraido .controles-zoom-hoja {
   width: 100%;
   height: 100%;
   overflow: visible;
-  pointer-events: stroke;
+  /* La flecha no roba la selección de texto que queda debajo. Sus controles
+     de extremos y centro siguen siendo los elementos interactivos. */
+  pointer-events: none;
 }
 
 .objeto-apunte--flecha > svg > path {
@@ -1667,6 +1752,23 @@ body.reporte-global-contraido .controles-zoom-hoja {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+.objeto-apunte__punto-ancla {
+  position: absolute;
+  z-index: 7;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--apuntes-acento);
+  border-radius: 50%;
+  background: var(--apuntes-superficie);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--apuntes-acento) 22%, transparent);
+  pointer-events: none;
+}
+
+.objeto-apunte__punto-ancla--izquierda { left: 0; top: 50%; transform: translate(-50%, -50%); }
+.objeto-apunte__punto-ancla--derecha { right: 0; top: 50%; transform: translate(50%, -50%); }
+.objeto-apunte__punto-ancla--arriba { left: 50%; top: 0; transform: translate(-50%, -50%); }
+.objeto-apunte__punto-ancla--abajo { left: 50%; bottom: 0; transform: translate(-50%, 50%); }
 
 .objeto-apunte--flecha[data-seleccionado="true"] {
   outline: 0 !important;
@@ -1783,6 +1885,7 @@ body.reporte-global-contraido .controles-zoom-hoja {
   overflow: auto;
   font-size: var(--apunte-tamano-fuente, 14px);
   line-height: 1.35;
+  user-select: text;
 }
 
 .objeto-apunte__redimensionar {
@@ -1825,7 +1928,7 @@ body.reporte-global-contraido .controles-zoom-hoja {
 .menu-contextual-objeto {
   position: absolute;
   z-index: 7;
-  min-width: 118px;
+  min-width: 190px;
   padding: 4px;
   border: 1px solid var(--apuntes-borde-fuerte);
   border-radius: 7px;
@@ -1848,6 +1951,15 @@ body.reporte-global-contraido .controles-zoom-hoja {
   font-size: 11px;
   font-weight: 700;
   text-align: left;
+}
+
+.menu-contextual-objeto button:not([data-accion-menu-objeto="eliminar"]) {
+  color: var(--apuntes-texto);
+}
+
+.menu-contextual-objeto button:not([data-accion-menu-objeto="eliminar"]):hover,
+.menu-contextual-objeto button:not([data-accion-menu-objeto="eliminar"]):focus-visible {
+  background: var(--apuntes-superficie-hover);
 }
 
 .menu-contextual-objeto button:hover,

@@ -1,8 +1,8 @@
 import { auth, db } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
-import { sanitizarHTMLRico } from "./apuntes-rich-text.js?v=20260822-apuntes-subcarpetas-listas-v1";
+import { sanitizarHTMLRico } from "./apuntes-rich-text.js?v=20260822-apuntes-interlineado-v1";
 import { inicializarSidebarApuntes } from "./apuntes-sidebar.js";
-import { inicializarObjetosApunte, textoObjetosApunte } from "./apuntes-objetos.js";
+import { inicializarObjetosApunte, textoObjetosApunte } from "./apuntes-objetos.js?v=20260822-apuntes-objetos-estilo-anclas-v1";
 import { descargarApuntePdf, descargarApunteWord } from "./apuntes-export.js";
 import {
   DISPOSICION_HOJA_PREDETERMINADA,
@@ -210,7 +210,13 @@ function inicializarInterfaz() {
   document.getElementById("selectorObjeto")?.addEventListener("change", seleccionarObjetoDesdePanel);
   document.getElementById("ajusteObjeto")?.addEventListener("change", actualizarAjusteObjeto);
   document.getElementById("colorObjeto")?.addEventListener("change", actualizarColorObjeto);
+  ["fondoObjeto", "colorFondoObjeto", "contornoObjeto", "grosorContornoObjeto"].forEach((id) => {
+    document.getElementById(id)?.addEventListener("change", actualizarEstiloObjeto);
+  });
   document.getElementById("eliminarObjeto")?.addEventListener("click", eliminarObjetoSeleccionado);
+  document.getElementById("menuContextualObjeto")?.addEventListener("click", gestionarMenuContextualObjeto);
+  document.getElementById("menuContextualObjeto")?.addEventListener("change", gestionarMenuContextualObjeto);
+  document.getElementById("interlineadoApunte")?.addEventListener("change", (evento) => aplicarInterlineado(evento.target.value));
   document.getElementById("abrirArchivoApunte")?.addEventListener("click", alternarMenuExportacion);
   document.getElementById("descargarApunteWord")?.addEventListener("click", () => exportarApunte("word"));
   document.getElementById("descargarApuntePdf")?.addEventListener("click", () => exportarApunte("pdf"));
@@ -1020,6 +1026,17 @@ function actualizarPanelObjetos() {
     color.value = seleccion?.color || "#f6e8d5";
     color.disabled = !seleccion;
   }
+  const fondo = document.getElementById("fondoObjeto");
+  const colorFondo = document.getElementById("colorFondoObjeto");
+  const contorno = document.getElementById("contornoObjeto");
+  const grosor = document.getElementById("grosorContornoObjeto");
+  const soloCuadro = document.querySelectorAll("[data-solo-cuadro]");
+  const esCuadro = seleccion?.tipo === "texto";
+  soloCuadro.forEach((elemento) => { elemento.hidden = !esCuadro; });
+  if (fondo) { fondo.value = seleccion?.fondo || "color"; fondo.disabled = !esCuadro; }
+  if (colorFondo) { colorFondo.value = seleccion?.colorFondo || "#101814"; colorFondo.disabled = !esCuadro; }
+  if (contorno) { contorno.value = seleccion?.contorno || "linea"; contorno.disabled = !esCuadro; }
+  if (grosor) { grosor.value = String(seleccion?.grosorContorno ?? 1); grosor.disabled = !esCuadro; }
   if (eliminar) eliminar.disabled = !seleccion;
   if (ayuda) {
     ayuda.textContent = seleccion
@@ -1073,6 +1090,54 @@ function actualizarAjusteObjeto(evento) {
 function actualizarColorObjeto(evento) {
   const objeto = objetosApunteController?.obtenerSeleccionado?.();
   if (objeto) objetosApunteController.actualizar(objeto.id, { color: evento.target.value });
+}
+
+function actualizarEstiloObjeto() {
+  const objeto = objetosApunteController?.obtenerSeleccionado?.();
+  if (!objeto || objeto.tipo !== "texto") return;
+  objetosApunteController.actualizar(objeto.id, {
+    fondo: document.getElementById("fondoObjeto")?.value || "color",
+    colorFondo: document.getElementById("colorFondoObjeto")?.value || "#101814",
+    contorno: document.getElementById("contornoObjeto")?.value || "linea",
+    grosorContorno: document.getElementById("grosorContornoObjeto")?.value || 1
+  });
+}
+
+function gestionarMenuContextualObjeto(evento) {
+  const control = evento.target instanceof Element ? evento.target.closest("[data-accion-menu-objeto]") : null;
+  const accion = control?.dataset.accionMenuObjeto;
+  const objeto = objetosApunteController?.obtenerSeleccionado?.();
+  if (!accion || !objeto || objeto.tipo !== "texto") return;
+  const cambios = {
+    "fondo-color": { fondo: "color" },
+    "fondo-sin": { fondo: "sin-fondo" },
+    "contorno-linea": { contorno: "linea" },
+    "contorno-punteado": { contorno: "punteado" },
+    "contorno-sin": { contorno: "sin-contorno" },
+    grosor: { grosorContorno: control.value }
+  }[accion];
+  if (!cambios) return;
+  evento.stopPropagation();
+  objetosApunteController.actualizar(objeto.id, cambios);
+  actualizarPanelObjetos();
+}
+
+function aplicarInterlineado(valor) {
+  const numero = Math.min(3, Math.max(1, Number(valor) || 1.5));
+  if (!restaurarSeleccionEditor()) return;
+  const seleccion = window.getSelection();
+  const editor = obtenerEditor();
+  const bloques = new Set();
+  if (seleccion?.rangeCount && editor) {
+    const rango = seleccion.getRangeAt(0);
+    editor.querySelectorAll("p, div, li").forEach((bloque) => {
+      if (rango.intersectsNode(bloque)) bloques.add(bloque);
+    });
+  }
+  if (!bloques.size && editor) bloques.add(editor);
+  bloques.forEach((bloque) => { bloque.style.lineHeight = String(numero); });
+  marcarCambios();
+  guardarSeleccionEditor();
 }
 
 function eliminarObjetoSeleccionado() {

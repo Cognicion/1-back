@@ -207,6 +207,12 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /id="listaLetras"/);
   assert.match(html, /id="aumentarSublista"/);
   assert.match(html, /id="reducirSublista"/);
+  assert.match(html, /id="interlineadoApunte"/);
+  assert.match(html, /id="fondoObjeto"/);
+  assert.match(html, /id="contornoObjeto"/);
+  assert.match(html, /id="grosorContornoObjeto"/);
+  assert.match(html, /data-accion-menu-objeto="fondo-sin"/);
+  assert.match(html, /data-accion-menu-objeto="contorno-punteado"/);
   assert.match(html, /id="carpetaPadre" aria-label="Carpeta superior"/);
   assert.match(encabezadoGlobal, /MIGRATED_PAGES = new Set\([^)]*"apuntes"/);
   assert.match(encabezadoGlobal, /pageId === "apuntes"\) return document\.querySelector\("header\.topbar-apuntes"\)/);
@@ -311,6 +317,12 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(css, /\.boton-alternar-cinta\s*\{/);
   assert.match(html, /id="zoomHojaBarra" type="range" min="25" max="400"/);
   assert.match(controlador, /function alternarSeccionEditor/);
+  assert.match(controlador, /function aplicarInterlineado/);
+  assert.match(controlador, /function gestionarMenuContextualObjeto/);
+  assert.match(objetosApunte, /objeto-apunte__punto-ancla/);
+  assert.match(objetosApunte, /arrastre\?\.modo === "extremo-flecha"/);
+  assert.match(css, /\.objeto-apunte__punto-ancla\s*\{/);
+  assert.match(css, /\.objeto-apunte--texto\s*\{[\s\S]*var\(--objeto-fondo/);
 });
 
 test("la persistencia rica mantiene texto plano y sanea el HTML", () => {
@@ -318,9 +330,9 @@ test("la persistencia rica mantiene texto plano y sanea el HTML", () => {
   assert.match(controlador, /contenidoHtmlActualizado === apunte\.fechaActualizacion/);
   assert.match(controlador, /objetosLienzoActualizado:\s*fechaActualizacion/);
   assert.match(controlador, /objetosLienzoActualizado === apunte\.fechaActualizacion/);
-  assert.match(controlador, /import \{ inicializarObjetosApunte, textoObjetosApunte \} from "\.\/apuntes-objetos\.js"/);
+  assert.match(controlador, /import \{ inicializarObjetosApunte, textoObjetosApunte \} from "\.\/apuntes-objetos\.js\?v=/);
   assert.match(controlador, /import \{ descargarApuntePdf, descargarApunteWord \} from "\.\/apuntes-export\.js"/);
-  assert.match(controlador, /import \{ sanitizarHTMLRico \} from "\.\/apuntes-rich-text\.js\?v=20260822-apuntes-subcarpetas-listas-v1"/);
+  assert.match(controlador, /import \{ sanitizarHTMLRico \} from "\.\/apuntes-rich-text\.js\?v=20260822-apuntes-interlineado-v1"/);
   assert.match(textoRico, /new Set\(\["B", "STRONG", "BR", "DIV", "P", "SPAN", "FONT", "UL", "OL", "LI"\]\)/);
   assert.match(textoRico, /etiqueta === "OL"/);
   assert.match(textoRico, /new Set\(\["SCRIPT", "STYLE", "IFRAME", "OBJECT", "EMBED", "SVG", "MATH"\]\)/);

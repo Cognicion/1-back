@@ -119,6 +119,11 @@
           <span class="visualmente-oculto">Tamaño de fuente</span>
           <input id="tamanoFuenteRapido" type="number" min="6" max="96" step="1" inputmode="numeric" value="12" aria-label="Tamaño de fuente del documento en puntos"><span aria-hidden="true">pt</span>
         </label>
+        <label class="control-interlineado" title="Interlineado">
+          <span class="visualmente-oculto">Interlineado</span>
+          <select id="interlineadoApunte" aria-label="Interlineado"><option value="1">1</option><option value="1.15">1.15</option><option value="1.5" selected>1.5</option><option value="2">2</option><option value="2.5">2.5</option><option value="3">3</option></select>
+          <span aria-hidden="true">↕</span>
+        </label>
         <div class="selector-color">
           <button id="abrirColorFondoTexto" type="button" class="control-color" aria-haspopup="dialog" aria-expanded="false" aria-controls="paletaColorFondoTexto" title="Resaltar texto">
             <span class="control-color__muestra control-color__muestra--fondo" aria-hidden="true">A</span>
@@ -288,6 +293,20 @@
           <span>Color</span>
           <input id="colorObjeto" type="color" value="#f6e8d5" aria-label="Color del objeto">
         </label>
+        <div class="propiedades-objeto__grupo" data-solo-cuadro>
+          <strong>Fondo del cuadro</strong>
+          <select id="fondoObjeto" aria-label="Fondo del cuadro de texto">
+            <option value="color">Color</option><option value="sin-fondo">Sin fondo</option>
+          </select>
+          <input id="colorFondoObjeto" type="color" value="#101814" aria-label="Color de fondo del cuadro">
+        </div>
+        <div class="propiedades-objeto__grupo" data-solo-cuadro>
+          <strong>Contorno</strong>
+          <select id="contornoObjeto" aria-label="Tipo de contorno del cuadro">
+            <option value="linea">Línea</option><option value="punteado">Punteado</option><option value="sin-contorno">Sin contorno</option>
+          </select>
+          <label class="propiedad-grosor"><span>Grosor</span><input id="grosorContornoObjeto" type="number" min="0" max="8" step="1" value="1" aria-label="Grosor del contorno"></label>
+        </div>
         <button id="eliminarObjeto" type="button" class="boton-peligro">Eliminar objeto</button>
         <p id="ayudaObjeto" class="panel-objeto__ayuda">Inserta un cuadro de texto o una flecha para empezar.</p>
       </section>
@@ -334,6 +353,12 @@
           <div id="objetosApunteDelante" class="capa-objetos-apunte capa-objetos-apunte--delante" aria-label="Objetos movibles del apunte"></div>
           <div id="menuContextualObjeto" class="menu-contextual-objeto" role="menu" aria-label="Acciones del objeto" hidden>
             <button type="button" data-accion-menu-objeto="eliminar" role="menuitem">Eliminar</button>
+            <button type="button" data-accion-menu-objeto="fondo-color" role="menuitem">Fondo: color</button>
+            <button type="button" data-accion-menu-objeto="fondo-sin" role="menuitem">Fondo: sin fondo</button>
+            <button type="button" data-accion-menu-objeto="contorno-linea" role="menuitem">Contorno: línea</button>
+            <button type="button" data-accion-menu-objeto="contorno-punteado" role="menuitem">Contorno: punteado</button>
+            <button type="button" data-accion-menu-objeto="contorno-sin" role="menuitem">Contorno: sin contorno</button>
+            <label class="menu-contextual-objeto__grosor"><span>Grosor</span><input data-accion-menu-objeto="grosor" type="number" min="0" max="8" step="1" value="1" aria-label="Grosor del contorno"></label>
           </div>
         </div>
       </div>
