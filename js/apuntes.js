@@ -1279,7 +1279,9 @@ async function exportarApunte(formato) {
 }
 
 function obtenerCarpetaActual() {
-  return document.getElementById("apunteCarpeta")?.value || "";
+  return document.getElementById("apunteCarpetaArchivo")?.value
+    || document.getElementById("apunteCarpeta")?.value
+    || "";
 }
 
 function obtenerContenidoPlano() {
@@ -1512,7 +1514,7 @@ function alternarDisposicionHoja() {
 
 function alternarSeccionEditor(seccion) {
   const configuracion = seccion === "titulo"
-    ? { contenidoId: "camposCabeceraApunte", botonId: "alternarTituloApunte", mostrar: "Mostrar título y carpeta", ocultar: "Ocultar título y carpeta" }
+    ? { contenidoId: "camposCabeceraApunte", botonId: "alternarTituloApunte", mostrar: "Mostrar título", ocultar: "Ocultar título" }
     : { contenidoId: "barraFormatoApunte", botonId: "alternarBarraFormato", mostrar: "Expandir cinta", ocultar: "Contraer cinta" };
   const contenido = document.getElementById(configuracion.contenidoId);
   const boton = document.getElementById(configuracion.botonId);
@@ -1523,7 +1525,10 @@ function alternarSeccionEditor(seccion) {
   boton.setAttribute("aria-label", expandido ? configuracion.ocultar : configuracion.mostrar);
   boton.title = expandido ? configuracion.ocultar : configuracion.mostrar;
   const icono = boton.querySelector("[aria-hidden='true']");
-  if (icono) icono.textContent = expandido ? "↑" : "↓";
+  if (icono) {
+    const letra = icono.dataset.collapseLetter || "";
+    icono.innerHTML = `${expandido ? "↑" : "↓"}${letra ? `<sub>${letra}</sub>` : ""}`;
+  }
   if (seccion === "formato") {
     contenido.parentElement?.classList.toggle("cinta-formato-contenedor--colapsada", !expandido);
   }

@@ -147,7 +147,7 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /id="sidebarApuntes"/);
   assert.match(html, /id="alternarSidebarApuntes"[\s\S]*aria-controls="sidebarApuntes"[\s\S]*aria-expanded="true"/);
   assert.match(html, /id="dialogoCarpeta"/);
-  assert.match(html, /id="apunteCarpeta"/);
+  assert.match(html, /id="apunteCarpetaArchivo"/);
   assert.match(html, /id="apunteContenido"[\s\S]*contenteditable="true"/);
   assert.match(html, /role="toolbar" aria-label="Formato de texto"/);
   assert.match(html, /id="formatoNegrita"[\s\S]*aria-pressed="false"/);
@@ -168,8 +168,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=20260820-apuntes-minimal-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260822-apuntes-menu-objeto-paletas-v1/);
-  assert.match(html, /apuntes\.js\?v=20260822-apuntes-menu-objeto-paletas-v1/);
+  assert.match(html, /apuntes\.css\?v=20260823-apuntes-cabecera-archivo-v1/);
+  assert.match(html, /apuntes\.js\?v=20260823-apuntes-cabecera-archivo-v1/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
   assert.match(html, /id="menuInsertarApunte"[^>]*aria-label="Insertar en el apunte"/);
   assert.match(html, /id="insertarCuadroTexto"/);

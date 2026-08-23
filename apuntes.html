@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260822-apuntes-menu-objeto-paletas-v1">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260823-apuntes-cabecera-archivo-v1">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -61,26 +61,6 @@
     <section class="apuntes-editor" aria-label="Editor de apuntes">
       <input id="apunteId" type="hidden">
 
-      <div class="editor-cabecera">
-        <div id="camposCabeceraApunte" class="editor-cabecera__campos">
-          <label class="campo-titulo">
-            <span class="sr-only">Título del apunte</span>
-            <input id="apunteTitulo" autocomplete="off" placeholder="Título del apunte">
-          </label>
-          <label class="selector-carpeta">
-            <span>Carpeta</span>
-            <select id="apunteCarpeta" aria-label="Carpeta del apunte">
-              <option value="">Sin carpeta</option>
-            </select>
-          </label>
-        </div>
-        <div class="editor-cabecera__controles" aria-label="Mostrar u ocultar opciones del editor">
-          <button id="alternarTituloApunte" type="button" class="boton-alternar-editor" aria-controls="camposCabeceraApunte" aria-expanded="true" aria-label="Ocultar título y carpeta" title="Ocultar título y carpeta">
-            <span aria-hidden="true">↑</span>
-          </button>
-        </div>
-      </div>
-
       <div class="menu-principal-apunte" aria-label="Acciones del apunte">
         <button
           id="alternarSidebarApuntes"
@@ -97,9 +77,21 @@
             <path class="boton-alternar-sidebar__flecha" d="m15 9-3 3 3 3"></path>
           </svg>
         </button>
+        <div id="camposCabeceraApunte" class="editor-cabecera__campos">
+          <label class="campo-titulo">
+            <span class="sr-only">Título del apunte</span>
+            <input id="apunteTitulo" autocomplete="off" placeholder="Título del apunte">
+          </label>
+        </div>
+        <button id="alternarTituloApunte" type="button" class="boton-alternar-editor" aria-controls="camposCabeceraApunte" aria-expanded="true" aria-label="Ocultar título" title="Contraer título">
+          <span aria-hidden="true" data-collapse-letter="T">↑<sub>T</sub></span>
+        </button>
         <button id="abrirArchivoApunte" type="button" class="boton-archivo-apunte" aria-haspopup="dialog" aria-expanded="false" aria-controls="menuArchivoApunte">Archivo</button>
         <button id="guardarRapidoApunte" type="button" class="boton-guardar-rapido" aria-label="Guardar rápidamente" title="Guardar rápidamente">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h12l3 3v15H5z"></path><path d="M8 3v6h8V3M8 20v-6h8v6"></path></svg>
+        </button>
+        <button id="alternarBarraFormato" type="button" class="boton-alternar-cinta" aria-controls="barraFormatoApunte" aria-expanded="true" aria-label="Contraer cinta" title="Contraer cinta">
+          <span aria-hidden="true" data-collapse-letter="C">↑<sub>C</sub></span>
         </button>
       </div>
 
@@ -168,9 +160,6 @@
           <span aria-hidden="true">＋</span><span>Insertar</span>
         </button>
         </div>
-        <button id="alternarBarraFormato" type="button" class="boton-alternar-cinta" aria-controls="barraFormatoApunte" aria-expanded="true" aria-label="Contraer cinta" title="Contraer cinta">
-          <span aria-hidden="true">↑</span>
-        </button>
       </div>
 
       <section id="paletaColorTexto" class="paleta-color" role="dialog" aria-label="Colores para el texto" hidden>
@@ -314,10 +303,13 @@
       <section id="menuArchivoApunte" class="menu-archivo" role="dialog" aria-label="Archivo del apunte" hidden>
         <strong>Archivo</strong>
         <label class="menu-archivo__carpeta"><span>Guardar en Cognición</span><select id="apunteCarpetaArchivo" aria-label="Carpeta donde se guardará el apunte"><option value="">Sin carpeta</option></select></label>
-        <div>
-          <button id="guardarApunteArchivo" type="button">Guardar</button>
-          <button id="descargarApunteWord" type="button">Word (.docx)</button>
-          <button id="descargarApuntePdf" type="button">PDF (.pdf)</button>
+        <button id="guardarApunteArchivo" type="button">Guardar</button>
+        <div class="menu-archivo__grupo">
+          <button type="button" class="menu-archivo__subcategoria" aria-haspopup="true">Exportar <span aria-hidden="true">›</span></button>
+          <div class="menu-archivo__submenu" role="menu" aria-label="Formatos de exportación">
+            <button id="descargarApunteWord" type="button" role="menuitem">Word (.docx)</button>
+            <button id="descargarApuntePdf" type="button" role="menuitem">PDF (.pdf)</button>
+          </div>
         </div>
         <button id="eliminarApunteArchivo" type="button" class="boton-peligro">Eliminar apunte</button>
         <p>La eliminación solicita confirmación y no se puede deshacer.</p>
@@ -404,7 +396,7 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260822-apuntes-menu-objeto-paletas-v1"></script>
+  <script type="module" src="js/apuntes.js?v=20260823-apuntes-cabecera-archivo-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>
