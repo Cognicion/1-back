@@ -5,6 +5,12 @@ import { inicializarSidebarApuntes } from "./apuntes-sidebar.js";
 import { inicializarObjetosApunte, textoObjetosApunte } from "./apuntes-objetos.js";
 import { descargarApuntePdf, descargarApunteWord } from "./apuntes-export.js";
 import {
+  DISPOSICION_HOJA_PREDETERMINADA,
+  etiquetaDisposicionHoja,
+  normalizarDisposicionHoja,
+  obtenerMedidasHoja
+} from "./apuntes-page-layout.js";
+import {
   normalizarColorHex,
   normalizarColoresRecientes,
   registrarColorReciente
@@ -92,6 +98,8 @@ let fondoApunteActual = "";
 let carpetasDisponibles = true;
 let coloresRecientes = [];
 let objetosApunteController = null;
+let disposicionHojaActual = normalizarDisposicionHoja(DISPOSICION_HOJA_PREDETERMINADA);
+let observadorVistaHoja = null;
 const parametrosEntradaApuntes = new URLSearchParams(window.location.search);
 const apunteSolicitado = String(parametrosEntradaApuntes.get("apunte") || "").trim().slice(0, 160);
 const crearApunteSolicitado = parametrosEntradaApuntes.get("nuevo") === "1";
@@ -144,6 +152,7 @@ function inicializarInterfaz() {
   });
 
   inicializarSelectorColores();
+  inicializarDisposicionHojaUI();
   inicializarObjetosApunteUI();
 
   buscador?.addEventListener("input", renderizarLista);
@@ -193,6 +202,16 @@ function inicializarInterfaz() {
   document.getElementById("descargarApuntePdf")?.addEventListener("click", () => exportarApunte("pdf"));
   document.getElementById("alternarTituloApunte")?.addEventListener("click", () => alternarSeccionEditor("titulo"));
   document.getElementById("alternarBarraFormato")?.addEventListener("click", () => alternarSeccionEditor("formato"));
+  document.getElementById("abrirDisposicionHoja")?.addEventListener("click", alternarDisposicionHoja);
+  document.getElementById("cerrarDisposicionHoja")?.addEventListener("click", () => cerrarDisposicionHoja({ devolverFoco: true }));
+  document.getElementById("formatoHoja")?.addEventListener("change", aplicarDisposicionDesdeControles);
+  document.getElementById("orientacionHoja")?.addEventListener("change", aplicarDisposicionDesdeControles);
+  document.getElementById("tamanoFuenteHoja")?.addEventListener("change", aplicarDisposicionDesdeControles);
+  ["margenSuperiorHoja", "margenDerechoHoja", "margenInferiorHoja", "margenIzquierdoHoja"].forEach((id) => {
+    document.getElementById(id)?.addEventListener("change", aplicarDisposicionDesdeControles);
+  });
+  document.getElementById("zoomHojaMenos")?.addEventListener("click", () => cambiarZoomHoja(-10));
+  document.getElementById("zoomHojaMas")?.addEventListener("click", () => cambiarZoomHoja(10));
   editor?.addEventListener("contextmenu", abrirMenuContextualTexto);
   document.getElementById("menuContextualTexto")?.addEventListener("click", ejecutarAccionMenuContextualTexto);
   document.getElementById("menuContextualTexto")?.addEventListener("pointerdown", conservarFocoEditor);
@@ -481,6 +500,7 @@ function seleccionarApunte(id, { omitirConfirmacion = false, restaurarFoco = fal
     else editor.textContent = apunte.contenido || "";
   }
   aplicarFondoApunte(apunte.fondoLienzo, { marcar: false });
+  aplicarDisposicionHoja(apunte.disposicionHoja, { marcar: false });
 
   const objetosVigentes = apunte.objetosLienzo
     && apunte.objetosLienzoActualizado
@@ -517,6 +537,7 @@ function nuevoApunte(carpetaId = ETIQUETA_CARPETA_SIN_ASIGNAR) {
   const editor = obtenerEditor();
   if (editor) editor.innerHTML = "";
   aplicarFondoApunte("", { marcar: false });
+  aplicarDisposicionHoja(DISPOSICION_HOJA_PREDETERMINADA, { marcar: false });
   objetosApunteController?.cargar([]);
 
   carpetasCerradas.delete(carpetaValida || SIN_CARPETA);
@@ -557,6 +578,7 @@ async function guardarApunte() {
     objetosLienzo,
     objetosLienzoActualizado: fechaActualizacion,
     fondoLienzo: fondoApunteActual || null,
+    disposicionHoja: disposicionHojaActual,
     carpetaId,
     fechaActualizacion,
     fechaActualizacionServidor: serverTimestamp()
@@ -879,7 +901,7 @@ function ponerEdicionOcupada(ocupada) {
     document.getElementById("guardarApunte"),
     document.getElementById("eliminarApunte"),
     document.getElementById("nuevoApunte"),
-    ...document.querySelectorAll(".barra-formato button, .barra-formato input, .menu-insertar button, .panel-objeto button, .panel-objeto input, .panel-objeto select, .menu-exportacion button")
+    ...document.querySelectorAll(".barra-formato button, .barra-formato input, .menu-insertar button, .panel-objeto button, .panel-objeto input, .panel-objeto select, .panel-disposicion-hoja button, .panel-disposicion-hoja input, .panel-disposicion-hoja select, .menu-exportacion button")
   ].filter(Boolean);
 
   controles.forEach((control) => { control.disabled = ocupada; });
@@ -908,7 +930,7 @@ function obtenerEditor() {
 
 function inicializarObjetosApunteUI() {
   objetosApunteController = inicializarObjetosApunte({
-    lienzo: document.getElementById("lienzoApunte"),
+    lienzo: document.getElementById("hojaApunte"),
     capaDelante: document.getElementById("objetosApunteDelante"),
     capaDetras: document.getElementById("objetosApunteDetras"),
     menuContextual: document.getElementById("menuContextualObjeto"),
@@ -985,6 +1007,7 @@ function abrirPropiedadesObjeto() {
   cerrarMenuInsertar();
   cerrarMenuExportacion();
   cerrarPaletasColor();
+  cerrarDisposicionHoja();
   panel.hidden = false;
   boton.setAttribute("aria-expanded", "true");
   actualizarPanelObjetos();
@@ -1030,7 +1053,8 @@ function modeloExportacionApunte() {
   return {
     titulo: document.getElementById("apunteTitulo")?.value.trim() || "Apunte",
     contenidoHtml: sanitizarHTMLRico(obtenerEditor()?.innerHTML || ""),
-    objetos: objetosDisponibles()
+    objetos: objetosDisponibles(),
+    disposicionHoja: disposicionHojaActual
   };
 }
 
@@ -1042,6 +1066,7 @@ function alternarMenuExportacion() {
   cerrarPaletasColor();
   cerrarPropiedadesObjeto();
   cerrarMenuInsertar();
+  cerrarDisposicionHoja();
   menu.hidden = estabaAbierto;
   boton.setAttribute("aria-expanded", String(!estabaAbierto));
 }
@@ -1062,6 +1087,7 @@ function abrirMenuInsertar() {
   cerrarPaletasColor();
   cerrarPropiedadesObjeto();
   cerrarMenuExportacion();
+  cerrarDisposicionHoja();
   menu.hidden = false;
   boton.setAttribute("aria-expanded", "true");
 }
@@ -1184,21 +1210,137 @@ function actualizarMuestraFondoApunte() {
 
 function aplicarFondoApunte(color, { marcar = true } = {}) {
   const fondo = normalizarColorHex(color);
-  const lienzo = document.getElementById("lienzoApunte");
+  const hoja = document.getElementById("hojaApunte");
   fondoApunteActual = fondo;
-  if (lienzo) {
+  if (hoja) {
     if (fondo) {
-      lienzo.style.setProperty("--apunte-fondo", fondo);
-      lienzo.style.setProperty("--apunte-texto", colorTextoAutomatico(fondo));
+      hoja.style.setProperty("--apunte-fondo", fondo);
+      hoja.style.setProperty("--apunte-texto", colorTextoAutomatico(fondo));
     } else {
-      lienzo.style.removeProperty("--apunte-fondo");
-      lienzo.style.removeProperty("--apunte-texto");
+      hoja.style.removeProperty("--apunte-fondo");
+      hoja.style.removeProperty("--apunte-texto");
     }
   }
   const control = document.getElementById("colorFondoApunte");
   if (control && fondo) control.value = fondo;
   actualizarMuestraFondoApunte();
   if (marcar) marcarCambios();
+}
+
+function inicializarDisposicionHojaUI() {
+  const visor = document.getElementById("lienzoApunte");
+  if (visor && "ResizeObserver" in window) {
+    observadorVistaHoja?.disconnect();
+    observadorVistaHoja = new ResizeObserver(() => actualizarVistaHoja());
+    observadorVistaHoja.observe(visor);
+  } else {
+    window.addEventListener("resize", actualizarVistaHoja, { passive: true });
+  }
+  aplicarDisposicionHoja(DISPOSICION_HOJA_PREDETERMINADA, { marcar: false });
+}
+
+function disposicionDesdeControles() {
+  return {
+    formato: document.getElementById("formatoHoja")?.value,
+    orientacion: document.getElementById("orientacionHoja")?.value,
+    tamanioFuente: document.getElementById("tamanoFuenteHoja")?.value,
+    zoom: disposicionHojaActual.zoom,
+    margenes: {
+      superior: document.getElementById("margenSuperiorHoja")?.value,
+      derecho: document.getElementById("margenDerechoHoja")?.value,
+      inferior: document.getElementById("margenInferiorHoja")?.value,
+      izquierdo: document.getElementById("margenIzquierdoHoja")?.value
+    }
+  };
+}
+
+function actualizarControlesDisposicionHoja() {
+  const disposicion = disposicionHojaActual;
+  const margenes = disposicion.margenes;
+  const controles = {
+    formatoHoja: disposicion.formato,
+    orientacionHoja: disposicion.orientacion,
+    tamanoFuenteHoja: String(disposicion.tamanioFuente),
+    margenSuperiorHoja: String(margenes.superior),
+    margenDerechoHoja: String(margenes.derecho),
+    margenInferiorHoja: String(margenes.inferior),
+    margenIzquierdoHoja: String(margenes.izquierdo)
+  };
+  Object.entries(controles).forEach(([id, valor]) => {
+    const control = document.getElementById(id);
+    if (control) control.value = valor;
+  });
+  const zoom = document.getElementById("zoomHojaValor");
+  if (zoom) zoom.textContent = `${disposicion.zoom}%`;
+  const etiqueta = etiquetaDisposicionHoja(disposicion);
+  const medidas = document.getElementById("medidasHoja");
+  const vista = document.getElementById("etiquetaVistaHoja");
+  if (medidas) medidas.textContent = etiqueta;
+  if (vista) vista.textContent = etiqueta;
+}
+
+function actualizarVistaHoja() {
+  const visor = document.getElementById("lienzoApunte");
+  const hoja = document.getElementById("hojaApunte");
+  if (!visor || !hoja) return;
+  const medidas = obtenerMedidasHoja(disposicionHojaActual);
+  const anchoDisponible = Math.max(240, visor.clientWidth - 48);
+  const altoDisponible = Math.max(320, visor.clientHeight - 48);
+  const escalaBase = Math.min(anchoDisponible / medidas.anchoMm, altoDisponible / medidas.altoMm);
+  const escala = escalaBase * (disposicionHojaActual.zoom / 100);
+  const margenes = disposicionHojaActual.margenes;
+  hoja.style.setProperty("--hoja-ancho", `${Math.round(medidas.anchoMm * escala)}px`);
+  hoja.style.setProperty("--hoja-alto", `${Math.round(medidas.altoMm * escala)}px`);
+  hoja.style.setProperty("--margen-superior", `${Math.round(margenes.superior * escala)}px`);
+  hoja.style.setProperty("--margen-derecho", `${Math.round(margenes.derecho * escala)}px`);
+  hoja.style.setProperty("--margen-inferior", `${Math.round(margenes.inferior * escala)}px`);
+  hoja.style.setProperty("--margen-izquierdo", `${Math.round(margenes.izquierdo * escala)}px`);
+  hoja.style.setProperty("--apunte-tamano-fuente", `${disposicionHojaActual.tamanioFuente}px`);
+}
+
+function aplicarDisposicionHoja(valor, { marcar = true } = {}) {
+  disposicionHojaActual = normalizarDisposicionHoja(valor);
+  actualizarControlesDisposicionHoja();
+  actualizarVistaHoja();
+  if (marcar) marcarCambios();
+}
+
+function aplicarDisposicionDesdeControles() {
+  aplicarDisposicionHoja(disposicionDesdeControles());
+}
+
+function cambiarZoomHoja(delta) {
+  aplicarDisposicionHoja({ ...disposicionHojaActual, zoom: disposicionHojaActual.zoom + delta });
+}
+
+function abrirDisposicionHoja() {
+  const panel = document.getElementById("panelDisposicionHoja");
+  const boton = document.getElementById("abrirDisposicionHoja");
+  if (!panel || !boton || boton.disabled) return;
+  cerrarPaletasColor();
+  cerrarMenuContextualTexto();
+  cerrarMenuInsertar();
+  cerrarPropiedadesObjeto();
+  cerrarMenuExportacion();
+  panel.hidden = false;
+  boton.setAttribute("aria-expanded", "true");
+  actualizarVistaHoja();
+}
+
+function cerrarDisposicionHoja({ devolverFoco = false } = {}) {
+  const panel = document.getElementById("panelDisposicionHoja");
+  const boton = document.getElementById("abrirDisposicionHoja");
+  if (!panel || panel.hidden) return;
+  panel.hidden = true;
+  boton?.setAttribute("aria-expanded", "false");
+  if (devolverFoco) boton?.focus();
+}
+
+function alternarDisposicionHoja() {
+  const panel = document.getElementById("panelDisposicionHoja");
+  if (!panel || document.getElementById("abrirDisposicionHoja")?.disabled) return;
+  if (panel.hidden) abrirDisposicionHoja();
+  else cerrarDisposicionHoja();
 }
 
 function alternarSeccionEditor(seccion) {
@@ -1318,6 +1460,7 @@ function alternarPaletaFondoApunte() {
   const estabaAbierta = !panel.hidden;
   cerrarPaletasColor();
   cerrarMenuContextualTexto();
+  cerrarDisposicionHoja();
   if (estabaAbierta) return;
   panel.hidden = false;
   boton.setAttribute("aria-expanded", "true");
@@ -1342,6 +1485,7 @@ function alternarPaletaColor(tipo) {
   const estabaAbierta = !panel.hidden;
   cerrarPaletasColor();
   cerrarPaletaFondoApunte();
+  cerrarDisposicionHoja();
   if (estabaAbierta) return;
 
   panel.hidden = false;
@@ -1379,11 +1523,12 @@ function cerrarPaletasColor({ devolverFoco = false } = {}) {
 
 function cerrarPaletasAlHacerClickFuera(evento) {
   const destino = evento.target;
-  if (destino instanceof Element && destino.closest(".selector-color, .paleta-color, .menu-contextual-texto, .menu-insertar, .panel-objeto, .menu-exportacion, #abrirInsertarApunte, #abrirPropiedadesObjeto, #abrirExportacionApunte")) return;
+  if (destino instanceof Element && destino.closest(".selector-color, .paleta-color, .menu-contextual-texto, .menu-insertar, .panel-objeto, .panel-disposicion-hoja, .menu-exportacion, #abrirInsertarApunte, #abrirPropiedadesObjeto, #abrirDisposicionHoja, #abrirExportacionApunte")) return;
   cerrarPaletasColor();
   cerrarMenuContextualTexto();
   cerrarMenuInsertar();
   cerrarPropiedadesObjeto();
+  cerrarDisposicionHoja();
   cerrarMenuExportacion();
 }
 
@@ -1392,6 +1537,7 @@ function cerrarPaletasConEscape(evento) {
     || !document.getElementById("paletaFondoApunte")?.hidden
     || !document.getElementById("menuContextualTexto")?.hidden
     || !document.getElementById("propiedadesObjeto")?.hidden
+    || !document.getElementById("panelDisposicionHoja")?.hidden
     || !document.getElementById("menuInsertarApunte")?.hidden
     || !document.getElementById("menuExportacionApunte")?.hidden;
   if (evento.key !== "Escape" || !hayPanelAbierto) return;
@@ -1400,6 +1546,7 @@ function cerrarPaletasConEscape(evento) {
   cerrarMenuContextualTexto({ devolverFoco: true });
   cerrarMenuInsertar({ devolverFoco: true });
   cerrarPropiedadesObjeto({ devolverFoco: true });
+  cerrarDisposicionHoja({ devolverFoco: true });
   cerrarMenuExportacion({ devolverFoco: true });
 }
 

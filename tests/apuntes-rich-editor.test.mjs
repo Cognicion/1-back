@@ -168,8 +168,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=20260820-apuntes-minimal-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260822-apuntes-cursor-contraste-v1/);
-  assert.match(html, /apuntes\.js\?v=20260822-apuntes-cursor-contraste-v1/);
+  assert.match(html, /apuntes\.css\?v=20260822-apuntes-disposicion-hoja-v1/);
+  assert.match(html, /apuntes\.js\?v=20260822-apuntes-disposicion-hoja-v1/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
   assert.match(html, /id="menuInsertarApunte"[^>]*aria-label="Insertar en el apunte"/);
   assert.match(html, /id="insertarCuadroTexto"/);
@@ -181,9 +181,18 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /id="quitarResaltado"/);
   assert.match(html, /id="menuContextualTexto"[^>]*role="menu"/);
   assert.match(html, /id="abrirFondoApunte"[^>]*aria-controls="paletaFondoApunte"/);
+  assert.match(html, /id="abrirDisposicionHoja"[^>]*aria-controls="panelDisposicionHoja"/);
+  assert.match(html, /id="panelDisposicionHoja"[^>]*aria-label="Disposición de hoja"/);
+  assert.match(html, /id="formatoHoja"/);
+  assert.match(html, /id="zoomHojaMenos"/);
+  assert.match(html, /id="zoomHojaMas"/);
+  assert.match(html, /id="margenSuperiorHoja"/);
+  assert.match(html, /id="tamanoFuenteHoja"/);
   assert.match(html, /id="alternarTituloApunte"[^>]*aria-controls="camposCabeceraApunte"/);
   assert.match(html, /id="alternarBarraFormato"[^>]*aria-controls="barraFormatoApunte"/);
   assert.match(html, /id="lienzoApunte"/);
+  assert.match(html, /id="hojaApunte" class="hoja-apunte"/);
+  assert.match(html, /id="etiquetaVistaHoja"/);
   assert.match(html, /id="listaPuntos"/);
   assert.match(html, /id="listaNumeros"/);
   assert.match(html, /id="listaLetras"/);
@@ -273,6 +282,13 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(controlador, /function aplicarFondoApunte/);
   assert.match(controlador, /fondoLienzo: fondoApunteActual \|\| null/);
   assert.match(css, /caret-color:\s*var\(--apunte-texto, var\(--apuntes-texto\)\)/);
+  assert.match(controlador, /import \{[\s\S]*normalizarDisposicionHoja[\s\S]*\} from "\.\/apuntes-page-layout\.js"/);
+  assert.match(controlador, /function aplicarDisposicionHoja/);
+  assert.match(controlador, /disposicionHoja: disposicionHojaActual/);
+  assert.match(controlador, /lienzo: document\.getElementById\("hojaApunte"\)/);
+  assert.match(css, /\.hoja-apunte\s*\{/);
+  assert.match(css, /--margen-superior/);
+  assert.match(css, /font-size:\s*var\(--apunte-tamano-fuente, 14px\)/);
   assert.match(controlador, /function alternarSeccionEditor/);
 });
 
@@ -367,7 +383,8 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-22-apuntes-flechas-ancladas-v1/);
   assert.match(version, /2026-08-22-apuntes-objetos-interaccion-v1/);
   assert.match(version, /2026-08-22-apuntes-cursor-contraste-v1/);
+  assert.match(version, /2026-08-22-apuntes-disposicion-hoja-v1/);
   const versionVisible = version.match(/APP_VERSION = "(\d+\.\d+)"/);
   assert.ok(versionVisible, "APP_VERSION debe seguir siendo visible y numérica");
-  assert.ok(Number(versionVisible[1]) >= 2.097, "versiones posteriores no deben invalidar la regresión de Mis apuntes");
+  assert.ok(Number(versionVisible[1]) >= 2.099, "versiones posteriores no deben invalidar la regresión de Mis apuntes");
 });

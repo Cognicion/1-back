@@ -1,4 +1,5 @@
 import { normalizarObjetosApunte } from "./apuntes-objetos.js";
+import { normalizarDisposicionHoja, obtenerMedidasHoja } from "./apuntes-page-layout.js";
 
 const MIME_DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 let dependenciasPdf = null;
@@ -50,14 +51,19 @@ function objetoHtml(objeto) {
   return `<div class="objeto-exportable objeto-exportable--texto${claseAjuste}" style="${base}${orden}color:${escaparHTML(objeto.color)}">${escaparHTML(objeto.texto).replace(/\n/g, "<br>")}</div>`;
 }
 
-export function construirHtmlApunteExportable({ titulo = "Sin título", contenidoHtml = "", objetos = [] } = {}) {
+export function construirHtmlApunteExportable({ titulo = "Sin título", contenidoHtml = "", objetos = [], disposicionHoja = {} } = {}) {
   const objetosNormalizados = normalizarObjetosApunte(objetos);
+  const disposicion = normalizarDisposicionHoja(disposicionHoja);
+  const medidas = obtenerMedidasHoja(disposicion);
+  const margenes = disposicion.margenes;
+  const altoContenido = Math.max(80, medidas.altoMm - margenes.superior - margenes.inferior);
+  const tamanioFuentePt = (disposicion.tamanioFuente * 0.75).toFixed(2);
   return `<!doctype html><html lang="es"><head><meta charset="utf-8"><style>
-    @page { size: A4; margin: 16mm; }
-    body { margin:0; color:#121417; background:#fff; font:11pt/1.52 Arial, sans-serif; }
-    .apunte-exportable { position:relative; min-height:247mm; box-sizing:border-box; padding:0; }
+    @page { size: ${medidas.anchoMm}mm ${medidas.altoMm}mm; margin: ${margenes.superior}mm ${margenes.derecho}mm ${margenes.inferior}mm ${margenes.izquierdo}mm; }
+    body { margin:0; color:#121417; background:#fff; font:${tamanioFuentePt}pt/1.52 Arial, sans-serif; }
+    .apunte-exportable { position:relative; min-height:${altoContenido}mm; box-sizing:border-box; padding:0; }
     h1 { margin:0 0 10mm; color:#631b2a; font:700 19pt/1.2 Georgia, serif; }
-    .apunte-exportable__contenido { position:relative; z-index:2; min-height:225mm; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .apunte-exportable__contenido { position:relative; z-index:2; min-height:${Math.max(60, altoContenido - 22)}mm; white-space:pre-wrap; overflow-wrap:anywhere; }
     .apunte-exportable__contenido p, .apunte-exportable__contenido div { margin:0 0 5pt; }
     .objeto-exportable { position:absolute; box-sizing:border-box; overflow:hidden; }
     .objeto-exportable--texto { padding:7pt 9pt; border:1pt solid currentColor; border-radius:3pt; background:rgba(255,255,255,.78); white-space:pre-wrap; }
@@ -166,13 +172,29 @@ async function cargarDependenciasPdf() {
 export async function descargarApuntePdf(datos = {}) {
   const { html2canvas, jsPDF } = await cargarDependenciasPdf();
   const contenedor = document.createElement("div");
+  const disposicion = normalizarDisposicionHoja(datos.disposicionHoja);
+  const medidas = obtenerMedidasHoja(disposicion);
+  const exportable = construirHtmlApunteExportable(datos);
+  const estilos = exportable.match(/<style>([\s\S]*?)<\/style>/i)?.[0] || "";
+  const contenido = exportable.replace(/^[\s\S]*?<body>/i, "").replace(/<\/body>[\s\S]*$/i, "");
   contenedor.className = "apunte-exportacion-temporal";
-  contenedor.innerHTML = construirHtmlApunteExportable(datos).replace(/^[\s\S]*?<body>/i, "").replace(/<\/body>[\s\S]*$/i, "");
+  contenedor.style.width = `${Math.round((medidas.anchoMm / 25.4) * 96)}px`;
+  contenedor.style.minHeight = `${Math.round((medidas.altoMm / 25.4) * 96)}px`;
+  contenedor.innerHTML = `${estilos}${contenido}`;
   document.body.append(contenedor);
   try {
-    const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+    const pdf = new jsPDF({
+      unit: "mm",
+      format: [medidas.anchoMm, medidas.altoMm],
+      orientation: medidas.anchoMm > medidas.altoMm ? "landscape" : "portrait"
+    });
     await pdf.html(contenedor, {
-      margin: [14, 14, 16, 14],
+      margin: [
+        disposicion.margenes.superior,
+        disposicion.margenes.derecho,
+        disposicion.margenes.inferior,
+        disposicion.margenes.izquierdo
+      ],
       autoPaging: "text",
       html2canvas: { html2canvas, scale: 1.2, backgroundColor: "#ffffff", useCORS: true, logging: false }
     });

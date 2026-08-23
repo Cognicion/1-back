@@ -87,5 +87,8 @@
 // deployment marker: 2026-08-22-mi-nube-admin-moderation-v1 (+0.001)
 // deployment marker: 2026-08-22-dashboard-laboratorios-agrupados-v1 (+0.001)
 // deployment marker: 2026-08-22-apuntes-cursor-contraste-v1
-export const APP_VERSION = "2.097";
+// deployment marker: 2026-08-22-dashboard-laboratorios-fila-v1 (+0.001)
+// deployment marker: 2026-08-22-apuntes-disposicion-hoja-v1
+// deployment marker: 2026-08-22-dashboard-laboratorios-fila-v1 (+0.001)
+export const APP_VERSION = "2.100";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

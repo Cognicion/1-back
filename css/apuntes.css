@@ -989,6 +989,7 @@ body.pagina-apuntes > main.apuntes-shell {
 
 .menu-insertar,
 .panel-objeto,
+.panel-disposicion-hoja,
 .menu-exportacion,
 .menu-contextual-texto {
   position: absolute;
@@ -1006,6 +1007,7 @@ body.pagina-apuntes > main.apuntes-shell {
 
 .menu-insertar[hidden],
 .panel-objeto[hidden],
+.panel-disposicion-hoja[hidden],
 .menu-exportacion[hidden],
 .menu-contextual-texto[hidden] {
   display: none;
@@ -1038,6 +1040,125 @@ body.pagina-apuntes > main.apuntes-shell {
 .panel-objeto {
   right: 16px;
   top: 66px;
+}
+
+.panel-disposicion-hoja {
+  right: 16px;
+  top: 66px;
+  width: min(324px, calc(100% - 32px));
+}
+
+.panel-disposicion-hoja__encabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel-disposicion-hoja__encabezado > div {
+  display: grid;
+  gap: 3px;
+}
+
+.panel-disposicion-hoja__encabezado strong {
+  font-size: 12px;
+}
+
+.panel-disposicion-hoja__encabezado span,
+.panel-disposicion-hoja > p {
+  margin: 0;
+  color: var(--apuntes-texto-suave);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.panel-disposicion-hoja__encabezado button,
+.control-zoom-hoja button {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0;
+  border-color: var(--apuntes-borde);
+  color: var(--apuntes-texto);
+  background: var(--apuntes-superficie-hover);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.panel-disposicion-hoja > label {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  color: var(--apuntes-texto-suave);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.panel-disposicion-hoja select,
+.margenes-hoja input {
+  min-width: 0;
+  height: 32px;
+  padding: 0 7px;
+  border: 1px solid var(--apuntes-borde);
+  border-radius: 7px;
+  color: var(--apuntes-texto);
+  background: var(--apuntes-superficie-suave);
+}
+
+.control-zoom-hoja {
+  display: grid;
+  grid-template-columns: 1fr 28px 52px 28px;
+  align-items: center;
+  gap: 7px;
+  color: var(--apuntes-texto-suave);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.control-zoom-hoja output {
+  display: grid;
+  place-items: center;
+  height: 28px;
+  border: 1px solid var(--apuntes-borde);
+  border-radius: 7px;
+  color: var(--apuntes-texto);
+  background: var(--apuntes-superficie-suave);
+  font-size: 11px;
+}
+
+.margenes-hoja {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  min-width: 0;
+  margin: 0;
+  padding: 8px;
+  border: 1px solid var(--apuntes-borde);
+  border-radius: 8px;
+}
+
+.margenes-hoja legend {
+  padding: 0 4px;
+  color: var(--apuntes-texto-suave);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.margenes-hoja label {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 58px;
+  align-items: center;
+  gap: 5px;
+  color: var(--apuntes-texto-suave);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.margenes-hoja input {
+  width: 58px;
+  box-sizing: border-box;
 }
 
 .menu-exportacion {
@@ -1177,7 +1298,41 @@ body.pagina-apuntes > main.apuntes-shell {
   overscroll-behavior: contain;
   border: 1px solid var(--apuntes-borde);
   border-radius: 12px;
+  background: color-mix(in srgb, var(--apuntes-superficie-hover) 62%, transparent);
+}
+
+.hoja-apunte {
+  position: relative;
+  width: var(--hoja-ancho, 520px);
+  height: var(--hoja-alto, 736px);
+  min-width: 180px;
+  min-height: 250px;
+  margin: 24px auto 42px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--apuntes-borde-fuerte) 60%, var(--apuntes-borde));
+  border-radius: 2px;
+  color: var(--apunte-texto, var(--apuntes-texto));
   background: var(--apunte-fondo, var(--apuntes-superficie-suave));
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
+}
+
+.lienzo-apunte__medida {
+  position: sticky;
+  left: 50%;
+  bottom: 9px;
+  display: block;
+  width: max-content;
+  max-width: calc(100% - 20px);
+  margin: -32px auto 8px;
+  padding: 4px 8px;
+  transform: translateX(-50%);
+  border: 1px solid var(--apuntes-borde);
+  border-radius: 999px;
+  color: var(--apuntes-texto-suave);
+  background: color-mix(in srgb, var(--apuntes-superficie) 92%, transparent);
+  font-size: 10px;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .editor-contenido {
@@ -1185,14 +1340,15 @@ body.pagina-apuntes > main.apuntes-shell {
   z-index: 2;
   min-width: 0;
   min-height: 100%;
-  height: auto;
-  padding: 14px;
-  overflow: visible;
+  height: 100%;
+  box-sizing: border-box;
+  padding: var(--margen-superior, 14px) var(--margen-derecho, 14px) var(--margen-inferior, 14px) var(--margen-izquierdo, 14px);
+  overflow: auto;
   border: 0;
   border-radius: 11px;
   color: var(--apunte-texto, var(--apuntes-texto));
   background: transparent;
-  font-size: 14px;
+  font-size: var(--apunte-tamano-fuente, 14px);
   line-height: 1.52;
   white-space: pre-wrap;
   overflow-wrap: anywhere;

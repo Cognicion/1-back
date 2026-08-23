@@ -540,6 +540,9 @@ header {
 
 .proximamente-modal {
     width: min(560px, calc(100vw - 32px));
+    max-height: calc(100dvh - 32px);
+    box-sizing: border-box;
+    overflow-y: auto;
     padding: 30px;
     border: 1px solid rgba(126, 182, 138, 0.24);
     border-radius: 28px;
@@ -1369,7 +1372,7 @@ html[data-theme="light"] .ghost-button:hover,
 html[data-theme="light"] .logout-button:hover { color: var(--text-primary); background: var(--action-secondary-hover); border-color: var(--accent-primary); box-shadow: none; transform: none; }
 html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px, 1440px); }
 </style>
-    <link rel="stylesheet" href="css/dashboard-encabezado-vistas.css?v=2.093">
+    <link rel="stylesheet" href="css/dashboard-encabezado-vistas.css?v=2.100">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
 
@@ -1746,7 +1749,7 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
                     <button class="primary-button" onclick="window.location.href='admin.html'">Abrir panel admin</button>
                 </div>
             </article>
-            <article class="module-card card-laboratorios-dashboard" data-modulo-agrupado="laboratorios">
+            <article class="module-card card-laboratorios-dashboard" data-modulo-agrupado="laboratorios" data-accion-fila="laboratorios">
                 <div class="module-top">
                     <div class="module-icon">LAB</div>
                     <span class="badge">Disponible</span>
@@ -1816,8 +1819,8 @@ document.addEventListener("DOMContentLoaded", function () {
   console.timeEnd?.("COGNICION dashboard | primera fase HTML");
 }, { once: true });
 </script>
-<script type="module" src="js/componentes/vista-orbital-panel-principal.js?v=2.096-laboratorios-agrupados"></script>
-<script type="module" src="js/dashboard.js?v=2.096-laboratorios-agrupados"></script>
+<script type="module" src="js/componentes/vista-orbital-panel-principal.js?v=2.100-laboratorios-fila"></script>
+<script type="module" src="js/dashboard.js?v=2.100-laboratorios-fila"></script>
 <script type="module" src="js/services/visitasBootstrap.js"></script>
 <script type="module" src="js/components/accesosRapidos.js"></script>
 <script type="module" src="js/components/themeSelector.js"></script>

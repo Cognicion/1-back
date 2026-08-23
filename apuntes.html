@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260822-apuntes-cursor-contraste-v1">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260822-apuntes-disposicion-hoja-v1">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -125,6 +125,9 @@
             <span>Fondo</span>
           </button>
         </div>
+        <button id="abrirDisposicionHoja" type="button" class="boton-formato boton-formato--ancho" aria-haspopup="dialog" aria-expanded="false" aria-controls="panelDisposicionHoja" title="Disposición de hoja">
+          <span aria-hidden="true">▤</span><span>Hoja</span>
+        </button>
         <span class="separador-formato" aria-hidden="true"></span>
         <button id="quitarFormato" type="button" class="boton-formato boton-formato--ancho" aria-label="Quitar formato" title="Quitar formato de la selección">
           <span aria-hidden="true">Tx</span>
@@ -213,6 +216,34 @@
         <button id="restablecerFondoApunte" type="button" class="paleta-fondo-apunte__restablecer">Usar fondo del tema</button>
       </section>
 
+      <section id="panelDisposicionHoja" class="panel-disposicion-hoja" role="dialog" aria-label="Disposición de hoja" hidden>
+        <div class="panel-disposicion-hoja__encabezado">
+          <div><strong>Disposición de hoja</strong><span id="medidasHoja">A4 · 210.0 × 297.0 mm · vertical</span></div>
+          <button id="cerrarDisposicionHoja" type="button" aria-label="Cerrar disposición de hoja">×</button>
+        </div>
+        <label><span>Formato</span>
+          <select id="formatoHoja" aria-label="Formato de la hoja">
+            <option value="A4">A4</option><option value="CARTA">Carta</option><option value="LEGAL">Legal / Oficio</option><option value="A3">A3</option><option value="A5">A5</option><option value="TABLOIDE">Tabloide</option><option value="EJECUTIVO">Ejecutivo</option>
+          </select>
+        </label>
+        <label><span>Orientación</span>
+          <select id="orientacionHoja" aria-label="Orientación de la hoja"><option value="vertical">Vertical</option><option value="horizontal">Horizontal</option></select>
+        </label>
+        <div class="control-zoom-hoja" aria-label="Zoom de hoja">
+          <span>Zoom</span><button id="zoomHojaMenos" type="button" aria-label="Alejar hoja">−</button><output id="zoomHojaValor" aria-live="polite">100%</output><button id="zoomHojaMas" type="button" aria-label="Acercar hoja">+</button>
+        </div>
+        <fieldset class="margenes-hoja"><legend>Márgenes (mm)</legend>
+          <label><span>Superior</span><input id="margenSuperiorHoja" type="number" min="5" max="50" step="1" inputmode="numeric"></label>
+          <label><span>Derecho</span><input id="margenDerechoHoja" type="number" min="5" max="50" step="1" inputmode="numeric"></label>
+          <label><span>Inferior</span><input id="margenInferiorHoja" type="number" min="5" max="50" step="1" inputmode="numeric"></label>
+          <label><span>Izquierdo</span><input id="margenIzquierdoHoja" type="number" min="5" max="50" step="1" inputmode="numeric"></label>
+        </fieldset>
+        <label><span>Tamaño de fuente</span>
+          <select id="tamanoFuenteHoja" aria-label="Tamaño de fuente del documento"><option value="10">10 px</option><option value="11">11 px</option><option value="12">12 px</option><option value="14">14 px</option><option value="16">16 px</option><option value="18">18 px</option><option value="20">20 px</option><option value="22">22 px</option><option value="24">24 px</option></select>
+        </label>
+        <p>El borde representa el tamaño real de impresión. El zoom solo cambia la vista.</p>
+      </section>
+
       <section id="menuInsertarApunte" class="menu-insertar" role="dialog" aria-label="Insertar en el apunte" hidden>
         <strong>Insertar</strong>
         <button id="insertarCuadroTexto" type="button" title="Insertar cuadro de texto movible">
@@ -275,21 +306,24 @@
       </section>
 
       <div id="lienzoApunte" class="lienzo-apunte" aria-label="Lienzo del apunte">
-        <div id="objetosApunteDetras" class="capa-objetos-apunte capa-objetos-apunte--detras"></div>
-        <div
-          id="apunteContenido"
-          class="editor-contenido"
-          contenteditable="true"
-          role="textbox"
-          aria-multiline="true"
-          aria-label="Contenido del apunte"
-          data-placeholder="Escribe tus apuntes, ideas clínicas o borradores..."
-          spellcheck="true"
-        ></div>
-        <div id="objetosApunteDelante" class="capa-objetos-apunte capa-objetos-apunte--delante" aria-label="Objetos movibles del apunte"></div>
-        <div id="menuContextualObjeto" class="menu-contextual-objeto" role="menu" aria-label="Acciones del objeto" hidden>
-          <button type="button" data-accion-menu-objeto="eliminar" role="menuitem">Eliminar</button>
+        <div id="hojaApunte" class="hoja-apunte" aria-label="Vista de hoja de impresión">
+          <div id="objetosApunteDetras" class="capa-objetos-apunte capa-objetos-apunte--detras"></div>
+          <div
+            id="apunteContenido"
+            class="editor-contenido"
+            contenteditable="true"
+            role="textbox"
+            aria-multiline="true"
+            aria-label="Contenido del apunte"
+            data-placeholder="Escribe tus apuntes, ideas clínicas o borradores..."
+            spellcheck="true"
+          ></div>
+          <div id="objetosApunteDelante" class="capa-objetos-apunte capa-objetos-apunte--delante" aria-label="Objetos movibles del apunte"></div>
+          <div id="menuContextualObjeto" class="menu-contextual-objeto" role="menu" aria-label="Acciones del objeto" hidden>
+            <button type="button" data-accion-menu-objeto="eliminar" role="menuitem">Eliminar</button>
+          </div>
         </div>
+        <output id="etiquetaVistaHoja" class="lienzo-apunte__medida" aria-live="polite"></output>
       </div>
 
       <div class="acciones-apuntes">
@@ -323,7 +357,7 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260822-apuntes-cursor-contraste-v1"></script>
+  <script type="module" src="js/apuntes.js?v=20260822-apuntes-disposicion-hoja-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>

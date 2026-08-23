@@ -308,6 +308,15 @@ body > header .cognicion-theme-selector small {
   display: none;
 }
 
+.fila-modulo-enlace:is(button) {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
 .dashboard-section[data-vista-modulos="lista"] .fila-modulo-enlace {
   position: absolute;
   z-index: 1;

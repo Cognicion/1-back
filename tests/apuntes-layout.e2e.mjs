@@ -292,6 +292,8 @@ test("el navbar común se monta una sola vez y deja el shell unido al encabezado
       const branding = header.querySelector("[data-global-header-branding]");
       const discovery = header.querySelector(".global-header-discovery");
       const toolbar = document.querySelector(".barra-formato");
+      const visor = document.querySelector("#lienzoApunte");
+      const hoja = document.querySelector("#hojaApunte");
       const contenido = document.querySelector(".editor-contenido");
       const footer = document.querySelector(".acciones-apuntes");
       const guardar = document.querySelector("#guardarApunte");
@@ -335,6 +337,8 @@ test("el navbar común se monta una sola vez y deja el shell unido al encabezado
         },
         discoveryButtons: [...discovery.querySelectorAll(".global-header-discovery__actions > :where(a, button):not([hidden])")].map(rect),
         toolbar: rect(toolbar),
+        visor: rect(visor),
+        hoja: rect(hoja),
         contenido: rect(contenido),
         footer: rect(footer),
         guardar: rect(guardar),
@@ -389,14 +393,16 @@ test("el navbar común se monta una sola vez y deja el shell unido al encabezado
     }
     assert.deepEqual(montaje.editorPadding, { top: 14, right: 16, bottom: 10, left: 16 });
     assertBorde(montaje.editorGap, 8, "editor real / separación compacta");
-    assertBorde(montaje.contenido.left, montaje.editor.left + montaje.editorPadding.left, "canvas real / borde izquierdo útil");
-    assertBorde(montaje.contenido.right, montaje.editor.right - montaje.editorPadding.right, "canvas real / borde derecho útil");
-    assertBorde(montaje.contenido.top, montaje.toolbar.bottom + montaje.editorGap, "canvas real / unido a toolbar");
-    assertBorde(montaje.contenido.bottom + montaje.editorGap, montaje.footer.top, "canvas real / unido al footer");
-    assertBorde(montaje.footer.left, montaje.contenido.left, "footer real / alineado al canvas izquierdo");
-    assertBorde(montaje.footer.right, montaje.contenido.right, "footer real / alineado al canvas derecho");
+    assertBorde(montaje.visor.left, montaje.editor.left + montaje.editorPadding.left, "visor de hoja / borde izquierdo útil");
+    assertBorde(montaje.visor.right, montaje.editor.right - montaje.editorPadding.right, "visor de hoja / borde derecho útil");
+    assertBorde(montaje.visor.top, montaje.toolbar.bottom + montaje.editorGap, "visor de hoja / unido a toolbar");
+    assertBorde(montaje.visor.bottom + montaje.editorGap, montaje.footer.top, "visor de hoja / unido al footer");
+    assertBorde(montaje.footer.left, montaje.visor.left, "footer real / alineado al visor izquierdo");
+    assertBorde(montaje.footer.right, montaje.visor.right, "footer real / alineado al visor derecho");
     assertBorde(montaje.footer.bottom, montaje.editor.bottom - montaje.editorPadding.bottom, "footer real / sin espacio muerto inferior");
-    assert.ok(montaje.contenido.height >= 640, `canvas real maximizado: ${JSON.stringify(montaje.contenido)}`);
+    assert.ok(montaje.visor.height >= 640, `visor de hoja maximizado: ${JSON.stringify(montaje.visor)}`);
+    assert.ok(montaje.hoja.width >= 180 && montaje.hoja.height >= 250, `hoja visible: ${JSON.stringify(montaje.hoja)}`);
+    assert.ok(montaje.hoja.left >= montaje.visor.left && montaje.hoja.right <= montaje.visor.right, `hoja contenida horizontalmente: ${JSON.stringify(montaje)}`);
     assertBorde(montaje.footer.height, 36, "footer real / alto compacto");
     assertBorde(montaje.footerPaddingRight, 205, "footer real / reserva Reportar expandido");
     assertBorde(montaje.guardar.width, 96, "Guardar escritorio / ancho");

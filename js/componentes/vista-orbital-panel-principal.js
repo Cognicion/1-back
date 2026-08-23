@@ -103,14 +103,25 @@ function prepararFilasInteractivas(contenedor) {
       iconoModulo.title = titulo;
     }
 
-    if (!ruta || tarjeta.querySelector(":scope > .fila-modulo-enlace")) return;
+    if (!ruta && tarjeta.dataset.accionFila !== "laboratorios") return;
+    if (tarjeta.querySelector(":scope > .fila-modulo-enlace")) return;
 
-    const enlaceFila = document.createElement("a");
+    const esAccionLaboratorios = tarjeta.dataset.accionFila === "laboratorios";
+    const enlaceFila = document.createElement(esAccionLaboratorios ? "button" : "a");
     enlaceFila.className = "fila-modulo-enlace";
-    enlaceFila.href = ruta;
+    if (esAccionLaboratorios) {
+      enlaceFila.type = "button";
+    } else {
+      enlaceFila.href = ruta;
+    }
     enlaceFila.setAttribute("aria-label", `Abrir ${titulo}`);
-    enlaceFila.dataset.rutaModulo = ruta;
-    conectarPrecargaPorIntencion(enlaceFila, ruta);
+    if (ruta) {
+      enlaceFila.dataset.rutaModulo = ruta;
+      conectarPrecargaPorIntencion(enlaceFila, ruta);
+    }
+    if (esAccionLaboratorios) {
+      enlaceFila.addEventListener("click", () => window.alternarLaboratoriosDashboard?.(true));
+    }
     tarjeta.prepend(enlaceFila);
   });
 }
