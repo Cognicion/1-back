@@ -587,6 +587,51 @@ body:has(.dashboard-section) > header[data-global-app-header] :is(.logout-button
 
 body:has(.dashboard-section) .dashboard-intro {
   padding: 0;
+  min-height: 114px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--line) 90%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+}
+
+body:has(.dashboard-section) .dashboard-intro-grid {
+  min-height: 114px;
+  padding: 0 22px;
+}
+
+body:has(.dashboard-section) .dashboard-intro-item {
+  padding-block: 12px;
+}
+
+body:has(.dashboard-section) .app-shell {
+  width: calc(100% - 60px);
+  max-width: none;
+}
+
+body:has(.dashboard-section) > header .topbar {
+  width: calc(100% - 60px);
+  max-width: none;
+}
+
+body:has(.dashboard-section) .dashboard-navbar-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--accent) 78%, var(--line));
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--surface) 88%, var(--accent));
+  color: var(--text-primary);
+  font-size: .76rem;
+  font-weight: 700;
+}
+
+body:has(.dashboard-section) .dashboard-navbar-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 body:has(.dashboard-section) .dashboard-intro .hero-subtitle {
@@ -715,16 +760,20 @@ body:has(.dashboard-section) .dashboard-section {
   grid-template-columns: 1fr;
   gap: 0;
   border-top: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+  border-left: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .dashboard-section[data-vista-modulos="lista"] .module-card {
-  min-height: 58px;
+  min-height: 74px;
   display: grid;
   grid-template-columns: 40px minmax(190px, .72fr) minmax(220px, 1.4fr) auto;
   grid-template-rows: auto;
   align-items: center;
   gap: 8px 14px;
-  padding: 8px 14px;
+  padding: 12px 14px;
   border: 0;
   border-bottom: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
   border-radius: 0;
@@ -750,10 +799,10 @@ body:has(.dashboard-section) .dashboard-section {
 .dashboard-section[data-vista-modulos="lista"] .module-icon {
   grid-column: 1;
   grid-row: 1;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  font-size: .66rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  font-size: .72rem;
   line-height: 1;
 }
 
@@ -769,7 +818,7 @@ body:has(.dashboard-section) .dashboard-section {
   grid-row: 1;
   min-width: 0;
   margin: 0;
-  font-size: .88rem;
+  font-size: 1.02rem;
   line-height: 1.2;
 }
 
@@ -784,8 +833,8 @@ body:has(.dashboard-section) .dashboard-section {
   margin: 0;
   overflow: hidden;
   color: var(--muted);
-  font-size: .69rem;
-  line-height: 1.25;
+  font-size: .82rem;
+  line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -951,5 +1000,26 @@ html[data-theme="biocelular"] .dashboard-section[data-vista-modulos="lista"] .mo
   .dashboard-section[data-vista-modulos="lista"] .module-card .card-actions.dual-actions :is(a, button) {
     width: auto;
     padding-inline: 6px;
+  }
+}
+
+@media (max-width: 620px) {
+  body:has(.dashboard-section) .dashboard-intro,
+  body:has(.dashboard-section) .dashboard-intro-grid {
+    min-height: 0;
+  }
+
+  body:has(.dashboard-section) .dashboard-intro-grid {
+    grid-template-columns: 1fr;
+    padding: 0 12px;
+  }
+
+  body:has(.dashboard-section) .dashboard-intro-item {
+    padding: 12px 0;
+  }
+
+  body:has(.dashboard-section) .dashboard-intro-item + .dashboard-intro-item {
+    border-top: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+    border-left: 0;
   }
 }

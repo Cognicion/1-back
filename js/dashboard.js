@@ -433,16 +433,19 @@ async function inicializarDashboard() {
 
   const nombrePerfil = datos?.nombre || user.displayName || user.email || "DR";
   const fotoPerfil = datos?.fotoProfesional || datos?.fotoPerfil || datos?.profilePhoto || user.photoURL || "";
-  const avatarDashboard = document.getElementById("dashboardAvatar");
-  if (avatarDashboard) {
+  const avataresDashboard = [
+    document.getElementById("dashboardAvatar"),
+    document.getElementById("dashboardNavbarAvatar")
+  ].filter(Boolean);
+  avataresDashboard.forEach((avatarDashboard) => {
     avatarDashboard.classList.toggle("avatar-predeterminado", !fotoPerfil);
     renderizarFotoPerfil(avatarDashboard, {
       url: fotoPerfil,
       nombre: nombrePerfil,
       alt: fotoPerfil ? "Foto de perfil del usuario" : "Avatar predeterminado del usuario"
     });
-    console.info(fotoPerfil ? "[PROFILE] Foto real usada" : "[PROFILE] Avatar predeterminado usado");
-  }
+  });
+  console.info(fotoPerfil ? "[PROFILE] Foto real usada" : "[PROFILE] Avatar predeterminado usado");
 
   iniciarMonitoreoSesionDashboard(user, datos);
   programarDatosSecundariosDashboard(rolUsuario, user.uid);
