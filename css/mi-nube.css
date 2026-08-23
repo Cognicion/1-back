@@ -207,6 +207,9 @@ button {
 
 .cloud-app {
   position: relative;
+  /* El fondo biocelular usa z-index: 1; toda la aplicación debe estar
+     en una capa superior para que la nube no quede oculta detrás de él. */
+  z-index: 3;
   width: 100%;
   height: calc(100dvh - var(--global-header-height, var(--cloud-topbar-height)));
   display: grid;

@@ -27,6 +27,10 @@ function aplicarPaletaClaraDesdePerfil(profile = null) {
 }
 
 export function normalizeTheme(value) {
+  if (value === "light") {
+    console.info("[TEMA] Preferencia Claro migrada a Oscuro");
+    return "dark";
+  }
   return isValidTheme(value) ? value : DEFAULT_THEME;
 }
 
@@ -99,6 +103,7 @@ function getRemoteTheme(profile = {}) {
     || profile?.preferencias?.apariencia?.tema
     || profile?.apariencia?.tema
     || profile?.temaApariencia;
+  if (value === "light") return "light";
   return isValidTheme(value) ? value : null;
 }
 
@@ -135,6 +140,18 @@ export async function initializeThemeForUser(user, profile = null) {
         remoteTheme: remoteTheme || null,
         discrepancia: Boolean(remoteTheme && remoteTheme !== localTheme)
       });
+      if (remoteTheme === "light" && versionAtStart === (userSelectionVersion.get(uid) || 0)) {
+        const migratedTheme = applyTheme("dark");
+        writeStorage(storageKey, migratedTheme);
+        writeLastTheme(migratedTheme);
+        try {
+          await saveThemeToUserProfile(uid, migratedTheme);
+          console.info("[TEMA] Preferencia remota Claro migrada a Oscuro");
+        } catch (error) {
+          console.warn("[TEMA] No se pudo persistir la migración remota de Claro a Oscuro.", error?.code || error?.name || "error");
+        }
+        return migratedTheme;
+      }
       if (isValidTheme(remoteTheme) && versionAtStart === (userSelectionVersion.get(uid) || 0)) {
         const appliedTheme = applyTheme(remoteTheme);
         writeStorage(storageKey, appliedTheme);

@@ -347,15 +347,31 @@ window.cerrarProximamente = function() {
   overlay?.setAttribute("aria-hidden", "true");
 };
 
+window.alternarLaboratoriosDashboard = function(abierto = true) {
+  const overlay = document.getElementById("laboratoriosDashboardOverlay");
+  if (!overlay) return;
+  const mostrar = Boolean(abierto);
+  overlay.classList.toggle("abierto", mostrar);
+  overlay.setAttribute("aria-hidden", String(!mostrar));
+  if (mostrar) overlay.querySelector("a")?.focus();
+};
+
 document.getElementById("proximamenteOverlay")?.addEventListener("click", (evento) => {
   if (evento.target.id === "proximamenteOverlay") {
     window.cerrarProximamente();
   }
 });
 
+document.getElementById("laboratoriosDashboardOverlay")?.addEventListener("click", (evento) => {
+  if (evento.target.id === "laboratoriosDashboardOverlay") {
+    window.alternarLaboratoriosDashboard(false);
+  }
+});
+
 document.addEventListener("keydown", (evento) => {
   if (evento.key === "Escape") {
     window.cerrarProximamente();
+    window.alternarLaboratoriosDashboard(false);
     window.alternarMensajes?.(false);
     document.getElementById("avisosDashboardModulo")?.classList.remove("abierto");
     document.getElementById("avisosDashboardModulo")?.setAttribute("aria-hidden", "true");

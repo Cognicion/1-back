@@ -84,7 +84,8 @@ const state = {
   moveBrowserTrail: [],
   moveFolderCursor: null,
   moveFolderHasMore: false,
-  moveRequest: 0
+  moveRequest: 0,
+  layoutDiagnosticLogged: false
 };
 
 const dom = {};
@@ -153,6 +154,18 @@ function cacheDom() {
     "cloudRetryButton", "cloudSidebar", "cloudSidebarToggle", "cloudSidebarClose", "cloudSidebarBackdrop"
   ];
   ids.forEach((id) => { dom[id] = document.getElementById(id); });
+  if (!state.layoutDiagnosticLogged) {
+    const workspace = document.querySelector(".cloud-workspace");
+    const app = document.getElementById("cloudApp");
+    console.info("[MI NUBE] Montaje visual", {
+      appEncontrado: Boolean(app),
+      workspaceEncontrado: Boolean(workspace),
+      itemsEncontrado: Boolean(dom.cloudItems),
+      tema: document.documentElement.dataset.theme || "no-detectado",
+      zIndexAplicacion: app ? getComputedStyle(app).zIndex : "no-aplica"
+    });
+    state.layoutDiagnosticLogged = true;
+  }
 }
 
 function bindInterface() {

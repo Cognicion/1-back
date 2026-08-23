@@ -28,6 +28,7 @@ const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 if (!admin.apps.length) admin.initializeApp();
 const adminDb = admin.firestore();
 const cloudStorageFunctions = require("./cloudStorage/handlers");
+const cloudAdminModerationFunctions = require("./cloudAdminModeration/handlers");
 const accountLinkingFunctions = require("./accountLinking/handlers");
 const { registerProfessionalWithCode } = require("./accountSecurity/professionalRegistration");
 
@@ -736,5 +737,7 @@ exports.reconcileCloudStorageUsage = cloudStorageFunctions.reconcileCloudStorage
 exports.cloudFileFinalized = cloudStorageFunctions.cloudFileFinalized;
 exports.cloudFileDeleted = cloudStorageFunctions.cloudFileDeleted;
 exports.cleanupExpiredCloudReservations = cloudStorageFunctions.cleanupExpiredCloudReservations;
+exports.listAdminCloudFiles = cloudAdminModerationFunctions.listAdminCloudFiles;
+exports.requestAdminCloudFileAccess = cloudAdminModerationFunctions.requestAdminCloudFileAccess;
 exports.manageAccountLinking = accountLinkingFunctions.manageAccountLinking;
 exports.registerProfessionalWithCode = registerProfessionalWithCode;

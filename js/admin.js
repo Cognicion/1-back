@@ -102,6 +102,9 @@ let adminDatosActual = null;
 let conversacionesAdmin = [];
 let conversacionAdminActiva = null;
 let mensajesAdminActivos = [];
+let desmontarExploradorMiNubeAdmin = null;
+let moduloExploradorMiNubeAdminPromise = null;
+let solicitudVistaUsuarioAdmin = 0;
 let patternModulePromise = null;
 let patternModuleInstance = null;
 let patternModuleRequestId = 0;
@@ -319,6 +322,10 @@ function configurarFiltros() {
 
   document.getElementById("btnActualizarUsuariosAdmin")?.addEventListener("click", cargarUsuariosAdmin);
   document.getElementById("btnActualizarUsuariosRecientesAdmin")?.addEventListener("click", cargarUsuariosAdmin);
+  document.getElementById("listaUsuariosAdmin")?.addEventListener("click", (evento) => {
+    const boton = evento.target.closest?.("[data-admin-cloud-owner]");
+    if (boton) abrirVistaUsuarioAdmin(boton.dataset.adminCloudOwner, "mi_nube");
+  });
   document.getElementById("btnActualizarFormatosAdmin")?.addEventListener("click", cargarUsuariosAdmin);
   document.getElementById("btnActualizarCatalogoManualAdmin")?.addEventListener("click", cargarCatalogoManualFormatosAdmin);
   document.getElementById("formCrearFormatoManualAdmin")?.addEventListener("submit", crearFormatoManualAdmin);
@@ -365,6 +372,9 @@ function configurarFiltros() {
 }
 
 function cerrarVistaCorroboracionAdmin() {
+  solicitudVistaUsuarioAdmin += 1;
+  desmontarExploradorMiNubeAdmin?.();
+  desmontarExploradorMiNubeAdmin = null;
   const modal = document.getElementById("vistaCorroboracionAdmin");
   if (!modal) return;
   modal.hidden = true;
@@ -769,8 +779,9 @@ function configurarNavegacionVistaPreviaUsuario(contenedor) {
 }
 
 async function abrirVistaUsuarioAdmin(uidUsuario, modo = "corroboracion") {
+  const solicitudActual = ++solicitudVistaUsuarioAdmin;
   const usuario = usuariosAdmin.find((item) => item.id === uidUsuario);
-  if (!usuario || uidUsuario === adminActual?.uid) return;
+  if (!usuario || (uidUsuario === adminActual?.uid && modo !== "mi_nube")) return;
   const acceso = await usuarioPuedeAccederAdmin(adminActual);
   if (!acceso.permitido) {
     alert("No tienes permisos administrativos para abrir esta vista.");
@@ -780,8 +791,32 @@ async function abrirVistaUsuarioAdmin(uidUsuario, modo = "corroboracion") {
   const titulo = document.getElementById("vistaCorroboracionTitulo");
   const meta = document.getElementById("vistaCorroboracionMeta");
   const contenido = document.getElementById("vistaCorroboracionContenido");
+  const bannerTitulo = document.getElementById("vistaCorroboracionBannerTitulo");
+  const bannerTexto = document.getElementById("vistaCorroboracionBannerTexto");
   if (!titulo || !meta || !contenido) return;
+  desmontarExploradorMiNubeAdmin?.();
+  desmontarExploradorMiNubeAdmin = null;
+  if (modo === "mi_nube") {
+    titulo.textContent = `Mi nube: ${usuario.nombre || usuario.email || "Cuenta consultada"}`;
+    meta.textContent = `${usuario.email || "Sin correo"} · Explorador administrativo de solo lectura`;
+    if (bannerTitulo) bannerTitulo.textContent = "Moderación administrativa de Mi nube · Solo lectura";
+    if (bannerTexto) bannerTexto.textContent = "El backend verifica el rol y registra cada listado, vista previa y descarga. No se suplanta al usuario ni se modifica su contenido.";
+    contenido.innerHTML = "<p>Preparando el explorador administrativo…</p>";
+    mostrarVistaCorroboracionAdmin();
+    try {
+      moduloExploradorMiNubeAdminPromise ||= import("./components/adminCloudExplorer.js?v=20260822-mi-nube-admin-v1");
+      const { montarExploradorMiNubeAdmin } = await moduloExploradorMiNubeAdminPromise;
+      if (solicitudActual !== solicitudVistaUsuarioAdmin || !document.body.classList.contains("vista-corroboracion-abierta")) return;
+      desmontarExploradorMiNubeAdmin = montarExploradorMiNubeAdmin(contenido, { ownerUid: usuario.id });
+    } catch (error) {
+      console.error("[MiNube][AdminModeration]", { operation: "mount", result: "error", errorCode: error?.code || error?.name || "internal" });
+      contenido.innerHTML = '<p class="admin-muted">No fue posible iniciar el explorador administrativo.</p>';
+    }
+    return;
+  }
   const esVistaPrevia = modo === "vista_previa";
+  if (bannerTitulo) bannerTitulo.textContent = "Vista previa administrativa de usuario · Solo lectura";
+  if (bannerTexto) bannerTexto.textContent = "Este acceso queda registrado en la bitácora. No inicia sesión como el usuario ni permite editar, eliminar, descargar o ejecutar acciones de su cuenta.";
   titulo.textContent = esVistaPrevia
     ? `Vista previa: ${usuario.nombre || usuario.email || "Cuenta consultada"}`
     : usuario.nombre || usuario.email || "Cuenta consultada";
@@ -2040,6 +2075,7 @@ function renderizarUsuariosAdmin() {
         ${renderizarControlColaboradorAdmin(usuario)}
 
         <div class="paciente-admin-acciones">
+          ${adminDatosActual?.rol === "admin" ? `<button type="button" data-admin-cloud-owner="${escaparHTML(usuario.id)}" aria-label="Abrir Mi nube de ${escaparHTML(usuario.nombre || usuario.email || "usuario")} en modo administrativo">Mi nube · solo lectura</button>` : ""}
           ${esCuentaActual
             ? `<button type="button" disabled aria-label="Esta es la cuenta administrativa actual">Cuenta actual</button>`
             : `<button type="button" aria-label="Ver la página como ${escaparHTML(usuario.nombre || usuario.email || "usuario")} en modo solo lectura" onclick="abrirVistaPreviaUsuarioAdmin('${usuario.id}')">Ver como usuario · solo lectura</button>`}

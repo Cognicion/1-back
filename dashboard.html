@@ -490,11 +490,7 @@ header {
     order: 1;
 }
 
-.module-card.card-laboratorio-farmacologia {
-    order: 2;
-}
-
-.module-card.card-laboratorio-modelado-molecular {
+.module-card.card-laboratorios-dashboard {
     order: 2;
 }
 
@@ -574,6 +570,34 @@ header {
     display: flex;
     justify-content: flex-end;
     margin-top: 24px;
+}
+
+.laboratorios-dashboard-lista {
+    display: grid;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.laboratorios-dashboard-lista a {
+    display: grid;
+    gap: 3px;
+    padding: 12px 14px;
+    border: 1px solid var(--line, rgba(255, 255, 255, .12));
+    border-radius: 12px;
+    color: inherit;
+    text-decoration: none;
+    background: rgba(255, 255, 255, .03);
+    transition: background .18s ease, border-color .18s ease;
+}
+
+.laboratorios-dashboard-lista a:hover,
+.laboratorios-dashboard-lista a:focus-visible {
+    border-color: var(--accent, #58d68d);
+    background: rgba(88, 214, 141, .1);
+}
+
+.laboratorios-dashboard-lista small {
+    color: var(--muted, #9aa5b4);
 }
 
 footer {
@@ -1722,62 +1746,15 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
                     <button class="primary-button" onclick="window.location.href='admin.html'">Abrir panel admin</button>
                 </div>
             </article>
-            <article class="module-card card-prioridad-media">
-                <div class="module-top">
-                    <div class="module-icon">PED</div>
-                    <span class="badge">COGNICIÓN Labs</span>
-                </div>
-                <h3>Pediatría</h3>
-                <p>Edad exacta, antropometría, superficie corporal, líquidos y dosis pediátricas con trazabilidad clínica.</p>
-                <div class="card-actions">
-                    <a class="primary-button available-action" href="pediatria.html">Abrir pediatría</a>
-                </div>
-            </article>
-            <article class="module-card card-prioridad-media">
+            <article class="module-card card-laboratorios-dashboard" data-modulo-agrupado="laboratorios">
                 <div class="module-top">
                     <div class="module-icon">LAB</div>
-                    <span class="badge">Cognición Labs</span>
+                    <span class="badge">Disponible</span>
                 </div>
-                <h3>Laboratorio de Neurofisiología</h3>
-                <p>Simula membrana neuronal, potencial de acción y propagación axonal con experimentos guiados.</p>
+                <h3>Laboratorios</h3>
+                <p>Explora los laboratorios clínicos, farmacológicos y de modelado de COGNICIÓN.</p>
                 <div class="card-actions">
-                    <a class="primary-button available-action" href="laboratorio-neurofisiologia.html">Abrir laboratorio</a>
-                </div>
-            </article>
-
-            <article class="module-card card-laboratorio-farmacologia">
-                <div class="module-top">
-                    <div class="module-icon">FARM</div>
-                    <span class="badge">COGNICIÓN Labs</span>
-                </div>
-                <h3>Laboratorio de Farmacología</h3>
-                <p>Simula un paciente con comorbilidades opcionales y verifica interacciones entre medicamentos seleccionados.</p>
-                <div class="card-actions">
-                    <button class="primary-button" onclick="window.location.href='laboratorio-farmacologia.html'">Abrir laboratorio</button>
-                </div>
-            </article>
-
-            <article class="module-card card-laboratorio-modelado-molecular">
-                <div class="module-top">
-                    <div class="module-icon">3D</div>
-                    <span class="badge">COGNICIÓN Labs</span>
-                </div>
-                <h3>Laboratorio de Modelado Molecular</h3>
-                <p>Explora estructuras moleculares, enlaces, energía y visualización diagnóstica tridimensional.</p>
-                <div class="card-actions">
-                    <a class="primary-button available-action" href="laboratorio-modelado-molecular.html">Abrir laboratorio</a>
-                </div>
-            </article>
-
-            <article class="module-card card-prioridad-baja">
-                <div class="module-top">
-                    <div class="module-icon">PSI</div>
-                    <span class="badge">Próximamente</span>
-                </div>
-                <h3>Psicoeducación</h3>
-                <p>Biblioteca de recursos para pacientes, familiares y profesionales de la salud.</p>
-                <div class="card-actions">
-                    <button class="ghost-button" onclick="mostrarProximamente('Próximamente', 'Biblioteca de recursos para pacientes, familiares y profesionales de la salud.')">Próximamente</button>
+                    <button class="primary-button" type="button" onclick="alternarLaboratoriosDashboard(true)">Abrir laboratorios</button>
                 </div>
             </article>
 
@@ -1787,7 +1764,7 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
                     <span class="badge">Disponible</span>
                 </div>
                 <h3>Biblioteca médica</h3>
-                <p>Consulta recursos clínicos, diagnósticos, vademécum, psicoeducación y material de apoyo médico.</p>
+                <p>Consulta recursos clínicos, diagnósticos, vademécum y material de apoyo médico.</p>
                 <div class="card-actions">
                     <button class="primary-button" onclick="window.location.href='biblioteca.html'">Abrir biblioteca</button>
                 </div>
@@ -1807,6 +1784,23 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
     </section>
 </div>
 
+<div id="laboratoriosDashboardOverlay" class="proximamente-overlay" aria-hidden="true">
+    <section class="proximamente-modal laboratorios-dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="laboratoriosDashboardTitulo">
+        <span class="badge">COGNICIÓN Labs</span>
+        <h2 id="laboratoriosDashboardTitulo">Laboratorios</h2>
+        <p>Selecciona el laboratorio que deseas abrir.</p>
+        <nav class="laboratorios-dashboard-lista" aria-label="Laboratorios disponibles">
+            <a href="laboratorio-neurofisiologia.html"><strong>Neurofisiología</strong><small>Membrana neuronal, potencial de acción y axón.</small></a>
+            <a href="laboratorio-farmacologia.html"><strong>Farmacología</strong><small>Medicamentos, comorbilidades e interacciones.</small></a>
+            <a href="pediatria.html"><strong>Pediatría</strong><small>Antropometría, líquidos y dosis pediátricas.</small></a>
+            <a href="laboratorio-modelado-molecular.html"><strong>Modelado molecular</strong><small>Estructuras, enlaces y energía en 3D.</small></a>
+        </nav>
+        <div class="proximamente-actions">
+            <button class="ghost-button" type="button" onclick="alternarLaboratoriosDashboard(false)">Cerrar</button>
+        </div>
+    </section>
+</div>
+
 <footer>
     <div class="app-shell dashboard-footer">
         <div class="footer-signature">Cognición · Ciencia · Evidencia · Medicina humana</div>
@@ -1822,8 +1816,8 @@ document.addEventListener("DOMContentLoaded", function () {
   console.timeEnd?.("COGNICION dashboard | primera fase HTML");
 }, { once: true });
 </script>
-<script type="module" src="js/componentes/vista-orbital-panel-principal.js?v=2.093-filas-iconos"></script>
-<script type="module" src="js/dashboard.js?v=20260727-colaboradores-v1"></script>
+<script type="module" src="js/componentes/vista-orbital-panel-principal.js?v=2.096-laboratorios-agrupados"></script>
+<script type="module" src="js/dashboard.js?v=2.096-laboratorios-agrupados"></script>
 <script type="module" src="js/services/visitasBootstrap.js"></script>
 <script type="module" src="js/components/accesosRapidos.js"></script>
 <script type="module" src="js/components/themeSelector.js"></script>

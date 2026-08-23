@@ -6,6 +6,9 @@ import { readFileSync } from "node:fs";
 const leer = (ruta) => readFileSync(new URL(ruta, import.meta.url), "utf8");
 
 const miNubeHtml = leer("../mi-nube.html");
+const miNubeCss = leer("../css/mi-nube.css");
+const themePreload = leer("../js/theme-preload.js");
+const themeService = leer("../js/services/themeService.js");
 const dashboardHtml = leer("../dashboard.html");
 const medicoHtml = leer("../medico.html");
 const apuntesHtml = leer("../apuntes.html");
@@ -92,7 +95,11 @@ test("la vista de Mi nube publica los controles esenciales y solo acepta los tip
     "application/pdf", "text/plain", "text/markdown"
   ]);
   assert.doesNotMatch(accept, /\.(?:exe|zip|rar|apk|dmg|ps1|bat|sh|js|html)(?:,|$)/i);
-  assert.match(miNubeHtml, /<script type="module" src="js\/mi-nube\.js\?v=20260822-mi-nube-v2-090"><\/script>/);
+  assert.match(miNubeHtml, /<script type="module" src="js\/mi-nube\.js\?v=20260822-mi-nube-v2-094"><\/script>/);
+  assert.doesNotMatch(miNubeHtml, /data-enable-light-theme/);
+  assert.match(miNubeCss, /\.cloud-app\s*\{[\s\S]*?z-index:\s*3;/);
+  assert.match(themePreload, /normalizarTemaGuardado\s*=\s*\(value\)\s*=>\s*value\s*===\s*"light"\s*\?\s*"dark"/);
+  assert.match(themeService, /remoteTheme\s*===\s*"light"[\s\S]*?applyTheme\("dark"\)/);
 });
 
 test("el puente consulta la colección actual de Mis apuntes y proyecta elementos sin cuota ni escrituras", () => {
@@ -260,10 +267,11 @@ test("la entrega Mi nube conserva su marcador y una versión igual o posterior a
   assert.ok(major > 2 || (major === 2 && minor >= 85), `La versión ${major}.${minor} es anterior a 2.085`);
 });
 
-test("la corrección PDF y carpetas de apuntes publica versión y caché 2.090", () => {
+test("la corrección PDF y carpetas conserva su caché mientras la versión avanza a 2.095", () => {
   assert.match(appVersion, /deployment marker:\s*2026-08-22-mi-nube-preview-notes-folders-v1/);
-  assert.match(appVersion, /APP_VERSION\s*=\s*"2\.090"/);
-  assert.match(miNubeHtml, /js\/mi-nube\.js\?v=20260822-mi-nube-v2-090/);
+  assert.match(appVersion, /deployment marker:\s*2026-08-22-mi-nube-admin-moderation-v1/);
+  assert.match(appVersion, /APP_VERSION\s*=\s*"2\.095"/);
+  assert.match(miNubeHtml, /js\/mi-nube\.js\?v=20260822-mi-nube-v2-094/);
   assert.match(miNubeControlador, /cloudPreviewService\.js\?v=20260822-mi-nube-v2-090/);
   assert.match(miNubeControlador, /notesCloudBridgeService\.js\?v=20260822-mi-nube-v2-090/);
 });

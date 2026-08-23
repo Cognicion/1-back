@@ -164,6 +164,7 @@ try {
         Invoke-EmulatorTests -FirebaseCli $firebaseCli -Only "auth,functions,firestore,storage" -TestFiles @(
             "functions/test/emulator/cloudFlow.test.mjs",
             "functions/test/emulator/cloudQuota.test.mjs",
+            "functions/test/emulator/cloudAdminModerationFlow.test.mjs",
             "functions/test/emulator/professionalRegistrationFlow.test.mjs",
             "functions/test/emulator/accountLinkingFlow.test.mjs"
         )

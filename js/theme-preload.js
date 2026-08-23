@@ -6,26 +6,26 @@
   const LEGACY_KEYS = ["cognicion.apariencia.modoInterfaz", "theme"];
   const DEFAULT_THEME = "biocelular";
   const root = document.documentElement;
-  // Claro permanece fuera de la selección global, salvo en páginas que declaran
-  // explícitamente soporte completo mediante data-enable-light-theme.
-  const allowLight = root.dataset.enableLightTheme === "true";
-  const isValid = (value) => value === "dark" || value === "biocelular" || (allowLight && value === "light");
+  // Claro está temporalmente deshabilitado. Se migra a Oscuro antes de que
+  // cualquier CSS visible pueda pintar la interfaz.
+  const normalizarTemaGuardado = (value) => value === "light" ? "dark" : value;
+  const isValid = (value) => value === "dark" || value === "biocelular";
   const read = (key) => {
     try { return localStorage.getItem(key); } catch (_) { return null; }
   };
   const readImmediateTheme = () => {
-    const globalTheme = read(GLOBAL_THEME_KEY);
-    const visualTheme = read(VISUAL_THEME_KEY);
+    const globalTheme = normalizarTemaGuardado(read(GLOBAL_THEME_KEY));
+    const visualTheme = normalizarTemaGuardado(read(VISUAL_THEME_KEY));
     if (isValid(globalTheme)) return globalTheme;
     for (const legacyKey of LEGACY_KEYS) {
-      const legacyTheme = read(legacyKey);
+      const legacyTheme = normalizarTemaGuardado(read(legacyKey));
       if (isValid(legacyTheme)) return legacyTheme;
     }
     try {
       for (let index = 0; index < localStorage.length; index += 1) {
         const key = localStorage.key(index);
         if (key?.startsWith("cognicion:theme:")) {
-          const storedTheme = localStorage.getItem(key);
+          const storedTheme = normalizarTemaGuardado(localStorage.getItem(key));
           if (isValid(storedTheme)) return storedTheme;
         }
       }
@@ -35,6 +35,13 @@
   const apply = () => {
     const storedTheme = readImmediateTheme();
     const appliedTheme = isValid(storedTheme) ? storedTheme : DEFAULT_THEME;
+    if (read(GLOBAL_THEME_KEY) === "light" || read(VISUAL_THEME_KEY) === "light") {
+      try {
+        localStorage.setItem(GLOBAL_THEME_KEY, "dark");
+        localStorage.setItem(VISUAL_THEME_KEY, "dark");
+      } catch (_) { /* almacenamiento no disponible */ }
+      console.info("[TEMA] Preferencia Claro migrada a Oscuro");
+    }
     root.dataset.theme = appliedTheme;
     root.dataset.paletaClara = read(LIGHT_PALETTE_KEY) || "menta";
     root.dataset.cognicionTheme = "laboratorio";

@@ -34,7 +34,6 @@ const GRUPOS_CIE10_BIBLIOTECA = [
 ];
 let sistemasVisibles = cargarPreferencia(CLAVE_SISTEMAS_VISIBLES, { cie10: true, cie11: true, dsm5: true });
 let DIAGNOSTICOS_VALIDOS = [];
-let PSICOEDUCACION = [];
 let diagnosticosPorId = new Map();
 const TAMANO_LOTE_DIAGNOSTICOS = 120;
 let diagnosticosFiltradosActuales = [];
@@ -200,12 +199,8 @@ function usuarioPuedeUsarBiblioteca(user, usuario = {}) {
 
 const libraryRoot = document.querySelector("[data-library-root]");
 const datosBibliotecaListos = libraryRoot
-  ? Promise.all([
-    import("./data/catalogoDiagnosticos.js?v=20260816-cie10-cde-v1"),
-    import("./data/psicoeducacionBiblioteca.js?v=20260816-cie10-cde-v1")
-  ]).then(([diagnosticosModule, psicoeducacionModule]) => {
+  ? import("./data/catalogoDiagnosticos.js?v=20260816-cie10-cde-v1").then((diagnosticosModule) => {
     DIAGNOSTICOS_VALIDOS = validarDiagnosticosBiblioteca(diagnosticosModule.CATALOGO_DIAGNOSTICOS);
-    PSICOEDUCACION = psicoeducacionModule.PSICOEDUCACION || [];
     diagnosticosPorId = new Map(DIAGNOSTICOS_VALIDOS.map((diagnostico) => [diagnostico.id, diagnostico]));
     poblarCategoriasBiblioteca();
   })
@@ -380,7 +375,6 @@ function convertirDiagnosticosManuales() {
     subcategoria: diagnostico.subcategoria || "Catálogo manual",
     aliases: diagnostico.aliases || [],
     sistemas: diagnostico.codigo ? { cie10: { visible: true, orden: 1, codigo: diagnostico.codigo, nombre: diagnostico.nombre, criterios: [], especificadores: [], notas: [] } } : {},
-    psicoeducacion: diagnostico.psicoeducacion || "",
     diagnosticoDiferencial: diagnostico.diagnosticoDiferencial || [],
     comorbilidades: diagnostico.comorbilidades || [],
     evaluacionClinica: diagnostico.evaluacionClinica || [],
@@ -405,7 +399,6 @@ function textoBusquedaDiagnostico(diagnostico) {
     diagnostico.subcategoria,
     ...(diagnostico.aliases || []),
     ...(incluirContenidoClinico ? [
-      diagnostico.psicoeducacion,
       ...(diagnostico.diagnosticoDiferencial || []),
       ...(diagnostico.comorbilidades || []),
       ...(diagnostico.evaluacionClinica || [])
@@ -514,9 +507,8 @@ function renderizarFarmacologiaDiagnostico(diagnostico) {
 
 function renderizarDetallesDiagnostico(diagnostico, detalles) {
   const sistemas = SYSTEM_ORDER.map((sistema) => renderizarSistemaAcordeon(diagnostico, sistema)).join("");
-  const psico = diagnostico.psicoeducacion ? `<section class="contenido-diagnostico"><h4>Psicoeducación</h4><p>${escaparHTML(diagnostico.psicoeducacion)}</p></section>` : "";
   const diferencial = diagnostico.diagnosticoDiferencial?.length ? listaResumen("Diagnóstico diferencial", diagnostico.diagnosticoDiferencial) : "";
-  detalles.innerHTML = `${sistemas || `<p class="criterios-vacios">Activa al menos un sistema diagnóstico para visualizar sus códigos y criterios.</p>`}${renderizarFarmacologiaDiagnostico(diagnostico)}${psico}${diferencial}<p class="aviso-clinico-biblioteca">Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.</p>`;
+  detalles.innerHTML = `${sistemas || `<p class="criterios-vacios">Activa al menos un sistema diagnóstico para visualizar sus códigos y criterios.</p>`}${renderizarFarmacologiaDiagnostico(diagnostico)}${diferencial}<p class="aviso-clinico-biblioteca">Los criterios son una herramienta de apoyo y deben integrarse con la entrevista clínica, antecedentes, exploración mental, evolución y juicio profesional.</p>`;
   detalles.dataset.rendered = "true";
   detalles.querySelectorAll("[data-sistema-toggle]").forEach((boton) => boton.addEventListener("click", () => {
     const sistema = boton.dataset.sistemaToggle;
@@ -639,19 +631,6 @@ function render() {
           ${m.monitoring?.length ? `<p><strong>Monitoreo:</strong> ${m.monitoring.slice(0, 4).join(", ")}</p>` : ""}
           <p>${m.notas}</p>
           <p class="muted">Contenido de apoyo clínico. Validar contra ficha técnica, protocolos locales y juicio profesional.</p>
-        </article>
-      `).join("");
-    return;
-  }
-
-  if (tabActual === "psicoeducacion") {
-    panel.innerHTML = PSICOEDUCACION
-      .filter((p) => coincide(`${p.titulo} ${p.tema} ${p.texto}`))
-      .map((p) => `
-        <article class="card">
-          <h3>${p.titulo}</h3>
-          <span class="tag">${p.tema}</span>
-          <p>${p.texto}</p>
         </article>
       `).join("");
     return;
