@@ -1345,7 +1345,7 @@ html[data-theme="light"] .ghost-button:hover,
 html[data-theme="light"] .logout-button:hover { color: var(--text-primary); background: var(--action-secondary-hover); border-color: var(--accent-primary); box-shadow: none; transform: none; }
 html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px, 1440px); }
 </style>
-    <link rel="stylesheet" href="css/dashboard-encabezado-vistas.css?v=2.081">
+    <link rel="stylesheet" href="css/dashboard-encabezado-vistas.css?v=2.093">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
 
@@ -1360,15 +1360,61 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
                 <div class="brand-name">Cognición</div>
 
                 <div class="brand-subtitle">
-                    Plataforma clínica integral.
+                    Clínica, aprendizaje y laboratorios.
                 </div>
             </div>
         </div>
 
         <div class="topbar-actions">
             <a class="navegacion-dashboard-activa" href="dashboard.html" aria-current="page">
-                <span aria-hidden="true">⌂</span> Inicio
+                <span aria-hidden="true">⌂</span> Inicio <span class="nav-action-hint">Tu espacio de trabajo</span>
             </a>
+
+            <details class="navbar-explorar">
+                <summary aria-label="Explorar funciones de Cognición Labs">
+                    <span aria-hidden="true">✦</span> Explorar funciones
+                </summary>
+                <div class="navbar-explorar-panel">
+                    <div class="navbar-explorar-intro">
+                        <strong>Todo Cognición Labs</strong>
+                        <span>Herramientas clínicas, entrenamiento cognitivo y laboratorios en un solo lugar.</span>
+                    </div>
+                    <div class="navbar-explorar-grid">
+                        <section>
+                            <span class="navbar-explorar-kicker">Práctica clínica</span>
+                            <a href="medico.html"><strong>Panel médico</strong><small>Pacientes, notas, agenda y seguimiento</small></a>
+                            <a href="mi-salud.html"><strong>Mi Salud</strong><small>Tratamiento, metas y registro personal</small></a>
+                            <a href="biblioteca.html"><strong>Biblioteca médica</strong><small>Recursos clínicos y material de apoyo</small></a>
+                            <a href="mi-nube.html"><strong>Mi nube</strong><small>Archivos y apuntes privados</small></a>
+                        </section>
+                        <section>
+                            <span class="navbar-explorar-kicker">Laboratorios</span>
+                            <a href="laboratorio-farmacologia.html"><strong>Farmacología</strong><small>Medicamentos, comorbilidades e interacciones</small></a>
+                            <a href="laboratorio-neurofisiologia.html"><strong>Neurofisiología</strong><small>Membrana, potencial de acción y axón</small></a>
+                            <a href="laboratorio-modelado-molecular.html"><strong>Modelado molecular</strong><small>Estructuras, enlaces y energía en 3D</small></a>
+                            <a href="pediatria.html"><strong>Pediatría</strong><small>Antropometría, líquidos y dosis</small></a>
+                        </section>
+                        <section>
+                            <span class="navbar-explorar-kicker">Evaluación y entrenamiento</span>
+                            <a href="escalas.html"><strong>Escalas clínicas</strong><small>Tamizajes e instrumentos cognitivos</small></a>
+                            <a href="calculadoras-medicas.html"><strong>Calculadoras médicas</strong><small>Índices, riesgo y dosificación</small></a>
+                            <a href="rehabilitacion-cognitiva.html"><strong>Rehabilitación cognitiva</strong><small>Memoria, atención y funciones ejecutivas</small></a>
+                            <a href="estadistica.html"><strong>Estadística médica</strong><small>Variables, tablas y gráficas clínicas</small></a>
+                        </section>
+                        <section>
+                            <span class="navbar-explorar-kicker">Cognición y comunidad</span>
+                            <a href="nback.html"><strong>1-Back, Stroop y Go / No-Go</strong><small>Memoria de trabajo e inhibición</small></a>
+                            <a href="busqueda-visual.html"><strong>Búsqueda visual y emociones</strong><small>Atención visual y cognición social</small></a>
+                            <a href="detector-patrones.html"><strong>Detector de patrones clínicos</strong><small>Trayectorias, señales y evidencia</small></a>
+                            <a href="foro.html"><strong>Foro Cognición y SOFÍA</strong><small>Comunidad y laboratorio experimental de IA</small></a>
+                        </section>
+                    </div>
+                    <div class="navbar-explorar-footer">
+                        <span>También disponible: respiración guiada, calculadora de benzodiacepinas, calculadoras pediátricas, apuntes, historia clínica y configuración.</span>
+                        <a href="configuracion.html">Personalizar experiencia →</a>
+                    </div>
+                </div>
+            </details>
 
             <div data-cognicion-theme-selector></div>
 
@@ -1378,7 +1424,8 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
                     id="notificationsButton"
                     class="notifications-button"
                     type="button"
-                    aria-label="Abrir notificaciones"
+                    aria-label="Abrir avisos, comunicados y novedades"
+                    title="Avisos, comunicados y novedades"
                     aria-expanded="false"
                     onclick="alternarNotificaciones()"
                 >
@@ -1396,7 +1443,7 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
                     <div class="notifications-header">
                         <div>
                             <span class="section-kicker">Avisos</span>
-                            <strong>Notificaciones y comunicados</strong>
+                            <strong>Avisos, comunicados y novedades</strong>
                         </div>
 
                         <button
@@ -1418,7 +1465,8 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
                     id="mensajesButton"
                     class="notifications-button mensajes-button"
                     type="button"
-                    aria-label="Abrir mensajes"
+                    aria-label="Abrir mensajes y conversaciones"
+                    title="Mensajes y conversaciones"
                     aria-expanded="false"
                     onclick="alternarMensajes()"
                 >
@@ -1430,6 +1478,7 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
             <button
                 class="logout-button nav-panel-medico"
                 type="button"
+                title="Gestiona pacientes, notas, agenda y seguimiento clínico"
                 onclick="window.location.href='medico.html'"
             >
                 Panel médico
@@ -1438,6 +1487,7 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
             <button
                 class="logout-button"
                 type="button"
+                title="Configura apariencia, cuenta y preferencias"
                 onclick="window.location.href='configuracion.html'"
             >
                 Configuración
@@ -1446,6 +1496,7 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
             <button
                 class="logout-button"
                 type="button"
+                title="Cerrar tu sesión de Cognición Labs"
                 onclick="cerrarSesion()"
             >
                 Cerrar sesión
@@ -1771,7 +1822,7 @@ document.addEventListener("DOMContentLoaded", function () {
   console.timeEnd?.("COGNICION dashboard | primera fase HTML");
 }, { once: true });
 </script>
-<script type="module" src="js/componentes/vista-orbital-panel-principal.js?v=2.081-filas-interactivas"></script>
+<script type="module" src="js/componentes/vista-orbital-panel-principal.js?v=2.093-filas-iconos"></script>
 <script type="module" src="js/dashboard.js?v=20260727-colaboradores-v1"></script>
 <script type="module" src="js/services/visitasBootstrap.js"></script>
 <script type="module" src="js/components/accesosRapidos.js"></script>

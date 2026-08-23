@@ -2,7 +2,26 @@ const CLAVE_VISTA_MODULOS = "cognicion:dashboard:vista-modulos";
 const VISTA_PREDETERMINADA = "lista";
 const VISTAS_DISPONIBLES = new Set(["orbita", "tarjetas", "lista"]);
 const RUTAS_PRECARGADAS = new Set();
-const INSIGNIAS_OCULTAS_EN_LISTA = new Set(["COGNICION LABS", "NUEVO", "PRINCIPAL"]);
+const INSIGNIAS_CONSERVADAS_EN_LISTA = new Set(["ALFA", "ALPHA"]);
+const ICONOS_MINIMALISTAS_POR_RUTA = new Map([
+  ["mi-salud.html", "♡"],
+  ["mi-nube.html", "☁"],
+  ["sofia.html", "✦"],
+  ["rehabilitacion-cognitiva.html", "◌"],
+  ["estadistica.html", "⌁"],
+  ["medico.html", "♙"],
+  ["escalas.html", "⊞"],
+  ["calculadoras-medicas.html", "＋"],
+  ["calculadoras-pediatricas.html", "＋"],
+  ["respiracion.html", "≈"],
+  ["foro.html", "◫"],
+  ["admin.html", "⚙"],
+  ["pediatria.html", "♧"],
+  ["laboratorio-neurofisiologia.html", "ϟ"],
+  ["biblioteca.html", "▤"],
+  ["laboratorio-farmacologia.html", "⚗"],
+  ["laboratorio-modelado-molecular.html", "◇"]
+]);
 const MODULOS_PRINCIPALES_POR_RUTA = new Map([
   ["medico.html", "js/medico.js?v=1.866"],
   ["mi-salud.html", "js/mi-salud.js?v=20260731-admin-access"],
@@ -65,17 +84,27 @@ function normalizarTextoVisible(texto = "") {
 function prepararFilasInteractivas(contenedor) {
   contenedor.querySelectorAll(".module-card").forEach((tarjeta) => {
     const insignia = tarjeta.querySelector(".badge");
-    const ocultarInsignia = INSIGNIAS_OCULTAS_EN_LISTA.has(normalizarTextoVisible(insignia?.textContent));
+    const textoInsignia = normalizarTextoVisible(insignia?.textContent);
+    const ocultarInsignia = Boolean(insignia) && !INSIGNIAS_CONSERVADAS_EN_LISTA.has(textoInsignia);
     insignia?.classList.toggle("insignia-omitida-en-lista", ocultarInsignia);
     tarjeta.classList.toggle("sin-insignia-lista", ocultarInsignia);
 
-    if (tarjeta.querySelector(":scope > .fila-modulo-enlace")) return;
     const accionPrincipal = [...tarjeta.querySelectorAll(".card-actions :is(a, button)")]
       .find((accion) => !accion.disabled && accion.getAttribute("aria-disabled") !== "true");
     const ruta = obtenerRutaDesdeAccion(accionPrincipal);
-    if (!ruta) return;
-
     const titulo = tarjeta.querySelector("h3")?.textContent?.trim() || "módulo";
+    const claveRuta = ruta.split(/[?#]/, 1)[0];
+    const icono = ICONOS_MINIMALISTAS_POR_RUTA.get(claveRuta) || "·";
+    const iconoModulo = tarjeta.querySelector(":scope > .module-top .module-icon");
+    if (iconoModulo) {
+      iconoModulo.textContent = icono;
+      iconoModulo.classList.add("icono-minimalista");
+      iconoModulo.setAttribute("aria-hidden", "true");
+      iconoModulo.title = titulo;
+    }
+
+    if (!ruta || tarjeta.querySelector(":scope > .fila-modulo-enlace")) return;
+
     const enlaceFila = document.createElement("a");
     enlaceFila.className = "fila-modulo-enlace";
     enlaceFila.href = ruta;

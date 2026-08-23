@@ -16,8 +16,8 @@ test("construye una vista exportable sin interpolar título ni texto de objetos 
   assert.doesNotMatch(html, /<script>alert/);
   assert.match(html, /Cuadro &lt;seguro&gt;/);
   assert.match(html, /objeto-exportable--cuadrado/);
-  assert.match(html, /punta-export-flecha-1/);
-  assert.match(html, /M12\.000 24\.000 L78\.000 64\.000/);
+  assert.doesNotMatch(html, /<marker|marker-end/);
+  assert.match(html, /M12\.000 24\.000 L78\.000 64\.000 M/);
   assert.match(html, /z-index:1;opacity:\.7/);
 });
 

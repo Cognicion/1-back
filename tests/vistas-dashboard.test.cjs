@@ -58,18 +58,24 @@ async function medirLista(pagina) {
   const filasInteractivas = await escritorio.evaluate(() => {
     const visibles = [...document.querySelectorAll("[data-vista-tarjetas] .module-card")]
       .filter((fila) => getComputedStyle(fila).display !== "none");
-    const insigniasOmitidas = [...document.querySelectorAll(".badge.insignia-omitida-en-lista")];
+    const insignias = [...document.querySelectorAll(".badge")];
+    const insigniasOmitidas = insignias.filter((insignia) => insignia.classList.contains("insignia-omitida-en-lista"));
     return {
       navegables: visibles.filter((fila) => fila.querySelector(":scope > .fila-modulo-enlace")).length,
+      iconos: visibles.filter((fila) => fila.querySelector(":scope > .module-top .module-icon.icono-minimalista")).length,
       omitidas: insigniasOmitidas.map((insignia) => ({
         texto: insignia.textContent.trim(),
         display: getComputedStyle(insignia).display
-      }))
+      })),
+      alfa: insignias.filter((insignia) => /^(ALFA|ALPHA)$/i.test(insignia.textContent.trim()))
+        .map((insignia) => getComputedStyle(insignia).display)
     };
   });
   assert.ok(filasInteractivas.navegables >= inicial.filas - 1, String(filasInteractivas.navegables));
+  assert.ok(filasInteractivas.iconos >= inicial.filas - 1, String(filasInteractivas.iconos));
   assert.ok(filasInteractivas.omitidas.length >= 3);
   assert.ok(filasInteractivas.omitidas.every((insignia) => insignia.display === "none"));
+  assert.ok(filasInteractivas.alfa.every((display) => display !== "none"));
 
   await escritorio.click('[data-seleccionar-vista="orbita"]');
   assert.equal(await escritorio.getAttribute("orbita-panel-principal", "data-pausada"), null);

@@ -168,8 +168,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=20260820-apuntes-minimal-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260822-apuntes-flechas-ancladas-v1/);
-  assert.match(html, /apuntes\.js\?v=20260822-apuntes-flechas-ancladas-v1/);
+  assert.match(html, /apuntes\.css\?v=20260822-apuntes-objetos-interaccion-v1/);
+  assert.match(html, /apuntes\.js\?v=20260822-apuntes-objetos-interaccion-v1/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
   assert.match(html, /id="menuInsertarApunte"[^>]*aria-label="Insertar en el apunte"/);
   assert.match(html, /id="insertarCuadroTexto"/);
@@ -262,6 +262,12 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(objetosApunte, /anclaFin/);
   assert.match(objetosApunte, /sincronizarFlechasAncladas/);
   assert.match(objetosApunte, /extremo-flecha/);
+  assert.match(objetosApunte, /trazoFlecha\(objeto\)/);
+  assert.match(objetosApunte, /setPointerCapture/);
+  assert.match(objetosApunte, /addEventListener\("pointercancel", terminar\)/);
+  assert.doesNotMatch(objetosApunte, /markerWidth=/);
+  assert.match(css, /\.objeto-apunte__redimensionar::after\s*\{/);
+  assert.match(css, /\.objeto-apunte__control-flecha::after\s*\{/);
   assert.match(controlador, /function quitarResaltadoSeleccion\(\)[\s\S]*hiliteColor", "transparent"/);
   assert.match(controlador, /function abrirMenuContextualTexto/);
   assert.match(controlador, /function aplicarFondoApunte/);
@@ -358,7 +364,8 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-22-apuntes-insertar-controles-v1/);
   assert.match(version, /2026-08-22-apuntes-contexto-fondo-retraible-v1/);
   assert.match(version, /2026-08-22-apuntes-flechas-ancladas-v1/);
+  assert.match(version, /2026-08-22-apuntes-objetos-interaccion-v1/);
   const versionVisible = version.match(/APP_VERSION = "(\d+\.\d+)"/);
   assert.ok(versionVisible, "APP_VERSION debe seguir siendo visible y numérica");
-  assert.ok(Number(versionVisible[1]) >= 2.088, "versiones posteriores no deben invalidar la regresión de Mis apuntes");
+  assert.ok(Number(versionVisible[1]) >= 2.091, "versiones posteriores no deben invalidar la regresión de Mis apuntes");
 });

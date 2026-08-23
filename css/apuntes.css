@@ -1286,14 +1286,12 @@ body.pagina-apuntes > main.apuntes-shell {
   pointer-events: stroke;
 }
 
-.objeto-apunte--flecha :where(path, marker path) {
-  fill: currentColor;
-  stroke: currentColor;
-}
-
 .objeto-apunte--flecha > svg > path {
   fill: none;
+  stroke: currentColor;
   stroke-width: 0.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .objeto-apunte--flecha[data-seleccionado="true"] {
@@ -1352,34 +1350,48 @@ body.pagina-apuntes > main.apuntes-shell {
   z-index: 4;
   left: var(--flecha-x);
   top: var(--flecha-y);
-  width: 12px;
-  min-width: 12px;
-  height: 12px;
-  min-height: 12px;
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  min-height: 16px;
   padding: 0;
-  border: 1px solid var(--objeto-color) !important;
+  border: 0 !important;
   border-radius: 50%;
   color: transparent !important;
-  background: var(--apuntes-superficie) !important;
+  background: transparent !important;
   box-shadow: none !important;
   pointer-events: auto;
   transform: translate(-50%, -50%);
   cursor: crosshair;
 }
 
+.objeto-apunte__control-flecha::after {
+  display: block;
+  width: 5px;
+  height: 5px;
+  margin: auto;
+  border: 1px solid var(--objeto-color);
+  border-radius: 50%;
+  background: var(--apuntes-superficie);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--apuntes-superficie) 85%, transparent);
+  content: "";
+}
+
 .objeto-apunte__control-flecha--mover {
-  width: 16px;
-  min-width: 16px;
-  height: 16px;
-  min-height: 16px;
-  border-color: var(--apuntes-borde-fuerte) !important;
   cursor: move;
+}
+
+.objeto-apunte__control-flecha--mover::after {
+  width: 7px;
+  height: 7px;
+  border-color: var(--apuntes-borde-fuerte);
+  background: var(--apuntes-borde-fuerte);
 }
 
 .apuntes-shell .objeto-apunte__control-flecha:hover:not(:disabled),
 .apuntes-shell .objeto-apunte__control-flecha:focus-visible {
   transform: translate(-50%, -50%);
-  background: var(--apuntes-superficie-hover) !important;
+  background: transparent !important;
 }
 
 .apuntes-shell .objeto-apunte__mover:hover:not(:disabled),
@@ -1400,11 +1412,26 @@ body.pagina-apuntes > main.apuntes-shell {
 }
 
 .objeto-apunte__redimensionar {
-  width: 10px;
-  height: 10px;
-  border: 1px solid var(--objeto-color) !important;
-  border-radius: 3px;
+  width: 14px;
+  min-width: 14px;
+  height: 14px;
+  min-height: 14px;
+  border: 0 !important;
+  border-radius: 50%;
+  background: transparent !important;
   transform: translate(-50%, -50%);
+}
+
+.objeto-apunte__redimensionar::after {
+  display: block;
+  width: 5px;
+  height: 5px;
+  margin: auto;
+  border: 1px solid var(--objeto-color);
+  border-radius: 50%;
+  background: var(--apuntes-superficie);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--apuntes-superficie) 85%, transparent);
+  content: "";
 }
 
 .objeto-apunte__redimensionar--n { left: 50%; top: 0; cursor: ns-resize; }

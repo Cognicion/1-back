@@ -78,7 +78,10 @@
 // deployment marker: 2026-08-22-apuntes-insertar-controles-v1
 // deployment marker: 2026-08-22-apuntes-contexto-fondo-retraible-v1
 // deployment marker: 2026-08-22-apuntes-flechas-ancladas-v1
+// deployment marker: 2026-08-22-apuntes-objetos-interaccion-v1
 // deployment marker: 2026-08-22-mi-nube-infraestructura-segura-v1
 // deployment marker: 2026-08-22-mi-nube-preview-notes-folders-v1
-export const APP_VERSION = "2.090";
+// deployment marker: 2026-08-22-dashboard-lista-iconos-v1
+// deployment marker: 2026-08-22-navbar-explorar-funciones-v1
+export const APP_VERSION = "2.093";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

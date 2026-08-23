@@ -197,6 +197,31 @@ function redimensionarObjeto(objeto, direccion, deltaX, deltaY) {
   return { x: izquierda, y: arriba, ancho: derecha - izquierda, alto: abajo - arriba };
 }
 
+function trazoFlecha(objeto) {
+  const inicioX = Number(objeto.inicioX);
+  const inicioY = Number(objeto.inicioY);
+  const finX = Number(objeto.finX);
+  const finY = Number(objeto.finY);
+  const deltaX = finX - inicioX;
+  const deltaY = finY - inicioY;
+  const longitud = Math.hypot(deltaX, deltaY);
+  if (longitud < 0.01) return `M${inicioX} ${inicioY} L${finX} ${finY}`;
+
+  // La punta se dibuja con dos segmentos cortos en el mismo path: es una flecha
+  // discreta, proporcional a la línea y no depende del escalado de <marker>.
+  const tamanioPunta = Math.min(2.4, Math.max(1.25, longitud * 0.08));
+  const semiancho = tamanioPunta * 0.55;
+  const unidadX = deltaX / longitud;
+  const unidadY = deltaY / longitud;
+  const baseX = finX - (unidadX * tamanioPunta);
+  const baseY = finY - (unidadY * tamanioPunta);
+  const izquierdaX = baseX - (unidadY * semiancho);
+  const izquierdaY = baseY + (unidadX * semiancho);
+  const derechaX = baseX + (unidadY * semiancho);
+  const derechaY = baseY - (unidadX * semiancho);
+  return `M${inicioX} ${inicioY} L${finX} ${finY} M${izquierdaX} ${izquierdaY} L${finX} ${finY} L${derechaX} ${derechaY}`;
+}
+
 function crearElementoObjeto(controlador, objeto, indice) {
   const elemento = document.createElement("article");
   elemento.className = `objeto-apunte objeto-apunte--${objeto.tipo} objeto-apunte--${objeto.ajuste}`;
@@ -232,11 +257,10 @@ function crearElementoObjeto(controlador, objeto, indice) {
     elemento.append(contenido);
   } else {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    const idPunta = `punta-flecha-${objeto.id.replace(/[^a-z0-9_-]/gi, "") || indice}`;
     svg.setAttribute("viewBox", "0 0 100 100");
     svg.setAttribute("preserveAspectRatio", "none");
     svg.setAttribute("aria-hidden", "true");
-    svg.innerHTML = `<defs><marker id="${idPunta}" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z"></path></marker></defs><path d="M${objeto.inicioX} ${objeto.inicioY} L${objeto.finX} ${objeto.finY}" marker-end="url(#${idPunta})"></path>`;
+    svg.innerHTML = `<path d="${trazoFlecha(objeto)}"></path>`;
     elemento.append(svg);
   }
 
@@ -252,20 +276,28 @@ function crearElementoObjeto(controlador, objeto, indice) {
     }
   }
 
-  elemento.addEventListener("pointerdown", (evento) => {
-    if (evento.target.closest("[data-accion-objeto='editar']")) return;
-    controlador.seleccionar(objeto.id);
-    [...lienzo.querySelectorAll("[data-objeto-id]")].find((item) => item.dataset.objetoId === objeto.id)?.focus({ preventScroll: true });
-    const control = evento.target.closest("[data-accion-objeto]");
-    const accion = control?.dataset.accionObjeto;
-    if (accion === "mover" || accion === "redimensionar" || accion === "extremo-flecha" || accion === "mover-flecha" || objeto.tipo === "flecha") {
+  elemento.querySelectorAll("[data-accion-objeto]").forEach((control) => {
+    if (control.dataset.accionObjeto === "editar") return;
+    control.addEventListener("pointerdown", (evento) => {
+      if (evento.button !== 0) return;
+      evento.preventDefault();
+      evento.stopPropagation();
+      const accion = control.dataset.accionObjeto;
       const modo = accion === "redimensionar"
         ? "redimensionar"
         : accion === "extremo-flecha"
           ? "extremo-flecha"
-          : objeto.tipo === "flecha" ? "mover-flecha" : "mover";
-      controlador.iniciarArrastre(evento, objeto.id, modo, control?.dataset.direccion, control?.dataset.extremo);
-    }
+          : accion === "mover-flecha" ? "mover-flecha" : "mover";
+      controlador.iniciarArrastre(evento, objeto.id, modo, control.dataset.direccion, control.dataset.extremo);
+    });
+  });
+
+  elemento.addEventListener("pointerdown", (evento) => {
+    if (evento.target.closest("[data-accion-objeto='editar']")) return;
+    if (evento.target.closest("[data-accion-objeto]")) return;
+    controlador.seleccionar(objeto.id);
+    [...lienzo.querySelectorAll("[data-objeto-id]")].find((item) => item.dataset.objetoId === objeto.id)?.focus({ preventScroll: true });
+    if (objeto.tipo === "flecha") controlador.iniciarArrastre(evento, objeto.id, "mover-flecha");
   });
   elemento.addEventListener("contextmenu", (evento) => {
     evento.preventDefault();
@@ -399,9 +431,28 @@ export function inicializarObjetosApunte({ lienzo, capaDelante, capaDetras, menu
       if (!objeto) return;
       evento.preventDefault();
       const rect = lienzo.getBoundingClientRect();
-      this.arrastre = { id, modo, direccion, extremo, inicioX: evento.clientX, inicioY: evento.clientY, rect, objeto };
+      const capturador = evento.currentTarget instanceof Element ? evento.currentTarget : null;
+      try {
+        capturador?.setPointerCapture?.(evento.pointerId);
+      } catch {
+        // Algunos navegadores no permiten capturar un puntero ya liberado; el
+        // listener de documento mantiene el arrastre como respaldo.
+      }
+      this.arrastre = {
+        id,
+        modo,
+        direccion,
+        extremo,
+        inicioX: evento.clientX,
+        inicioY: evento.clientY,
+        rect,
+        objeto,
+        capturador,
+        pointerId: evento.pointerId
+      };
       documentoActivo().addEventListener("pointermove", mover);
-      documentoActivo().addEventListener("pointerup", terminar, { once: true });
+      documentoActivo().addEventListener("pointerup", terminar);
+      documentoActivo().addEventListener("pointercancel", terminar);
     },
     gestionarTecladoObjeto(evento, id) {
       if (evento.target.closest("[contenteditable='true']")) return;
@@ -434,6 +485,7 @@ export function inicializarObjetosApunte({ lienzo, capaDelante, capaDetras, menu
     destruir() {
       documentoActivo().removeEventListener("pointermove", mover);
       documentoActivo().removeEventListener("pointerup", terminar);
+      documentoActivo().removeEventListener("pointercancel", terminar);
       documentoActivo().removeEventListener("pointerdown", cerrarMenuAlPulsarFuera);
       menuContextual?.removeEventListener("click", gestionarMenuContextual);
       capaDelante.replaceChildren();
@@ -489,8 +541,16 @@ export function inicializarObjetosApunte({ lienzo, capaDelante, capaDetras, menu
     }
   };
   const terminar = () => {
+    const estado = controlador.arrastre;
+    try {
+      if (estado?.capturador?.hasPointerCapture?.(estado.pointerId)) estado.capturador.releasePointerCapture(estado.pointerId);
+    } catch {
+      // El elemento puede haberse reemplazado durante el renderizado del arrastre.
+    }
     controlador.arrastre = null;
     documentoActivo().removeEventListener("pointermove", mover);
+    documentoActivo().removeEventListener("pointerup", terminar);
+    documentoActivo().removeEventListener("pointercancel", terminar);
   };
   documentoActivo().addEventListener("pointerdown", cerrarMenuAlPulsarFuera);
   menuContextual?.addEventListener("click", gestionarMenuContextual);

@@ -69,6 +69,57 @@ body > header .navegacion-dashboard-activa {
   background: transparent;
 }
 
+body > header .nav-action-hint { display: none; }
+
+body > header .navbar-explorar { position: relative; flex: 0 0 auto; }
+
+body > header .navbar-explorar summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  cursor: pointer;
+  font-size: .76rem;
+  list-style: none;
+  white-space: nowrap;
+}
+
+body > header .navbar-explorar summary::-webkit-details-marker { display: none; }
+body > header .navbar-explorar summary:hover,
+body > header .navbar-explorar[open] summary { color: var(--text-primary); border-color: var(--accent); }
+
+body > header .navbar-explorar-panel {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(720px, calc(100vw - 24px));
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bg) 96%, #07151a);
+  box-shadow: 0 18px 48px rgb(0 0 0 / 32%);
+}
+
+body > header .navbar-explorar-intro { display: grid; gap: 3px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+body > header .navbar-explorar-intro strong { color: var(--text-primary); font-size: .9rem; }
+body > header .navbar-explorar-intro span,
+body > header .navbar-explorar-footer span { color: var(--text-secondary); font-size: .7rem; line-height: 1.4; }
+body > header .navbar-explorar-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; padding: 14px 0; }
+body > header .navbar-explorar-grid section { display: grid; align-content: start; gap: 5px; }
+body > header .navbar-explorar-kicker { margin-bottom: 3px; color: var(--accent); font-size: .62rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+body > header .navbar-explorar-grid a { display: grid; gap: 2px; padding: 6px 7px; border-radius: 6px; text-decoration: none; }
+body > header .navbar-explorar-grid a:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+body > header .navbar-explorar-grid a strong { color: var(--text-primary); font-size: .72rem; }
+body > header .navbar-explorar-grid a small { color: var(--text-secondary); font-size: .64rem; line-height: 1.3; }
+body > header .navbar-explorar-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 11px; border-top: 1px solid var(--line); }
+body > header .navbar-explorar-footer a { flex: 0 0 auto; color: var(--accent); font-size: .68rem; text-decoration: none; }
+
 body > header .cognicion-theme-selector {
   min-height: 36px;
   padding: 2px;
@@ -375,6 +426,10 @@ html[data-theme="biocelular"] .dashboard-section[data-vista-modulos="lista"] .mo
 }
 
 @media (max-width: 860px) {
+  body > header .navbar-explorar-panel { position: fixed; top: 126px; right: 10px; left: 10px; width: auto; max-height: calc(100vh - 140px); overflow: auto; }
+  body > header .navbar-explorar-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body > header .navbar-explorar-footer { align-items: flex-start; flex-direction: column; }
+
   body > header .topbar {
     min-height: 64px;
     flex-direction: row;
@@ -657,6 +712,13 @@ body:has(.dashboard-section) .dashboard-section {
   border-radius: 8px;
   font-size: .66rem;
   line-height: 1;
+}
+
+.dashboard-section[data-vista-modulos="lista"] .module-icon.icono-minimalista {
+  font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", sans-serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
 .dashboard-section[data-vista-modulos="lista"] .module-card h3 {

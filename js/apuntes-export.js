@@ -18,15 +18,33 @@ function nombreSeguro(nombre = "Apunte") {
   return limpio || "Apunte";
 }
 
+function trazoFlechaExportable(objeto) {
+  const inicioX = Number(objeto.inicioX);
+  const inicioY = Number(objeto.inicioY);
+  const finX = Number(objeto.finX);
+  const finY = Number(objeto.finY);
+  const deltaX = finX - inicioX;
+  const deltaY = finY - inicioY;
+  const longitud = Math.hypot(deltaX, deltaY);
+  if (longitud < 0.01) return `M${inicioX.toFixed(3)} ${inicioY.toFixed(3)} L${finX.toFixed(3)} ${finY.toFixed(3)}`;
+  const tamanioPunta = Math.min(2.4, Math.max(1.25, longitud * 0.08));
+  const semiancho = tamanioPunta * 0.55;
+  const unidadX = deltaX / longitud;
+  const unidadY = deltaY / longitud;
+  const baseX = finX - (unidadX * tamanioPunta);
+  const baseY = finY - (unidadY * tamanioPunta);
+  const izquierdaX = baseX - (unidadY * semiancho);
+  const izquierdaY = baseY + (unidadX * semiancho);
+  const derechaX = baseX + (unidadY * semiancho);
+  const derechaY = baseY - (unidadX * semiancho);
+  return `M${inicioX.toFixed(3)} ${inicioY.toFixed(3)} L${finX.toFixed(3)} ${finY.toFixed(3)} M${izquierdaX.toFixed(3)} ${izquierdaY.toFixed(3)} L${finX.toFixed(3)} ${finY.toFixed(3)} L${derechaX.toFixed(3)} ${derechaY.toFixed(3)}`;
+}
+
 function objetoHtml(objeto) {
   const base = `left:${objeto.x}%;top:${objeto.y}%;width:${objeto.ancho}%;height:${objeto.alto}%;`;
   const orden = objeto.ajuste === "detras" ? "z-index:1;opacity:.7;" : "z-index:3;";
   if (objeto.tipo === "flecha") {
-    const inicioX = Number(objeto.inicioX).toFixed(3);
-    const inicioY = Number(objeto.inicioY).toFixed(3);
-    const finX = Number(objeto.finX).toFixed(3);
-    const finY = Number(objeto.finY).toFixed(3);
-    return `<div class="objeto-exportable objeto-exportable--flecha" style="left:0;top:0;width:100%;height:100%;${orden}color:${escaparHTML(objeto.color)}"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><defs><marker id="punta-export-${escaparHTML(objeto.id)}" markerWidth="9" markerHeight="9" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 Z" fill="currentColor"/></marker></defs><path d="M${inicioX} ${inicioY} L${finX} ${finY}" stroke="currentColor" stroke-width=".5" fill="none" marker-end="url(#punta-export-${escaparHTML(objeto.id)})"/></svg></div>`;
+    return `<div class="objeto-exportable objeto-exportable--flecha" style="left:0;top:0;width:100%;height:100%;${orden}color:${escaparHTML(objeto.color)}"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="${trazoFlechaExportable(objeto)}" stroke="currentColor" stroke-width=".5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>`;
   }
   const claseAjuste = objeto.ajuste === "cuadrado" ? " objeto-exportable--cuadrado" : "";
   return `<div class="objeto-exportable objeto-exportable--texto${claseAjuste}" style="${base}${orden}color:${escaparHTML(objeto.color)}">${escaparHTML(objeto.texto).replace(/\n/g, "<br>")}</div>`;
