@@ -1,0 +1,130 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return signedIn() &&
+        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol == "admin";
+    }
+
+    function isMedico() {
+      return signedIn() &&
+        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol == "medico";
+    }
+
+    function isPsicologo() {
+      return signedIn() &&
+        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol == "psicologo";
+    }
+
+    function isPersonalSalud() {
+      return isMedico() || isPsicologo() || isAdmin();
+    }
+
+    /*
+     * USUARIOS
+     */
+    match /usuarios/{uid} {
+      allow create: if signedIn() && request.auth.uid == uid;
+
+      // Temporalmente abierto para depuración
+      allow read: if signedIn();
+
+      allow update: if isSelf(uid) || isPersonalSalud();
+
+      allow delete: if isAdmin();
+
+      match /{subdocument=**} {
+        allow read, write: if signedIn();
+      }
+    }
+
+    /*
+     * PACIENTES
+     */
+    match /pacientes/{uid} {
+      allow read, write: if isSelf(uid) || isPersonalSalud();
+
+      match /{subdocument=**} {
+        allow read, write: if isSelf(uid) || isPersonalSalud();
+      }
+    }
+
+    /*
+     * AVISOS
+     */
+    match /avisosGlobales/{avisoId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    /*
+     * AUDITORÍA
+     */
+    match /auditoria/{eventoId} {
+      allow create: if signedIn();
+      allow read: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    /*
+     * REPORTES
+     */
+    match /reportesUsuarios/{reporteId} {
+      allow create: if signedIn();
+      allow read, update, delete: if isAdmin();
+    }
+
+    /*
+     * CÓDIGOS
+     */
+    match /codigosAutorizacionMedico/{codigoId} {
+      allow read: if true;
+      allow update: if signedIn();
+      allow create, delete: if isAdmin();
+    }
+
+    match /codigosVinculacion/{codigoId} {
+      allow read, write: if isPersonalSalud();
+    }
+
+    /*
+     * FOROS
+     */
+    match /foros/{foroId}/{document=**} {
+      allow read, write: if signedIn();
+    }
+
+    /*
+     * ============================
+     * CHAT (REGLA TEMPORAL)
+     * ============================
+     */
+
+    match /mensajesConversaciones/{conversacionId} {
+
+      allow read, create, update, delete: if signedIn();
+
+      match /mensajes/{mensajeId} {
+        allow read, create, update, delete: if signedIn();
+      }
+
+    }
+
+    /*
+     * BLOQUEO GENERAL
+     */
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

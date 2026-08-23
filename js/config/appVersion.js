@@ -79,5 +79,6 @@
 // deployment marker: 2026-08-22-apuntes-contexto-fondo-retraible-v1
 // deployment marker: 2026-08-22-apuntes-flechas-ancladas-v1
 // deployment marker: 2026-08-22-mi-nube-infraestructura-segura-v1
-export const APP_VERSION = "2.089";
+// deployment marker: 2026-08-22-mi-nube-preview-notes-folders-v1
+export const APP_VERSION = "2.090";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

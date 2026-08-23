@@ -7,6 +7,10 @@ import {
   query,
   startAfter
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  construirIndiceCarpetasApuntes,
+  proyectarCarpetaApuntesParaMiNube
+} from "../notes-cloud-projection-core.js?v=20260822-mi-nube-v2-090";
 
 export const NOTES_CLOUD_BRIDGE_MAX_LIMIT = 100;
 
@@ -106,7 +110,7 @@ export function proyectarApunteParaMiNube(documento, {
 
   const titulo = String(datos.titulo || "").replace(/\s+/g, " ").trim() || "Sin título";
   const textoPlano = extraerTextoPlanoApunte(datos.contenido || datos.texto || "");
-  const carpetaApuntesId = datos.carpetaId || null;
+  const carpetaApuntesId = String(datos.carpetaId ?? "").trim() || null;
 
   return Object.freeze({
     id,
@@ -131,6 +135,39 @@ export function proyectarApunteParaMiNube(documento, {
   });
 }
 
+function validarSesionPropietaria(uid, authInstance) {
+  const ownerId = String(uid || "").trim();
+  if (!ownerId) throw crearErrorPuente("notes-cloud/auth-required", "Inicia sesión para consultar Mis apuntes.");
+  if (!authInstance?.currentUser || authInstance.currentUser.uid !== ownerId) {
+    throw crearErrorPuente("notes-cloud/owner-mismatch", "La sesión no permite consultar estos apuntes.");
+  }
+  return ownerId;
+}
+
+export async function cargarProyeccionApuntesParaMiNube(uid, {
+  dbInstance = db,
+  authInstance = auth,
+  editorBaseUrl = "apuntes.html",
+  returnTo = "mi-nube.html"
+} = {}) {
+  const ownerId = validarSesionPropietaria(uid, authInstance);
+  const apuntesRef = collection(dbInstance, "usuarios", ownerId, "apuntesMedico");
+  const carpetasRef = collection(dbInstance, "usuarios", ownerId, "carpetasApuntes");
+  const [apuntesSnapshot, carpetasSnapshot] = await Promise.all([
+    getDocs(query(apuntesRef, orderBy("fechaActualizacion", "desc"))),
+    getDocs(carpetasRef)
+  ]);
+  const apuntes = apuntesSnapshot.docs.map((documento) => proyectarApunteParaMiNube(documento, {
+    ownerId,
+    editorBaseUrl,
+    returnTo
+  }));
+  const carpetas = carpetasSnapshot.docs
+    .map((documento) => proyectarCarpetaApuntesParaMiNube(documento, { ownerId }))
+    .filter(Boolean);
+  return construirIndiceCarpetasApuntes({ carpetas, apuntes });
+}
+
 export async function listarPaginaApuntesParaMiNube(uid, {
   limite = 50,
   cursor = null,
@@ -139,11 +176,7 @@ export async function listarPaginaApuntesParaMiNube(uid, {
   editorBaseUrl = "apuntes.html",
   returnTo = "mi-nube.html"
 } = {}) {
-  const ownerId = String(uid || "").trim();
-  if (!ownerId) throw crearErrorPuente("notes-cloud/auth-required", "Inicia sesión para consultar Mis apuntes.");
-  if (!authInstance?.currentUser || authInstance.currentUser.uid !== ownerId) {
-    throw crearErrorPuente("notes-cloud/owner-mismatch", "La sesión no permite consultar estos apuntes.");
-  }
+  const ownerId = validarSesionPropietaria(uid, authInstance);
 
   const referencia = collection(dbInstance, "usuarios", ownerId, "apuntesMedico");
   const limitePagina = normalizarLimite(limite);

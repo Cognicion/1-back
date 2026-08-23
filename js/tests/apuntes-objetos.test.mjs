@@ -49,3 +49,22 @@ test("rechaza ajustes inválidos, elimina IDs duplicados y extrae texto buscable
     objetos: objetos.map((objeto) => ({ ...objeto }))
   });
 });
+
+test("las flechas conservan ambos extremos y anclas válidas de cuadros de texto", () => {
+  const flecha = normalizarObjetoApunte({
+    id: "flecha-anclada",
+    tipo: "flecha",
+    inicioX: 12,
+    inicioY: 18,
+    finX: 66,
+    finY: 44,
+    anclaInicio: { objetoId: "cuadro-a", lado: "derecha", proporcion: 0.4 },
+    anclaFin: { objetoId: "cuadro-b", lado: "izquierda", proporcion: 0.75 }
+  });
+
+  assert.equal(flecha.inicioX, 12);
+  assert.equal(flecha.finY, 44);
+  assert.deepEqual(flecha.anclaInicio, { objetoId: "cuadro-a", lado: "derecha", proporcion: 0.4 });
+  assert.deepEqual(flecha.anclaFin, { objetoId: "cuadro-b", lado: "izquierda", proporcion: 0.75 });
+  assert.equal(normalizarObjetoApunte({ tipo: "flecha", anclaInicio: { objetoId: "cuadro", lado: "centro" } }).anclaInicio, null);
+});

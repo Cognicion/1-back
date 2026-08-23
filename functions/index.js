@@ -27,6 +27,9 @@ const {
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 if (!admin.apps.length) admin.initializeApp();
 const adminDb = admin.firestore();
+const cloudStorageFunctions = require("./cloudStorage/handlers");
+const accountLinkingFunctions = require("./accountLinking/handlers");
+const { registerProfessionalWithCode } = require("./accountSecurity/professionalRegistration");
 
 const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
 const TIPOS_COLABORADOR_VALIDOS = new Set(["colaborador", "destacado", "estrella"]);
@@ -719,3 +722,19 @@ exports.generateStructuredNoteFromDictation = onCall(
     });
   }
 );
+
+exports.reserveCloudUpload = cloudStorageFunctions.reserveCloudUpload;
+exports.confirmCloudUpload = cloudStorageFunctions.confirmCloudUpload;
+exports.cancelCloudUpload = cloudStorageFunctions.cancelCloudUpload;
+exports.createCloudFolder = cloudStorageFunctions.createCloudFolder;
+exports.renameCloudItem = cloudStorageFunctions.renameCloudItem;
+exports.moveCloudItem = cloudStorageFunctions.moveCloudItem;
+exports.trashCloudItem = cloudStorageFunctions.trashCloudItem;
+exports.restoreCloudItem = cloudStorageFunctions.restoreCloudItem;
+exports.permanentlyDeleteCloudItem = cloudStorageFunctions.permanentlyDeleteCloudItem;
+exports.reconcileCloudStorageUsage = cloudStorageFunctions.reconcileCloudStorageUsage;
+exports.cloudFileFinalized = cloudStorageFunctions.cloudFileFinalized;
+exports.cloudFileDeleted = cloudStorageFunctions.cloudFileDeleted;
+exports.cleanupExpiredCloudReservations = cloudStorageFunctions.cleanupExpiredCloudReservations;
+exports.manageAccountLinking = accountLinkingFunctions.manageAccountLinking;
+exports.registerProfessionalWithCode = registerProfessionalWithCode;

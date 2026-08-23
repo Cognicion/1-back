@@ -39,6 +39,7 @@ const encabezadoGlobal = leer("../js/components/globalAppHeader.js");
 const precargaTema = leer("../js/theme-preload.js");
 const controladorTemaBiocelular = leer("../js/themes/biocellularThemeController.js");
 const textoRico = leer("../js/apuntes-rich-text.js");
+const objetosApunte = leer("../js/apuntes-objetos.js");
 const persistencia = leer("../js/services/apuntesMedicoPersistence.js");
 const flotante = leer("../js/components/misApuntesFlotante.js");
 const nota = leer("../nota.html");
@@ -167,12 +168,21 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=20260820-apuntes-minimal-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260822-apuntes-subcarpetas-listas-v1/);
-  assert.match(html, /apuntes\.js\?v=20260822-apuntes-subcarpetas-hotfix-v1/);
+  assert.match(html, /apuntes\.css\?v=20260822-apuntes-flechas-ancladas-v1/);
+  assert.match(html, /apuntes\.js\?v=20260822-apuntes-flechas-ancladas-v1/);
+  assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
+  assert.match(html, /id="menuInsertarApunte"[^>]*aria-label="Insertar en el apunte"/);
   assert.match(html, /id="insertarCuadroTexto"/);
   assert.match(html, /id="insertarFlecha"/);
+  assert.match(html, /Cuadro de texto/);
   assert.match(html, /id="propiedadesObjeto"[^>]*aria-label="Propiedades del objeto"/);
   assert.match(html, /id="menuExportacionApunte"[^>]*aria-label="Descargar apunte"/);
+  assert.match(html, /id="menuContextualObjeto"[^>]*role="menu"/);
+  assert.match(html, /id="quitarResaltado"/);
+  assert.match(html, /id="menuContextualTexto"[^>]*role="menu"/);
+  assert.match(html, /id="abrirFondoApunte"[^>]*aria-controls="paletaFondoApunte"/);
+  assert.match(html, /id="alternarTituloApunte"[^>]*aria-controls="camposCabeceraApunte"/);
+  assert.match(html, /id="alternarBarraFormato"[^>]*aria-controls="barraFormatoApunte"/);
   assert.match(html, /id="lienzoApunte"/);
   assert.match(html, /id="listaPuntos"/);
   assert.match(html, /id="listaNumeros"/);
@@ -182,7 +192,7 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /id="carpetaPadre" aria-label="Carpeta superior"/);
   assert.match(encabezadoGlobal, /MIGRATED_PAGES = new Set\([^)]*"apuntes"/);
   assert.match(encabezadoGlobal, /pageId === "apuntes"\) return document\.querySelector\("header\.topbar-apuntes"\)/);
-  assert.match(precargaTema, /globalAppHeader\.js\?v=20260820-apuntes-navbar-v1/);
+  assert.match(precargaTema, /globalAppHeader\.js\?v=20260822-mi-nube-v1/);
   assert.match(precargaTema, /biocellularThemeController\.js\?v=2\.046-diagnostico-visual/);
   assert.match(controladorTemaBiocelular, /document\.querySelector\("#login, \.login-container, #loginForm, \.login-form"\)/);
   assert.doesNotMatch(controladorTemaBiocelular, /\.login-form,\s*form|querySelector\(["'`]form["'`]\)/);
@@ -241,6 +251,22 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(controlador, /import \{ inicializarSidebarApuntes \} from "\.\/apuntes-sidebar\.js"/);
   assert.match(sidebarControlador, /PREFIJO_ESTADO_SIDEBAR = "cognicion:apuntes:sidebar-retraida"/);
   assert.match(sidebarControlador, /sidebar\.inert = oculta/);
+  assert.match(controlador, /alternarMenuInsertar/);
+  assert.match(controlador, /cerrarMenuInsertar/);
+  assert.match(objetosApunte, /DIRECCIONES_REDIMENSION = \["n", "ne", "e", "se", "s", "sw", "w", "nw"\]/);
+  assert.match(objetosApunte, /crearBotonMover/);
+  assert.match(objetosApunte, /addEventListener\("contextmenu"/);
+  assert.match(objetosApunte, /data-accion-menu-objeto/);
+  assert.match(objetosApunte, /DISTANCIA_IMAN_PORCENTAJE = 2\.5/);
+  assert.match(objetosApunte, /anclaInicio/);
+  assert.match(objetosApunte, /anclaFin/);
+  assert.match(objetosApunte, /sincronizarFlechasAncladas/);
+  assert.match(objetosApunte, /extremo-flecha/);
+  assert.match(controlador, /function quitarResaltadoSeleccion\(\)[\s\S]*hiliteColor", "transparent"/);
+  assert.match(controlador, /function abrirMenuContextualTexto/);
+  assert.match(controlador, /function aplicarFondoApunte/);
+  assert.match(controlador, /fondoLienzo: fondoApunteActual \|\| null/);
+  assert.match(controlador, /function alternarSeccionEditor/);
 });
 
 test("la persistencia rica mantiene texto plano y sanea el HTML", () => {
@@ -315,8 +341,8 @@ test("el editor flotante invalida formato solo cuando cambia el contenido", () =
   assert.match(paciente, /paciente\.js\?v=20260820-apuntes-rich-folders-v1/);
 });
 
-test("vinculación y eliminación administrativa incluyen las carpetas", () => {
-  assert.match(vinculacion, /"apuntesMedico",\s*"carpetasApuntes"/);
+test("vinculación y eliminación administrativa conservan sus contratos vigentes", () => {
+  assert.match(vinculacion, /manageAccountLinking/);
   assert.match(admin, /"apuntesMedico",\s*"carpetasApuntes",\s*"borradoresMedico"/);
   assert.match(adminHtml, /admin\.js\?v=20260820-apuntes-rich-folders-v1/);
 });
@@ -329,5 +355,10 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-22-apuntes-objetos-export-v1/);
   assert.match(version, /2026-08-22-apuntes-subcarpetas-listas-v1/);
   assert.match(version, /2026-08-22-apuntes-subcarpetas-hotfix-v1/);
-  assert.match(version, /APP_VERSION = "2\.084"/);
+  assert.match(version, /2026-08-22-apuntes-insertar-controles-v1/);
+  assert.match(version, /2026-08-22-apuntes-contexto-fondo-retraible-v1/);
+  assert.match(version, /2026-08-22-apuntes-flechas-ancladas-v1/);
+  const versionVisible = version.match(/APP_VERSION = "(\d+\.\d+)"/);
+  assert.ok(versionVisible, "APP_VERSION debe seguir siendo visible y numérica");
+  assert.ok(Number(versionVisible[1]) >= 2.088, "versiones posteriores no deben invalidar la regresión de Mis apuntes");
 });

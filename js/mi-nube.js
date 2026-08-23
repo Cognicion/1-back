@@ -18,7 +18,7 @@ import {
   uploadReservedFile,
   waitForCloudItem
 } from "./services/cloudFilesService.js";
-import { loadCloudPreview, revokeCloudPreviewUrl } from "./services/cloudPreviewService.js";
+import { loadCloudPreview, revokeCloudPreviewUrl } from "./services/cloudPreviewService.js?v=20260822-mi-nube-v2-090";
 import { subscribeCloudUsage } from "./services/cloudQuotaService.js";
 import {
   calcularEstadoCuotaMiNube,
@@ -31,12 +31,16 @@ import {
   ordenarElementosMiNube,
   renderizarMarkdownSeguro,
   validarArchivoMiNube
-} from "./mi-nube-core.js";
+} from "./mi-nube-core.js?v=20260822-mi-nube-v2-090";
 import {
+  cargarProyeccionApuntesParaMiNube,
   crearUrlEditorApunte,
-  crearUrlNuevoApunte,
-  listarPaginaApuntesParaMiNube
-} from "./services/notesCloudBridgeService.js";
+  crearUrlNuevoApunte
+} from "./services/notesCloudBridgeService.js?v=20260822-mi-nube-v2-090";
+import {
+  construirBreadcrumbsCarpetasApuntes,
+  listarContenidoCarpetaApuntes
+} from "./notes-cloud-projection-core.js?v=20260822-mi-nube-v2-090";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const UPLOAD_CONCURRENCY = 3;
@@ -47,11 +51,12 @@ const SORTS = new Set(["recent", "name-asc", "name-desc"]);
 const state = {
   uid: "",
   currentFolderId: null,
+  currentNoteFolderId: null,
   folders: [],
   cloudItems: [],
   notes: [],
-  notesCursor: null,
-  notesHasMore: false,
+  noteFolders: [],
+  notesProjection: null,
   notesLoading: false,
   notesGeneration: 0,
   cursor: null,
@@ -70,6 +75,7 @@ const state = {
   uploads: new Map(),
   activeItem: null,
   previewScale: 1,
+  activePreviewUrl: "",
   searchTimer: null,
   loadError: "",
   loadGeneration: 0,
@@ -205,6 +211,7 @@ function bindDialogs() {
     state.previewRequest += 1;
     revokeCloudPreviewUrl();
     state.previewScale = 1;
+    state.activePreviewUrl = "";
     state.activeItem = null;
     dom.cloudPreviewContainer?.replaceChildren();
   });
@@ -213,7 +220,7 @@ function bindDialogs() {
   });
   dom.cloudPreviewZoomIn?.addEventListener("click", () => changePreviewScale(0.2));
   dom.cloudPreviewZoomOut?.addEventListener("click", () => changePreviewScale(-0.2));
-  dom.cloudPreviewFit?.addEventListener("click", () => setPreviewScale(1));
+  dom.cloudPreviewFit?.addEventListener("click", fitPreview);
 }
 
 function bindDragAndDrop() {
@@ -259,24 +266,39 @@ function mergeKnownFolders(items = []) {
 }
 
 async function loadNotes({ append = false } = {}) {
-  if (append && state.notesLoading) return;
+  if (append || state.notesLoading) return;
   const generation = state.notesGeneration + 1;
   state.notesGeneration = generation;
   state.notesLoading = true;
   try {
-    const page = await listarPaginaApuntesParaMiNube(state.uid, {
-      limite: 50,
-      cursor: append ? state.notesCursor : null
-    });
+    const projection = await cargarProyeccionApuntesParaMiNube(state.uid);
     if (generation !== state.notesGeneration) return;
-    state.notes = append ? [...state.notes, ...page.items] : page.items;
-    state.notesCursor = page.cursor;
-    state.notesHasMore = page.hasMore;
-    if (append) renderItems();
+    state.notesProjection = projection;
+    state.notes = projection.notes;
+    state.noteFolders = projection.folders;
+    const diagnostics = projection.diagnostics;
+    console.info("[MiNube][NotesProjection]", "Proyección cargada", {
+      folderCount: diagnostics.folderCount,
+      noteCount: diagnostics.noteCount,
+      rootFolderCount: diagnostics.rootFolderCount,
+      orphanFolders: diagnostics.orphanFolders,
+      orphanNotes: diagnostics.orphanNotes,
+      cycleFolders: diagnostics.cycleFolders
+    });
+    if (diagnostics.orphanFolders || diagnostics.orphanNotes || diagnostics.cycleFolders) {
+      console.warn("[MiNube][NotesProjection]", "Referencias huérfanas o cíclicas colocadas temporalmente en raíz", {
+        orphanFolders: diagnostics.orphanFolders,
+        orphanNotes: diagnostics.orphanNotes,
+        cycleFolders: diagnostics.cycleFolders
+      });
+    }
   } catch (error) {
-    if (!append) state.notes = [];
-    console.warn("[MI NUBE] No se pudieron proyectar los apuntes.", error?.code || error?.name || "error");
-    if (append) showStatus("No se pudieron cargar más apuntes.", true);
+    state.notes = [];
+    state.noteFolders = [];
+    state.notesProjection = null;
+    console.warn("[MiNube][NotesProjection]", "No se pudieron proyectar los apuntes", {
+      code: error?.code || error?.name || "error"
+    });
   } finally {
     if (generation === state.notesGeneration) {
       state.notesLoading = false;
@@ -331,26 +353,26 @@ async function loadCurrentLocation({ append = false } = {}) {
 }
 
 async function loadMore() {
-  if (state.filter === "notes") {
-    if (state.notesHasMore && !state.notesLoading) await loadNotes({ append: true });
-    return;
-  }
+  if (state.filter === "notes") return;
   const tasks = [];
   if (state.hasMore && !state.loading) tasks.push(loadCurrentLocation({ append: true }));
-  if (state.filter === "all" && state.currentFolderId === null && state.notesHasMore && !state.notesLoading) {
-    tasks.push(loadNotes({ append: true }));
-  }
   await Promise.all(tasks);
 }
 
 function itemsForRender() {
   let items;
   if (state.filter === "notes") {
-    items = state.notes;
+    items = state.query
+      ? state.notes
+      : listarContenidoCarpetaApuntes(state.notesProjection, state.currentNoteFolderId);
   } else if (state.filter === "trash") {
     items = state.cloudItems;
   } else {
-    const notesAtRoot = state.filter === "all" && state.currentFolderId === null ? state.notes : [];
+    const notesAtRoot = state.filter === "all" && state.currentFolderId === null
+      ? (state.query
+          ? state.notes
+          : listarContenidoCarpetaApuntes(state.notesProjection))
+      : [];
     items = [...state.cloudItems, ...notesAtRoot];
   }
   return ordenarElementosMiNube(filtrarElementosMiNube(items, {
@@ -371,9 +393,8 @@ function renderItems() {
     dom.cloudItems.innerHTML = items.map(renderItemHtml).join("");
   }
   if (dom.cloudLoadMore) {
-    const notesCanLoad = state.notesHasMore && (state.filter === "notes" || (state.filter === "all" && state.currentFolderId === null));
     const cloudCanLoad = state.filter !== "notes" && state.hasMore;
-    dom.cloudLoadMore.hidden = !cloudCanLoad && !notesCanLoad;
+    dom.cloudLoadMore.hidden = !cloudCanLoad;
     dom.cloudLoadMore.disabled = state.loading || state.notesLoading;
   }
   if (dom.cloudListHeader) dom.cloudListHeader.hidden = state.view !== "list" || !items.length;
@@ -382,13 +403,14 @@ function renderItems() {
 function renderItemHtml(item) {
   const category = clasificarElementoMiNube(item);
   const isFolder = category === "folder";
+  const isNoteFolder = category === "note-folder";
   const isNote = category === "note";
   const name = item.name || item.title || item.titulo || item.originalName || "Sin nombre";
-  const typeLabel = isFolder ? "Carpeta" : isNote ? "Mis apuntes" : typeLabelFor(category, item);
-  const size = isFolder || isNote ? "—" : formatearBytes(item.sizeBytes || 0);
+  const typeLabel = isNoteFolder ? "Carpeta de Mis apuntes" : isFolder ? "Carpeta" : isNote ? "Mis apuntes" : typeLabelFor(category, item);
+  const size = isFolder || isNoteFolder || isNote ? "—" : formatearBytes(item.sizeBytes || 0);
   const date = formatDate(item.updatedAt || item.fechaActualizacion || item.createdAt || item.fechaCreacion);
-  const source = isNote ? "Mis apuntes" : isFolder ? "Mi nube" : `Archivo · ${typeLabel}`;
-  const action = isFolder ? "open-folder" : isNote ? "open-note" : "preview";
+  const source = isNote || isNoteFolder ? "Mis apuntes" : isFolder ? "Mi nube" : `Archivo · ${typeLabel}`;
+  const action = isNoteFolder ? "open-note-folder" : isFolder ? "open-folder" : isNote ? "open-note" : "preview";
   const icon = iconFor(category);
   const listView = state.view === "list";
   const content = listView
@@ -404,13 +426,14 @@ function renderItemHtml(item) {
          <span class="cloud-item-source">${escaparHtml(source)}</span>
        </span>`;
   return `
-    <article class="cloud-item ${listView ? "cloud-item-list" : "cloud-item-grid"}" role="listitem" data-cloud-id="${escaparHtml(item.id)}" data-cloud-source="${isNote ? "note" : "cloud-file"}">
+    <article class="cloud-item ${listView ? "cloud-item-list" : "cloud-item-grid"}" role="listitem" data-cloud-id="${escaparHtml(item.id)}" data-cloud-source="${isNote ? "note" : isNoteFolder ? "note-folder" : "cloud-file"}">
       <button class="cloud-item-open" type="button" data-cloud-action="${action}" aria-label="Abrir ${escaparHtml(name)}">${content}</button>
-      ${renderActionsHtml(item, { isFolder, isNote })}
+      ${renderActionsHtml(item, { isFolder, isNoteFolder, isNote })}
     </article>`;
 }
 
-function renderActionsHtml(item, { isFolder, isNote }) {
+function renderActionsHtml(item, { isFolder, isNoteFolder, isNote }) {
+  if (isNoteFolder) return "";
   if (isNote) {
     return `<a class="cloud-item-menu-button cloud-note-edit" href="${escaparHtml(crearUrlEditorApunte(item.id))}" aria-label="Editar ${escaparHtml(item.name || item.titulo || "apunte")}">Editar</a>`;
   }
@@ -439,6 +462,7 @@ function emptyStateHtml() {
   if (state.loadError) return `<section class="cloud-empty"><strong>No pudimos cargar Mi nube.</strong><p>${escaparHtml(state.loadError)}</p><button type="button" data-cloud-action="retry">Reintentar</button></section>`;
   if (state.query) return '<section class="cloud-empty"><strong>No encontramos archivos con ese nombre.</strong><p>Prueba con otro término.</p></section>';
   if (state.filter === "trash") return '<section class="cloud-empty"><strong>La papelera está vacía.</strong><p>Los archivos enviados aquí siguen ocupando espacio hasta su eliminación definitiva.</p></section>';
+  if (state.filter === "notes" && state.currentNoteFolderId) return '<section class="cloud-empty"><strong>Esta carpeta está vacía.</strong></section>';
   if (state.filter === "notes") return `<section class="cloud-empty"><strong>Aún no tienes apuntes.</strong><p>Los apuntes conservan su módulo y almacenamiento actuales.</p><a href="${escaparHtml(crearUrlNuevoApunte())}">Crear mi primer apunte</a></section>`;
   if (state.currentFolderId) return '<section class="cloud-empty"><strong>Esta carpeta está vacía.</strong></section>';
   return '<section class="cloud-empty"><strong>Tu nube está vacía</strong><p>Sube imágenes, documentos PDF, archivos de texto o crea tu primer apunte.</p><button type="button" data-cloud-action="choose-upload">Subir archivo</button></section>';
@@ -447,7 +471,14 @@ function emptyStateHtml() {
 function renderBreadcrumbs() {
   if (!dom.cloudBreadcrumbs) return;
   if (state.filter === "notes") {
-    dom.cloudBreadcrumbs.innerHTML = '<ol><li><button type="button" data-cloud-folder="">Mi nube</button></li><li><button type="button" aria-current="page">Mis apuntes</button></li></ol>';
+    const crumbs = construirBreadcrumbsCarpetasApuntes(state.notesProjection, state.currentNoteFolderId);
+    if (state.currentNoteFolderId && crumbs.length === 1) state.currentNoteFolderId = null;
+    dom.cloudBreadcrumbs.innerHTML = `<ol><li><button type="button" data-cloud-folder="">Mi nube</button></li>${crumbs.map((crumb, index) => {
+      const last = index === crumbs.length - 1;
+      return `<li>${last
+        ? `<button type="button" aria-current="page">${escaparHtml(crumb.name)}</button>`
+        : `<button type="button" data-note-folder="${escaparHtml(crumb.id || "")}">${escaparHtml(crumb.name)}</button>`}</li>`;
+    }).join("")}</ol>`;
     return;
   }
   if (state.filter === "trash") {
@@ -503,6 +534,7 @@ async function handleItemAction(event) {
   article.querySelector("details")?.removeAttribute("open");
 
   if (action === "open-folder") return openFolder(item.id, item);
+  if (action === "open-note-folder") return openNoteFolder(item.id);
   if (action === "open-note") {
     window.location.href = crearUrlEditorApunte(item.id);
     return;
@@ -517,13 +549,18 @@ async function handleItemAction(event) {
 }
 
 function findItem(id, source) {
-  const list = source === "note" ? state.notes : state.cloudItems;
+  const list = source === "note"
+    ? state.notes
+    : source === "note-folder"
+      ? state.noteFolders
+      : state.cloudItems;
   return list.find((item) => item.id === id) || null;
 }
 
 async function openFolder(folderId, folder = null) {
   if (folder?.type === "folder") mergeKnownFolders([folder]);
   state.currentFolderId = folderId || null;
+  state.currentNoteFolderId = null;
   if (["notes", "trash"].includes(state.filter)) {
     setActiveFilter("all");
     updateFilterUrl();
@@ -532,7 +569,24 @@ async function openFolder(folderId, folder = null) {
   await loadCurrentLocation();
 }
 
+function openNoteFolder(folderId = null) {
+  const requestedId = String(folderId || "").trim() || null;
+  state.currentNoteFolderId = requestedId && state.notesProjection?.folderById?.has(requestedId)
+    ? requestedId
+    : null;
+  state.currentFolderId = null;
+  if (state.filter !== "notes") setActiveFilter("notes");
+  updateFilterUrl();
+  renderBreadcrumbs();
+  renderItems();
+}
+
 function handleBreadcrumb(event) {
+  const noteButton = event.target.closest("[data-note-folder]");
+  if (noteButton) {
+    openNoteFolder(noteButton.dataset.noteFolder || null);
+    return;
+  }
   const button = event.target.closest("[data-cloud-folder]");
   if (!button) return;
   void openFolder(button.dataset.cloudFolder || null);
@@ -542,6 +596,7 @@ function changeFilter(filter) {
   if (!FILTERS.has(filter) || filter === state.filter) return;
   setActiveFilter(filter);
   if (["notes", "trash"].includes(filter)) state.currentFolderId = null;
+  state.currentNoteFolderId = null;
   state.cursor = null;
   updateFilterUrl();
   if (filter === "notes") {
@@ -881,6 +936,7 @@ async function previewItem(item) {
   const requestId = state.previewRequest + 1;
   state.previewRequest = requestId;
   revokeCloudPreviewUrl();
+  state.activePreviewUrl = "";
   state.activeItem = item;
   state.previewScale = 1;
   dom.cloudPreviewTitle.textContent = item.name || item.originalName || "Vista previa";
@@ -894,9 +950,11 @@ async function previewItem(item) {
       return;
     }
     if (preview.kind === "image") {
+      state.activePreviewUrl = preview.url;
       dom.cloudPreviewContainer.innerHTML = `<img src="${escaparHtml(preview.url)}" alt="Vista previa de ${escaparHtml(item.name)}" data-cloud-preview-zoomable>`;
     } else if (preview.kind === "pdf") {
-      dom.cloudPreviewContainer.innerHTML = `<iframe src="${escaparHtml(preview.url)}#view=FitH" title="PDF: ${escaparHtml(item.name)}"></iframe>`;
+      state.activePreviewUrl = preview.url;
+      renderPdfPreview(preview, item, requestId);
     } else if (preview.kind === "markdown") {
       dom.cloudPreviewContainer.innerHTML = `<article class="cloud-markdown-preview">${renderizarMarkdownSeguro(preview.text)}</article>`;
     } else {
@@ -907,8 +965,40 @@ async function previewItem(item) {
     }
   } catch (error) {
     if (requestId !== state.previewRequest) return;
-    dom.cloudPreviewContainer.innerHTML = `<p class="cloud-preview-error">${escaparHtml(friendlyError(error, "No se pudo abrir la vista previa."))}</p>`;
+    if (clasificarElementoMiNube(item) === "pdf") {
+      renderPdfFallback(item);
+    } else {
+      dom.cloudPreviewContainer.innerHTML = `<p class="cloud-preview-error">${escaparHtml(friendlyError(error, "No se pudo abrir la vista previa."))}</p>`;
+    }
   }
+}
+
+function renderPdfPreview(preview, item, requestId) {
+  const iframe = document.createElement("iframe");
+  iframe.src = `${preview.url}#view=FitH`;
+  iframe.title = `PDF: ${item.name || item.originalName || "Documento"}`;
+  iframe.dataset.cloudPreviewPdf = "";
+  iframe.addEventListener("error", () => {
+    if (requestId !== state.previewRequest || !dom.cloudPreviewDialog?.open) return;
+    renderPdfFallback(item);
+  }, { once: true });
+  dom.cloudPreviewContainer.replaceChildren(iframe);
+}
+
+function renderPdfFallback(item) {
+  if (state.activePreviewUrl) revokeCloudPreviewUrl(state.activePreviewUrl);
+  state.activePreviewUrl = "";
+  const fallback = document.createElement("div");
+  fallback.className = "cloud-preview-state cloud-preview-error";
+  const message = document.createElement("strong");
+  message.textContent = "No fue posible previsualizar este PDF.";
+  const download = document.createElement("button");
+  download.type = "button";
+  download.className = "cloud-secondary-button";
+  download.textContent = "Descargar archivo";
+  download.addEventListener("click", () => void downloadItem(item));
+  fallback.append(message, download);
+  dom.cloudPreviewContainer.replaceChildren(fallback);
 }
 
 function closePreview() {
@@ -923,6 +1013,16 @@ function setPreviewScale(scale) {
   state.previewScale = scale;
   const image = dom.cloudPreviewContainer?.querySelector("[data-cloud-preview-zoomable]");
   if (image) image.style.transform = `scale(${scale})`;
+  const pdf = dom.cloudPreviewContainer?.querySelector("[data-cloud-preview-pdf]");
+  if (pdf && state.activePreviewUrl) pdf.src = `${state.activePreviewUrl}#zoom=${Math.round(scale * 100)}`;
+}
+
+function fitPreview() {
+  state.previewScale = 1;
+  const image = dom.cloudPreviewContainer?.querySelector("[data-cloud-preview-zoomable]");
+  if (image) image.style.transform = "scale(1)";
+  const pdf = dom.cloudPreviewContainer?.querySelector("[data-cloud-preview-pdf]");
+  if (pdf && state.activePreviewUrl) pdf.src = `${state.activePreviewUrl}#view=FitH`;
 }
 
 async function downloadItem(item) {
@@ -1143,7 +1243,7 @@ function typeLabelFor(category, item = {}) {
 }
 
 function iconFor(category) {
-  return ({ folder: "📁", note: "📝", image: "▧", pdf: "PDF", text: "TXT", file: "□" })[category] || "□";
+  return ({ folder: "📁", "note-folder": "📂", note: "📝", image: "▧", pdf: "PDF", text: "TXT", file: "□" })[category] || "□";
 }
 
 function formatDate(value) {

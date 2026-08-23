@@ -18,7 +18,13 @@
     "openai": "^6.45.0"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^3.0.4",
+    "firebase": "^10.12.2",
     "firebase-functions-test": "^3.4.1"
+  },
+  "overrides": {
+    "body-parser": "1.20.6",
+    "fast-xml-parser": "5.11.0"
   },
   "private": true
 }

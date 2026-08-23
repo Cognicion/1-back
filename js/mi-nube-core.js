@@ -120,7 +120,12 @@ function idElemento(elemento = {}) {
 }
 
 function esCarpeta(elemento = {}) {
-  return String(elemento.type || elemento.tipo || "").toLowerCase() === "folder";
+  return esCarpetaApuntes(elemento)
+    || String(elemento.type || elemento.tipo || "").toLowerCase() === "folder";
+}
+
+function esCarpetaApuntes(elemento = {}) {
+  return String(elemento.sourceType || "").toLowerCase() === "notefolder";
 }
 
 function esApunte(elemento = {}) {
@@ -189,6 +194,7 @@ export function normalizarTextoBusqueda(valor = "") {
 }
 
 export function clasificarElementoMiNube(elemento = {}) {
+  if (esCarpetaApuntes(elemento)) return "note-folder";
   if (esCarpeta(elemento)) return "folder";
   if (esApunte(elemento)) return "note";
 
@@ -450,7 +456,7 @@ function cumpleFiltroTipo(elemento, filtro) {
   if (filtro === "images") return categoria === "image";
   if (filtro === "pdf") return categoria === "pdf";
   if (filtro === "text") return categoria === "text";
-  if (filtro === "notes") return categoria === "note";
+  if (filtro === "notes") return ["note", "note-folder"].includes(categoria);
   return true;
 }
 
@@ -488,6 +494,9 @@ export function filtrarElementosMiNube(elementos = [], {
     if (filtrarPadre && parentFolderIdDe(elemento) !== padreEsperado) return false;
     if (termino && !textoBusquedaElemento(elemento).includes(termino)) return false;
     if (esCarpeta(elemento)) {
+      if (esCarpetaApuntes(elemento)) {
+        return includeFolders && ["all", "notes"].includes(filtro);
+      }
       if (includeFolders && ["all", "files"].includes(filtro)) return true;
       if (filtro !== "trash") return false;
     }

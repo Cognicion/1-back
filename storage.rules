@@ -2,6 +2,34 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
+    function isCloudOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function isAllowedCloudMime() {
+      return request.resource.contentType == "image/jpeg"
+        || request.resource.contentType == "image/png"
+        || request.resource.contentType == "image/webp"
+        || request.resource.contentType == "image/gif"
+        || request.resource.contentType == "application/pdf"
+        || request.resource.contentType == "text/plain"
+        || request.resource.contentType == "text/markdown";
+    }
+
+    function validCloudReservation(uid, fileId, filename) {
+      let reservation = firestore.get(
+        /databases/(default)/documents/usuarios/$(uid)/cloudUploadReservations/$(fileId)
+      );
+      return reservation.data.status == "reserved"
+        && reservation.data.ownerId == uid
+        && reservation.data.fileId == fileId
+        && reservation.data.storageName == filename
+        && reservation.data.storagePath == "mi-nube/" + uid + "/files/" + fileId + "/" + filename
+        && reservation.data.sizeBytes == request.resource.size
+        && reservation.data.mimeType == request.resource.contentType
+        && reservation.data.expiresAt > request.time;
+    }
+
     match /usuarios/{uid}/perfil/foto-perfil {
       allow read: if request.auth != null;
       allow write: if request.auth != null
@@ -9,6 +37,28 @@ service firebase.storage {
                    && request.resource.size > 0
                    && request.resource.size <= 5 * 1024 * 1024
                    && request.resource.contentType.matches('image/(jpeg|png|webp)');
+    }
+
+    // Mi nube: el cliente solo puede crear el objeto exacto reservado por el backend.
+    // Renombrados, movimientos y eliminaciones físicas se realizan con Admin SDK.
+    match /mi-nube/{uid}/files/{fileId}/{filename} {
+      allow read: if isCloudOwner(uid);
+      allow write: if isCloudOwner(uid)
+                   && resource == null
+                   && request.resource.size > 0
+                   && request.resource.size <= 250 * 1024 * 1024
+                   && isAllowedCloudMime()
+                   && validCloudReservation(uid, fileId, filename)
+                   && request.resource.metadata.ownerId == uid
+                   && request.resource.metadata.fileId == fileId
+                   && request.resource.metadata.reservationId == fileId;
+    }
+
+    // Las miniaturas son artefactos derivados que nunca consumen la cuota de Mi nube.
+    // Solo Cloud Functions puede escribirlas.
+    match /mi-nube/{uid}/thumbnails/{fileId}/{filename} {
+      allow read: if isCloudOwner(uid);
+      allow write: if false;
     }
   }
 }

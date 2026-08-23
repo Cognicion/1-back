@@ -8,7 +8,7 @@ test("construye una vista exportable sin interpolar título ni texto de objetos 
     contenidoHtml: "<p>Contenido <strong>con formato</strong></p>",
     objetos: [
       { id: "texto-1", tipo: "texto", ajuste: "cuadrado", texto: "Cuadro <seguro>", color: "#123456" },
-      { id: "flecha-1", tipo: "flecha", ajuste: "detras", color: "#abcdef" }
+      { id: "flecha-1", tipo: "flecha", ajuste: "detras", color: "#abcdef", inicioX: 12, inicioY: 24, finX: 78, finY: 64 }
     ]
   });
 
@@ -17,6 +17,7 @@ test("construye una vista exportable sin interpolar título ni texto de objetos 
   assert.match(html, /Cuadro &lt;seguro&gt;/);
   assert.match(html, /objeto-exportable--cuadrado/);
   assert.match(html, /punta-export-flecha-1/);
+  assert.match(html, /M12\.000 24\.000 L78\.000 64\.000/);
   assert.match(html, /z-index:1;opacity:\.7/);
 });
 

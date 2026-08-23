@@ -1,0 +1,351 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return signedIn() &&
+        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol == "admin";
+    }
+
+    function isMedico() {
+      return signedIn() &&
+        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol == "medico";
+    }
+
+    function isPsicologo() {
+      return signedIn() &&
+        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol == "psicologo";
+    }
+
+    function isEnfermeriaSaludMental() {
+      return signedIn() &&
+        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol == "enfermeria_salud_mental";
+    }
+
+    function isPersonalSalud() {
+      return isMedico() || isPsicologo() || isEnfermeriaSaludMental() || isAdmin();
+    }
+
+    function isPaciente(data) {
+      return data.get("rol", "") == "paciente";
+    }
+
+    function hasNoAlternateRoleClaims(data) {
+      return !data.keys().hasAny([
+        "role",
+        "roles",
+        "rolUsuario",
+        "tipoRol",
+        "tipoUsuario",
+        "tipoCuenta",
+        "tipoProfesional",
+        "profesion",
+        "profession",
+        "especialidad",
+        "specialty",
+        "cargo",
+        "cedula",
+        "cedulaProfesional",
+        "cedulaEspecialidad",
+        "cargoSistema",
+        "perfil",
+        "perfilClinico",
+        "perfilProfesional",
+        "professionalProfile",
+        "clinicalProfile",
+        "capacidades",
+        "capabilities",
+        "permisos",
+        "permisosFormatos",
+        "formatPermissions",
+        "formatPermissionMetadata",
+        "permisosFormatosMetadata",
+        "formatosAutorizados",
+        "formatosAutorizadosArray",
+        "permisosFormatosArray",
+        "formatosManualesAsignados",
+        "paquetesFormatosAsignados",
+        "claims",
+        "admin",
+        "esAdmin",
+        "isAdmin",
+        "perfilClinicoHabilitado",
+        "clinicalProfileEnabled",
+        "perfilMedicoVerificado",
+        "medicoVerificado"
+      ]);
+    }
+
+    function hasNoAccountLinkingInternalFields(data) {
+      return !data.keys().hasAny([
+        "codigoVinculacionActivo",
+        "fechaCodigoVinculacion",
+        "vinculacionReservaEstado",
+        "vinculacionReservaCodigo",
+        "vinculacionReservaActorUid",
+        "vinculacionReservaAccion",
+        "vinculacionReservaDestinoUid",
+        "vinculadoA",
+        "expedienteVinculadoDesde",
+        "fechaVinculacionExpediente"
+      ]);
+    }
+
+    function accountLinkingInternalFieldsChanged() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        "codigoVinculacionActivo",
+        "fechaCodigoVinculacion",
+        "vinculacionReservaEstado",
+        "vinculacionReservaCodigo",
+        "vinculacionReservaActorUid",
+        "vinculacionReservaAccion",
+        "vinculacionReservaDestinoUid",
+        "vinculadoA",
+        "expedienteVinculadoDesde",
+        "fechaVinculacionExpediente"
+      ]);
+    }
+
+    function protectedRoleFieldsChanged() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        "rol",
+        "role",
+        "roles",
+        "rolUsuario",
+        "tipoRol",
+        "tipoUsuario",
+        "tipoCuenta",
+        "tipoProfesional",
+        "profesion",
+        "profession",
+        "cargoSistema",
+        "perfil",
+        "perfilClinico",
+        "perfilProfesional",
+        "professionalProfile",
+        "clinicalProfile",
+        "capacidades",
+        "capabilities",
+        "permisos",
+        "permisosFormatos",
+        "formatPermissions",
+        "formatPermissionMetadata",
+        "permisosFormatosMetadata",
+        "formatosAutorizados",
+        "formatosAutorizadosArray",
+        "permisosFormatosArray",
+        "formatosManualesAsignados",
+        "paquetesFormatosAsignados",
+        "claims",
+        "admin",
+        "esAdmin",
+        "isAdmin",
+        "perfilClinicoHabilitado",
+        "clinicalProfileEnabled",
+        "perfilMedicoVerificado",
+        "medicoVerificado"
+      ]);
+    }
+
+    function patientClinicalIdentityFieldsChanged() {
+      return isPaciente(resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          "especialidad",
+          "specialty",
+          "cargo",
+          "cedula",
+          "cedulaProfesional",
+          "cedulaEspecialidad"
+        ]);
+    }
+
+    function validSelfPatientCreate(uid) {
+      return isSelf(uid)
+        && isPaciente(request.resource.data)
+        && hasNoAlternateRoleClaims(request.resource.data)
+        && hasNoAccountLinkingInternalFields(request.resource.data);
+    }
+
+    function validProvisionalPatientCreate(uid) {
+      return signedIn()
+        && request.auth.uid != uid
+        && isPersonalSalud()
+        && isPaciente(request.resource.data)
+        && request.resource.data.tieneCuenta == false
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.medicoUid == request.auth.uid
+        && request.resource.data.creadoPor == request.auth.uid
+        && hasNoAlternateRoleClaims(request.resource.data)
+        && hasNoAccountLinkingInternalFields(request.resource.data);
+    }
+
+    function validSelfProfileUpdate(uid) {
+      return isSelf(uid)
+        && !protectedRoleFieldsChanged()
+        && !accountLinkingInternalFieldsChanged()
+        && !patientClinicalIdentityFieldsChanged();
+    }
+
+    function validClinicalPatientUpdate(uid) {
+      return !isSelf(uid)
+        && isPersonalSalud()
+        && isPaciente(resource.data)
+        && isPaciente(request.resource.data)
+        && !protectedRoleFieldsChanged()
+        && !accountLinkingInternalFieldsChanged();
+    }
+
+    /*
+     * USUARIOS
+     */
+    match /usuarios/{uid} {
+      // Las cuentas profesionales se crean exclusivamente mediante la callable
+      // que consume un código administrativo. El cliente solo puede crear su
+      // propio perfil de paciente o un expediente provisional bien atribuido.
+      allow create: if validSelfPatientCreate(uid) || validProvisionalPatientCreate(uid);
+
+      // Temporalmente abierto para depuración
+      allow read: if signedIn();
+
+      // Un usuario nunca puede elevar sus propios campos de rol. El flujo
+      // administrativo conserva la asignación de rol a terceros ya existente.
+      allow update: if validSelfProfileUpdate(uid)
+                    || validClinicalPatientUpdate(uid)
+                    || (isAdmin() && !isSelf(uid) && !accountLinkingInternalFieldsChanged());
+
+      allow delete: if isAdmin();
+
+      // Mantiene el comportamiento heredado de las subcolecciones existentes,
+      // pero excluye los documentos internos administrados por el backend de Mi nube.
+      match /{subcollection}/{subdocument=**} {
+        allow read, write: if signedIn()
+                          && subcollection != "cloudFiles"
+                          && subcollection != "cloudStorageUsage"
+                          && subcollection != "cloudUploadReservations"
+                          && subcollection != "apuntesMedico"
+                          && subcollection != "carpetasApuntes";
+      }
+
+      // Mi nube: el propietario puede consultar su metadata. Todas las
+      // mutaciones se realizan exclusivamente con Cloud Functions/Admin SDK.
+      match /cloudFiles/{fileId} {
+        allow read: if isSelf(uid);
+        allow create, update, delete: if false;
+      }
+
+      match /cloudStorageUsage/{usageId} {
+        allow read: if isSelf(uid) && usageId == "current";
+        allow create, update, delete: if false;
+      }
+
+      // Las reservas contienen controles internos de cuota y no se exponen al cliente.
+      match /cloudUploadReservations/{reservationId} {
+        allow read, create, update, delete: if false;
+      }
+
+      // Mis apuntes conserva sus colecciones y escritura cliente actuales,
+      // ahora limitada al UID propietario en vez del wildcard heredado.
+      match /apuntesMedico/{noteId} {
+        allow read: if isSelf(uid) || isAdmin();
+        allow create, update: if isSelf(uid);
+        allow delete: if isSelf(uid) || isAdmin();
+      }
+
+      match /carpetasApuntes/{folderId} {
+        allow read: if isSelf(uid) || isAdmin();
+        allow create, update: if isSelf(uid);
+        allow delete: if isSelf(uid) || isAdmin();
+      }
+    }
+
+    /*
+     * PACIENTES
+     */
+    match /pacientes/{uid} {
+      allow read, write: if isSelf(uid) || isPersonalSalud();
+
+      match /{subdocument=**} {
+        allow read, write: if isSelf(uid) || isPersonalSalud();
+      }
+    }
+
+    /*
+     * AVISOS
+     */
+    match /avisosGlobales/{avisoId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    /*
+     * AUDITORÍA
+     */
+    match /auditoria/{eventoId} {
+      allow create: if signedIn();
+      allow read: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    /*
+     * REPORTES
+     */
+    match /reportesUsuarios/{reporteId} {
+      allow create: if signedIn();
+      allow read, update, delete: if isAdmin();
+    }
+
+    /*
+     * CÓDIGOS
+     */
+    match /codigosAutorizacionMedico/{codigoId} {
+      // El registro profesional consume el código dentro de una transacción
+      // Admin SDK. El navegador solo lo administra cuando ya es administrador.
+      allow read, create, update, delete: if isAdmin();
+    }
+
+    match /codigosVinculacion/{codigoId} {
+      // La vinculación de expedientes también se resuelve mediante callable;
+      // los códigos de un solo uso nunca son accesibles desde el navegador.
+      allow read, write: if false;
+    }
+
+    /*
+     * FOROS
+     */
+    match /foros/{foroId}/{document=**} {
+      allow read, write: if signedIn();
+    }
+
+    /*
+     * ============================
+     * CHAT (REGLA TEMPORAL)
+     * ============================
+     */
+
+    match /mensajesConversaciones/{conversacionId} {
+
+      allow read, create, update, delete: if signedIn();
+
+      match /mensajes/{mensajeId} {
+        allow read, create, update, delete: if signedIn();
+      }
+
+    }
+
+    /*
+     * BLOQUEO GENERAL
+     */
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
