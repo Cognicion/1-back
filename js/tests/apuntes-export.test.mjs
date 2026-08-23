@@ -32,7 +32,7 @@ test("exporta tamaño, márgenes y fuente de la disposición elegida", () => {
   });
 
   assert.match(html, /@page \{ size: 279\.4mm 215\.9mm; margin: 12mm 14mm 16mm 18mm; \}/);
-  assert.match(html, /font:12\.00pt\/1\.52 Arial/);
+  assert.match(html, /font:16\.00pt\/1\.52 Arial/);
 });
 
 test("crea un DOCX válido con el documento y la alternativa HTML", async () => {

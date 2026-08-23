@@ -402,7 +402,7 @@ test("el navbar común se monta una sola vez y deja el shell unido al encabezado
     assertBorde(montaje.footer.left, montaje.visor.left, "footer real / alineado al visor izquierdo");
     assertBorde(montaje.footer.right, montaje.visor.right, "footer real / alineado al visor derecho");
     assertBorde(montaje.footer.bottom, montaje.editor.bottom - montaje.editorPadding.bottom, "footer real / sin espacio muerto inferior");
-    assert.ok(montaje.visor.height >= 600, `visor de hoja maximizado: ${JSON.stringify(montaje.visor)}`);
+    assert.ok(montaje.visor.height >= 580, `visor de hoja maximizado: ${JSON.stringify(montaje.visor)}`);
     assert.ok(montaje.hoja.width >= 180 && montaje.hoja.height >= 250, `hoja visible: ${JSON.stringify(montaje.hoja)}`);
     assert.ok(montaje.hoja.left >= montaje.visor.left && montaje.hoja.right <= montaje.visor.right, `hoja contenida horizontalmente: ${JSON.stringify(montaje)}`);
     assert.ok(montaje.zoomHoja.bottom < montaje.footer.top, `zoom de hoja libre del pie: ${JSON.stringify(montaje)}`);

@@ -271,7 +271,7 @@ body.pagina-apuntes > main.apuntes-shell {
   min-height: 0;
   min-width: 0;
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
   gap: 8px;
   padding: 14px 16px 10px;
   border-width: 0;
@@ -660,6 +660,56 @@ body.pagina-apuntes > main.apuntes-shell {
   gap: 5px;
 }
 
+.menu-principal-apunte {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+}
+
+.apuntes-shell .boton-archivo-apunte,
+.apuntes-shell .boton-guardar-rapido {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--apuntes-borde);
+  border-radius: 7px;
+  color: var(--apuntes-texto-suave);
+  background: transparent;
+  box-shadow: none;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.apuntes-shell .boton-archivo-apunte:hover,
+.apuntes-shell .boton-archivo-apunte:focus-visible,
+.apuntes-shell .boton-archivo-apunte[aria-expanded="true"],
+.apuntes-shell .boton-guardar-rapido:hover,
+.apuntes-shell .boton-guardar-rapido:focus-visible {
+  color: var(--apuntes-texto);
+  border-color: var(--apuntes-borde-fuerte);
+  background: var(--apuntes-superficie-hover);
+  box-shadow: none;
+  transform: none;
+}
+
+.apuntes-shell .boton-guardar-rapido {
+  width: 30px;
+  min-width: 30px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+
+.boton-guardar-rapido svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .apuntes-shell .boton-alternar-editor {
   width: 30px;
   min-width: 30px;
@@ -792,6 +842,45 @@ body.pagina-apuntes > main.apuntes-shell {
   flex: 0 0 auto;
 }
 
+.cinta-formato-contenedor {
+  position: relative;
+  min-width: 0;
+  min-height: 40px;
+}
+
+.cinta-formato-contenedor .barra-formato {
+  padding-right: 42px;
+}
+
+.apuntes-shell .boton-alternar-cinta {
+  position: absolute;
+  top: 6px;
+  right: 7px;
+  z-index: 1;
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--apuntes-texto-suave);
+  background: var(--apuntes-superficie);
+  box-shadow: none;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.apuntes-shell .boton-alternar-cinta:hover,
+.apuntes-shell .boton-alternar-cinta:focus-visible,
+.apuntes-shell .boton-alternar-cinta[aria-expanded="false"] {
+  color: var(--apuntes-texto);
+  border-color: var(--apuntes-borde);
+  background: var(--apuntes-superficie-hover);
+  box-shadow: none;
+  transform: none;
+}
+
 .visualmente-oculto {
   position: absolute;
   width: 1px;
@@ -818,9 +907,9 @@ body.pagina-apuntes > main.apuntes-shell {
   font-weight: 700;
 }
 
-.apuntes-shell .control-tamano-fuente select {
-  width: 38px;
-  min-width: 38px;
+.apuntes-shell .control-tamano-fuente input {
+  width: 44px;
+  min-width: 44px;
   height: 24px;
   padding: 0 2px;
   border: 0;
@@ -840,6 +929,10 @@ body.pagina-apuntes > main.apuntes-shell {
 
 .barra-formato[hidden] {
   display: none;
+}
+
+.barra-formato[hidden] + .boton-alternar-cinta {
+  top: 6px;
 }
 
 .apuntes-shell .control-color {
@@ -1036,7 +1129,7 @@ body.pagina-apuntes > main.apuntes-shell {
 .menu-insertar,
 .panel-objeto,
 .panel-disposicion-hoja,
-.menu-exportacion,
+.menu-archivo,
 .menu-contextual-texto {
   position: absolute;
   z-index: 9;
@@ -1054,7 +1147,7 @@ body.pagina-apuntes > main.apuntes-shell {
 .menu-insertar[hidden],
 .panel-objeto[hidden],
 .panel-disposicion-hoja[hidden],
-.menu-exportacion[hidden],
+.menu-archivo[hidden],
 .menu-contextual-texto[hidden] {
   display: none;
 }
@@ -1143,6 +1236,7 @@ body.pagina-apuntes > main.apuntes-shell {
 }
 
 .panel-disposicion-hoja select,
+.panel-disposicion-hoja > label input,
 .margenes-hoja input {
   min-width: 0;
   height: 32px;
@@ -1207,21 +1301,22 @@ body.pagina-apuntes > main.apuntes-shell {
   box-sizing: border-box;
 }
 
-.menu-exportacion {
-  right: 16px;
-  top: 66px;
+.menu-archivo {
+  left: 16px;
+  top: 62px;
+  width: min(290px, calc(100% - 32px));
 }
 
 .menu-contextual-texto {
-  width: min(238px, calc(100% - 20px));
-  grid-template-columns: 1fr 1fr;
-  gap: 5px;
-  padding: 7px;
+  width: min(176px, calc(100% - 20px));
+  grid-template-columns: 1fr;
+  gap: 3px;
+  padding: 5px;
 }
 
 .menu-contextual-texto button {
-  min-height: 29px;
-  padding: 0 7px;
+  min-height: 25px;
+  padding: 0 6px;
   border-color: var(--apuntes-borde);
   border-radius: 6px;
   color: var(--apuntes-texto);
@@ -1248,7 +1343,7 @@ body.pagina-apuntes > main.apuntes-shell {
 }
 
 .panel-objeto__encabezado,
-.menu-exportacion > div {
+.menu-archivo > div {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1256,7 +1351,7 @@ body.pagina-apuntes > main.apuntes-shell {
 }
 
 .panel-objeto__encabezado strong,
-.menu-exportacion strong {
+.menu-archivo strong {
   font-size: 12px;
 }
 
@@ -1299,7 +1394,7 @@ body.pagina-apuntes > main.apuntes-shell {
 }
 
 .panel-objeto__ayuda,
-.menu-exportacion p {
+.menu-archivo p {
   margin: 0;
   color: var(--apuntes-texto-suave);
   font-size: 10px;
@@ -1307,21 +1402,48 @@ body.pagina-apuntes > main.apuntes-shell {
 }
 
 .panel-objeto .boton-peligro,
-.menu-exportacion button {
+.menu-archivo button {
   min-height: 32px;
   padding: 0 10px;
   border-radius: 7px;
   font-size: 11px;
 }
 
-.menu-exportacion > div {
+.menu-archivo > div {
   justify-content: flex-start;
+  flex-wrap: wrap;
 }
 
-.menu-exportacion button {
+.menu-archivo button {
   color: var(--apuntes-texto);
   border-color: var(--apuntes-borde);
   background: var(--apuntes-superficie-hover);
+}
+
+.menu-archivo__carpeta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 1.2fr);
+  align-items: center;
+  gap: 8px;
+  color: var(--apuntes-texto-suave);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.menu-archivo__carpeta select {
+  min-width: 0;
+  height: 32px;
+  padding: 0 7px;
+  border: 1px solid var(--apuntes-borde);
+  border-radius: 7px;
+  color: var(--apuntes-texto);
+  background: var(--apuntes-superficie-suave);
+  color-scheme: dark;
+}
+
+.menu-archivo__carpeta option {
+  color: #fff5e6;
+  background: #1f0b11;
 }
 
 .apunte-exportacion-temporal {
@@ -1360,25 +1482,6 @@ body.pagina-apuntes > main.apuntes-shell {
   color: var(--apunte-texto, var(--apuntes-texto));
   background: var(--apunte-fondo, var(--apuntes-superficie-suave));
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
-}
-
-.lienzo-apunte__medida {
-  position: sticky;
-  left: 50%;
-  bottom: 9px;
-  display: block;
-  width: max-content;
-  max-width: calc(100% - 20px);
-  margin: -32px auto 8px;
-  padding: 4px 8px;
-  transform: translateX(-50%);
-  border: 1px solid var(--apuntes-borde);
-  border-radius: 999px;
-  color: var(--apuntes-texto-suave);
-  background: color-mix(in srgb, var(--apuntes-superficie) 92%, transparent);
-  font-size: 10px;
-  white-space: nowrap;
-  pointer-events: none;
 }
 
 .controles-zoom-hoja {
@@ -1456,6 +1559,18 @@ body.reporte-global-contraido .controles-zoom-hoja {
   overflow-wrap: anywhere;
   /* El cursor sigue el contraste automático del lienzo, incluso con fondo blanco. */
   caret-color: var(--apunte-texto, var(--apuntes-texto));
+}
+
+.editor-contenido::selection,
+.objeto-apunte__texto::selection {
+  color: #fff;
+  background: #2563eb;
+}
+
+.editor-contenido::-moz-selection,
+.objeto-apunte__texto::-moz-selection {
+  color: #fff;
+  background: #2563eb;
 }
 
 .editor-contenido:empty::before {
@@ -1666,7 +1781,7 @@ body.reporte-global-contraido .controles-zoom-hoja {
   outline: 0;
   white-space: pre-wrap;
   overflow: auto;
-  font-size: calc(12px * var(--apunte-factor-zoom, 1));
+  font-size: var(--apunte-tamano-fuente, 14px);
   line-height: 1.35;
 }
 
@@ -2148,7 +2263,7 @@ html[data-theme="light"] .apuntes-shell .boton-peligro {
     min-height: 40px;
   }
 
-  .apuntes-shell .control-tamano-fuente select {
+  .apuntes-shell .control-tamano-fuente input {
     width: 42px;
     min-width: 42px;
     height: 36px;

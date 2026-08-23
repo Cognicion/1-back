@@ -13,7 +13,7 @@ export const DISPOSICION_HOJA_PREDETERMINADA = Object.freeze({
   orientacion: "vertical",
   zoom: 100,
   margenes: Object.freeze({ superior: 20, derecho: 20, inferior: 20, izquierdo: 20 }),
-  tamanioFuente: 14
+  tamanioFuente: 12
 });
 
 const FORMATOS_POR_ID = new Map(FORMATOS_HOJA.map((formato) => [formato.id, formato]));
@@ -32,14 +32,14 @@ export function normalizarDisposicionHoja(valor = {}) {
   return Object.freeze({
     formato,
     orientacion,
-    zoom: numeroEnRango(valor?.zoom, predeterminada.zoom, 50, 200),
+    zoom: numeroEnRango(valor?.zoom, predeterminada.zoom, 25, 400),
     margenes: Object.freeze({
       superior: numeroEnRango(margenes.superior, predeterminada.margenes.superior, 5, 50),
       derecho: numeroEnRango(margenes.derecho, predeterminada.margenes.derecho, 5, 50),
       inferior: numeroEnRango(margenes.inferior, predeterminada.margenes.inferior, 5, 50),
       izquierdo: numeroEnRango(margenes.izquierdo, predeterminada.margenes.izquierdo, 5, 50)
     }),
-    tamanioFuente: numeroEnRango(valor?.tamanioFuente, predeterminada.tamanioFuente, 10, 24)
+    tamanioFuente: numeroEnRango(valor?.tamanioFuente, predeterminada.tamanioFuente, 6, 96)
   });
 }
 

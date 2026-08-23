@@ -57,7 +57,7 @@ export function construirHtmlApunteExportable({ titulo = "Sin título", contenid
   const medidas = obtenerMedidasHoja(disposicion);
   const margenes = disposicion.margenes;
   const altoContenido = Math.max(80, medidas.altoMm - margenes.superior - margenes.inferior);
-  const tamanioFuentePt = (disposicion.tamanioFuente * 0.75).toFixed(2);
+  const tamanioFuentePt = disposicion.tamanioFuente.toFixed(2);
   return `<!doctype html><html lang="es"><head><meta charset="utf-8"><style>
     @page { size: ${medidas.anchoMm}mm ${medidas.altoMm}mm; margin: ${margenes.superior}mm ${margenes.derecho}mm ${margenes.inferior}mm ${margenes.izquierdo}mm; }
     body { margin:0; color:#121417; background:#fff; font:${tamanioFuentePt}pt/1.52 Arial, sans-serif; }

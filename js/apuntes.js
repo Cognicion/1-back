@@ -163,9 +163,23 @@ function inicializarInterfaz() {
   });
   document.getElementById("nuevaCarpeta")?.addEventListener("click", () => abrirDialogoCarpeta());
   document.getElementById("guardarApunte")?.addEventListener("click", guardarApunte);
+  document.getElementById("guardarRapidoApunte")?.addEventListener("click", guardarApunte);
+  document.getElementById("guardarApunteArchivo")?.addEventListener("click", () => {
+    cerrarMenuExportacion();
+    void guardarApunte();
+  });
   document.getElementById("eliminarApunte")?.addEventListener("click", eliminarApunte);
+  document.getElementById("eliminarApunteArchivo")?.addEventListener("click", () => {
+    cerrarMenuExportacion();
+    void eliminarApunte();
+  });
   document.getElementById("apunteTitulo")?.addEventListener("input", marcarCambios);
-  document.getElementById("apunteCarpeta")?.addEventListener("change", marcarCambios);
+  ["apunteCarpeta", "apunteCarpetaArchivo"].forEach((id) => {
+    document.getElementById(id)?.addEventListener("change", (evento) => {
+      establecerCarpetaActual(evento.target.value);
+      marcarCambios();
+    });
+  });
   editor?.addEventListener("input", marcarCambios);
   editor?.addEventListener("blur", normalizarEditorVacio);
   editor?.addEventListener("keydown", gestionarAtajosEditor);
@@ -197,7 +211,7 @@ function inicializarInterfaz() {
   document.getElementById("ajusteObjeto")?.addEventListener("change", actualizarAjusteObjeto);
   document.getElementById("colorObjeto")?.addEventListener("change", actualizarColorObjeto);
   document.getElementById("eliminarObjeto")?.addEventListener("click", eliminarObjetoSeleccionado);
-  document.getElementById("abrirExportacionApunte")?.addEventListener("click", alternarMenuExportacion);
+  document.getElementById("abrirArchivoApunte")?.addEventListener("click", alternarMenuExportacion);
   document.getElementById("descargarApunteWord")?.addEventListener("click", () => exportarApunte("word"));
   document.getElementById("descargarApuntePdf")?.addEventListener("click", () => exportarApunte("pdf"));
   document.getElementById("alternarTituloApunte")?.addEventListener("click", () => alternarSeccionEditor("titulo"));
@@ -309,21 +323,30 @@ async function cargarCarpetas() {
 }
 
 function renderizarSelectorCarpetas() {
-  const selector = document.getElementById("apunteCarpeta");
-  if (!selector) return;
-
-  const valorActual = selector.value;
+  const selectores = [...document.querySelectorAll("#apunteCarpeta, #apunteCarpetaArchivo")];
+  if (!selectores.length) return;
+  const valorActual = selectores.find((selector) => selector.value)?.value || "";
   const carpetasPlanas = aplanarCarpetasJerarquicas(carpetas);
-  selector.innerHTML = [
+  const opciones = [
     '<option value="">Sin carpeta</option>',
     ...carpetasPlanas.map((carpeta) => (
       `<option value="${escaparHTML(carpeta.id)}">${"— ".repeat(carpeta.profundidad)}${escaparHTML(carpeta.nombre)}</option>`
     ))
   ].join("");
+  const carpetaId = carpetas.some((carpeta) => carpeta.id === valorActual)
+    ? valorActual : ETIQUETA_CARPETA_SIN_ASIGNAR;
+  selectores.forEach((selector) => {
+    selector.innerHTML = opciones;
+    selector.value = carpetaId;
+  });
+}
 
-  selector.value = carpetas.some((carpeta) => carpeta.id === valorActual)
-    ? valorActual
-    : ETIQUETA_CARPETA_SIN_ASIGNAR;
+function establecerCarpetaActual(carpetaId = ETIQUETA_CARPETA_SIN_ASIGNAR) {
+  const valor = carpetas.some((carpeta) => carpeta.id === carpetaId)
+    ? carpetaId : ETIQUETA_CARPETA_SIN_ASIGNAR;
+  document.querySelectorAll("#apunteCarpeta, #apunteCarpetaArchivo").forEach((selector) => {
+    selector.value = valor;
+  });
 }
 
 function renderizarLista() {
@@ -496,9 +519,8 @@ function seleccionarApunte(id, { omitirConfirmacion = false, restaurarFoco = fal
   document.getElementById("apunteId").value = apunte.id;
   document.getElementById("apunteTitulo").value = apunte.titulo || "";
 
-  const selector = document.getElementById("apunteCarpeta");
   const carpetaValida = carpetas.some((carpeta) => carpeta.id === apunte.carpetaId);
-  if (selector) selector.value = carpetaValida ? apunte.carpetaId : ETIQUETA_CARPETA_SIN_ASIGNAR;
+  establecerCarpetaActual(carpetaValida ? apunte.carpetaId : ETIQUETA_CARPETA_SIN_ASIGNAR);
 
   const editor = obtenerEditor();
   const htmlEstaVigente = apunte.contenidoHtml
@@ -541,7 +563,7 @@ function nuevoApunte(carpetaId = ETIQUETA_CARPETA_SIN_ASIGNAR) {
   const carpetaValida = carpetas.some((carpeta) => carpeta.id === carpetaId) ? carpetaId : "";
   document.getElementById("apunteId").value = "";
   document.getElementById("apunteTitulo").value = "";
-  document.getElementById("apunteCarpeta").value = carpetaValida;
+  establecerCarpetaActual(carpetaValida);
 
   const editor = obtenerEditor();
   if (editor) editor.innerHTML = "";
@@ -910,7 +932,9 @@ function ponerEdicionOcupada(ocupada) {
     document.getElementById("guardarApunte"),
     document.getElementById("eliminarApunte"),
     document.getElementById("nuevoApunte"),
-    ...document.querySelectorAll(".barra-formato button, .barra-formato input, .barra-formato select, .menu-insertar button, .panel-objeto button, .panel-objeto input, .panel-objeto select, .panel-disposicion-hoja button, .panel-disposicion-hoja input, .panel-disposicion-hoja select, .menu-exportacion button")
+    document.getElementById("guardarRapidoApunte"),
+    document.getElementById("abrirArchivoApunte"),
+    ...document.querySelectorAll(".barra-formato button, .barra-formato input, .barra-formato select, .cinta-formato-contenedor > button, .menu-insertar button, .panel-objeto button, .panel-objeto input, .panel-objeto select, .panel-disposicion-hoja button, .panel-disposicion-hoja input, .panel-disposicion-hoja select, .menu-archivo button, .menu-archivo select")
   ].filter(Boolean);
 
   controles.forEach((control) => { control.disabled = ocupada; });
@@ -924,9 +948,8 @@ function ponerEdicionOcupada(ocupada) {
 
 function actualizarDisponibilidadCarpetas(interfazOcupada = false) {
   const deshabilitadas = interfazOcupada || !carpetasDisponibles;
-  const selector = document.getElementById("apunteCarpeta");
   const nueva = document.getElementById("nuevaCarpeta");
-  if (selector) selector.disabled = deshabilitadas;
+  document.querySelectorAll("#apunteCarpeta, #apunteCarpetaArchivo").forEach((selector) => { selector.disabled = deshabilitadas; });
   if (nueva) {
     nueva.disabled = deshabilitadas;
     nueva.title = carpetasDisponibles ? "Crear carpeta" : "Las carpetas no están disponibles";
@@ -1068,8 +1091,8 @@ function modeloExportacionApunte() {
 }
 
 function alternarMenuExportacion() {
-  const menu = document.getElementById("menuExportacionApunte");
-  const boton = document.getElementById("abrirExportacionApunte");
+  const menu = document.getElementById("menuArchivoApunte");
+  const boton = document.getElementById("abrirArchivoApunte");
   if (!menu || !boton || boton.disabled) return;
   const estabaAbierto = !menu.hidden;
   cerrarPaletasColor();
@@ -1081,8 +1104,8 @@ function alternarMenuExportacion() {
 }
 
 function cerrarMenuExportacion({ devolverFoco = false } = {}) {
-  const menu = document.getElementById("menuExportacionApunte");
-  const boton = document.getElementById("abrirExportacionApunte");
+  const menu = document.getElementById("menuArchivoApunte");
+  const boton = document.getElementById("abrirArchivoApunte");
   if (!menu || menu.hidden) return;
   menu.hidden = true;
   boton?.setAttribute("aria-expanded", "false");
@@ -1288,9 +1311,7 @@ function actualizarControlesDisposicionHoja() {
   if (etiquetaZoom) etiquetaZoom.textContent = `${disposicion.zoom}%`;
   const etiqueta = etiquetaDisposicionHoja(disposicion);
   const medidas = document.getElementById("medidasHoja");
-  const vista = document.getElementById("etiquetaVistaHoja");
   if (medidas) medidas.textContent = etiqueta;
-  if (vista) vista.textContent = etiqueta;
 }
 
 function actualizarVistaHoja() {
@@ -1309,10 +1330,12 @@ function actualizarVistaHoja() {
   hoja.style.setProperty("--margen-derecho", `${Math.round(margenes.derecho * escala)}px`);
   hoja.style.setProperty("--margen-inferior", `${Math.round(margenes.inferior * escala)}px`);
   hoja.style.setProperty("--margen-izquierdo", `${Math.round(margenes.izquierdo * escala)}px`);
-  // El zoom es visual: texto, márgenes y hoja deben crecer o reducirse juntos.
+  // 1 pt = 1/72 de pulgada: la fuente se calcula con la misma escala física que la hoja.
+  // Así su proporción no cambia cuando el usuario acerca o aleja la vista.
   const factorZoom = disposicionHojaActual.zoom / 100;
   hoja.style.setProperty("--apunte-factor-zoom", String(factorZoom));
-  hoja.style.setProperty("--apunte-tamano-fuente", `${disposicionHojaActual.tamanioFuente * factorZoom}px`);
+  hoja.style.setProperty("--apunte-escala-visual", String(escala));
+  hoja.style.setProperty("--apunte-tamano-fuente", `${(disposicionHojaActual.tamanioFuente * 25.4 * escala / 72).toFixed(2)}px`);
 }
 
 function aplicarDisposicionHoja(valor, { marcar = true } = {}) {
@@ -1369,7 +1392,7 @@ function alternarDisposicionHoja() {
 function alternarSeccionEditor(seccion) {
   const configuracion = seccion === "titulo"
     ? { contenidoId: "camposCabeceraApunte", botonId: "alternarTituloApunte", mostrar: "Mostrar título y carpeta", ocultar: "Ocultar título y carpeta" }
-    : { contenidoId: "barraFormatoApunte", botonId: "alternarBarraFormato", mostrar: "Mostrar barra de opciones", ocultar: "Ocultar barra de opciones" };
+    : { contenidoId: "barraFormatoApunte", botonId: "alternarBarraFormato", mostrar: "Expandir cinta", ocultar: "Contraer cinta" };
   const contenido = document.getElementById(configuracion.contenidoId);
   const boton = document.getElementById(configuracion.botonId);
   if (!contenido || !boton) return;
@@ -1378,6 +1401,10 @@ function alternarSeccionEditor(seccion) {
   boton.setAttribute("aria-expanded", String(expandido));
   boton.setAttribute("aria-label", expandido ? configuracion.ocultar : configuracion.mostrar);
   boton.title = expandido ? configuracion.ocultar : configuracion.mostrar;
+  if (seccion === "formato") {
+    const icono = boton.querySelector("[aria-hidden='true']");
+    if (icono) icono.textContent = expandido ? "↑" : "↓";
+  }
   if (!expandido && seccion === "formato") {
     cerrarPaletasColor();
     cerrarMenuContextualTexto();
@@ -1546,7 +1573,7 @@ function cerrarPaletasColor({ devolverFoco = false } = {}) {
 
 function cerrarPaletasAlHacerClickFuera(evento) {
   const destino = evento.target;
-  if (destino instanceof Element && destino.closest(".selector-color, .paleta-color, .menu-contextual-texto, .menu-insertar, .panel-objeto, .panel-disposicion-hoja, .menu-exportacion, #abrirInsertarApunte, #abrirPropiedadesObjeto, #abrirDisposicionHoja, #abrirExportacionApunte")) return;
+  if (destino instanceof Element && destino.closest(".selector-color, .paleta-color, .menu-contextual-texto, .menu-insertar, .panel-objeto, .panel-disposicion-hoja, .menu-archivo, #abrirInsertarApunte, #abrirPropiedadesObjeto, #abrirDisposicionHoja, #abrirArchivoApunte")) return;
   cerrarPaletasColor();
   cerrarMenuContextualTexto();
   cerrarMenuInsertar();
@@ -1562,7 +1589,7 @@ function cerrarPaletasConEscape(evento) {
     || !document.getElementById("propiedadesObjeto")?.hidden
     || !document.getElementById("panelDisposicionHoja")?.hidden
     || !document.getElementById("menuInsertarApunte")?.hidden
-    || !document.getElementById("menuExportacionApunte")?.hidden;
+    || !document.getElementById("menuArchivoApunte")?.hidden;
   if (evento.key !== "Escape" || !hayPanelAbierto) return;
   evento.preventDefault();
   cerrarPaletasColor({ devolverFoco: true });
@@ -1586,8 +1613,8 @@ function abrirMenuContextualTexto(evento) {
   cerrarMenuExportacion();
 
   const rectContenedor = contenedor.getBoundingClientRect();
-  const ancho = menu.offsetWidth || 238;
-  const alto = menu.offsetHeight || 170;
+  const ancho = menu.offsetWidth || 176;
+  const alto = menu.offsetHeight || 320;
   const izquierda = Math.min(Math.max(8, evento.clientX - rectContenedor.left), Math.max(8, rectContenedor.width - ancho - 8));
   const arriba = Math.min(Math.max(8, evento.clientY - rectContenedor.top), Math.max(8, rectContenedor.height - alto - 8));
   menu.style.left = `${Math.round(izquierda)}px`;

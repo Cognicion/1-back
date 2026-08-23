@@ -94,5 +94,6 @@
 // deployment marker: 2026-08-22-apuntes-zoom-fuente-rapida-v1
 // deployment marker: 2026-08-22-apuntes-zoom-proporcional-v1
 // deployment marker: 2026-08-22-dashboard-referencia-exacta-v1 (+0.001)
-export const APP_VERSION = "2.104";
+// deployment marker: 2026-08-22-apuntes-archivo-escala-tipografica-v1
+export const APP_VERSION = "2.105";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

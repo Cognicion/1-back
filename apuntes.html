@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260822-apuntes-zoom-proporcional-v1">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260822-apuntes-archivo-escala-tipografica-v1">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -93,13 +93,18 @@
           <button id="alternarTituloApunte" type="button" class="boton-alternar-editor" aria-controls="camposCabeceraApunte" aria-expanded="true" aria-label="Ocultar título y carpeta" title="Ocultar título y carpeta">
             <span aria-hidden="true">T</span>
           </button>
-          <button id="alternarBarraFormato" type="button" class="boton-alternar-editor" aria-controls="barraFormatoApunte" aria-expanded="true" aria-label="Ocultar barra de opciones" title="Ocultar barra de opciones">
-            <span aria-hidden="true">☰</span>
-          </button>
         </div>
       </div>
 
-      <div id="barraFormatoApunte" class="barra-formato" role="toolbar" aria-label="Formato de texto">
+      <div class="menu-principal-apunte" aria-label="Acciones del apunte">
+        <button id="abrirArchivoApunte" type="button" class="boton-archivo-apunte" aria-haspopup="dialog" aria-expanded="false" aria-controls="menuArchivoApunte">Archivo</button>
+        <button id="guardarRapidoApunte" type="button" class="boton-guardar-rapido" aria-label="Guardar rápidamente" title="Guardar rápidamente">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h12l3 3v15H5z"></path><path d="M8 3v6h8V3M8 20v-6h8v6"></path></svg>
+        </button>
+      </div>
+
+      <div class="cinta-formato-contenedor">
+        <div id="barraFormatoApunte" class="barra-formato" role="toolbar" aria-label="Formato de texto">
         <button id="formatoNegrita" type="button" class="boton-formato" data-command="bold" aria-label="Negrita" aria-pressed="false" title="Negrita (Ctrl+B)">
           <strong aria-hidden="true">B</strong>
         </button>
@@ -112,9 +117,7 @@
         </div>
         <label class="control-tamano-fuente" title="Tamaño de fuente del documento">
           <span class="visualmente-oculto">Tamaño de fuente</span>
-          <select id="tamanoFuenteRapido" aria-label="Tamaño de fuente del documento">
-            <option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="14">14</option><option value="16">16</option><option value="18">18</option><option value="20">20</option><option value="22">22</option><option value="24">24</option>
-          </select><span aria-hidden="true">px</span>
+          <input id="tamanoFuenteRapido" type="number" min="6" max="96" step="1" inputmode="numeric" value="12" aria-label="Tamaño de fuente del documento en puntos"><span aria-hidden="true">pt</span>
         </label>
         <div class="selector-color">
           <button id="abrirColorFondoTexto" type="button" class="control-color" aria-haspopup="dialog" aria-expanded="false" aria-controls="paletaColorFondoTexto" title="Resaltar texto">
@@ -159,8 +162,9 @@
         <button id="abrirInsertarApunte" type="button" class="boton-formato boton-formato--ancho" aria-haspopup="dialog" aria-expanded="false" aria-controls="menuInsertarApunte" title="Insertar en el apunte">
           <span aria-hidden="true">＋</span><span>Insertar</span>
         </button>
-        <button id="abrirExportacionApunte" type="button" class="boton-formato boton-formato--ancho" aria-haspopup="dialog" aria-expanded="false" aria-controls="menuExportacionApunte" title="Descargar apunte">
-          <span aria-hidden="true">⇩</span><span>Exportar</span>
+        </div>
+        <button id="alternarBarraFormato" type="button" class="boton-alternar-cinta" aria-controls="barraFormatoApunte" aria-expanded="true" aria-label="Contraer cinta" title="Contraer cinta">
+          <span aria-hidden="true">↑</span>
         </button>
       </div>
 
@@ -245,9 +249,9 @@
           <label><span>Izquierdo</span><input id="margenIzquierdoHoja" type="number" min="5" max="50" step="1" inputmode="numeric"></label>
         </fieldset>
         <label><span>Tamaño de fuente</span>
-          <select id="tamanoFuenteHoja" aria-label="Tamaño de fuente del documento"><option value="10">10 px</option><option value="11">11 px</option><option value="12">12 px</option><option value="14">14 px</option><option value="16">16 px</option><option value="18">18 px</option><option value="20">20 px</option><option value="22">22 px</option><option value="24">24 px</option></select>
+          <input id="tamanoFuenteHoja" type="number" min="6" max="96" step="1" inputmode="numeric" value="12" aria-label="Tamaño de fuente del documento en puntos">
         </label>
-        <p>El borde representa el tamaño real de impresión. El zoom solo cambia la vista.</p>
+        <p>El tamaño se expresa en puntos de impresión. El zoom escala la hoja y el contenido juntos.</p>
       </section>
 
       <section id="menuInsertarApunte" class="menu-insertar" role="dialog" aria-label="Insertar en el apunte" hidden>
@@ -288,13 +292,16 @@
         <p id="ayudaObjeto" class="panel-objeto__ayuda">Inserta un cuadro de texto o una flecha para empezar.</p>
       </section>
 
-      <section id="menuExportacionApunte" class="menu-exportacion" role="dialog" aria-label="Descargar apunte" hidden>
-        <strong>Descargar apunte</strong>
-        <p>Incluye el texto, cuadros y flechas visibles.</p>
+      <section id="menuArchivoApunte" class="menu-archivo" role="dialog" aria-label="Archivo del apunte" hidden>
+        <strong>Archivo</strong>
+        <label class="menu-archivo__carpeta"><span>Guardar en Cognición</span><select id="apunteCarpetaArchivo" aria-label="Carpeta donde se guardará el apunte"><option value="">Sin carpeta</option></select></label>
         <div>
+          <button id="guardarApunteArchivo" type="button">Guardar</button>
           <button id="descargarApunteWord" type="button">Word (.docx)</button>
           <button id="descargarApuntePdf" type="button">PDF (.pdf)</button>
         </div>
+        <button id="eliminarApunteArchivo" type="button" class="boton-peligro">Eliminar apunte</button>
+        <p>La eliminación solicita confirmación y no se puede deshacer.</p>
       </section>
 
       <section id="menuContextualTexto" class="menu-contextual-texto" role="menu" aria-label="Opciones del texto" hidden>
@@ -329,11 +336,10 @@
             <button type="button" data-accion-menu-objeto="eliminar" role="menuitem">Eliminar</button>
           </div>
         </div>
-        <output id="etiquetaVistaHoja" class="lienzo-apunte__medida" aria-live="polite"></output>
       </div>
       <div class="controles-zoom-hoja" aria-label="Zoom de la hoja">
         <button id="zoomHojaMenosVista" type="button" aria-label="Alejar hoja">−</button>
-        <input id="zoomHojaBarra" type="range" min="50" max="200" step="10" value="100" aria-label="Zoom de la hoja">
+        <input id="zoomHojaBarra" type="range" min="25" max="400" step="10" value="100" aria-label="Zoom de la hoja">
         <output id="zoomHojaEtiquetaVista" aria-live="polite">100%</output>
         <button id="zoomHojaMasVista" type="button" aria-label="Acercar hoja">+</button>
       </div>
@@ -369,7 +375,7 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260822-apuntes-zoom-proporcional-v1"></script>
+  <script type="module" src="js/apuntes.js?v=20260822-apuntes-archivo-escala-tipografica-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>

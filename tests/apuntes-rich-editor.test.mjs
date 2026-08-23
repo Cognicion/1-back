@@ -168,15 +168,20 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=20260820-apuntes-minimal-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260822-apuntes-zoom-proporcional-v1/);
-  assert.match(html, /apuntes\.js\?v=20260822-apuntes-zoom-proporcional-v1/);
+  assert.match(html, /apuntes\.css\?v=20260822-apuntes-archivo-escala-tipografica-v1/);
+  assert.match(html, /apuntes\.js\?v=20260822-apuntes-archivo-escala-tipografica-v1/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
   assert.match(html, /id="menuInsertarApunte"[^>]*aria-label="Insertar en el apunte"/);
   assert.match(html, /id="insertarCuadroTexto"/);
   assert.match(html, /id="insertarFlecha"/);
   assert.match(html, /Cuadro de texto/);
   assert.match(html, /id="propiedadesObjeto"[^>]*aria-label="Propiedades del objeto"/);
-  assert.match(html, /id="menuExportacionApunte"[^>]*aria-label="Descargar apunte"/);
+  assert.match(html, /id="abrirArchivoApunte"[^>]*aria-controls="menuArchivoApunte"/);
+  assert.match(html, /id="guardarRapidoApunte"[^>]*aria-label="Guardar rápidamente"/);
+  assert.match(html, /id="menuArchivoApunte"[^>]*aria-label="Archivo del apunte"/);
+  assert.match(html, /id="apunteCarpetaArchivo"/);
+  assert.match(html, /id="guardarApunteArchivo"/);
+  assert.match(html, /id="eliminarApunteArchivo"/);
   assert.match(html, /id="menuContextualObjeto"[^>]*role="menu"/);
   assert.match(html, /id="quitarResaltado"/);
   assert.match(html, /id="menuContextualTexto"[^>]*role="menu"/);
@@ -188,7 +193,7 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /id="zoomHojaMas"/);
   assert.match(html, /id="margenSuperiorHoja"/);
   assert.match(html, /id="tamanoFuenteHoja"/);
-  assert.match(html, /id="tamanoFuenteRapido" aria-label="Tamaño de fuente del documento"/);
+  assert.match(html, /id="tamanoFuenteRapido" type="number"[^>]*aria-label="Tamaño de fuente del documento en puntos"/);
   assert.match(html, /id="zoomHojaBarra" type="range"/);
   assert.match(html, /id="zoomHojaMenosVista"/);
   assert.match(html, /id="zoomHojaMasVista"/);
@@ -196,7 +201,7 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /id="alternarBarraFormato"[^>]*aria-controls="barraFormatoApunte"/);
   assert.match(html, /id="lienzoApunte"/);
   assert.match(html, /id="hojaApunte" class="hoja-apunte"/);
-  assert.match(html, /id="etiquetaVistaHoja"/);
+  assert.doesNotMatch(html, /id="etiquetaVistaHoja"/);
   assert.match(html, /id="listaPuntos"/);
   assert.match(html, /id="listaNumeros"/);
   assert.match(html, /id="listaLetras"/);
@@ -299,8 +304,12 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(css, /\.control-tamano-fuente\s*\{/);
   assert.match(css, /\.controles-zoom-hoja\s*\{/);
   assert.match(controlador, /--apunte-factor-zoom/);
-  assert.match(controlador, /tamanioFuente \* factorZoom/);
-  assert.match(css, /font-size:\s*calc\(12px \* var\(--apunte-factor-zoom, 1\)\)/);
+  assert.match(controlador, /tamanioFuente \* 25\.4 \* escala \/ 72/);
+  assert.match(controlador, /--apunte-escala-visual/);
+  assert.match(css, /\.editor-contenido::selection[\s\S]*background:\s*#2563eb/);
+  assert.match(css, /\.menu-contextual-texto\s*\{[\s\S]*grid-template-columns:\s*1fr/);
+  assert.match(css, /\.boton-alternar-cinta\s*\{/);
+  assert.match(html, /id="zoomHojaBarra" type="range" min="25" max="400"/);
   assert.match(controlador, /function alternarSeccionEditor/);
 });
 
@@ -398,6 +407,7 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-22-apuntes-disposicion-hoja-v1/);
   assert.match(version, /2026-08-22-apuntes-zoom-fuente-rapida-v1/);
   assert.match(version, /2026-08-22-apuntes-zoom-proporcional-v1/);
+  assert.match(version, /2026-08-22-apuntes-archivo-escala-tipografica-v1/);
   const versionVisible = version.match(/APP_VERSION = "(\d+\.\d+)"/);
   assert.ok(versionVisible, "APP_VERSION debe seguir siendo visible y numérica");
   assert.ok(Number(versionVisible[1]) >= 2.103, "versiones posteriores no deben invalidar la regresión de Mis apuntes");
