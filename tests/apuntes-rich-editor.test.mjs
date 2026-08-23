@@ -168,8 +168,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=20260820-apuntes-minimal-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260822-apuntes-archivo-escala-tipografica-v1/);
-  assert.match(html, /apuntes\.js\?v=20260822-apuntes-archivo-escala-tipografica-v1/);
+  assert.match(html, /apuntes\.css\?v=20260822-apuntes-menu-objeto-paletas-v1/);
+  assert.match(html, /apuntes\.js\?v=20260822-apuntes-menu-objeto-paletas-v1/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
   assert.match(html, /id="menuInsertarApunte"[^>]*aria-label="Insertar en el apunte"/);
   assert.match(html, /id="insertarCuadroTexto"/);
@@ -183,6 +183,9 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /id="guardarApunteArchivo"/);
   assert.match(html, /id="eliminarApunteArchivo"/);
   assert.match(html, /id="menuContextualObjeto"[^>]*role="menu"/);
+  assert.match(html, /data-accion-menu-objeto="abrir-fondo"/);
+  assert.match(html, /data-accion-menu-objeto="abrir-contorno"/);
+  assert.match(html, /data-paleta-objeto="fondo"/);
   assert.match(html, /id="quitarResaltado"/);
   assert.match(html, /id="menuContextualTexto"[^>]*role="menu"/);
   assert.match(html, /id="abrirFondoApunte"[^>]*aria-controls="paletaFondoApunte"/);
@@ -194,7 +197,7 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /id="margenSuperiorHoja"/);
   assert.match(html, /id="tamanoFuenteHoja"/);
   assert.match(html, /id="tamanoFuenteRapido" type="number"[^>]*aria-label="Tamaño de fuente del documento en puntos"/);
-  assert.match(html, /id="zoomHojaBarra" type="range"/);
+  assert.match(html, /id="zoomHojaBarraPie" type="range"[^>]*max="800"/);
   assert.match(html, /id="zoomHojaMenosVista"/);
   assert.match(html, /id="zoomHojaMasVista"/);
   assert.match(html, /id="alternarTituloApunte"[^>]*aria-controls="camposCabeceraApunte"/);
@@ -253,12 +256,9 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(reglaShell, /gap:\s*0/);
   assert.doesNotMatch(css, /width:\s*min\(1280px/);
   assert.match(css, /grid-template-columns:\s*clamp\(276px, 23vw, 360px\) minmax\(0, 1fr\)/);
-  assert.match(css, /\.acciones-apuntes\s*\{[\s\S]*padding-right:\s*205px/);
-  assert.match(css, /\.acciones-apuntes\s*\{[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\) 96px 92px/);
-  assert.match(css, /\.apuntes-shell \.acciones-apuntes button\s*\{[\s\S]*height:\s*36px;[\s\S]*min-height:\s*36px/);
-  assert.match(css, /@media \(hover: none\)[\s\S]*\.apuntes-shell \.acciones-apuntes button\s*\{[\s\S]*height:\s*44px;[\s\S]*min-height:\s*44px/);
-  assert.match(css, /body\.reporte-global-contraido \.apuntes-shell \.acciones-apuntes\s*\{\s*padding-right:\s*52px/);
-  assert.match(css, /@media \(max-width: 640px\)[\s\S]*body\.reporte-global-contraido \.apuntes-shell \.acciones-apuntes\s*\{[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\) minmax\(82px, 90px\) minmax\(82px, 90px\)/);
+  assert.match(css, /\.acciones-apuntes[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\) auto/);
+  assert.match(css, /\.acciones-apuntes \.controles-zoom-hoja[\s\S]*position:\s*static/);
+  assert.match(css, /\.acciones-apuntes \.controles-zoom-hoja input\[type="range"\][\s\S]*width:\s*84px/);
   assert.match(css, /\.selector-carpeta select\s*\{[\s\S]*color-scheme:\s*dark/);
   assert.match(css, /\.selector-carpeta select option,[\s\S]*color:\s*#fff5e6;[\s\S]*background-color:\s*#1f0b11/);
   assert.match(css, /html:is\(\[data-theme="light"\], \[data-theme\^="light-"\]\) \.selector-carpeta select\s*\{[\s\S]*color-scheme:\s*light/);
@@ -315,7 +315,7 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(css, /\.editor-contenido::selection[\s\S]*background:\s*#2563eb/);
   assert.match(css, /\.menu-contextual-texto\s*\{[\s\S]*grid-template-columns:\s*1fr/);
   assert.match(css, /\.boton-alternar-cinta\s*\{/);
-  assert.match(html, /id="zoomHojaBarra" type="range" min="25" max="400"/);
+  assert.match(html, /id="zoomHojaBarraPie" type="range" min="25" max="800"/);
   assert.match(controlador, /function alternarSeccionEditor/);
   assert.match(controlador, /function aplicarInterlineado/);
   assert.match(controlador, /function gestionarMenuContextualObjeto/);
@@ -419,7 +419,7 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-22-apuntes-disposicion-hoja-v1/);
   assert.match(version, /2026-08-22-apuntes-zoom-fuente-rapida-v1/);
   assert.match(version, /2026-08-22-apuntes-zoom-proporcional-v1/);
-  assert.match(version, /2026-08-22-apuntes-archivo-escala-tipografica-v1/);
+  assert.match(version, /2026-08-22-apuntes-menu-objeto-paletas-v1/);
   const versionVisible = version.match(/APP_VERSION = "(\d+\.\d+)"/);
   assert.ok(versionVisible, "APP_VERSION debe seguir siendo visible y numérica");
   assert.ok(Number(versionVisible[1]) >= 2.103, "versiones posteriores no deben invalidar la regresión de Mis apuntes");

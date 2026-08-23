@@ -32,7 +32,7 @@ export function normalizarDisposicionHoja(valor = {}) {
   return Object.freeze({
     formato,
     orientacion,
-    zoom: numeroEnRango(valor?.zoom, predeterminada.zoom, 25, 400),
+    zoom: numeroEnRango(valor?.zoom, predeterminada.zoom, 25, 800),
     margenes: Object.freeze({
       superior: numeroEnRango(margenes.superior, predeterminada.margenes.superior, 5, 50),
       derecho: numeroEnRango(margenes.derecho, predeterminada.margenes.derecho, 5, 50),

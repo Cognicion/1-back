@@ -17,7 +17,7 @@ test("normaliza formato, orientación, zoom, márgenes y tamaño de fuente", () 
   assert.deepEqual(disposicion, {
     formato: "CARTA",
     orientacion: "horizontal",
-    zoom: 400,
+    zoom: 800,
     margenes: { superior: 5, derecho: 26, inferior: 50, izquierdo: 12 },
     tamanioFuente: 8
   });

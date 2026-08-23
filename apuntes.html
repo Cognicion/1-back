@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260822-apuntes-archivo-escala-tipografica-v1">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260822-apuntes-menu-objeto-paletas-v1">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -62,6 +62,26 @@
       <input id="apunteId" type="hidden">
 
       <div class="editor-cabecera">
+        <div id="camposCabeceraApunte" class="editor-cabecera__campos">
+          <label class="campo-titulo">
+            <span class="sr-only">Título del apunte</span>
+            <input id="apunteTitulo" autocomplete="off" placeholder="Título del apunte">
+          </label>
+          <label class="selector-carpeta">
+            <span>Carpeta</span>
+            <select id="apunteCarpeta" aria-label="Carpeta del apunte">
+              <option value="">Sin carpeta</option>
+            </select>
+          </label>
+        </div>
+        <div class="editor-cabecera__controles" aria-label="Mostrar u ocultar opciones del editor">
+          <button id="alternarTituloApunte" type="button" class="boton-alternar-editor" aria-controls="camposCabeceraApunte" aria-expanded="true" aria-label="Ocultar título y carpeta" title="Ocultar título y carpeta">
+            <span aria-hidden="true">↑</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="menu-principal-apunte" aria-label="Acciones del apunte">
         <button
           id="alternarSidebarApuntes"
           type="button"
@@ -77,26 +97,6 @@
             <path class="boton-alternar-sidebar__flecha" d="m15 9-3 3 3 3"></path>
           </svg>
         </button>
-        <div id="camposCabeceraApunte" class="editor-cabecera__campos">
-          <label class="campo-titulo">
-            <span class="sr-only">Título del apunte</span>
-            <input id="apunteTitulo" autocomplete="off" placeholder="Título del apunte">
-          </label>
-          <label class="selector-carpeta">
-            <span>Carpeta</span>
-            <select id="apunteCarpeta" aria-label="Carpeta del apunte">
-              <option value="">Sin carpeta</option>
-            </select>
-          </label>
-        </div>
-        <div class="editor-cabecera__controles" aria-label="Mostrar u ocultar opciones del editor">
-          <button id="alternarTituloApunte" type="button" class="boton-alternar-editor" aria-controls="camposCabeceraApunte" aria-expanded="true" aria-label="Ocultar título y carpeta" title="Ocultar título y carpeta">
-            <span aria-hidden="true">T</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="menu-principal-apunte" aria-label="Acciones del apunte">
         <button id="abrirArchivoApunte" type="button" class="boton-archivo-apunte" aria-haspopup="dialog" aria-expanded="false" aria-controls="menuArchivoApunte">Archivo</button>
         <button id="guardarRapidoApunte" type="button" class="boton-guardar-rapido" aria-label="Guardar rápidamente" title="Guardar rápidamente">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h12l3 3v15H5z"></path><path d="M8 3v6h8V3M8 20v-6h8v6"></path></svg>
@@ -352,27 +352,31 @@
           ></div>
           <div id="objetosApunteDelante" class="capa-objetos-apunte capa-objetos-apunte--delante" aria-label="Objetos movibles del apunte"></div>
           <div id="menuContextualObjeto" class="menu-contextual-objeto" role="menu" aria-label="Acciones del objeto" hidden>
+            <button type="button" data-accion-menu-objeto="abrir-fondo" aria-expanded="false" role="menuitem">Fondo <span aria-hidden="true">›</span></button>
+            <div class="menu-contextual-objeto__submenu" data-submenu-objeto="fondo" hidden>
+              <button type="button" data-accion-menu-objeto="fondo-color" role="menuitem">Color <span aria-hidden="true">›</span></button>
+              <div class="menu-contextual-objeto__paleta" data-paleta-objeto="fondo" role="group" aria-label="Colores de fondo"></div>
+              <button type="button" data-accion-menu-objeto="fondo-sin" role="menuitem">Sin fondo</button>
+            </div>
+            <button type="button" data-accion-menu-objeto="abrir-contorno" aria-expanded="false" role="menuitem">Contorno <span aria-hidden="true">›</span></button>
+            <div class="menu-contextual-objeto__submenu" data-submenu-objeto="contorno" hidden>
+              <button type="button" data-accion-menu-objeto="contorno-linea" role="menuitem">Línea</button>
+              <button type="button" data-accion-menu-objeto="contorno-punteado" role="menuitem">Punteado</button>
+              <button type="button" data-accion-menu-objeto="contorno-sin" role="menuitem">Sin contorno</button>
+              <label class="menu-contextual-objeto__grosor"><span>Grosor</span><input data-accion-menu-objeto="grosor" type="number" min="0" max="8" step="1" value="1" aria-label="Grosor del contorno"></label>
+            </div>
             <button type="button" data-accion-menu-objeto="eliminar" role="menuitem">Eliminar</button>
-            <button type="button" data-accion-menu-objeto="fondo-color" role="menuitem">Fondo: color</button>
-            <button type="button" data-accion-menu-objeto="fondo-sin" role="menuitem">Fondo: sin fondo</button>
-            <button type="button" data-accion-menu-objeto="contorno-linea" role="menuitem">Contorno: línea</button>
-            <button type="button" data-accion-menu-objeto="contorno-punteado" role="menuitem">Contorno: punteado</button>
-            <button type="button" data-accion-menu-objeto="contorno-sin" role="menuitem">Contorno: sin contorno</button>
-            <label class="menu-contextual-objeto__grosor"><span>Grosor</span><input data-accion-menu-objeto="grosor" type="number" min="0" max="8" step="1" value="1" aria-label="Grosor del contorno"></label>
           </div>
         </div>
       </div>
-      <div class="controles-zoom-hoja" aria-label="Zoom de la hoja">
-        <button id="zoomHojaMenosVista" type="button" aria-label="Alejar hoja">−</button>
-        <input id="zoomHojaBarra" type="range" min="25" max="400" step="10" value="100" aria-label="Zoom de la hoja">
-        <output id="zoomHojaEtiquetaVista" aria-live="polite">100%</output>
-        <button id="zoomHojaMasVista" type="button" aria-label="Acercar hoja">+</button>
-      </div>
-
       <div class="acciones-apuntes">
         <span id="estadoApuntes" role="status">Sin guardar</span>
-        <button id="guardarApunte" type="button" class="boton-guardar-apuntes">Guardar</button>
-        <button id="eliminarApunte" type="button" class="boton-peligro">Eliminar</button>
+        <div class="controles-zoom-hoja" aria-label="Zoom de la hoja">
+          <button id="zoomHojaMenosVista" type="button" aria-label="Alejar hoja">−</button>
+          <input id="zoomHojaBarraPie" type="range" min="25" max="800" step="25" value="100" aria-label="Zoom de la hoja">
+          <output id="zoomHojaEtiquetaPie" aria-live="polite">100%</output>
+          <button id="zoomHojaMasVista" type="button" aria-label="Acercar hoja">+</button>
+        </div>
       </div>
     </section>
   </main>
@@ -400,7 +404,7 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260822-apuntes-archivo-escala-tipografica-v1"></script>
+  <script type="module" src="js/apuntes.js?v=20260822-apuntes-menu-objeto-paletas-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>

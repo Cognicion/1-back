@@ -233,11 +233,14 @@ function inicializarInterfaz() {
   ["margenSuperiorHoja", "margenDerechoHoja", "margenInferiorHoja", "margenIzquierdoHoja"].forEach((id) => {
     document.getElementById(id)?.addEventListener("change", aplicarDisposicionDesdeControles);
   });
-  document.getElementById("zoomHojaMenos")?.addEventListener("click", () => cambiarZoomHoja(-10));
-  document.getElementById("zoomHojaMas")?.addEventListener("click", () => cambiarZoomHoja(10));
-  document.getElementById("zoomHojaMenosVista")?.addEventListener("click", () => cambiarZoomHoja(-10));
-  document.getElementById("zoomHojaMasVista")?.addEventListener("click", () => cambiarZoomHoja(10));
+  document.getElementById("zoomHojaMenos")?.addEventListener("click", () => cambiarZoomHoja(-25));
+  document.getElementById("zoomHojaMas")?.addEventListener("click", () => cambiarZoomHoja(25));
+  document.getElementById("zoomHojaMenosVista")?.addEventListener("click", () => cambiarZoomHoja(-25));
+  document.getElementById("zoomHojaMasVista")?.addEventListener("click", () => cambiarZoomHoja(25));
   document.getElementById("zoomHojaBarra")?.addEventListener("input", (evento) => {
+    aplicarDisposicionHoja({ ...disposicionHojaActual, zoom: evento.target.value });
+  });
+  document.getElementById("zoomHojaBarraPie")?.addEventListener("input", (evento) => {
     aplicarDisposicionHoja({ ...disposicionHojaActual, zoom: evento.target.value });
   });
   document.getElementById("lienzoApunte")?.addEventListener("wheel", manejarZoomHojaConRueda, { passive: false });
@@ -1108,6 +1111,40 @@ function gestionarMenuContextualObjeto(evento) {
   const accion = control?.dataset.accionMenuObjeto;
   const objeto = objetosApunteController?.obtenerSeleccionado?.();
   if (!accion || !objeto || objeto.tipo !== "texto") return;
+  if (accion === "abrir-fondo" || accion === "abrir-contorno") {
+    evento.preventDefault();
+    evento.stopPropagation();
+    const tipo = accion === "abrir-fondo" ? "fondo" : "contorno";
+    const submenu = document.querySelector(`[data-submenu-objeto="${tipo}"]`);
+    const abrir = Boolean(submenu?.hidden);
+    document.querySelectorAll(".menu-contextual-objeto__submenu").forEach((item) => { item.hidden = true; });
+    document.querySelectorAll(".menu-contextual-objeto > [data-accion-menu-objeto^='abrir-']").forEach((item) => item.setAttribute("aria-expanded", "false"));
+    if (submenu) submenu.hidden = !abrir;
+    control.setAttribute("aria-expanded", String(abrir));
+    if (tipo === "fondo" && abrir) renderizarPaletaObjeto();
+    return;
+  }
+  if (accion === "fondo-color") {
+    evento.preventDefault();
+    evento.stopPropagation();
+    renderizarPaletaObjeto();
+    const paleta = document.querySelector('[data-paleta-objeto="fondo"]');
+    if (paleta) paleta.hidden = false;
+    return;
+  }
+  if (accion === "color-aplicar") {
+    const color = normalizarColorHex(control.dataset.color || "");
+    if (!color) return;
+    evento.preventDefault();
+    evento.stopPropagation();
+    objetosApunteController.actualizar(objeto.id, { fondo: "color", colorFondo: color });
+    coloresRecientes = registrarColorReciente(coloresRecientes, color);
+    guardarColoresRecientes();
+    document.querySelectorAll(".menu-contextual-objeto__submenu").forEach((item) => { item.hidden = true; });
+    document.querySelectorAll(".menu-contextual-objeto > [data-accion-menu-objeto^='abrir-']").forEach((item) => item.setAttribute("aria-expanded", "false"));
+    actualizarPanelObjetos();
+    return;
+  }
   const cambios = {
     "fondo-color": { fondo: "color" },
     "fondo-sin": { fondo: "sin-fondo" },
@@ -1120,6 +1157,23 @@ function gestionarMenuContextualObjeto(evento) {
   evento.stopPropagation();
   objetosApunteController.actualizar(objeto.id, cambios);
   actualizarPanelObjetos();
+}
+
+function renderizarPaletaObjeto() {
+  const destino = document.querySelector('[data-paleta-objeto="fondo"]');
+  if (!destino) return;
+  destino.replaceChildren();
+  const colores = normalizarColoresRecientes(coloresRecientes).concat(COLORES_PREDEFINIDOS.fondo);
+  [...new Set(colores)].forEach((color) => {
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.dataset.accionMenuObjeto = "color-aplicar";
+    boton.dataset.color = color;
+    boton.title = color;
+    boton.setAttribute("aria-label", `Fondo ${color}`);
+    boton.style.setProperty("--color-muestra", color);
+    destino.append(boton);
+  });
 }
 
 function aplicarInterlineado(valor) {
@@ -1371,9 +1425,11 @@ function actualizarControlesDisposicionHoja() {
   const zoom = document.getElementById("zoomHojaValor");
   if (zoom) zoom.textContent = `${disposicion.zoom}%`;
   const barraZoom = document.getElementById("zoomHojaBarra");
-  const etiquetaZoom = document.getElementById("zoomHojaEtiquetaVista");
+  const barraZoomPie = document.getElementById("zoomHojaBarraPie");
+  const etiquetaZoomPie = document.getElementById("zoomHojaEtiquetaPie");
   if (barraZoom) barraZoom.value = String(disposicion.zoom);
-  if (etiquetaZoom) etiquetaZoom.textContent = `${disposicion.zoom}%`;
+  if (barraZoomPie) barraZoomPie.value = String(disposicion.zoom);
+  if (etiquetaZoomPie) etiquetaZoomPie.textContent = `${disposicion.zoom}%`;
   const etiqueta = etiquetaDisposicionHoja(disposicion);
   const medidas = document.getElementById("medidasHoja");
   if (medidas) medidas.textContent = etiqueta;
@@ -1421,7 +1477,7 @@ function cambiarZoomHoja(delta) {
 function manejarZoomHojaConRueda(evento) {
   if (!evento.ctrlKey) return;
   evento.preventDefault();
-  cambiarZoomHoja(evento.deltaY < 0 ? 10 : -10);
+  cambiarZoomHoja(evento.deltaY < 0 ? 25 : -25);
 }
 
 function abrirDisposicionHoja() {
@@ -1466,9 +1522,10 @@ function alternarSeccionEditor(seccion) {
   boton.setAttribute("aria-expanded", String(expandido));
   boton.setAttribute("aria-label", expandido ? configuracion.ocultar : configuracion.mostrar);
   boton.title = expandido ? configuracion.ocultar : configuracion.mostrar;
+  const icono = boton.querySelector("[aria-hidden='true']");
+  if (icono) icono.textContent = expandido ? "↑" : "↓";
   if (seccion === "formato") {
-    const icono = boton.querySelector("[aria-hidden='true']");
-    if (icono) icono.textContent = expandido ? "↑" : "↓";
+    contenido.parentElement?.classList.toggle("cinta-formato-contenedor--colapsada", !expandido);
   }
   if (!expandido && seccion === "formato") {
     cerrarPaletasColor();
