@@ -1309,7 +1309,10 @@ function actualizarVistaHoja() {
   hoja.style.setProperty("--margen-derecho", `${Math.round(margenes.derecho * escala)}px`);
   hoja.style.setProperty("--margen-inferior", `${Math.round(margenes.inferior * escala)}px`);
   hoja.style.setProperty("--margen-izquierdo", `${Math.round(margenes.izquierdo * escala)}px`);
-  hoja.style.setProperty("--apunte-tamano-fuente", `${disposicionHojaActual.tamanioFuente}px`);
+  // El zoom es visual: texto, márgenes y hoja deben crecer o reducirse juntos.
+  const factorZoom = disposicionHojaActual.zoom / 100;
+  hoja.style.setProperty("--apunte-factor-zoom", String(factorZoom));
+  hoja.style.setProperty("--apunte-tamano-fuente", `${disposicionHojaActual.tamanioFuente * factorZoom}px`);
 }
 
 function aplicarDisposicionHoja(valor, { marcar = true } = {}) {

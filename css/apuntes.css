@@ -1662,11 +1662,11 @@ body.reporte-global-contraido .controles-zoom-hoja {
   min-width: 0;
   min-height: 100%;
   box-sizing: border-box;
-  padding: 7px 9px;
+  padding: calc(7px * var(--apunte-factor-zoom, 1)) calc(9px * var(--apunte-factor-zoom, 1));
   outline: 0;
   white-space: pre-wrap;
   overflow: auto;
-  font-size: 12px;
+  font-size: calc(12px * var(--apunte-factor-zoom, 1));
   line-height: 1.35;
 }
 

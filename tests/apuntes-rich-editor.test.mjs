@@ -168,8 +168,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=20260820-apuntes-minimal-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260822-apuntes-zoom-fuente-rapida-v1/);
-  assert.match(html, /apuntes\.js\?v=20260822-apuntes-zoom-fuente-rapida-v1/);
+  assert.match(html, /apuntes\.css\?v=20260822-apuntes-zoom-proporcional-v1/);
+  assert.match(html, /apuntes\.js\?v=20260822-apuntes-zoom-proporcional-v1/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
   assert.match(html, /id="menuInsertarApunte"[^>]*aria-label="Insertar en el apunte"/);
   assert.match(html, /id="insertarCuadroTexto"/);
@@ -298,6 +298,9 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(css, /font-size:\s*var\(--apunte-tamano-fuente, 14px\)/);
   assert.match(css, /\.control-tamano-fuente\s*\{/);
   assert.match(css, /\.controles-zoom-hoja\s*\{/);
+  assert.match(controlador, /--apunte-factor-zoom/);
+  assert.match(controlador, /tamanioFuente \* factorZoom/);
+  assert.match(css, /font-size:\s*calc\(12px \* var\(--apunte-factor-zoom, 1\)\)/);
   assert.match(controlador, /function alternarSeccionEditor/);
 });
 
@@ -394,7 +397,8 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-22-apuntes-cursor-contraste-v1/);
   assert.match(version, /2026-08-22-apuntes-disposicion-hoja-v1/);
   assert.match(version, /2026-08-22-apuntes-zoom-fuente-rapida-v1/);
+  assert.match(version, /2026-08-22-apuntes-zoom-proporcional-v1/);
   const versionVisible = version.match(/APP_VERSION = "(\d+\.\d+)"/);
   assert.ok(versionVisible, "APP_VERSION debe seguir siendo visible y numérica");
-  assert.ok(Number(versionVisible[1]) >= 2.102, "versiones posteriores no deben invalidar la regresión de Mis apuntes");
+  assert.ok(Number(versionVisible[1]) >= 2.103, "versiones posteriores no deben invalidar la regresión de Mis apuntes");
 });
