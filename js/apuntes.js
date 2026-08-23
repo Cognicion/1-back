@@ -188,6 +188,23 @@ function inicializarInterfaz() {
 
   document.getElementById("formatoNegrita")?.addEventListener("pointerdown", conservarFocoEditor);
   document.getElementById("formatoNegrita")?.addEventListener("click", () => ejecutarFormato("bold"));
+  document.querySelectorAll("[data-editor-command]").forEach((boton) => {
+    boton.addEventListener("pointerdown", conservarFocoEditor);
+    boton.addEventListener("click", () => {
+      const comando = boton.dataset.editorCommand;
+      const valor = boton.dataset.editorValue || null;
+      if (comando === "paste") {
+        navigator.clipboard?.readText?.().then((texto) => {
+          if (!texto) return;
+          restaurarSeleccionEditor();
+          document.execCommand("insertText", false, texto);
+          marcarCambios();
+        }).catch(() => {});
+        return;
+      }
+      ejecutarFormato(comando, valor);
+    });
+  });
   document.getElementById("quitarFormato")?.addEventListener("pointerdown", conservarFocoEditor);
   document.getElementById("quitarFormato")?.addEventListener("click", () => ejecutarFormato("removeFormat"));
   document.getElementById("quitarResaltado")?.addEventListener("pointerdown", conservarFocoEditor);

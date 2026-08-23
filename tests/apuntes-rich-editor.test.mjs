@@ -168,8 +168,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=20260820-apuntes-minimal-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260823-apuntes-cabecera-archivo-v1/);
-  assert.match(html, /apuntes\.js\?v=20260823-apuntes-cabecera-archivo-v1/);
+  assert.match(html, /apuntes\.css\?v=20260823-apuntes-cinta-word-v1/);
+  assert.match(html, /apuntes\.js\?v=20260823-apuntes-cinta-word-v1/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
   assert.match(html, /id="menuInsertarApunte"[^>]*aria-label="Insertar en el apunte"/);
   assert.match(html, /id="insertarCuadroTexto"/);

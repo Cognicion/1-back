@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260823-apuntes-cabecera-archivo-v1">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260823-apuntes-cinta-word-v1">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -97,6 +97,20 @@
 
       <div class="cinta-formato-contenedor">
         <div id="barraFormatoApunte" class="barra-formato" role="toolbar" aria-label="Formato de texto">
+        <div class="cinta-grupo" aria-label="Portapapeles">
+          <button type="button" class="boton-formato boton-formato--ancho" data-editor-command="paste" title="Pegar">Pegar</button>
+          <button type="button" class="boton-formato" data-editor-command="cut" aria-label="Cortar" title="Cortar">✂</button>
+          <button type="button" class="boton-formato" data-editor-command="copy" aria-label="Copiar" title="Copiar">⧉</button>
+        </div>
+        <span class="separador-formato" aria-hidden="true"></span>
+        <div class="cinta-grupo" aria-label="Fuente">
+        <button type="button" class="boton-formato" data-editor-command="italic" aria-label="Cursiva" title="Cursiva"><em>I</em></button>
+        <button type="button" class="boton-formato" data-editor-command="underline" aria-label="Subrayado" title="Subrayado"><u>U</u></button>
+        <button type="button" class="boton-formato" data-editor-command="strikeThrough" aria-label="Tachado" title="Tachado"><s>S</s></button>
+        <button type="button" class="boton-formato" data-editor-command="subscript" aria-label="Subíndice" title="Subíndice">x<sub>2</sub></button>
+        <button type="button" class="boton-formato" data-editor-command="superscript" aria-label="Superíndice" title="Superíndice">x<sup>2</sup></button>
+        </div>
+        <span class="separador-formato" aria-hidden="true"></span>
         <button id="formatoNegrita" type="button" class="boton-formato" data-command="bold" aria-label="Negrita" aria-pressed="false" title="Negrita (Ctrl+B)">
           <strong aria-hidden="true">B</strong>
         </button>
@@ -155,6 +169,13 @@
         <button id="reducirSublista" type="button" class="boton-formato" aria-label="Reducir nivel de lista" title="Reducir nivel de lista (Mayús+Tab)">
           <span aria-hidden="true">↰</span>
         </button>
+        <div class="cinta-grupo cinta-grupo--parrafo" aria-label="Párrafo">
+          <button type="button" class="boton-formato" data-editor-command="justifyLeft" aria-label="Alinear a la izquierda" title="Alinear a la izquierda">≡</button>
+          <button type="button" class="boton-formato" data-editor-command="justifyCenter" aria-label="Centrar" title="Centrar">≡</button>
+          <button type="button" class="boton-formato" data-editor-command="justifyRight" aria-label="Alinear a la derecha" title="Alinear a la derecha">≡</button>
+          <button type="button" class="boton-formato" data-editor-command="justifyFull" aria-label="Justificar" title="Justificar">☰</button>
+          <button type="button" class="boton-formato" data-editor-command="formatBlock" data-editor-value="blockquote" aria-label="Cita" title="Cita">❝</button>
+        </div>
         <span class="separador-formato" aria-hidden="true"></span>
         <button id="abrirInsertarApunte" type="button" class="boton-formato boton-formato--ancho" aria-haspopup="dialog" aria-expanded="false" aria-controls="menuInsertarApunte" title="Insertar en el apunte">
           <span aria-hidden="true">＋</span><span>Insertar</span>
@@ -396,7 +417,7 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260823-apuntes-cabecera-archivo-v1"></script>
+  <script type="module" src="js/apuntes.js?v=20260823-apuntes-cinta-word-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>
