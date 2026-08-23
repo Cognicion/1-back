@@ -1372,7 +1372,7 @@ html[data-theme="light"] .ghost-button:hover,
 html[data-theme="light"] .logout-button:hover { color: var(--text-primary); background: var(--action-secondary-hover); border-color: var(--accent-primary); box-shadow: none; transform: none; }
 html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px, 1440px); }
 </style>
-    <link rel="stylesheet" href="css/dashboard-encabezado-vistas.css?v=2.104">
+    <link rel="stylesheet" href="css/dashboard-encabezado-vistas.css?v=2.109-dashboard-referencia-v2">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
 
@@ -1387,7 +1387,7 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
                 <div class="brand-name">Cognición</div>
 
                 <div class="brand-subtitle">
-                    Clínica, aprendizaje y laboratorios.
+                    Plataforma clínica integral.
                 </div>
             </div>
         </div>
@@ -1520,18 +1520,17 @@ html[data-theme="light"] .app-shell { max-width: 1440px; width: min(100% - 40px,
                 Configuración
             </button>
 
-            <button
-                class="logout-button"
-                type="button"
-                title="Cerrar tu sesión de Cognición Labs"
-                onclick="cerrarSesion()"
-            >
-                Cerrar sesión
-            </button>
-
             <div data-accesos-rapidos></div>
 
-            <div id="dashboardNavbarAvatar" class="dashboard-navbar-avatar avatar-predeterminado" role="img" aria-label="Avatar predeterminado del usuario">DR</div>
+            <details class="dashboard-perfil-menu">
+                <summary aria-label="Abrir menú de perfil">
+                    <span id="dashboardNavbarAvatar" class="dashboard-navbar-avatar avatar-predeterminado" role="img" aria-label="Avatar predeterminado del usuario">DR</span>
+                    <span class="dashboard-perfil-chevron" aria-hidden="true">⌄</span>
+                </summary>
+                <div class="dashboard-perfil-panel">
+                    <button type="button" onclick="cerrarSesion()">Cerrar sesión</button>
+                </div>
+            </details>
 
         </div>
 
@@ -1821,8 +1820,8 @@ document.addEventListener("DOMContentLoaded", function () {
   console.timeEnd?.("COGNICION dashboard | primera fase HTML");
 }, { once: true });
 </script>
-<script type="module" src="js/componentes/vista-orbital-panel-principal.js?v=2.104-dashboard-referencia"></script>
-<script type="module" src="js/dashboard.js?v=2.104-dashboard-referencia"></script>
+<script type="module" src="js/componentes/vista-orbital-panel-principal.js?v=2.109-dashboard-referencia-v2"></script>
+<script type="module" src="js/dashboard.js?v=2.109-dashboard-referencia-v2"></script>
 <script type="module" src="js/services/visitasBootstrap.js"></script>
 <script type="module" src="js/components/accesosRapidos.js"></script>
 <script type="module" src="js/components/themeSelector.js"></script>

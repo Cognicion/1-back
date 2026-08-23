@@ -94,7 +94,9 @@ function prepararFilasInteractivas(contenedor) {
     const ruta = obtenerRutaDesdeAccion(accionPrincipal);
     const titulo = tarjeta.querySelector("h3")?.textContent?.trim() || "módulo";
     const claveRuta = ruta.split(/[?#]/, 1)[0];
-    const icono = ICONOS_MINIMALISTAS_POR_RUTA.get(claveRuta) || "·";
+    const icono = tarjeta.dataset.accionFila === "laboratorios"
+      ? "⚗"
+      : ICONOS_MINIMALISTAS_POR_RUTA.get(claveRuta) || "·";
     const iconoModulo = tarjeta.querySelector(":scope > .module-top .module-icon");
     if (iconoModulo) {
       iconoModulo.textContent = icono;

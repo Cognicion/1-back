@@ -98,5 +98,6 @@
 // deployment marker: 2026-08-22-apuntes-objetos-interlineado-v1
 // deployment marker: 2026-08-22-apuntes-zoom-pie-ribbon-v1
 // deployment marker: 2026-08-22-apuntes-menu-objeto-paletas-v1
-export const APP_VERSION = "2.108";
+// deployment marker: 2026-08-22-dashboard-referencia-visual-v2 (+0.001)
+export const APP_VERSION = "2.109";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

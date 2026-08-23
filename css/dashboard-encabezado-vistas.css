@@ -546,6 +546,7 @@ html[data-theme="biocelular"] .dashboard-section[data-vista-modulos="lista"] .mo
   }
 }
 
+
 @media (max-width: 620px) {
   .dashboard-intro-avatar {
     flex-basis: 40px;
@@ -1021,5 +1022,442 @@ html[data-theme="biocelular"] .dashboard-section[data-vista-modulos="lista"] .mo
   body:has(.dashboard-section) .dashboard-intro-item + .dashboard-intro-item {
     border-top: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
     border-left: 0;
+  }
+}
+
+/* Referencia visual del Dashboard: capa final, aislada de las demás páginas. */
+body:has(.dashboard-section) {
+  --dashboard-accent: var(--accent, #39e6b2);
+  --dashboard-line: color-mix(in srgb, var(--line) 74%, transparent);
+  font-family: "Segoe UI", Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+html[data-theme="dark"] body:has(.dashboard-section) {
+  --dashboard-accent: #39e6b2;
+  --bg: #020b12;
+  --surface: #07151e;
+  --text-primary: #f1f5f7;
+  --muted: #9aa8b3;
+  --line: #18303b;
+  --accent: var(--dashboard-accent);
+  background:
+    radial-gradient(circle at 50% 20%, rgb(11 44 57 / 28%), transparent 42%),
+    linear-gradient(180deg, #020b12 0%, #04111a 100%);
+}
+
+body:has(.dashboard-section) > header {
+  min-height: 86px;
+  background: color-mix(in srgb, var(--bg) 96%, transparent);
+  border-bottom: 1px solid var(--dashboard-line);
+  backdrop-filter: none;
+}
+
+body:has(.dashboard-section) > header .topbar,
+body:has(.dashboard-section) > header[data-global-app-header] .topbar {
+  width: calc(100% - 60px);
+  max-width: none;
+  min-height: 86px;
+  gap: clamp(24px, 3vw, 64px);
+}
+
+body:has(.dashboard-section) > header .brand {
+  min-width: 270px;
+  gap: 13px;
+}
+
+body:has(.dashboard-section) > header .brand img {
+  width: 44px;
+  height: 44px;
+  border: 1px solid color-mix(in srgb, var(--dashboard-accent) 35%, var(--line));
+  border-radius: 12px;
+}
+
+body:has(.dashboard-section) > header .brand-name,
+body:has(.dashboard-section) .dashboard-intro #bienvenida,
+body:has(.dashboard-section) .dashboard-section .section-heading h2,
+body:has(.dashboard-section) .module-card h3 {
+  font-family: "Segoe UI", Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body:has(.dashboard-section) > header .brand-name {
+  font-size: 1.22rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+body:has(.dashboard-section) > header .brand-subtitle {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: .76rem;
+}
+
+body:has(.dashboard-section) > header .topbar-actions {
+  gap: 5px;
+}
+
+body:has(.dashboard-section) > header .topbar-actions > :is(a, button),
+body:has(.dashboard-section) > header .logout-button,
+body:has(.dashboard-section) > header .notifications-button,
+body:has(.dashboard-section) > header .navbar-explorar summary {
+  min-height: 44px;
+  height: 44px;
+  padding-inline: 13px;
+  border-color: transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: .82rem;
+}
+
+body:has(.dashboard-section) > header .navegacion-dashboard-activa {
+  color: var(--dashboard-accent);
+  border-bottom-color: var(--dashboard-accent);
+}
+
+body:has(.dashboard-section) > header .logout-button:hover,
+body:has(.dashboard-section) > header .notifications-button:hover,
+body:has(.dashboard-section) > header .navbar-explorar summary:hover {
+  border-color: color-mix(in srgb, var(--dashboard-accent) 25%, transparent);
+  background: color-mix(in srgb, var(--dashboard-accent) 6%, transparent);
+}
+
+body:has(.dashboard-section) > header .cognicion-theme-selector {
+  min-height: 42px;
+  border: 1px solid var(--dashboard-line);
+  background: color-mix(in srgb, var(--surface) 56%, transparent);
+}
+
+body:has(.dashboard-section) > header .cognicion-theme-selector button {
+  min-height: 34px;
+  border-radius: 6px;
+}
+
+body:has(.dashboard-section) > header .accesos-rapidos-toggle {
+  min-height: 46px;
+  padding-inline: 20px;
+  border: 1px solid color-mix(in srgb, var(--dashboard-accent) 55%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--dashboard-accent) 9%, var(--bg));
+  color: var(--dashboard-accent);
+  box-shadow: none;
+}
+
+body:has(.dashboard-section) .dashboard-perfil-menu {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+body:has(.dashboard-section) .dashboard-perfil-menu > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+}
+
+body:has(.dashboard-section) .dashboard-perfil-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+body:has(.dashboard-section) .dashboard-navbar-avatar {
+  flex-basis: 46px;
+  width: 46px;
+  height: 46px;
+  border: 1px solid color-mix(in srgb, var(--dashboard-accent) 65%, var(--line));
+}
+
+body:has(.dashboard-section) .dashboard-perfil-chevron {
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+body:has(.dashboard-section) .dashboard-perfil-panel {
+  position: absolute;
+  z-index: 120;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 150px;
+  padding: 7px;
+  border: 1px solid var(--dashboard-line);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--bg) 97%, var(--surface));
+  box-shadow: 0 16px 34px rgb(0 0 0 / 28%);
+}
+
+body:has(.dashboard-section) .dashboard-perfil-panel button {
+  width: 100%;
+  min-height: 38px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+body:has(.dashboard-section) .dashboard-perfil-panel button:hover,
+body:has(.dashboard-section) .dashboard-perfil-panel button:focus-visible {
+  background: color-mix(in srgb, var(--dashboard-accent) 8%, transparent);
+}
+
+body:has(.dashboard-section) .app-shell {
+  width: calc(100% - 60px);
+  max-width: none;
+}
+
+body:has(.dashboard-section) main.app-shell {
+  padding-top: 18px;
+}
+
+body:has(.dashboard-section) .dashboard-intro {
+  min-height: 116px;
+  border: 1px solid var(--dashboard-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+}
+
+body:has(.dashboard-section) .dashboard-intro-grid {
+  min-height: 114px;
+  grid-template-columns: minmax(430px, 1.1fr) minmax(430px, .9fr);
+  padding: 0 20px;
+}
+
+body:has(.dashboard-section) .dashboard-intro-item {
+  padding: 14px 20px;
+}
+
+body:has(.dashboard-section) .dashboard-intro-item:first-child {
+  padding-left: 0;
+}
+
+body:has(.dashboard-section) .dashboard-intro-bienvenida {
+  gap: 18px;
+}
+
+body:has(.dashboard-section) .dashboard-intro-avatar {
+  flex-basis: 72px;
+  width: 72px;
+  height: 72px;
+  border: 2px solid var(--dashboard-accent);
+}
+
+body:has(.dashboard-section) .dashboard-intro #bienvenida {
+  color: var(--text-primary);
+  font-size: clamp(1.08rem, 1.45vw, 1.36rem);
+  font-weight: 650;
+}
+
+body:has(.dashboard-section) .dashboard-intro .clinical-phrase {
+  margin-top: 5px;
+  font-size: .86rem;
+}
+
+body:has(.dashboard-section) .dashboard-intro-descubrimiento {
+  border-left-color: var(--dashboard-line);
+}
+
+body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] {
+  padding-top: 32px;
+}
+
+body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .section-heading {
+  grid-template-columns: auto minmax(280px, 1fr) auto;
+  align-items: end;
+  gap: 34px;
+  padding-bottom: 18px;
+  border-bottom: 0;
+}
+
+body:has(.dashboard-section) .dashboard-section .section-kicker {
+  color: var(--dashboard-accent);
+  font-size: .72rem;
+  letter-spacing: .16em;
+}
+
+body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .section-heading h2 {
+  margin-top: 7px;
+  font-size: clamp(1.55rem, 2vw, 1.9rem);
+  font-weight: 650;
+}
+
+body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .section-description {
+  align-self: end;
+  padding-bottom: 4px;
+  color: var(--muted);
+  font-size: .82rem;
+}
+
+body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .selector-vista-modulos {
+  gap: 8px;
+}
+
+body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .boton-vista-modulos {
+  width: 50px;
+  min-width: 50px;
+  min-height: 48px;
+  border: 1px solid var(--dashboard-line);
+  border-radius: 8px;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--surface) 50%, transparent);
+}
+
+body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .boton-vista-modulos[aria-pressed="true"] {
+  color: var(--dashboard-accent);
+  border-color: color-mix(in srgb, var(--dashboard-accent) 65%, transparent);
+  background: color-mix(in srgb, var(--dashboard-accent) 8%, transparent);
+}
+
+body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .module-grid {
+  border-color: var(--dashboard-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 42%, transparent);
+}
+
+body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .module-card {
+  min-height: 76px;
+  grid-template-columns: 44px minmax(280px, 310px) minmax(360px, 1fr) auto;
+  gap: 0 30px;
+  padding: 10px 14px;
+  border-bottom-color: var(--dashboard-line);
+}
+
+body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .module-icon {
+  width: 44px;
+  height: 44px;
+  border: 1px solid color-mix(in srgb, var(--dashboard-accent) 18%, var(--line));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--dashboard-accent) 8%, transparent);
+  color: var(--dashboard-accent);
+}
+
+body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .module-icon.icono-minimalista {
+  font-size: 1.3rem;
+}
+
+body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .module-card h3 {
+  color: var(--text-primary);
+  font-size: 1.03rem;
+  font-weight: 620;
+}
+
+body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .module-card > p,
+body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .module-card.sin-insignia-lista > p {
+  grid-column: 3;
+  grid-row: 1;
+  color: var(--muted);
+  font-size: .84rem;
+}
+
+body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .module-card .card-actions {
+  min-width: 40px;
+  gap: 12px;
+}
+
+body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .module-card .card-actions :is(a, button) {
+  color: var(--dashboard-accent) !important;
+}
+
+body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .module-card .card-actions.dual-actions :is(a, button) {
+  font-size: .78rem;
+}
+
+body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .module-card:hover,
+body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .module-card:focus-within {
+  background: color-mix(in srgb, var(--dashboard-accent) 5%, transparent);
+}
+
+@media (max-width: 1180px) {
+  body:has(.dashboard-section) > header .brand {
+    min-width: 210px;
+  }
+
+  body:has(.dashboard-section) > header .topbar,
+  body:has(.dashboard-section) > header[data-global-app-header] .topbar {
+    gap: 16px;
+  }
+
+  body:has(.dashboard-section) .dashboard-intro-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .module-card {
+    grid-template-columns: 44px minmax(210px, 270px) minmax(260px, 1fr) auto;
+    gap-inline: 18px;
+  }
+}
+
+@media (max-width: 860px) {
+  body:has(.dashboard-section) > header,
+  body:has(.dashboard-section) > header .topbar,
+  body:has(.dashboard-section) > header[data-global-app-header] .topbar {
+    min-height: 64px;
+  }
+
+  body:has(.dashboard-section) .app-shell,
+  body:has(.dashboard-section) > header .topbar {
+    width: calc(100% - 28px);
+  }
+
+  body:has(.dashboard-section) .dashboard-intro-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body:has(.dashboard-section) .dashboard-intro-descubrimiento {
+    border-top: 1px solid var(--dashboard-line);
+    border-left: 0;
+  }
+
+  body:has(.dashboard-section) .dashboard-intro-avatar {
+    flex-basis: 52px;
+    width: 52px;
+    height: 52px;
+  }
+}
+
+@media (max-width: 700px) {
+  body:has(.dashboard-section) main.app-shell {
+    padding-top: 10px;
+  }
+
+  body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] {
+    padding-top: 20px;
+  }
+
+  body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .section-heading {
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+  }
+
+  body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .section-description {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .module-card {
+    min-height: 82px;
+    grid-template-columns: 42px minmax(0, 1fr) 32px;
+    grid-template-rows: auto auto;
+    gap: 5px 12px;
+    padding: 10px;
+  }
+
+  body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .module-icon {
+    grid-row: 1 / -1;
+    width: 42px;
+    height: 42px;
+  }
+
+  body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .module-card > p,
+  body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .module-card.sin-insignia-lista > p {
+    grid-column: 2;
+    grid-row: 2;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    white-space: normal;
+  }
+
+  body:has(.dashboard-section) .dashboard-section[data-vista-modulos="lista"] .module-card .card-actions {
+    grid-column: 3;
+    grid-row: 1 / -1;
   }
 }
