@@ -166,10 +166,10 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /data-global-header-description>Notas personales, recordatorios y pendientes\.<\/span>/);
   assert.match(html, /<nav class="global-header-actions" aria-label="Navegación de apuntes">/);
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
-  assert.match(html, /theme-preload\.js\?v=20260820-apuntes-minimal-v2/);
+  assert.match(html, /theme-preload\.js\?v=2\.114-navbar-unificada-v1/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260823-apuntes-cinta-word-v1/);
-  assert.match(html, /apuntes\.js\?v=20260823-apuntes-cinta-word-v1/);
+  assert.match(html, /apuntes\.css\?v=20260823-apuntes-grupos-cinta-v1/);
+  assert.match(html, /apuntes\.js\?v=20260823-apuntes-grupos-cinta-v1/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
   assert.match(html, /id="menuInsertarApunte"[^>]*aria-label="Insertar en el apunte"/);
   assert.match(html, /id="insertarCuadroTexto"/);
@@ -206,6 +206,9 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /id="hojaApunte" class="hoja-apunte"/);
   assert.doesNotMatch(html, /id="etiquetaVistaHoja"/);
   assert.match(html, /id="listaPuntos"/);
+  assert.match(html, /data-menu-formato-toggle="listas"/);
+  assert.match(html, /data-menu-formato-toggle="alineacion"/);
+  assert.doesNotMatch(html, /data-editor-command="(?:paste|cut|copy)"/);
   assert.match(html, /id="listaNumeros"/);
   assert.match(html, /id="listaLetras"/);
   assert.match(html, /id="aumentarSublista"/);
@@ -217,9 +220,9 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /data-accion-menu-objeto="fondo-sin"/);
   assert.match(html, /data-accion-menu-objeto="contorno-punteado"/);
   assert.match(html, /id="carpetaPadre" aria-label="Carpeta superior"/);
-  assert.match(encabezadoGlobal, /MIGRATED_PAGES = new Set\([^)]*"apuntes"/);
+  assert.match(encabezadoGlobal, /async function crearNavbarUnificada\(pageId, encabezadoContextual\)/);
   assert.match(encabezadoGlobal, /pageId === "apuntes"\) return document\.querySelector\("header\.topbar-apuntes"\)/);
-  assert.match(precargaTema, /globalAppHeader\.js\?v=20260822-mi-nube-v1/);
+  assert.match(precargaTema, /globalAppHeader\.js\?v=2\.114-navbar-unificada-v1/);
   assert.match(precargaTema, /biocellularThemeController\.js\?v=2\.046-diagnostico-visual/);
   assert.match(controladorTemaBiocelular, /document\.querySelector\("#login, \.login-container, #loginForm, \.login-form"\)/);
   assert.doesNotMatch(controladorTemaBiocelular, /\.login-form,\s*form|querySelector\(["'`]form["'`]\)/);

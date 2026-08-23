@@ -100,7 +100,9 @@
 // deployment marker: 2026-08-22-apuntes-menu-objeto-paletas-v1
 // deployment marker: 2026-08-23-apuntes-cabecera-archivo-v1 (+0.001)
 // deployment marker: 2026-08-23-apuntes-cinta-word-v1 (+0.001)
+// deployment marker: 2026-08-23-apuntes-grupos-cinta-v1 (+0.001)
 // deployment marker: 2026-08-22-dashboard-referencia-visual-v2 (+0.001)
 // deployment marker: 2026-08-23-dashboard-laboratorios-hover-v1 (+0.001)
-export const APP_VERSION = "2.112";
+// deployment marker: 2026-08-23-navbar-global-unificada-v1 (+0.001)
+export const APP_VERSION = "2.114";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

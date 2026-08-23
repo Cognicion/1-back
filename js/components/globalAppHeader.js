@@ -1,9 +1,10 @@
 import { getFeatureTips } from "./featureTips.js";
 import { getPageHeader, isPublicPage, pageIdFromLocation } from "./pageHeaderRegistry.js";
+import { auth } from "../firebase.js";
+import { renderizarFotoPerfil } from "../services/profilePhotoService.js";
 
 const DEBUG_PREFIX = "[GLOBAL HEADER]";
 const RECENT_KEY = "cognicion.globalHeader.featureRecent";
-const MIGRATED_PAGES = new Set(["dashboard", "medico", "paciente", "nota", "historia", "apuntes", "mi-nube"]);
 let stylesPromise;
 
 function log(message, data) { console.debug(`${DEBUG_PREFIX} ${message}`, data ?? ""); }
@@ -14,7 +15,7 @@ function loadStyles() {
     if (document.querySelector('link[data-global-app-header-styles]')) return resolve();
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "css/global-app-header.css?v=1.899";
+    link.href = "css/global-app-header.css?v=2.114-navbar-unificada-v1";
     link.dataset.globalAppHeaderStyles = "true";
     link.addEventListener("load", resolve, { once: true });
     link.addEventListener("error", resolve, { once: true });
@@ -45,7 +46,186 @@ function findHeader(pageId) {
     }
     return header;
   }
-  return null;
+  return document.querySelector(
+    "body > header:not([data-navbar-global-unificada]), body > .topbar, body > .barra-superior"
+  ) || null;
+}
+
+function svgNavegacion(tipo) {
+  const rutas = {
+    explorar: '<path d="m12 3 1.7 5.3L19 10l-5.3 1.7L12 17l-1.7-5.3L5 10l5.3-1.7L12 3Z"></path>',
+    panel: '<path d="M4 4h16v16H4z"></path><path d="M4 9h16M9 9v11"></path>',
+    inicio: '<path d="m3 11 9-8 9 8"></path><path d="M5 10v10h14V10M9 20v-6h6v6"></path>',
+    campana: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path>',
+    mensajes: '<path d="M4 5h16v11H8l-4 3V5Z"></path><path d="M8 9h8M8 12h5"></path>',
+    configuracion: '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"></path>',
+    salir: '<path d="M10 5H5v14h5M14 8l4 4-4 4M18 12H9"></path>'
+  };
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">${rutas[tipo] || ""}</svg>`;
+}
+
+function plantillaExplorarFunciones() {
+  return `
+    <details class="navbar-global-explorar">
+      <summary>${svgNavegacion("explorar")}<span>Explorar funciones</span></summary>
+      <div class="navbar-global-explorar-panel">
+        <a href="medico.html"><strong>Panel médico</strong><small>Pacientes, notas y seguimiento clínico</small></a>
+        <a href="escalas.html"><strong>Escalas clínicas</strong><small>Evaluaciones e instrumentos clínicos</small></a>
+        <a href="calculadoras-medicas.html"><strong>Calculadoras</strong><small>Índices y cálculos médicos</small></a>
+        <a href="biblioteca.html"><strong>Biblioteca médica</strong><small>Recursos de consulta clínica</small></a>
+        <a href="mi-nube.html"><strong>Mi nube</strong><small>Archivos y apuntes privados</small></a>
+        <a href="rehabilitacion-cognitiva.html"><strong>Rehabilitación cognitiva</strong><small>Ejercicios y seguimiento</small></a>
+        <a href="laboratorio-farmacologia.html"><strong>Laboratorios</strong><small>Farmacología, neurofisiología y modelado</small></a>
+        <a href="estadistica.html"><strong>Estadística médica</strong><small>Variables, tablas y gráficas</small></a>
+      </div>
+    </details>`;
+}
+
+function obtenerHostAccesosUnico() {
+  const existentes = [...document.querySelectorAll("[data-accesos-rapidos]")];
+  const principal = existentes.find((host) => host.dataset.accesosInicializados === "true") || existentes[0] || document.createElement("div");
+  principal.dataset.accesosRapidos = "";
+  principal.dataset.globalHeaderAccess = "true";
+  existentes.filter((host) => host !== principal).forEach((host) => host.remove());
+  return principal;
+}
+
+function limpiarAccionesGlobalesContextuales(encabezado, navbar) {
+  if (!encabezado || encabezado === navbar) return;
+  encabezado.classList.add("encabezado-contextual-global");
+  const selectores = [
+    "[data-accesos-rapidos]",
+    "[data-cognicion-theme-selector]",
+    "#notificationsButton",
+    "#mensajesButton",
+    "[data-global-header-notifications]",
+    "[data-global-notifications-link]"
+  ];
+  encabezado.querySelectorAll(selectores.join(",")).forEach((elemento) => elemento.remove());
+  encabezado.querySelectorAll("a, button").forEach((elemento) => {
+    const href = elemento.getAttribute("href") || "";
+    const onclick = elemento.getAttribute("onclick") || "";
+    const texto = elemento.textContent.replace(/\s+/g, " ").trim().toLocaleLowerCase("es");
+    const destinoGlobal = /(?:^|\/)dashboard\.html(?:#|$)/i.test(href)
+      || /(?:^|\/)configuracion\.html(?:#|$)/i.test(href)
+      || /dashboard\.html|configuracion\.html/i.test(onclick);
+    const etiquetaGlobal = /^(inicio|dashboard|configuraci[oó]n|mensajes|notificaciones)$/.test(texto);
+    if (destinoGlobal && etiquetaGlobal) elemento.remove();
+  });
+  log("Barra contextual preservada", { clases: encabezado.className });
+}
+
+async function cerrarSesionGlobal() {
+  if (typeof window.cerrarSesion === "function") {
+    await window.cerrarSesion();
+    return;
+  }
+  const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+  await signOut(auth);
+  window.location.href = "login.html";
+}
+
+function conectarMenuPerfil(navbar) {
+  const menu = navbar.querySelector("[data-menu-perfil-global]");
+  const explorar = navbar.querySelector(".navbar-global-explorar");
+  const cerrarPerfil = () => { if (menu) menu.open = false; };
+  const cerrarExplorar = () => { if (explorar) explorar.open = false; };
+  const cerrarMenus = () => {
+    cerrarPerfil();
+    cerrarExplorar();
+  };
+  const notificaciones = navbar.querySelector("[data-menu-notificaciones]");
+  const mensajes = navbar.querySelector("[data-menu-mensajes]");
+  const salir = navbar.querySelector("[data-menu-cerrar-sesion]");
+  const onDocumentClick = (event) => {
+    if (menu?.open && !menu.contains(event.target)) cerrarPerfil();
+    if (explorar?.open && !explorar.contains(event.target)) cerrarExplorar();
+  };
+  const onKeydown = (event) => { if (event.key === "Escape") cerrarMenus(); };
+  const onPerfilToggle = () => { if (menu?.open) cerrarExplorar(); };
+  const onExplorarToggle = () => { if (explorar?.open) cerrarPerfil(); };
+  notificaciones?.addEventListener("click", () => {
+    cerrarPerfil();
+    if (typeof window.alternarNotificaciones === "function") window.alternarNotificaciones();
+    else window.location.href = "dashboard.html#avisosDashboardModulo";
+  });
+  mensajes?.addEventListener("click", () => {
+    cerrarPerfil();
+    if (typeof window.alternarMensajes === "function") void window.alternarMensajes(true);
+    else window.location.href = "dashboard.html#mensajesPanel";
+  });
+  salir?.addEventListener("click", () => void cerrarSesionGlobal().catch((error) => console.error(`${DEBUG_PREFIX} Error al cerrar sesión`, error)));
+  navbar.querySelectorAll(".menu-perfil-global a").forEach((enlace) => enlace.addEventListener("click", cerrarPerfil));
+  menu?.addEventListener("toggle", onPerfilToggle);
+  explorar?.addEventListener("toggle", onExplorarToggle);
+  document.addEventListener("click", onDocumentClick);
+  document.addEventListener("keydown", onKeydown);
+  return () => {
+    menu?.removeEventListener("toggle", onPerfilToggle);
+    explorar?.removeEventListener("toggle", onExplorarToggle);
+    document.removeEventListener("click", onDocumentClick);
+    document.removeEventListener("keydown", onKeydown);
+  };
+}
+
+async function crearNavbarUnificada(pageId, encabezadoContextual) {
+  const reutilizaDashboard = pageId === "dashboard" && encabezadoContextual;
+  const navbar = reutilizaDashboard ? encabezadoContextual : document.createElement("header");
+  const hostAccesos = obtenerHostAccesosUnico();
+  navbar.replaceChildren();
+  navbar.dataset.navbarGlobalUnificada = "true";
+  navbar.dataset.globalAppHeader = "true";
+  navbar.className = "navbar-global-unificada global-app-header";
+  navbar.setAttribute("role", "banner");
+  navbar.setAttribute("aria-label", "Navegación global de COGNICIÓN");
+  navbar.innerHTML = `
+    <div class="navbar-global-contenido">
+      <a class="navbar-global-marca" href="dashboard.html" aria-label="Ir al Dashboard de COGNICIÓN">
+        <img src="assets/favicon-cognicion-128.png" alt="" width="44" height="44" decoding="async">
+        <span><strong>COGNICIÓN</strong><small>Plataforma clínica integral.</small></span>
+      </a>
+      <nav class="navbar-global-principal" aria-label="Funciones globales">
+        ${plantillaExplorarFunciones()}
+        <a class="navbar-global-panel-medico" href="medico.html">${svgNavegacion("panel")}<span>Panel médico</span></a>
+      </nav>
+      <div class="navbar-global-acciones">
+        <div data-host-accesos-global></div>
+        <details class="menu-perfil-global" data-menu-perfil-global>
+          <summary aria-label="Abrir menú del usuario">
+            <span class="avatar-navbar-global" data-avatar-navbar-global role="img" aria-label="Avatar del usuario">DR</span>
+            <span class="menu-perfil-chevron" aria-hidden="true">⌄</span>
+          </summary>
+          <div class="menu-perfil-global-panel">
+            <a href="dashboard.html">${svgNavegacion("inicio")}<span>Inicio</span></a>
+            <button id="notificationsButton" type="button" data-menu-notificaciones>${svgNavegacion("campana")}<span>Notificaciones</span></button>
+            <button id="mensajesButton" type="button" data-menu-mensajes>${svgNavegacion("mensajes")}<span>Mensajes</span></button>
+            <a href="configuracion.html">${svgNavegacion("configuracion")}<span>Configuración</span></a>
+            <section class="menu-perfil-tema" aria-label="Tema de la interfaz">
+              <span>Tema</span>
+              <div data-cognicion-theme-selector></div>
+            </section>
+            <button type="button" data-menu-cerrar-sesion>${svgNavegacion("salir")}<span>Cerrar sesión</span></button>
+          </div>
+        </details>
+      </div>
+    </div>`;
+  navbar.querySelector("[data-host-accesos-global]")?.replaceWith(hostAccesos);
+  if (!reutilizaDashboard) document.body.prepend(navbar);
+  limpiarAccionesGlobalesContextuales(encabezadoContextual, navbar);
+  const usuario = auth.currentUser;
+  const avatar = navbar.querySelector("[data-avatar-navbar-global]");
+  renderizarFotoPerfil(avatar, {
+    url: usuario?.photoURL || "",
+    nombre: usuario?.displayName || usuario?.email || "DR",
+    alt: usuario?.photoURL ? "Foto de perfil del usuario" : "Avatar predeterminado del usuario"
+  });
+  const [{ inicializarAccesosRapidos }, { inicializarSelectorTema }] = await Promise.all([
+    import("./accesosRapidos.js"),
+    import("./themeSelector.js")
+  ]);
+  inicializarAccesosRapidos(navbar);
+  inicializarSelectorTema(navbar);
+  return { navbar, destruirMenu: conectarMenuPerfil(navbar) };
 }
 
 function ensureBranding(header, pageId) {
@@ -140,12 +320,14 @@ function ensureGlobalActions(header, pageId) {
   header.append(actions);
 }
 
-function updateIdentity(header, page) {
-  header.dataset.globalAppHeader = "true";
-  header.classList.add("global-app-header");
-  header.setAttribute("role", "banner");
-  header.setAttribute("aria-label", `Encabezado de ${page.title}`);
-  header.style.setProperty("--global-header-height", `${Math.ceil(header.getBoundingClientRect().height || 96)}px`);
+function updateIdentity(header, page, marcarComoGlobal = true) {
+  if (marcarComoGlobal) {
+    header.dataset.globalAppHeader = "true";
+    header.classList.add("global-app-header");
+    header.setAttribute("role", "banner");
+    header.setAttribute("aria-label", `Encabezado de ${page.title}`);
+    header.style.setProperty("--global-header-height", `${Math.ceil(header.getBoundingClientRect().height || 96)}px`);
+  }
   const title = header.querySelector("[data-global-header-title]") || header.querySelector(".brand-name");
   const description = header.querySelector("[data-global-header-description]") || header.querySelector(".brand-subtitle");
   if (title) { title.textContent = page.title; title.dataset.globalHeaderDynamic = "true"; }
@@ -171,8 +353,9 @@ function cleanContext(value = "") {
 export function updateGlobalHeader({ title, description, context } = {}) {
   const state = globalThis.__cognicionGlobalHeader;
   if (!state?.header) return false;
-  const titleNode = state.header.querySelector("[data-global-header-title]") || state.header.querySelector(".brand-name");
-  const descriptionNode = state.header.querySelector("[data-global-header-description]") || state.header.querySelector(".brand-subtitle");
+  const identityHost = state.identityHeader || state.header;
+  const titleNode = identityHost.querySelector("[data-global-header-title]") || identityHost.querySelector(".brand-name");
+  const descriptionNode = identityHost.querySelector("[data-global-header-description]") || identityHost.querySelector(".brand-subtitle");
   const nextTitle = title || state.baseTitle;
   const safeContext = cleanContext(context);
   if (titleNode) titleNode.textContent = safeContext ? `${nextTitle} · ${safeContext}` : nextTitle;
@@ -276,21 +459,32 @@ function createDiscoveryController(discovery, page, pageId) {
 export async function mountGlobalAppHeader() {
   if (globalThis.__cognicionGlobalHeader?.destroy) return globalThis.__cognicionGlobalHeader;
   const pageId = pageIdFromLocation();
-  if (isPublicPage(pageId) || !MIGRATED_PAGES.has(pageId)) {
-    log("Página fuera de la fase actual", { pageId });
+  if (isPublicPage(pageId)) {
+    log("Página pública, navbar autenticada omitida", { pageId });
+    return null;
+  }
+  await auth.authStateReady?.();
+  if (!auth.currentUser) {
+    log("Sesión no autenticada, navbar omitida", { pageId });
     return null;
   }
   log("Inicializando", { pageId });
   await loadStyles();
-  const header = findHeader(pageId);
-  if (!header) { console.warn(`${DEBUG_PREFIX} Error: encabezado existente no encontrado`, { pageId }); return null; }
+  const contextualHeader = findHeader(pageId);
   const page = getPageHeader(pageId);
-  if (["paciente", "nota", "historia"].includes(pageId)) ensureBranding(header, pageId);
-  ensureGlobalActions(header, pageId);
-  asegurarAccionNotificaciones(header);
-  updateIdentity(header, page);
-  if (pageId === "medico") ensureMedicoActions(header);
-  const discovery = ensureDiscovery(header);
+  const { navbar: header, destruirMenu } = await crearNavbarUnificada(pageId, contextualHeader);
+  let identityHeader = contextualHeader && contextualHeader !== header ? contextualHeader : header;
+  let contextoMinimo = null;
+  if (identityHeader === header && pageId !== "dashboard" && !document.querySelector("[data-global-header-discovery-host]")) {
+    contextoMinimo = document.createElement("section");
+    contextoMinimo.className = "encabezado-contextual-minimo";
+    contextoMinimo.dataset.globalHeaderHost = "true";
+    header.after(contextoMinimo);
+    identityHeader = contextoMinimo;
+  }
+  if ((contextoMinimo || ["paciente", "nota", "historia"].includes(pageId)) && identityHeader !== header) ensureBranding(identityHeader, pageId);
+  if (identityHeader !== header) updateIdentity(identityHeader, page, false);
+  const discovery = ensureDiscovery(identityHeader);
   const resizeObserver = typeof ResizeObserver === "function" ? new ResizeObserver(() => {
     const height = Math.ceil(header.getBoundingClientRect().height || 96);
     document.documentElement.style.setProperty("--global-header-height", `${height}px`);
@@ -302,20 +496,20 @@ export async function mountGlobalAppHeader() {
   const destroy = () => {
     destroyDiscovery();
     destroyContext();
+    destruirMenu();
     resizeObserver?.disconnect();
     header.removeAttribute("data-global-app-header");
     header.classList.remove("global-app-header");
+    contextoMinimo?.remove();
+    if (header !== contextualHeader) header.remove();
     delete globalThis.__cognicionGlobalHeader;
     log("Encabezado destruido", { pageId });
   };
-  globalThis.__cognicionGlobalHeader = { header, pageId, destroy, baseTitle: page.title };
+  globalThis.__cognicionGlobalHeader = { header, identityHeader, pageId, destroy, baseTitle: page.title };
   destroyContext = createContextController(pageId);
   log("Página detectada", { pageId });
   log("Título aplicado", { title: page.title });
-  if (header.querySelector("[data-accesos-rapidos]")) {
-    import("./accesosRapidos.js").then(({ inicializarAccesosRapidos }) => inicializarAccesosRapidos(header)).catch((error) => console.warn(`${DEBUG_PREFIX} Error en Accesos rápidos`, error));
-    log("Accesos rápidos conectados");
-  }
+  log("Accesos rápidos conectados");
   log("Barra contextual preservada", { pageId });
   return globalThis.__cognicionGlobalHeader;
 }

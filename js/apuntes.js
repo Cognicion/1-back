@@ -203,22 +203,31 @@ function inicializarInterfaz() {
         return;
       }
       ejecutarFormato(comando, valor);
+      cerrarMenusFormatoCompacto();
     });
+  });
+  document.querySelectorAll("[data-menu-formato-toggle]").forEach((boton) => {
+    boton.addEventListener("pointerdown", conservarFocoEditor);
+    boton.addEventListener("click", () => alternarMenuFormatoCompacto(boton.dataset.menuFormatoToggle));
+  });
+  document.addEventListener("pointerdown", (evento) => {
+    if (evento.target instanceof Element && evento.target.closest(".grupo-formato-desplegable")) return;
+    cerrarMenusFormatoCompacto();
   });
   document.getElementById("quitarFormato")?.addEventListener("pointerdown", conservarFocoEditor);
   document.getElementById("quitarFormato")?.addEventListener("click", () => ejecutarFormato("removeFormat"));
   document.getElementById("quitarResaltado")?.addEventListener("pointerdown", conservarFocoEditor);
   document.getElementById("quitarResaltado")?.addEventListener("click", quitarResaltadoSeleccion);
   document.getElementById("listaPuntos")?.addEventListener("pointerdown", conservarFocoEditor);
-  document.getElementById("listaPuntos")?.addEventListener("click", () => ejecutarLista("puntos"));
+  document.getElementById("listaPuntos")?.addEventListener("click", () => { ejecutarLista("puntos"); cerrarMenusFormatoCompacto(); });
   document.getElementById("listaNumeros")?.addEventListener("pointerdown", conservarFocoEditor);
-  document.getElementById("listaNumeros")?.addEventListener("click", () => ejecutarLista("numeros"));
+  document.getElementById("listaNumeros")?.addEventListener("click", () => { ejecutarLista("numeros"); cerrarMenusFormatoCompacto(); });
   document.getElementById("listaLetras")?.addEventListener("pointerdown", conservarFocoEditor);
-  document.getElementById("listaLetras")?.addEventListener("click", () => ejecutarLista("letras"));
+  document.getElementById("listaLetras")?.addEventListener("click", () => { ejecutarLista("letras"); cerrarMenusFormatoCompacto(); });
   document.getElementById("aumentarSublista")?.addEventListener("pointerdown", conservarFocoEditor);
-  document.getElementById("aumentarSublista")?.addEventListener("click", () => ejecutarFormato("indent"));
+  document.getElementById("aumentarSublista")?.addEventListener("click", () => { ejecutarFormato("indent"); cerrarMenusFormatoCompacto(); });
   document.getElementById("reducirSublista")?.addEventListener("pointerdown", conservarFocoEditor);
-  document.getElementById("reducirSublista")?.addEventListener("click", () => ejecutarFormato("outdent"));
+  document.getElementById("reducirSublista")?.addEventListener("click", () => { ejecutarFormato("outdent"); cerrarMenusFormatoCompacto(); });
   document.getElementById("abrirInsertarApunte")?.addEventListener("click", alternarMenuInsertar);
   document.getElementById("insertarCuadroTexto")?.addEventListener("click", () => insertarObjetoApunte("texto"));
   document.getElementById("insertarFlecha")?.addEventListener("click", () => insertarObjetoApunte("flecha"));
@@ -1269,6 +1278,32 @@ function cerrarMenuInsertar({ devolverFoco = false } = {}) {
   if (devolverFoco) boton?.focus();
 }
 
+function cerrarMenusFormatoCompacto(excepto = "") {
+  document.querySelectorAll("[data-menu-formato]").forEach((menu) => {
+    if (menu.dataset.menuFormato === excepto) return;
+    menu.hidden = true;
+  });
+  document.querySelectorAll("[data-menu-formato-toggle]").forEach((boton) => {
+    if (boton.dataset.menuFormatoToggle === excepto) return;
+    boton.setAttribute("aria-expanded", "false");
+  });
+}
+
+function alternarMenuFormatoCompacto(tipo) {
+  const menu = document.querySelector(`[data-menu-formato="${tipo}"]`);
+  const boton = document.querySelector(`[data-menu-formato-toggle="${tipo}"]`);
+  if (!menu || !boton) return;
+  const abrir = menu.hidden;
+  cerrarMenusFormatoCompacto();
+  if (abrir) {
+    const rect = boton.getBoundingClientRect();
+    menu.style.left = `${Math.min(rect.left, window.innerWidth - 188)}px`;
+    menu.style.top = `${rect.bottom + 5}px`;
+  }
+  menu.hidden = !abrir;
+  boton.setAttribute("aria-expanded", String(abrir));
+}
+
 function alternarMenuInsertar() {
   const menu = document.getElementById("menuInsertarApunte");
   const boton = document.getElementById("abrirInsertarApunte");
@@ -1552,6 +1587,7 @@ function alternarSeccionEditor(seccion) {
   if (!expandido && seccion === "formato") {
     cerrarPaletasColor();
     cerrarMenuContextualTexto();
+    cerrarMenusFormatoCompacto();
   }
 }
 

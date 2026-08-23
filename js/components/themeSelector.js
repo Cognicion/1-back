@@ -2,7 +2,11 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/f
 import { auth } from "../firebase.js";
 import { applyTheme, initializeThemeForUser, setThemeForUser } from "../services/themeService.js";
 
+let listenerTemaConfigurado = false;
+
 function renderSelector(container) {
+  if (container.dataset.selectorTemaInicializado === "true") return;
+  container.dataset.selectorTemaInicializado = "true";
   container.innerHTML = `
     <div class="cognicion-theme-selector" role="group" aria-label="Selector de tema">
       <span class="cognicion-theme-label">Tema:</span>
@@ -16,11 +20,14 @@ function renderSelector(container) {
   });
 }
 
-function initializeSelector() {
+export function inicializarSelectorTema(root = document) {
   applyTheme(document.documentElement.dataset.theme || "biocelular");
-  document.querySelectorAll("[data-cognicion-theme-selector]").forEach(renderSelector);
-  onAuthStateChanged(auth, (user) => { void initializeThemeForUser(user); });
+  root.querySelectorAll("[data-cognicion-theme-selector]").forEach(renderSelector);
+  if (!listenerTemaConfigurado) {
+    listenerTemaConfigurado = true;
+    onAuthStateChanged(auth, (user) => { void initializeThemeForUser(user); });
+  }
 }
 
-if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initializeSelector, { once: true });
-else initializeSelector();
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => inicializarSelectorTema(), { once: true });
+else inicializarSelectorTema();

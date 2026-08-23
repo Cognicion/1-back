@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="biocelular">
 <head>
-  <script src="js/theme-preload.js?v=20260820-apuntes-minimal-v2"></script>
+  <script src="js/theme-preload.js?v=2.114-navbar-unificada-v1"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260823-apuntes-cinta-word-v1">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260823-apuntes-grupos-cinta-v1">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -97,12 +97,6 @@
 
       <div class="cinta-formato-contenedor">
         <div id="barraFormatoApunte" class="barra-formato" role="toolbar" aria-label="Formato de texto">
-        <div class="cinta-grupo" aria-label="Portapapeles">
-          <button type="button" class="boton-formato boton-formato--ancho" data-editor-command="paste" title="Pegar">Pegar</button>
-          <button type="button" class="boton-formato" data-editor-command="cut" aria-label="Cortar" title="Cortar">✂</button>
-          <button type="button" class="boton-formato" data-editor-command="copy" aria-label="Copiar" title="Copiar">⧉</button>
-        </div>
-        <span class="separador-formato" aria-hidden="true"></span>
         <div class="cinta-grupo" aria-label="Fuente">
         <button type="button" class="boton-formato" data-editor-command="italic" aria-label="Cursiva" title="Cursiva"><em>I</em></button>
         <button type="button" class="boton-formato" data-editor-command="underline" aria-label="Subrayado" title="Subrayado"><u>U</u></button>
@@ -154,28 +148,26 @@
           <span>Limpiar</span>
         </button>
         <span class="separador-formato" aria-hidden="true"></span>
-        <button id="listaPuntos" type="button" class="boton-formato" aria-label="Lista con viñetas" title="Lista con viñetas">
-          <span aria-hidden="true">•</span>
-        </button>
-        <button id="listaNumeros" type="button" class="boton-formato" aria-label="Lista numerada" title="Lista numerada">
-          <span aria-hidden="true">1.</span>
-        </button>
-        <button id="listaLetras" type="button" class="boton-formato" aria-label="Lista alfabética" title="Lista alfabética">
-          <span aria-hidden="true">A.</span>
-        </button>
-        <button id="aumentarSublista" type="button" class="boton-formato" aria-label="Crear sublista" title="Crear sublista (Tab)">
-          <span aria-hidden="true">↳</span>
-        </button>
-        <button id="reducirSublista" type="button" class="boton-formato" aria-label="Reducir nivel de lista" title="Reducir nivel de lista (Mayús+Tab)">
-          <span aria-hidden="true">↰</span>
-        </button>
-        <div class="cinta-grupo cinta-grupo--parrafo" aria-label="Párrafo">
-          <button type="button" class="boton-formato" data-editor-command="justifyLeft" aria-label="Alinear a la izquierda" title="Alinear a la izquierda">≡</button>
-          <button type="button" class="boton-formato" data-editor-command="justifyCenter" aria-label="Centrar" title="Centrar">≡</button>
-          <button type="button" class="boton-formato" data-editor-command="justifyRight" aria-label="Alinear a la derecha" title="Alinear a la derecha">≡</button>
-          <button type="button" class="boton-formato" data-editor-command="justifyFull" aria-label="Justificar" title="Justificar">☰</button>
-          <button type="button" class="boton-formato" data-editor-command="formatBlock" data-editor-value="blockquote" aria-label="Cita" title="Cita">❝</button>
+        <div class="grupo-formato-desplegable">
+          <button type="button" class="boton-formato boton-formato--ancho" data-menu-formato-toggle="listas" aria-expanded="false" aria-controls="menuFormatoListas" title="Opciones de listas"><span aria-hidden="true">• 1.</span><span>Listas</span><span aria-hidden="true">⌄</span></button>
+          <div id="menuFormatoListas" class="menu-formato-compacto" data-menu-formato="listas" role="menu" aria-label="Opciones de listas" hidden>
+            <button id="listaPuntos" type="button" role="menuitem"><span aria-hidden="true">•</span><span>Lista con puntos</span></button>
+            <button id="listaNumeros" type="button" role="menuitem"><span aria-hidden="true">1.</span><span>Lista numerada</span></button>
+            <button id="listaLetras" type="button" role="menuitem"><span aria-hidden="true">A.</span><span>Lista por letras</span></button>
+            <button id="aumentarSublista" type="button" role="menuitem"><span aria-hidden="true">↳</span><span>Aumentar nivel</span></button>
+            <button id="reducirSublista" type="button" role="menuitem"><span aria-hidden="true">↰</span><span>Reducir nivel</span></button>
+          </div>
         </div>
+        <div class="grupo-formato-desplegable">
+          <button type="button" class="boton-formato boton-formato--ancho" data-menu-formato-toggle="alineacion" aria-expanded="false" aria-controls="menuFormatoAlineacion" title="Alineación del párrafo"><span aria-hidden="true">≡</span><span>Alinear</span><span aria-hidden="true">⌄</span></button>
+          <div id="menuFormatoAlineacion" class="menu-formato-compacto" data-menu-formato="alineacion" role="menu" aria-label="Alineación del párrafo" hidden>
+            <button type="button" data-editor-command="justifyLeft" role="menuitem"><span aria-hidden="true">≡</span><span>Izquierda</span></button>
+            <button type="button" data-editor-command="justifyCenter" role="menuitem"><span aria-hidden="true">≡</span><span>Centrar</span></button>
+            <button type="button" data-editor-command="justifyRight" role="menuitem"><span aria-hidden="true">≡</span><span>Derecha</span></button>
+            <button type="button" data-editor-command="justifyFull" role="menuitem"><span aria-hidden="true">☰</span><span>Justificar</span></button>
+          </div>
+        </div>
+        <button type="button" class="boton-formato" data-editor-command="formatBlock" data-editor-value="blockquote" aria-label="Cita" title="Cita">❝</button>
         <span class="separador-formato" aria-hidden="true"></span>
         <button id="abrirInsertarApunte" type="button" class="boton-formato boton-formato--ancho" aria-haspopup="dialog" aria-expanded="false" aria-controls="menuInsertarApunte" title="Insertar en el apunte">
           <span aria-hidden="true">＋</span><span>Insertar</span>
@@ -417,7 +409,7 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260823-apuntes-cinta-word-v1"></script>
+  <script type="module" src="js/apuntes.js?v=20260823-apuntes-grupos-cinta-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>
