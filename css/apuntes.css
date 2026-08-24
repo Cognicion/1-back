@@ -2424,7 +2424,9 @@ html[data-theme="light"] .apuntes-shell .boton-peligro {
 
 @media (min-width: 900px) {
   .apuntes-shell {
-    transition: grid-template-columns 180ms ease;
+    /* El ancho cambia de forma atómica: animar la cuadrícula obliga a repintar
+       una hoja ampliada (especialmente al 400 %) en cada fotograma. */
+    transition: none;
   }
 
   .apuntes-sidebar {

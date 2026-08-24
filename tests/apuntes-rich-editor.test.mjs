@@ -168,8 +168,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=2\.115-navbar-unica-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260823-apuntes-grupos-cinta-v1/);
-  assert.match(html, /apuntes\.js\?v=20260824-apuntes-sidebar-hoja-estable-v1/);
+  assert.match(html, /apuntes\.css\?v=20260824-apuntes-sidebar-zoom400-estable-v1/);
+  assert.match(html, /apuntes\.js\?v=20260824-apuntes-sidebar-zoom400-estable-v1/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
   assert.match(html, /id="menuInsertarApunte"[^>]*aria-label="Insertar en el apunte"/);
   assert.match(html, /id="insertarCuadroTexto"/);
@@ -233,7 +233,6 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(controlador, /function ejecutarLista\(tipo\)/);
   assert.match(controlador, /new ResizeObserver\(\(\) => programarActualizacionVistaHoja\(\)\)/);
   assert.match(controlador, /shell\.addEventListener\("apuntes:sidebar"/);
-  assert.match(controlador, /evento\.propertyName === "grid-template-columns"/);
   assert.match(controlador, /if \(nuevaClaveVista === claveVistaHoja\) return/);
   assert.match(controlador, /insertUnorderedList/);
   assert.match(controlador, /insertOrderedList/);
@@ -261,6 +260,7 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(reglaShell, /width:\s*100%/);
   assert.match(reglaShell, /margin:\s*0/);
   assert.match(reglaShell, /gap:\s*0/);
+  assert.doesNotMatch(css, /transition:\s*grid-template-columns/);
   assert.doesNotMatch(css, /width:\s*min\(1280px/);
   assert.match(css, /grid-template-columns:\s*clamp\(276px, 23vw, 360px\) minmax\(0, 1fr\)/);
   assert.match(css, /\.acciones-apuntes[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\) auto/);

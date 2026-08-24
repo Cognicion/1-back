@@ -101,8 +101,6 @@ let objetosApunteController = null;
 let disposicionHojaActual = normalizarDisposicionHoja(DISPOSICION_HOJA_PREDETERMINADA);
 let observadorVistaHoja = null;
 let frameVistaHoja = 0;
-let vistaHojaSuspendida = false;
-let temporizadorVistaHojaSidebar = 0;
 let claveVistaHoja = "";
 const parametrosEntradaApuntes = new URLSearchParams(window.location.search);
 const apunteSolicitado = String(parametrosEntradaApuntes.get("apunte") || "").trim().slice(0, 160);
@@ -1447,23 +1445,8 @@ function inicializarDisposicionHojaUI() {
     window.addEventListener("resize", programarActualizacionVistaHoja, { passive: true });
   }
   if (shell) {
-    const finalizarRedimensionSidebar = () => {
-      window.clearTimeout(temporizadorVistaHojaSidebar);
-      temporizadorVistaHojaSidebar = 0;
-      vistaHojaSuspendida = false;
-      programarActualizacionVistaHoja({ forzar: true });
-    };
     shell.addEventListener("apuntes:sidebar", () => {
-      vistaHojaSuspendida = true;
-      if (frameVistaHoja) window.cancelAnimationFrame(frameVistaHoja);
-      frameVistaHoja = 0;
-      window.clearTimeout(temporizadorVistaHojaSidebar);
-      temporizadorVistaHojaSidebar = window.setTimeout(finalizarRedimensionSidebar, 240);
-    });
-    shell.addEventListener("transitionend", (evento) => {
-      if (evento.target === shell && evento.propertyName === "grid-template-columns") {
-        finalizarRedimensionSidebar();
-      }
+      programarActualizacionVistaHoja({ forzar: true });
     });
   }
   aplicarDisposicionHoja(DISPOSICION_HOJA_PREDETERMINADA, { marcar: false });
@@ -1471,7 +1454,6 @@ function inicializarDisposicionHojaUI() {
 
 function programarActualizacionVistaHoja({ forzar = false } = {}) {
   if (forzar) claveVistaHoja = "";
-  if (vistaHojaSuspendida) return;
   if (frameVistaHoja) window.cancelAnimationFrame(frameVistaHoja);
   frameVistaHoja = window.requestAnimationFrame(() => {
     frameVistaHoja = 0;
