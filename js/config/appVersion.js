@@ -109,5 +109,7 @@
 // deployment marker: 2026-08-24-apuntes-sidebar-zoom400-estable-v1 (+0.001)
 // deployment marker: 2026-08-24-apuntes-zoom400-caja-estable-v2 (+0.001)
 // deployment marker: 2026-08-24-apuntes-cabecera-zoom400-v3 (+0.001)
-export const APP_VERSION = "2.119";
+// deployment marker: 2026-08-24-apuntes-cinta-espacio-v4 (+0.001)
+// deployment marker: 2026-08-24-panel-medico-sin-resumen-v1 (+0.001)
+export const APP_VERSION = "2.121";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

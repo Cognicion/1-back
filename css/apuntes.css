@@ -271,7 +271,7 @@ body.pagina-apuntes > main.apuntes-shell {
   min-height: 0;
   min-width: 0;
   display: grid;
-  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   gap: 8px;
   padding: 14px 16px 10px;
   border-width: 0;
@@ -745,32 +745,6 @@ body.pagina-apuntes > main.apuntes-shell {
   stroke-linejoin: round;
 }
 
-.apuntes-shell .boton-alternar-editor {
-  width: 30px;
-  min-width: 30px;
-  height: 30px;
-  min-height: 30px;
-  padding: 0;
-  border: 1px solid var(--apuntes-borde);
-  border-radius: 7px;
-  color: var(--apuntes-texto-suave);
-  background: transparent;
-  box-shadow: none;
-  transform: none;
-  font-size: 15px;
-  line-height: 1;
-}
-
-.apuntes-shell .boton-alternar-editor:hover,
-.apuntes-shell .boton-alternar-editor:focus-visible,
-.apuntes-shell .boton-alternar-editor[aria-expanded="false"] {
-  color: var(--apuntes-texto);
-  border-color: var(--apuntes-borde-fuerte);
-  background: var(--apuntes-superficie-hover);
-  box-shadow: none;
-  transform: none;
-}
-
 .campo-titulo {
   min-width: 0;
 }
@@ -878,6 +852,10 @@ body.pagina-apuntes > main.apuntes-shell {
   flex: 0 0 auto;
 }
 
+.barra-formato[hidden] {
+  display: none !important;
+}
+
 .cinta-grupo {
   display: inline-flex;
   align-items: center;
@@ -946,10 +924,6 @@ body.pagina-apuntes > main.apuntes-shell {
   position: relative;
   min-width: 0;
   min-height: 40px;
-}
-
-.cinta-formato-contenedor .barra-formato {
-  padding-right: 42px;
 }
 
 .apuntes-shell .boton-alternar-cinta {
@@ -1632,7 +1606,7 @@ body.pagina-apuntes > main.apuntes-shell {
 /* Cabecera única: título, controles de plegado y acciones quedan en una sola línea. */
 .apuntes-shell .menu-principal-apunte {
   display: grid;
-  grid-template-columns: 28px auto 30px minmax(0, 1fr) 30px 30px;
+  grid-template-columns: 28px auto 30px minmax(0, 1fr) 30px;
   align-items: center;
   gap: 5px;
   min-height: 42px;
@@ -1643,24 +1617,19 @@ body.pagina-apuntes > main.apuntes-shell {
   min-width: 0;
 }
 
-.apuntes-shell .menu-principal-apunte .editor-cabecera__campos[hidden] {
-  display: none !important;
-}
-
 .menu-principal-apunte > #alternarSidebarApuntes { grid-column: 1; }
 .menu-principal-apunte > #abrirArchivoApunte { grid-column: 2; }
 .menu-principal-apunte > #guardarRapidoApunte { grid-column: 3; }
 .menu-principal-apunte > #camposCabeceraApunte { grid-column: 4; }
-.menu-principal-apunte > #alternarTituloApunte { grid-column: 5; }
-.menu-principal-apunte > #alternarBarraFormato { grid-column: 6; }
+.menu-principal-apunte > #alternarBarraFormato { grid-column: 5; }
 
 .apuntes-shell .menu-principal-apunte .campo-titulo input {
   width: 100%;
   height: 42px;
 }
 
-.apuntes-shell .menu-principal-apunte .boton-alternar-editor,
 .apuntes-shell .menu-principal-apunte .boton-alternar-cinta {
+  position: static;
   width: 30px;
   min-width: 30px;
   height: 30px;
@@ -1676,7 +1645,6 @@ body.pagina-apuntes > main.apuntes-shell {
   transform: none;
 }
 
-.apuntes-shell .menu-principal-apunte .boton-alternar-editor sub,
 .apuntes-shell .menu-principal-apunte .boton-alternar-cinta sub {
   position: relative;
   top: .25em;
@@ -1684,8 +1652,6 @@ body.pagina-apuntes > main.apuntes-shell {
   font-size: 8px;
 }
 
-.apuntes-shell .menu-principal-apunte .boton-alternar-editor:hover,
-.apuntes-shell .menu-principal-apunte .boton-alternar-editor:focus-visible,
 .apuntes-shell .menu-principal-apunte .boton-alternar-cinta:hover,
 .apuntes-shell .menu-principal-apunte .boton-alternar-cinta:focus-visible {
   color: var(--apuntes-texto);
@@ -1749,7 +1715,7 @@ body.pagina-apuntes > main.apuntes-shell {
 
 @media (max-width: 899px) {
   .apuntes-shell .menu-principal-apunte {
-    grid-template-columns: 36px auto 30px minmax(0, 1fr) 30px 30px;
+    grid-template-columns: 36px auto 30px minmax(0, 1fr) 30px;
   }
 }
 
@@ -2864,11 +2830,12 @@ html[data-theme="light"] .apuntes-shell .boton-peligro {
 }
 
 .apuntes-shell .cinta-formato-contenedor--colapsada {
-  min-height: 30px;
+  display: none;
+  min-height: 0;
 }
 
-.apuntes-shell .cinta-formato-contenedor--colapsada .boton-alternar-cinta {
-  top: 1px;
+.apuntes-editor.apuntes-editor--cinta-colapsada {
+  grid-template-rows: auto minmax(0, 1fr) auto;
 }
 
 @media (hover: none) {

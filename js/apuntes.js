@@ -250,8 +250,7 @@ function inicializarInterfaz() {
   document.getElementById("abrirArchivoApunte")?.addEventListener("click", alternarMenuExportacion);
   document.getElementById("descargarApunteWord")?.addEventListener("click", () => exportarApunte("word"));
   document.getElementById("descargarApuntePdf")?.addEventListener("click", () => exportarApunte("pdf"));
-  document.getElementById("alternarTituloApunte")?.addEventListener("click", () => alternarSeccionEditor("titulo"));
-  document.getElementById("alternarBarraFormato")?.addEventListener("click", () => alternarSeccionEditor("formato"));
+  document.getElementById("alternarBarraFormato")?.addEventListener("click", alternarCintaFormato);
   document.getElementById("abrirDisposicionHoja")?.addEventListener("click", alternarDisposicionHoja);
   document.getElementById("cerrarDisposicionHoja")?.addEventListener("click", () => cerrarDisposicionHoja({ devolverFoco: true }));
   document.getElementById("formatoHoja")?.addEventListener("change", aplicarDisposicionDesdeControles);
@@ -1603,27 +1602,23 @@ function alternarDisposicionHoja() {
   else cerrarDisposicionHoja();
 }
 
-function alternarSeccionEditor(seccion) {
-  const configuracion = seccion === "titulo"
-    ? { contenidoId: "camposCabeceraApunte", botonId: "alternarTituloApunte", mostrar: "Mostrar título", ocultar: "Ocultar título" }
-    : { contenidoId: "barraFormatoApunte", botonId: "alternarBarraFormato", mostrar: "Expandir cinta", ocultar: "Contraer cinta" };
-  const contenido = document.getElementById(configuracion.contenidoId);
-  const boton = document.getElementById(configuracion.botonId);
+function alternarCintaFormato() {
+  const contenido = document.getElementById("barraFormatoApunte");
+  const boton = document.getElementById("alternarBarraFormato");
   if (!contenido || !boton) return;
   contenido.hidden = !contenido.hidden;
   const expandido = !contenido.hidden;
   boton.setAttribute("aria-expanded", String(expandido));
-  boton.setAttribute("aria-label", expandido ? configuracion.ocultar : configuracion.mostrar);
-  boton.title = expandido ? configuracion.ocultar : configuracion.mostrar;
+  boton.setAttribute("aria-label", expandido ? "Contraer cinta" : "Expandir cinta");
+  boton.title = expandido ? "Contraer cinta" : "Expandir cinta";
   const icono = boton.querySelector("[aria-hidden='true']");
   if (icono) {
     const letra = icono.dataset.collapseLetter || "";
     icono.innerHTML = `${expandido ? "↑" : "↓"}${letra ? `<sub>${letra}</sub>` : ""}`;
   }
-  if (seccion === "formato") {
-    contenido.parentElement?.classList.toggle("cinta-formato-contenedor--colapsada", !expandido);
-  }
-  if (!expandido && seccion === "formato") {
+  contenido.parentElement?.classList.toggle("cinta-formato-contenedor--colapsada", !expandido);
+  contenido.closest(".apuntes-editor")?.classList.toggle("apuntes-editor--cinta-colapsada", !expandido);
+  if (!expandido) {
     cerrarPaletasColor();
     cerrarMenuContextualTexto();
     cerrarMenusFormatoCompacto();

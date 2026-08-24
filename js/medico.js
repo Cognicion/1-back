@@ -394,10 +394,8 @@ function mostrarBloqueoPanelMedico(mensaje) {
   pacientesGlobal = [];
   const nombreMedico = document.getElementById("nombreMedico");
   const listaPacientes = document.getElementById("listaPacientes");
-  const resumenTotal = document.getElementById("totalPacientes");
 
   if (nombreMedico) nombreMedico.textContent = "Acceso no autorizado";
-  if (resumenTotal) resumenTotal.textContent = "0";
   if (listaPacientes) {
     listaPacientes.innerHTML = `
       <div class="estado-vacio">
@@ -1041,7 +1039,6 @@ function actualizarVistaPacientesCargados() {
   filtrarPacientes();
   renderizarListaCarpetasMedico();
   renderizarCarpetasInlineMedico();
-  calcularEstadisticas(pacientesGlobal.filter((paciente) => !pacienteArchivadoParaMedico(paciente)));
   ultimaRecargaPacientes = Date.now();
 }
 
@@ -1575,7 +1572,6 @@ async function alternarArchivoPaciente(pacienteId, archivar) {
   filtrarPacientes();
   renderizarListaCarpetasMedico();
   renderizarCarpetasInlineMedico();
-  calcularEstadisticas(pacientesGlobal.filter((item) => !pacienteArchivadoParaMedico(item)));
 }
 
 function mostrarPacientes(pacientes) {
@@ -2028,24 +2024,6 @@ function inicializarFiltroAtencion() {
       cerrarCarpetasPacientes();
     }
   });
-}
-
-function calcularEstadisticas(pacientes) {
-  const total = pacientes.length;
-
-  const activos = pacientes.filter(
-    (paciente) => paciente.estado !== "pendiente"
-  ).length;
-
-  const pendientes = pacientes.filter(
-    (paciente) => paciente.estado === "pendiente"
-  ).length;
-
-  document.getElementById("totalPacientes").textContent = total;
-  document.getElementById("pacientesActivos").textContent = activos;
-  document.getElementById("pacientesPendientes").textContent = pendientes;
-
-  document.getElementById("expedientesHoy").textContent = 0;
 }
 
 function contarPor(pacientes, obtenerClave) {

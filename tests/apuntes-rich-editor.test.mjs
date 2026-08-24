@@ -168,8 +168,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=2\.115-navbar-unica-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260824-apuntes-cabecera-zoom400-v3/);
-  assert.match(html, /apuntes\.js\?v=20260824-apuntes-cabecera-zoom400-v3/);
+  assert.match(html, /apuntes\.css\?v=20260824-apuntes-cinta-espacio-v4/);
+  assert.match(html, /apuntes\.js\?v=20260824-apuntes-cinta-espacio-v4/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
   assert.match(html, /id="menuInsertarApunte"[^>]*aria-label="Insertar en el apunte"/);
   assert.match(html, /id="insertarCuadroTexto"/);
@@ -206,7 +206,7 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /id="zoomHojaBarraPie" type="range"[^>]*max="800"/);
   assert.match(html, /id="zoomHojaMenosVista"/);
   assert.match(html, /id="zoomHojaMasVista"/);
-  assert.match(html, /id="alternarTituloApunte"[^>]*aria-controls="camposCabeceraApunte"/);
+  assert.doesNotMatch(html, /id="alternarTituloApunte"/);
   assert.match(html, /id="alternarBarraFormato"[^>]*aria-controls="barraFormatoApunte"/);
   assert.match(html, /id="lienzoApunte"/);
   assert.match(html, /id="hojaApunte" class="hoja-apunte"/);
@@ -249,8 +249,10 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(controlador, /const cajaVisor = visor\.getBoundingClientRect\(\)/);
   const calculoVistaHoja = controlador.match(/function actualizarVistaHoja\(\) \{[\s\S]*?\n\}/)?.[0] || "";
   assert.doesNotMatch(calculoVistaHoja, /visor\.client(?:Width|Height)/);
-  const alternanciaEditor = controlador.match(/function alternarSeccionEditor\(seccion\) \{[\s\S]*?\n\}/)?.[0] || "";
+  const alternanciaEditor = controlador.match(/function alternarCintaFormato\(\) \{[\s\S]*?\n\}/)?.[0] || "";
+  assert.match(alternanciaEditor, /apuntes-editor--cinta-colapsada/);
   assert.match(alternanciaEditor, /programarActualizacionVistaHoja\(\{ forzar: true \}\)/);
+  assert.doesNotMatch(controlador, /alternarTituloApunte/);
   assert.match(controlador, /insertUnorderedList/);
   assert.match(controlador, /insertOrderedList/);
   assert.match(controlador, /ejecutarFormato\(evento\.shiftKey \? "outdent" : "indent"\)/);
@@ -278,7 +280,9 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(reglaShell, /margin:\s*0/);
   assert.match(reglaShell, /gap:\s*0/);
   assert.doesNotMatch(css, /transition:\s*grid-template-columns/);
-  assert.match(css, /\.editor-cabecera__campos\[hidden\]\s*\{\s*display:\s*none\s*!important/);
+  assert.match(css, /\.barra-formato\[hidden\]\s*\{\s*display:\s*none\s*!important/);
+  assert.match(css, /\.cinta-formato-contenedor--colapsada\s*\{[\s\S]*display:\s*none/);
+  assert.match(css, /\.apuntes-editor\.apuntes-editor--cinta-colapsada\s*\{[\s\S]*grid-template-rows:\s*auto minmax\(0, 1fr\) auto/);
   assert.match(css, /\.lienzo-apunte\s*\{[\s\S]*contain:\s*layout paint/);
   assert.match(css, /\.lienzo-apunte--zoom-alto\s*\{[\s\S]*overflow:\s*scroll/);
   assert.doesNotMatch(css, /width:\s*min\(1280px/);
@@ -343,7 +347,7 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(css, /\.menu-contextual-texto\s*\{[\s\S]*grid-template-columns:\s*1fr/);
   assert.match(css, /\.boton-alternar-cinta\s*\{/);
   assert.match(html, /id="zoomHojaBarraPie" type="range" min="25" max="800"/);
-  assert.match(controlador, /function alternarSeccionEditor/);
+  assert.match(controlador, /function alternarCintaFormato/);
   assert.match(controlador, /function aplicarInterlineado/);
   assert.match(controlador, /function gestionarMenuContextualObjeto/);
   assert.match(objetosApunte, /objeto-apunte__punto-ancla/);
