@@ -169,7 +169,7 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /theme-preload\.js\?v=2\.115-navbar-unica-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
   assert.match(html, /apuntes\.css\?v=20260823-apuntes-grupos-cinta-v1/);
-  assert.match(html, /apuntes\.js\?v=20260823-apuntes-grupos-cinta-v1/);
+  assert.match(html, /apuntes\.js\?v=20260824-apuntes-sidebar-hoja-estable-v1/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
   assert.match(html, /id="menuInsertarApunte"[^>]*aria-label="Insertar en el apunte"/);
   assert.match(html, /id="insertarCuadroTexto"/);
@@ -231,6 +231,10 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(controlador, /const COLORES_PREDEFINIDOS/);
   assert.match(controlador, /function aplicarColor\(tipo, color\)/);
   assert.match(controlador, /function ejecutarLista\(tipo\)/);
+  assert.match(controlador, /new ResizeObserver\(\(\) => programarActualizacionVistaHoja\(\)\)/);
+  assert.match(controlador, /shell\.addEventListener\("apuntes:sidebar"/);
+  assert.match(controlador, /evento\.propertyName === "grid-template-columns"/);
+  assert.match(controlador, /if \(nuevaClaveVista === claveVistaHoja\) return/);
   assert.match(controlador, /insertUnorderedList/);
   assert.match(controlador, /insertOrderedList/);
   assert.match(controlador, /ejecutarFormato\(evento\.shiftKey \? "outdent" : "indent"\)/);

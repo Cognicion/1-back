@@ -100,6 +100,10 @@ let coloresRecientes = [];
 let objetosApunteController = null;
 let disposicionHojaActual = normalizarDisposicionHoja(DISPOSICION_HOJA_PREDETERMINADA);
 let observadorVistaHoja = null;
+let frameVistaHoja = 0;
+let vistaHojaSuspendida = false;
+let temporizadorVistaHojaSidebar = 0;
+let claveVistaHoja = "";
 const parametrosEntradaApuntes = new URLSearchParams(window.location.search);
 const apunteSolicitado = String(parametrosEntradaApuntes.get("apunte") || "").trim().slice(0, 160);
 const crearApunteSolicitado = parametrosEntradaApuntes.get("nuevo") === "1";
@@ -1434,14 +1438,45 @@ function aplicarFondoApunte(color, { marcar = true } = {}) {
 
 function inicializarDisposicionHojaUI() {
   const visor = document.getElementById("lienzoApunte");
+  const shell = document.querySelector(".apuntes-shell");
   if (visor && "ResizeObserver" in window) {
     observadorVistaHoja?.disconnect();
-    observadorVistaHoja = new ResizeObserver(() => actualizarVistaHoja());
+    observadorVistaHoja = new ResizeObserver(() => programarActualizacionVistaHoja());
     observadorVistaHoja.observe(visor);
   } else {
-    window.addEventListener("resize", actualizarVistaHoja, { passive: true });
+    window.addEventListener("resize", programarActualizacionVistaHoja, { passive: true });
+  }
+  if (shell) {
+    const finalizarRedimensionSidebar = () => {
+      window.clearTimeout(temporizadorVistaHojaSidebar);
+      temporizadorVistaHojaSidebar = 0;
+      vistaHojaSuspendida = false;
+      programarActualizacionVistaHoja({ forzar: true });
+    };
+    shell.addEventListener("apuntes:sidebar", () => {
+      vistaHojaSuspendida = true;
+      if (frameVistaHoja) window.cancelAnimationFrame(frameVistaHoja);
+      frameVistaHoja = 0;
+      window.clearTimeout(temporizadorVistaHojaSidebar);
+      temporizadorVistaHojaSidebar = window.setTimeout(finalizarRedimensionSidebar, 240);
+    });
+    shell.addEventListener("transitionend", (evento) => {
+      if (evento.target === shell && evento.propertyName === "grid-template-columns") {
+        finalizarRedimensionSidebar();
+      }
+    });
   }
   aplicarDisposicionHoja(DISPOSICION_HOJA_PREDETERMINADA, { marcar: false });
+}
+
+function programarActualizacionVistaHoja({ forzar = false } = {}) {
+  if (forzar) claveVistaHoja = "";
+  if (vistaHojaSuspendida) return;
+  if (frameVistaHoja) window.cancelAnimationFrame(frameVistaHoja);
+  frameVistaHoja = window.requestAnimationFrame(() => {
+    frameVistaHoja = 0;
+    actualizarVistaHoja();
+  });
 }
 
 function disposicionDesdeControles() {
@@ -1499,24 +1534,37 @@ function actualizarVistaHoja() {
   const escalaBase = Math.min(anchoDisponible / medidas.anchoMm, altoDisponible / medidas.altoMm);
   const escala = escalaBase * (disposicionHojaActual.zoom / 100);
   const margenes = disposicionHojaActual.margenes;
-  hoja.style.setProperty("--hoja-ancho", `${Math.round(medidas.anchoMm * escala)}px`);
-  hoja.style.setProperty("--hoja-alto", `${Math.round(medidas.altoMm * escala)}px`);
-  hoja.style.setProperty("--margen-superior", `${Math.round(margenes.superior * escala)}px`);
-  hoja.style.setProperty("--margen-derecho", `${Math.round(margenes.derecho * escala)}px`);
-  hoja.style.setProperty("--margen-inferior", `${Math.round(margenes.inferior * escala)}px`);
-  hoja.style.setProperty("--margen-izquierdo", `${Math.round(margenes.izquierdo * escala)}px`);
+  const valoresVista = {
+    ancho: Math.round(medidas.anchoMm * escala),
+    alto: Math.round(medidas.altoMm * escala),
+    margenSuperior: Math.round(margenes.superior * escala),
+    margenDerecho: Math.round(margenes.derecho * escala),
+    margenInferior: Math.round(margenes.inferior * escala),
+    margenIzquierdo: Math.round(margenes.izquierdo * escala),
+    factorZoom: disposicionHojaActual.zoom / 100,
+    escalaVisual: Number(escala.toFixed(5)),
+    tamanioFuente: Number((disposicionHojaActual.tamanioFuente * 25.4 * escala / 72).toFixed(2))
+  };
+  const nuevaClaveVista = Object.values(valoresVista).join("|");
+  if (nuevaClaveVista === claveVistaHoja) return;
+  claveVistaHoja = nuevaClaveVista;
+  hoja.style.setProperty("--hoja-ancho", `${valoresVista.ancho}px`);
+  hoja.style.setProperty("--hoja-alto", `${valoresVista.alto}px`);
+  hoja.style.setProperty("--margen-superior", `${valoresVista.margenSuperior}px`);
+  hoja.style.setProperty("--margen-derecho", `${valoresVista.margenDerecho}px`);
+  hoja.style.setProperty("--margen-inferior", `${valoresVista.margenInferior}px`);
+  hoja.style.setProperty("--margen-izquierdo", `${valoresVista.margenIzquierdo}px`);
   // 1 pt = 1/72 de pulgada: la fuente se calcula con la misma escala física que la hoja.
   // Así su proporción no cambia cuando el usuario acerca o aleja la vista.
-  const factorZoom = disposicionHojaActual.zoom / 100;
-  hoja.style.setProperty("--apunte-factor-zoom", String(factorZoom));
-  hoja.style.setProperty("--apunte-escala-visual", String(escala));
-  hoja.style.setProperty("--apunte-tamano-fuente", `${(disposicionHojaActual.tamanioFuente * 25.4 * escala / 72).toFixed(2)}px`);
+  hoja.style.setProperty("--apunte-factor-zoom", String(valoresVista.factorZoom));
+  hoja.style.setProperty("--apunte-escala-visual", String(valoresVista.escalaVisual));
+  hoja.style.setProperty("--apunte-tamano-fuente", `${valoresVista.tamanioFuente}px`);
 }
 
 function aplicarDisposicionHoja(valor, { marcar = true } = {}) {
   disposicionHojaActual = normalizarDisposicionHoja(valor);
   actualizarControlesDisposicionHoja();
-  actualizarVistaHoja();
+  programarActualizacionVistaHoja({ forzar: true });
   if (marcar) marcarCambios();
 }
 
@@ -1545,7 +1593,7 @@ function abrirDisposicionHoja() {
   cerrarMenuExportacion();
   panel.hidden = false;
   boton.setAttribute("aria-expanded", "true");
-  actualizarVistaHoja();
+  programarActualizacionVistaHoja({ forzar: true });
 }
 
 function cerrarDisposicionHoja({ devolverFoco = false } = {}) {
