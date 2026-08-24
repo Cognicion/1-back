@@ -73,7 +73,7 @@
   window.addEventListener("pageshow", apply);
   // El encabezado se carga de forma diferida y solo monta la fase autenticada validada.
   window.addEventListener("DOMContentLoaded", () => {
-    void import("./components/globalAppHeader.js?v=2.114-navbar-unificada-v1")
+    void import("./components/globalAppHeader.js?v=2.115-navbar-unica-v2")
       .then(({ scheduleGlobalAppHeader }) => scheduleGlobalAppHeader())
       .catch((error) => console.warn("[GLOBAL HEADER] Error de carga", error));
   }, { once: true });

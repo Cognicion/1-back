@@ -104,5 +104,6 @@
 // deployment marker: 2026-08-22-dashboard-referencia-visual-v2 (+0.001)
 // deployment marker: 2026-08-23-dashboard-laboratorios-hover-v1 (+0.001)
 // deployment marker: 2026-08-23-navbar-global-unificada-v1 (+0.001)
-export const APP_VERSION = "2.114";
+// deployment marker: 2026-08-24-navbar-global-unica-v2 (+0.001)
+export const APP_VERSION = "2.115";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

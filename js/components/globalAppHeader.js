@@ -15,7 +15,7 @@ function loadStyles() {
     if (document.querySelector('link[data-global-app-header-styles]')) return resolve();
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "css/global-app-header.css?v=2.114-navbar-unificada-v1";
+    link.href = "css/global-app-header.css?v=2.115-navbar-unica-v2";
     link.dataset.globalAppHeaderStyles = "true";
     link.addEventListener("load", resolve, { once: true });
     link.addEventListener("error", resolve, { once: true });
@@ -69,6 +69,11 @@ function plantillaExplorarFunciones() {
     <details class="navbar-global-explorar">
       <summary>${svgNavegacion("explorar")}<span>Explorar funciones</span></summary>
       <div class="navbar-global-explorar-panel">
+        <section class="navbar-global-pagina-actual" aria-label="Página actual">
+          <small>Página actual</small>
+          <strong data-global-header-title></strong>
+          <span data-global-header-description></span>
+        </section>
         <a href="medico.html"><strong>Panel médico</strong><small>Pacientes, notas y seguimiento clínico</small></a>
         <a href="escalas.html"><strong>Escalas clínicas</strong><small>Evaluaciones e instrumentos clínicos</small></a>
         <a href="calculadoras-medicas.html"><strong>Calculadoras</strong><small>Índices y cálculos médicos</small></a>
@@ -90,29 +95,53 @@ function obtenerHostAccesosUnico() {
   return principal;
 }
 
-function limpiarAccionesGlobalesContextuales(encabezado, navbar) {
-  if (!encabezado || encabezado === navbar) return;
-  encabezado.classList.add("encabezado-contextual-global");
-  const selectores = [
+function retirarEncabezadoLegado(encabezado, navbar) {
+  if (!encabezado || encabezado === navbar) return () => {};
+  const panelExplorar = navbar.querySelector(".navbar-global-explorar-panel");
+  const accionesContextuales = [];
+  const globales = [
     "[data-accesos-rapidos]",
     "[data-cognicion-theme-selector]",
     "#notificationsButton",
     "#mensajesButton",
     "[data-global-header-notifications]",
     "[data-global-notifications-link]"
-  ];
-  encabezado.querySelectorAll(selectores.join(",")).forEach((elemento) => elemento.remove());
+  ].join(",");
+
   encabezado.querySelectorAll("a, button").forEach((elemento) => {
+    if (elemento.closest(globales)) return;
     const href = elemento.getAttribute("href") || "";
     const onclick = elemento.getAttribute("onclick") || "";
-    const texto = elemento.textContent.replace(/\s+/g, " ").trim().toLocaleLowerCase("es");
-    const destinoGlobal = /(?:^|\/)dashboard\.html(?:#|$)/i.test(href)
-      || /(?:^|\/)configuracion\.html(?:#|$)/i.test(href)
-      || /dashboard\.html|configuracion\.html/i.test(onclick);
-    const etiquetaGlobal = /^(inicio|dashboard|configuraci[oó]n|mensajes|notificaciones)$/.test(texto);
-    if (destinoGlobal && etiquetaGlobal) elemento.remove();
+    const texto = elemento.textContent.replace(/\s+/g, " ").trim();
+    const esMarca = Boolean(elemento.querySelector("img"))
+      || /(?:brand|marca|logo)/i.test(elemento.className || "");
+    const esDestinoGlobal = /dashboard\.html|configuracion\.html|medico\.html/i.test(`${href} ${onclick}`);
+    const esControlGlobal = elemento.matches(globales)
+      || /^(inicio|dashboard|configuraci[oó]n|mensajes|notificaciones|panel m[eé]dico|pacientes)$/i.test(texto);
+    const estaOculto = elemento.hidden || elemento.getAttribute("aria-hidden") === "true" || elemento.style.display === "none";
+    if (!texto || esMarca || esDestinoGlobal || esControlGlobal || estaOculto) return;
+    accionesContextuales.push(elemento);
   });
-  log("Barra contextual preservada", { clases: encabezado.className });
+
+  if (accionesContextuales.length && panelExplorar) {
+    const grupo = document.createElement("section");
+    grupo.className = "navbar-global-acciones-contextuales";
+    grupo.setAttribute("aria-label", "Acciones de esta página");
+    grupo.innerHTML = "<small>Acciones de esta página</small>";
+    accionesContextuales.forEach((elemento) => {
+      elemento.classList.add("navbar-global-accion-contextual");
+      grupo.append(elemento);
+    });
+    panelExplorar.append(grupo);
+  }
+
+  const marcador = document.createComment("encabezado-legado-retirado");
+  encabezado.before(marcador);
+  encabezado.remove();
+  log("Encabezado legado retirado", { accionesContextuales: accionesContextuales.length });
+  return () => {
+    if (marcador.isConnected) marcador.replaceWith(encabezado);
+  };
 }
 
 async function cerrarSesionGlobal() {
@@ -211,7 +240,7 @@ async function crearNavbarUnificada(pageId, encabezadoContextual) {
     </div>`;
   navbar.querySelector("[data-host-accesos-global]")?.replaceWith(hostAccesos);
   if (!reutilizaDashboard) document.body.prepend(navbar);
-  limpiarAccionesGlobalesContextuales(encabezadoContextual, navbar);
+  const restaurarEncabezadoLegado = retirarEncabezadoLegado(encabezadoContextual, navbar);
   const usuario = auth.currentUser;
   const avatar = navbar.querySelector("[data-avatar-navbar-global]");
   renderizarFotoPerfil(avatar, {
@@ -225,7 +254,7 @@ async function crearNavbarUnificada(pageId, encabezadoContextual) {
   ]);
   inicializarAccesosRapidos(navbar);
   inicializarSelectorTema(navbar);
-  return { navbar, destruirMenu: conectarMenuPerfil(navbar) };
+  return { navbar, destruirMenu: conectarMenuPerfil(navbar), restaurarEncabezadoLegado };
 }
 
 function ensureBranding(header, pageId) {
@@ -267,6 +296,10 @@ function ensureDiscovery(header) {
       <button type="button" data-global-tip-next aria-label="Mostrar otra sugerencia">›</button>
     </span>`;
   if (externalHost) externalHost.append(discovery);
+  else if (header.matches(".navbar-global-unificada")) {
+    discovery.classList.add("global-header-discovery--menu");
+    header.querySelector(".navbar-global-explorar-panel")?.append(discovery);
+  }
   else {
     const actions = header.querySelector(".topbar-actions, .global-header-actions");
     if (actions) actions.before(discovery);
@@ -472,18 +505,9 @@ export async function mountGlobalAppHeader() {
   await loadStyles();
   const contextualHeader = findHeader(pageId);
   const page = getPageHeader(pageId);
-  const { navbar: header, destruirMenu } = await crearNavbarUnificada(pageId, contextualHeader);
-  let identityHeader = contextualHeader && contextualHeader !== header ? contextualHeader : header;
-  let contextoMinimo = null;
-  if (identityHeader === header && pageId !== "dashboard" && !document.querySelector("[data-global-header-discovery-host]")) {
-    contextoMinimo = document.createElement("section");
-    contextoMinimo.className = "encabezado-contextual-minimo";
-    contextoMinimo.dataset.globalHeaderHost = "true";
-    header.after(contextoMinimo);
-    identityHeader = contextoMinimo;
-  }
-  if ((contextoMinimo || ["paciente", "nota", "historia"].includes(pageId)) && identityHeader !== header) ensureBranding(identityHeader, pageId);
-  if (identityHeader !== header) updateIdentity(identityHeader, page, false);
+  const { navbar: header, destruirMenu, restaurarEncabezadoLegado } = await crearNavbarUnificada(pageId, contextualHeader);
+  const identityHeader = header;
+  updateIdentity(identityHeader, page, false);
   const discovery = ensureDiscovery(identityHeader);
   const resizeObserver = typeof ResizeObserver === "function" ? new ResizeObserver(() => {
     const height = Math.ceil(header.getBoundingClientRect().height || 96);
@@ -500,7 +524,7 @@ export async function mountGlobalAppHeader() {
     resizeObserver?.disconnect();
     header.removeAttribute("data-global-app-header");
     header.classList.remove("global-app-header");
-    contextoMinimo?.remove();
+    restaurarEncabezadoLegado();
     if (header !== contextualHeader) header.remove();
     delete globalThis.__cognicionGlobalHeader;
     log("Encabezado destruido", { pageId });
@@ -510,7 +534,7 @@ export async function mountGlobalAppHeader() {
   log("Página detectada", { pageId });
   log("Título aplicado", { title: page.title });
   log("Accesos rápidos conectados");
-  log("Barra contextual preservada", { pageId });
+  log("Navbar única confirmada", { pageId });
   return globalThis.__cognicionGlobalHeader;
 }
 
