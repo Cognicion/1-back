@@ -99,8 +99,8 @@ let carpetasDisponibles = true;
 let coloresRecientes = [];
 let objetosApunteController = null;
 let disposicionHojaActual = normalizarDisposicionHoja(DISPOSICION_HOJA_PREDETERMINADA);
-let observadorVistaHoja = null;
 let frameVistaHoja = 0;
+let temporizadorVistaHoja = 0;
 let claveVistaHoja = "";
 const parametrosEntradaApuntes = new URLSearchParams(window.location.search);
 const apunteSolicitado = String(parametrosEntradaApuntes.get("apunte") || "").trim().slice(0, 160);
@@ -120,7 +120,6 @@ onAuthStateChanged(auth, async (user) => {
   recuperarColoresRecientes();
   inicializarInterfaz();
   prepararRegresoAMiNube();
-  document.body.classList.remove("bloqueado");
   ponerEdicionOcupada(true);
 
   try {
@@ -135,6 +134,9 @@ onAuthStateChanged(auth, async (user) => {
     if (lista) lista.innerHTML = '<p class="vacio">No fue posible cargar tus apuntes.</p>';
   } finally {
     ponerEdicionOcupada(false);
+    // Evita mostrar primero la hoja predeterminada y después la disposición
+    // guardada (un salto especialmente visible cuando la nota usa 400 %).
+    document.body.classList.remove("bloqueado");
   }
 });
 
@@ -1435,21 +1437,25 @@ function aplicarFondoApunte(color, { marcar = true } = {}) {
 }
 
 function inicializarDisposicionHojaUI() {
-  const visor = document.getElementById("lienzoApunte");
   const shell = document.querySelector(".apuntes-shell");
-  if (visor && "ResizeObserver" in window) {
-    observadorVistaHoja?.disconnect();
-    observadorVistaHoja = new ResizeObserver(() => programarActualizacionVistaHoja());
-    observadorVistaHoja.observe(visor);
-  } else {
-    window.addEventListener("resize", programarActualizacionVistaHoja, { passive: true });
-  }
+  // No se observa el lienzo: sus scrollbars forman parte del resultado del zoom y
+  // observarlas puede crear un ciclo de tamaño en Windows. Solo reaccionamos a
+  // cambios externos de geometría y a los controles que realmente alteran el área.
+  window.addEventListener("resize", programarActualizacionVistaHojaEstable, { passive: true });
   if (shell) {
     shell.addEventListener("apuntes:sidebar", () => {
       programarActualizacionVistaHoja({ forzar: true });
     });
   }
   aplicarDisposicionHoja(DISPOSICION_HOJA_PREDETERMINADA, { marcar: false });
+}
+
+function programarActualizacionVistaHojaEstable() {
+  window.clearTimeout(temporizadorVistaHoja);
+  temporizadorVistaHoja = window.setTimeout(() => {
+    temporizadorVistaHoja = 0;
+    programarActualizacionVistaHoja({ forzar: true });
+  }, 120);
 }
 
 function programarActualizacionVistaHoja({ forzar = false } = {}) {
@@ -1501,6 +1507,7 @@ function actualizarControlesDisposicionHoja() {
   if (barraZoom) barraZoom.value = String(disposicion.zoom);
   if (barraZoomPie) barraZoomPie.value = String(disposicion.zoom);
   if (etiquetaZoomPie) etiquetaZoomPie.textContent = `${disposicion.zoom}%`;
+  document.getElementById("lienzoApunte")?.classList.toggle("lienzo-apunte--zoom-alto", disposicion.zoom > 100);
   const etiqueta = etiquetaDisposicionHoja(disposicion);
   const medidas = document.getElementById("medidasHoja");
   if (medidas) medidas.textContent = etiqueta;
@@ -1511,8 +1518,10 @@ function actualizarVistaHoja() {
   const hoja = document.getElementById("hojaApunte");
   if (!visor || !hoja) return;
   const medidas = obtenerMedidasHoja(disposicionHojaActual);
-  const anchoDisponible = Math.max(240, visor.clientWidth - 48);
-  const altoDisponible = Math.max(320, visor.clientHeight - 48);
+  const cajaVisor = visor.getBoundingClientRect();
+  // El borde exterior permanece fijo aunque aparezcan ambas barras al usar zoom alto.
+  const anchoDisponible = Math.max(240, cajaVisor.width - 48);
+  const altoDisponible = Math.max(320, cajaVisor.height - 48);
   const escalaBase = Math.min(anchoDisponible / medidas.anchoMm, altoDisponible / medidas.altoMm);
   const escala = escalaBase * (disposicionHojaActual.zoom / 100);
   const margenes = disposicionHojaActual.margenes;
@@ -1619,6 +1628,7 @@ function alternarSeccionEditor(seccion) {
     cerrarMenuContextualTexto();
     cerrarMenusFormatoCompacto();
   }
+  programarActualizacionVistaHoja({ forzar: true });
 }
 
 function obtenerListaSeleccionada() {

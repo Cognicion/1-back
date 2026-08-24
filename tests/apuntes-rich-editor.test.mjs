@@ -168,8 +168,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=2\.115-navbar-unica-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260824-apuntes-sidebar-zoom400-estable-v1/);
-  assert.match(html, /apuntes\.js\?v=20260824-apuntes-sidebar-zoom400-estable-v1/);
+  assert.match(html, /apuntes\.css\?v=20260824-apuntes-cabecera-zoom400-v3/);
+  assert.match(html, /apuntes\.js\?v=20260824-apuntes-cabecera-zoom400-v3/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
   assert.match(html, /id="menuInsertarApunte"[^>]*aria-label="Insertar en el apunte"/);
   assert.match(html, /id="insertarCuadroTexto"/);
@@ -178,6 +178,12 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /id="propiedadesObjeto"[^>]*aria-label="Propiedades del objeto"/);
   assert.match(html, /id="abrirArchivoApunte"[^>]*aria-controls="menuArchivoApunte"/);
   assert.match(html, /id="guardarRapidoApunte"[^>]*aria-label="Guardar rápidamente"/);
+  assert.ok(
+    html.indexOf('id="alternarSidebarApuntes"') < html.indexOf('id="abrirArchivoApunte"')
+      && html.indexOf('id="abrirArchivoApunte"') < html.indexOf('id="guardarRapidoApunte"')
+      && html.indexOf('id="guardarRapidoApunte"') < html.indexOf('id="camposCabeceraApunte"'),
+    "sidebar, Archivo y guardado rápido deben formar el bloque izquierdo antes del título"
+  );
   assert.match(html, /id="menuArchivoApunte"[^>]*aria-label="Archivo del apunte"/);
   assert.match(html, /id="apunteCarpetaArchivo"/);
   assert.match(html, /id="guardarApunteArchivo"/);
@@ -231,9 +237,20 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(controlador, /const COLORES_PREDEFINIDOS/);
   assert.match(controlador, /function aplicarColor\(tipo, color\)/);
   assert.match(controlador, /function ejecutarLista\(tipo\)/);
-  assert.match(controlador, /new ResizeObserver\(\(\) => programarActualizacionVistaHoja\(\)\)/);
+  assert.doesNotMatch(controlador, /new ResizeObserver/);
+  assert.match(controlador, /window\.addEventListener\("resize", programarActualizacionVistaHojaEstable/);
+  assert.match(controlador, /classList\.toggle\("lienzo-apunte--zoom-alto", disposicion\.zoom > 100\)/);
+  assert.ok(
+    controlador.indexOf("await cargarDatos({") < controlador.indexOf('document.body.classList.remove("bloqueado")'),
+    "la nota debe cargar su disposición antes de mostrar el editor"
+  );
   assert.match(controlador, /shell\.addEventListener\("apuntes:sidebar"/);
   assert.match(controlador, /if \(nuevaClaveVista === claveVistaHoja\) return/);
+  assert.match(controlador, /const cajaVisor = visor\.getBoundingClientRect\(\)/);
+  const calculoVistaHoja = controlador.match(/function actualizarVistaHoja\(\) \{[\s\S]*?\n\}/)?.[0] || "";
+  assert.doesNotMatch(calculoVistaHoja, /visor\.client(?:Width|Height)/);
+  const alternanciaEditor = controlador.match(/function alternarSeccionEditor\(seccion\) \{[\s\S]*?\n\}/)?.[0] || "";
+  assert.match(alternanciaEditor, /programarActualizacionVistaHoja\(\{ forzar: true \}\)/);
   assert.match(controlador, /insertUnorderedList/);
   assert.match(controlador, /insertOrderedList/);
   assert.match(controlador, /ejecutarFormato\(evento\.shiftKey \? "outdent" : "indent"\)/);
@@ -261,6 +278,9 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(reglaShell, /margin:\s*0/);
   assert.match(reglaShell, /gap:\s*0/);
   assert.doesNotMatch(css, /transition:\s*grid-template-columns/);
+  assert.match(css, /\.editor-cabecera__campos\[hidden\]\s*\{\s*display:\s*none\s*!important/);
+  assert.match(css, /\.lienzo-apunte\s*\{[\s\S]*contain:\s*layout paint/);
+  assert.match(css, /\.lienzo-apunte--zoom-alto\s*\{[\s\S]*overflow:\s*scroll/);
   assert.doesNotMatch(css, /width:\s*min\(1280px/);
   assert.match(css, /grid-template-columns:\s*clamp\(276px, 23vw, 360px\) minmax\(0, 1fr\)/);
   assert.match(css, /\.acciones-apuntes[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\) auto/);

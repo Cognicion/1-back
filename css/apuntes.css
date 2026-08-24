@@ -1632,7 +1632,7 @@ body.pagina-apuntes > main.apuntes-shell {
 /* Cabecera única: título, controles de plegado y acciones quedan en una sola línea. */
 .apuntes-shell .menu-principal-apunte {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) 30px auto 30px 30px;
+  grid-template-columns: 28px auto 30px minmax(0, 1fr) 30px 30px;
   align-items: center;
   gap: 5px;
   min-height: 42px;
@@ -1642,6 +1642,17 @@ body.pagina-apuntes > main.apuntes-shell {
   display: block;
   min-width: 0;
 }
+
+.apuntes-shell .menu-principal-apunte .editor-cabecera__campos[hidden] {
+  display: none !important;
+}
+
+.menu-principal-apunte > #alternarSidebarApuntes { grid-column: 1; }
+.menu-principal-apunte > #abrirArchivoApunte { grid-column: 2; }
+.menu-principal-apunte > #guardarRapidoApunte { grid-column: 3; }
+.menu-principal-apunte > #camposCabeceraApunte { grid-column: 4; }
+.menu-principal-apunte > #alternarTituloApunte { grid-column: 5; }
+.menu-principal-apunte > #alternarBarraFormato { grid-column: 6; }
 
 .apuntes-shell .menu-principal-apunte .campo-titulo input {
   width: 100%;
@@ -1738,7 +1749,7 @@ body.pagina-apuntes > main.apuntes-shell {
 
 @media (max-width: 899px) {
   .apuntes-shell .menu-principal-apunte {
-    grid-template-columns: 36px minmax(0, 1fr) 30px auto 30px 30px;
+    grid-template-columns: 36px auto 30px minmax(0, 1fr) 30px 30px;
   }
 }
 
@@ -1759,11 +1770,19 @@ body.pagina-apuntes > main.apuntes-shell {
   min-height: 0;
   height: 100%;
   overflow: auto;
+  contain: layout paint;
+  isolation: isolate;
   overscroll-behavior: contain;
   scrollbar-gutter: stable both-edges;
   border: 1px solid var(--apuntes-borde);
   border-radius: 12px;
   background: color-mix(in srgb, var(--apuntes-superficie-hover) 62%, transparent);
+}
+
+.lienzo-apunte--zoom-alto {
+  /* Se reservan ambos canales para impedir que Windows alterne el espacio
+     disponible al mostrar u ocultar una barra durante el zoom ampliado. */
+  overflow: scroll;
 }
 
 .hoja-apunte {

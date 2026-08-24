@@ -107,5 +107,7 @@
 // deployment marker: 2026-08-24-navbar-global-unica-v2 (+0.001)
 // deployment marker: 2026-08-24-apuntes-sidebar-hoja-estable-v1 (+0.001)
 // deployment marker: 2026-08-24-apuntes-sidebar-zoom400-estable-v1 (+0.001)
-export const APP_VERSION = "2.117";
+// deployment marker: 2026-08-24-apuntes-zoom400-caja-estable-v2 (+0.001)
+// deployment marker: 2026-08-24-apuntes-cabecera-zoom400-v3 (+0.001)
+export const APP_VERSION = "2.119";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;
