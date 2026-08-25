@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260825-apuntes-cabecera-una-fila-v17">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260825-apuntes-contexto-agrupado-v18">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -358,17 +358,41 @@
       </section>
 
       <section id="menuContextualTexto" class="menu-contextual-texto" role="menu" aria-label="Opciones del texto" hidden>
-        <button type="button" data-accion-texto="bold" role="menuitem">Negrita</button>
-        <button type="button" data-accion-texto="texto" role="menuitem">Color de texto</button>
-        <button type="button" data-accion-texto="resaltar" role="menuitem">Resaltar</button>
-        <button type="button" data-accion-texto="quitar-resaltado" role="menuitem">Quitar resaltado</button>
-        <button type="button" data-accion-texto="limpiar" role="menuitem">Limpiar formato</button>
-        <button type="button" data-accion-texto="puntos" role="menuitem">Lista con puntos</button>
-        <button type="button" data-accion-texto="numeros" role="menuitem">Lista numerada</button>
-        <button type="button" data-accion-texto="letras" role="menuitem">Lista por letras</button>
-        <button type="button" data-accion-texto="sublista" role="menuitem">Crear sublista</button>
-        <button type="button" data-accion-texto="reducir-sublista" role="menuitem">Reducir sublista</button>
-        <button type="button" data-accion-texto="fondo-apunte" role="menuitem">Fondo del apunte</button>
+        <div class="menu-contextual-texto__grupo">
+          <button type="button" data-submenu-texto-toggle="fuente" role="menuitem" aria-haspopup="menu" aria-expanded="false">Fuente <span aria-hidden="true">›</span></button>
+          <div class="menu-contextual-texto__submenu" data-submenu-texto="fuente" role="menu" aria-label="Opciones de fuente" hidden>
+            <button type="button" data-accion-texto="bold" role="menuitem">Negrita</button>
+            <button type="button" data-accion-texto="texto" role="menuitem">Color de texto</button>
+            <label class="menu-contextual-texto__tamano"><span>Tamaño (pt)</span><input id="tamanoFuenteContextual" type="number" min="6" max="96" step="1" value="12" inputmode="numeric" aria-label="Tamaño de fuente de la selección en puntos"></label>
+            <div class="menu-contextual-texto__tamanos" role="group" aria-label="Tamaños de fuente sugeridos">
+              <button type="button" role="menuitem" data-tamano-fuente-contextual="10">10</button><button type="button" role="menuitem" data-tamano-fuente-contextual="12">12</button><button type="button" role="menuitem" data-tamano-fuente-contextual="14">14</button><button type="button" role="menuitem" data-tamano-fuente-contextual="18">18</button><button type="button" role="menuitem" data-tamano-fuente-contextual="24">24</button><button type="button" role="menuitem" data-tamano-fuente-contextual="32">32</button>
+            </div>
+            <button type="button" data-accion-texto="limpiar" role="menuitem">Limpiar formato</button>
+          </div>
+        </div>
+        <div class="menu-contextual-texto__grupo">
+          <button type="button" data-submenu-texto-toggle="resaltado" role="menuitem" aria-haspopup="menu" aria-expanded="false">Resaltado <span aria-hidden="true">›</span></button>
+          <div class="menu-contextual-texto__submenu" data-submenu-texto="resaltado" role="menu" aria-label="Opciones de resaltado" hidden>
+            <button type="button" data-accion-texto="resaltar" role="menuitem">Aplicar resaltado</button>
+            <button type="button" data-accion-texto="quitar-resaltado" role="menuitem">Quitar resaltado</button>
+          </div>
+        </div>
+        <div class="menu-contextual-texto__grupo">
+          <button type="button" data-submenu-texto-toggle="listas" role="menuitem" aria-haspopup="menu" aria-expanded="false">Listas <span aria-hidden="true">›</span></button>
+          <div class="menu-contextual-texto__submenu" data-submenu-texto="listas" role="menu" aria-label="Opciones de listas" hidden>
+            <button type="button" data-accion-texto="puntos" role="menuitem">Lista con puntos</button>
+            <button type="button" data-accion-texto="numeros" role="menuitem">Lista numerada</button>
+            <button type="button" data-accion-texto="letras" role="menuitem">Lista por letras</button>
+            <button type="button" data-accion-texto="sublista" role="menuitem">Aumentar nivel</button>
+            <button type="button" data-accion-texto="reducir-sublista" role="menuitem">Reducir nivel</button>
+          </div>
+        </div>
+        <div class="menu-contextual-texto__grupo">
+          <button type="button" data-submenu-texto-toggle="pagina" role="menuitem" aria-haspopup="menu" aria-expanded="false">Página <span aria-hidden="true">›</span></button>
+          <div class="menu-contextual-texto__submenu" data-submenu-texto="pagina" role="menu" aria-label="Opciones de página" hidden>
+            <button type="button" data-accion-texto="fondo-apunte" role="menuitem">Fondo del apunte</button>
+          </div>
+        </div>
       </section>
 
       <div id="lienzoApunte" class="lienzo-apunte" aria-label="Lienzo del apunte">
@@ -440,7 +464,7 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260825-apuntes-cabecera-una-fila-v17"></script>
+  <script type="module" src="js/apuntes.js?v=20260825-apuntes-auto-listas-v19"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>

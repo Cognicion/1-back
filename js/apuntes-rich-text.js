@@ -28,11 +28,17 @@ function limpiarNodoRico(nodo, documento) {
   const color = colorCSSSeguro(nodo.getAttribute("color") || nodo.style?.color);
   const fondo = colorCSSSeguro(nodo.style?.backgroundColor || nodo.getAttribute("bgcolor"));
   const interlineado = interlineadoSeguro(nodo.style?.lineHeight);
+  const tamanoFuentePt = tamanoFuentePtSeguro(nodo.dataset?.tamanoFuentePt);
   if (color) limpio.style.color = color;
   if (fondo) limpio.style.backgroundColor = fondo;
   if (interlineado) limpio.style.lineHeight = interlineado;
+  if (tamanoFuentePt) {
+    limpio.classList.add("tamano-fuente-apunte");
+    limpio.dataset.tamanoFuentePt = tamanoFuentePt;
+    limpio.style.fontSize = `${tamanoFuentePt}pt`;
+  }
   if (etiqueta === "SPAN" && /^marcador-[a-z0-9-]{8,80}$/i.test(nodo.dataset?.marcadorId || "")) {
-    limpio.className = "marcador-apunte";
+    limpio.classList.add("marcador-apunte");
     limpio.dataset.marcadorId = nodo.dataset.marcadorId;
     const colorMarcador = colorCSSSeguro(nodo.dataset.marcadorColor);
     if (colorMarcador) limpio.dataset.marcadorColor = colorMarcador;
@@ -49,6 +55,12 @@ function interlineadoSeguro(valor) {
   const candidato = String(valor || "").trim();
   if (!/^(?:1|1\.15|1\.5|2|2\.5|3)$/.test(candidato)) return "";
   return candidato;
+}
+
+export function tamanoFuentePtSeguro(valor) {
+  const candidato = Number(valor);
+  if (!Number.isFinite(candidato) || candidato < 6 || candidato > 96) return "";
+  return String(Math.round(candidato * 10) / 10);
 }
 
 export function colorCSSSeguro(valor) {

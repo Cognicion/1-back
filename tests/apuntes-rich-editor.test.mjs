@@ -27,6 +27,8 @@ import {
   normalizarColoresRecientes,
   registrarColorReciente
 } from "../js/apuntes-color-history.js";
+import { tamanoFuentePtSeguro } from "../js/apuntes-rich-text.js";
+import { detectarAtajoLista } from "../js/apuntes-auto-list.js";
 
 const leer = (ruta) => readFileSync(new URL(ruta, import.meta.url), "utf8");
 const html = leer("../apuntes.html");
@@ -103,6 +105,25 @@ test("la revisión optimista impide guardar o eliminar una versión obsoleta", (
   assert.equal(esErrorConexionApunte({ code: "permission-denied" }, true), false);
 });
 
+test("el tamaño de fuente contextual solo conserva puntos válidos", () => {
+  assert.equal(tamanoFuentePtSeguro(6), "6");
+  assert.equal(tamanoFuentePtSeguro("14.5"), "14.5");
+  assert.equal(tamanoFuentePtSeguro(96), "96");
+  assert.equal(tamanoFuentePtSeguro(5), "");
+  assert.equal(tamanoFuentePtSeguro(97), "");
+  assert.equal(tamanoFuentePtSeguro("invalido"), "");
+});
+
+test("los atajos de inicio de párrafo detectan listas sin falsos positivos", () => {
+  assert.deepEqual(detectarAtajoLista("."), { tipo: "puntos", marcador: "." });
+  assert.deepEqual(detectarAtajoLista("1."), { tipo: "numeros", marcador: "1." });
+  assert.deepEqual(detectarAtajoLista("1)"), { tipo: "numeros", marcador: "1)" });
+  assert.equal(detectarAtajoLista("2."), null);
+  assert.equal(detectarAtajoLista("11."), null);
+  assert.equal(detectarAtajoLista(" 1."), null);
+  assert.equal(detectarAtajoLista("texto."), null);
+});
+
 test("las subcarpetas preservan su árbol, orden y previenen ciclos", () => {
   const carpetas = [
     { id: "raiz", nombre: "Estudio" },
@@ -171,8 +192,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=2\.115-navbar-unica-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260825-apuntes-cabecera-una-fila-v17/);
-  assert.match(html, /apuntes\.js\?v=20260825-apuntes-cabecera-una-fila-v17/);
+  assert.match(html, /apuntes\.css\?v=20260825-apuntes-contexto-agrupado-v18/);
+  assert.match(html, /apuntes\.js\?v=20260825-apuntes-auto-listas-v19/);
   assert.match(html, /id="formatoCursiva"[^>]*data-editor-command="italic"/);
   assert.match(html, /id="formatoSubrayado"[^>]*data-editor-command="underline"/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
@@ -208,6 +229,12 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   const paletaResaltado = html.match(/<section id="paletaColorFondoTexto"[\s\S]*?<\/section>/)?.[0] || "";
   assert.match(paletaResaltado, /id="quitarResaltado"/);
   assert.match(html, /id="menuContextualTexto"[^>]*role="menu"/);
+  assert.match(html, /data-submenu-texto-toggle="fuente"[^>]*aria-haspopup="menu"/);
+  assert.match(html, /data-submenu-texto-toggle="resaltado"[^>]*aria-haspopup="menu"/);
+  assert.match(html, /data-submenu-texto-toggle="listas"[^>]*aria-haspopup="menu"/);
+  assert.match(html, /data-submenu-texto-toggle="pagina"[^>]*aria-haspopup="menu"/);
+  assert.match(html, /id="tamanoFuenteContextual" type="number" min="6" max="96"/);
+  assert.match(html, /data-tamano-fuente-contextual="12"/);
   assert.match(html, /id="abrirFondoApunte"[^>]*aria-controls="paletaFondoApunte"/);
   assert.match(html, /id="abrirDisposicionHoja"[^>]*aria-controls="panelDisposicionHoja"/);
   assert.match(html, /id="panelDisposicionHoja"[^>]*aria-label="Disposición de hoja"/);
@@ -376,8 +403,18 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(controlador, /--apunte-factor-zoom/);
   assert.match(controlador, /tamanioFuente \* 25\.4 \* escala \/ 72/);
   assert.match(controlador, /--apunte-escala-visual/);
+  assert.match(controlador, /function aplicarTamanoFuenteSeleccion/);
+  assert.match(controlador, /function actualizarTamanosFuentePersonalizados/);
+  assert.match(controlador, /function limpiarFormatoSeleccion/);
+  assert.match(controlador, /function normalizarTamanosFuenteTrasLimpiar/);
+  assert.match(controlador, /querySelectorAll\("\[data-tamano-fuente-pt\]"\)/);
+  assert.match(controlador, /addEventListener\("beforeinput", convertirAtajoListaAntesDeInsertar\)/);
+  assert.match(controlador, /function convertirAtajoListaAntesDeInsertar/);
+  assert.match(controlador, /evento\.inputType !== "insertText"/);
+  assert.match(controlador, /document\.execCommand\("insertHTML"/);
   assert.match(css, /\.editor-contenido::selection[\s\S]*background:\s*#2563eb/);
   assert.match(css, /\.menu-contextual-texto\s*\{[\s\S]*grid-template-columns:\s*1fr/);
+  assert.match(css, /\.menu-contextual-texto__submenu\s*\{/);
   assert.match(css, /\.boton-alternar-cinta\s*\{/);
   assert.match(html, /id="zoomHojaBarraPie" type="range" min="25" max="800"/);
   assert.match(controlador, /function alternarCintaFormato/);
@@ -422,11 +459,13 @@ test("la persistencia rica mantiene texto plano y sanea el HTML", () => {
   assert.match(controlador, /objetosLienzoActualizado === apunte\.fechaActualizacion/);
   assert.match(controlador, /import \{ inicializarObjetosApunte, textoObjetosApunte \} from "\.\/apuntes-objetos\.js\?v=/);
   assert.match(controlador, /import \{ descargarApuntePdf, descargarApunteWord \} from "\.\/apuntes-export\.js"/);
-  assert.match(controlador, /import \{ sanitizarHTMLRico \} from "\.\/apuntes-rich-text\.js\?v=20260822-apuntes-interlineado-v1"/);
+  assert.match(controlador, /import \{ sanitizarHTMLRico \} from "\.\/apuntes-rich-text\.js\?v=20260825-apuntes-contexto-agrupado-v18"/);
   assert.match(textoRico, /new Set\(\["B", "STRONG", "BR", "DIV", "P", "SPAN", "FONT", "UL", "OL", "LI"\]\)/);
   assert.match(textoRico, /etiqueta === "OL"/);
   assert.match(textoRico, /marcador-apunte/);
   assert.match(textoRico, /dataset\.marcadorId/);
+  assert.match(textoRico, /tamanoFuentePtSeguro/);
+  assert.match(textoRico, /dataset\.tamanoFuentePt/);
   assert.doesNotMatch(textoRico, /limpio\.setAttribute\("(?:tabindex|role)"/);
   assert.match(textoRico, /new Set\(\["SCRIPT", "STYLE", "IFRAME", "OBJECT", "EMBED", "SVG", "MATH"\]\)/);
   assert.match(controlador, /addEventListener\("paste", pegarComoTextoSeguro\)/);
@@ -516,6 +555,8 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-25-apuntes-marcadores-margen-v15/);
   assert.match(version, /2026-08-25-apuntes-restaurar-barras-v16/);
   assert.match(version, /2026-08-25-apuntes-cabecera-una-fila-v17/);
+  assert.match(version, /2026-08-25-apuntes-contexto-agrupado-v18/);
+  assert.match(version, /2026-08-25-apuntes-auto-listas-v19/);
   assert.match(version, /2026-08-22-apuntes-subcarpetas-hotfix-v1/);
   assert.match(version, /2026-08-22-apuntes-insertar-controles-v1/);
   assert.match(version, /2026-08-22-apuntes-contexto-fondo-retraible-v1/);

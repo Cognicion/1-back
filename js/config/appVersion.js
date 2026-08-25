@@ -124,5 +124,7 @@
 // deployment marker: 2026-08-25-apuntes-marcadores-margen-v15 (+0.001)
 // deployment marker: 2026-08-25-apuntes-restaurar-barras-v16 (+0.001)
 // deployment marker: 2026-08-25-apuntes-cabecera-una-fila-v17 (+0.001)
-export const APP_VERSION = "2.135";
+// deployment marker: 2026-08-25-apuntes-contexto-agrupado-v18 (+0.001)
+// deployment marker: 2026-08-25-apuntes-auto-listas-v19 (+0.001)
+export const APP_VERSION = "2.137";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

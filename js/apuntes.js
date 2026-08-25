@@ -1,6 +1,7 @@
 import { auth, db } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
-import { sanitizarHTMLRico } from "./apuntes-rich-text.js?v=20260822-apuntes-interlineado-v1";
+import { sanitizarHTMLRico } from "./apuntes-rich-text.js?v=20260825-apuntes-contexto-agrupado-v18";
+import { detectarAtajoLista } from "./apuntes-auto-list.js?v=20260825-apuntes-auto-listas-v19";
 import { inicializarSidebarApuntes } from "./apuntes-sidebar.js";
 import { inicializarObjetosApunte, textoObjetosApunte } from "./apuntes-objetos.js?v=20260825-apuntes-flecha-seleccion-v2";
 import { descargarApuntePdf, descargarApunteWord } from "./apuntes-export.js";
@@ -191,6 +192,7 @@ function inicializarInterfaz() {
   });
   editor?.addEventListener("input", () => { marcarCambios(); renderizarMarcadoresApunte(); });
   editor?.addEventListener("blur", normalizarEditorVacio);
+  editor?.addEventListener("beforeinput", convertirAtajoListaAntesDeInsertar);
   editor?.addEventListener("keydown", gestionarAtajosEditor);
   editor?.addEventListener("paste", pegarComoTextoSeguro);
   lista?.addEventListener("click", gestionarClickLista);
@@ -292,7 +294,18 @@ function inicializarInterfaz() {
   document.getElementById("lienzoApunte")?.addEventListener("wheel", manejarZoomHojaConRueda, { passive: false });
   editor?.addEventListener("contextmenu", abrirMenuContextualTexto);
   document.getElementById("menuContextualTexto")?.addEventListener("click", ejecutarAccionMenuContextualTexto);
-  document.getElementById("menuContextualTexto")?.addEventListener("pointerdown", conservarFocoEditor);
+  document.getElementById("menuContextualTexto")?.addEventListener("pointerdown", (evento) => {
+    if (evento.target instanceof Element && evento.target.closest("input")) return;
+    conservarFocoEditor(evento);
+  });
+  document.getElementById("tamanoFuenteContextual")?.addEventListener("change", (evento) => {
+    if (aplicarTamanoFuenteSeleccion(evento.target.value)) cerrarMenuContextualTexto();
+  });
+  document.getElementById("tamanoFuenteContextual")?.addEventListener("keydown", (evento) => {
+    if (evento.key !== "Enter") return;
+    evento.preventDefault();
+    if (aplicarTamanoFuenteSeleccion(evento.currentTarget.value)) cerrarMenuContextualTexto();
+  });
   document.addEventListener("selectionchange", guardarSeleccionEditor);
 
   document.getElementById("formularioCarpeta")?.addEventListener("submit", guardarCarpeta);
@@ -1780,8 +1793,19 @@ function actualizarVistaHoja() {
   hoja.style.setProperty("--apunte-factor-zoom", String(valoresVista.factorZoom));
   hoja.style.setProperty("--apunte-escala-visual", String(valoresVista.escalaVisual));
   hoja.style.setProperty("--apunte-tamano-fuente", `${valoresVista.tamanioFuente}px`);
+  actualizarTamanosFuentePersonalizados(valoresVista.escalaVisual);
   posicionarPanelMarcadoresApunte();
   programarRenderizadoIndicadoresMarcadores();
+}
+
+function actualizarTamanosFuentePersonalizados(escala) {
+  const escalaSegura = Number(escala);
+  if (!Number.isFinite(escalaSegura) || escalaSegura <= 0) return;
+  obtenerEditor()?.querySelectorAll("[data-tamano-fuente-pt]").forEach((elemento) => {
+    const puntos = Number(elemento.dataset.tamanoFuentePt);
+    if (!Number.isFinite(puntos) || puntos < 6 || puntos > 96) return;
+    elemento.style.fontSize = `${Number((puntos * 25.4 * escalaSegura / 72).toFixed(2))}px`;
+  });
 }
 
 function aplicarDisposicionHoja(valor, { marcar = true } = {}) {
@@ -1914,13 +1938,77 @@ function obtenerListaSeleccionada() {
 
 function ejecutarLista(tipo) {
   const comando = tipo === "puntos" ? "insertUnorderedList" : "insertOrderedList";
-  if (!ejecutarFormato(comando)) return;
-  if (tipo !== "letras") return;
+  if (!ejecutarFormato(comando)) return false;
+  if (tipo !== "letras") return true;
   const lista = obtenerListaSeleccionada();
   if (lista?.tagName === "OL") {
     lista.setAttribute("type", "a");
     marcarCambios();
   }
+  return true;
+}
+
+function convertirAtajoListaAntesDeInsertar(evento) {
+  if (!evento.cancelable || evento.defaultPrevented || evento.isComposing || evento.inputType !== "insertText" || evento.data !== " ") return;
+  const editor = obtenerEditor();
+  const seleccion = window.getSelection();
+  if (!editor || !seleccion?.rangeCount || !seleccion.isCollapsed) return;
+  const rangoCursor = seleccion.getRangeAt(0);
+  if (!editor.contains(rangoCursor.startContainer)) return;
+
+  const nodo = rangoCursor.startContainer;
+  const elemento = nodo.nodeType === Node.ELEMENT_NODE ? nodo : nodo.parentElement;
+  const bloque = elemento?.closest?.("li, p, div") || editor;
+  if (!editor.contains(bloque) && bloque !== editor) return;
+  if (bloque.tagName === "LI" || bloque.closest("ol, ul")) return;
+
+  const rangoPrefijo = document.createRange();
+  rangoPrefijo.selectNodeContents(bloque);
+  try {
+    rangoPrefijo.setEnd(rangoCursor.startContainer, rangoCursor.startOffset);
+  } catch (_) {
+    return;
+  }
+  const atajo = detectarAtajoLista(rangoPrefijo.toString());
+  if (!atajo) return;
+
+  const rangoSufijo = document.createRange();
+  rangoSufijo.selectNodeContents(bloque);
+  rangoSufijo.setStart(rangoCursor.startContainer, rangoCursor.startOffset);
+  if (rangoSufijo.toString().replace(/[\u200b\ufeff]/gi, "").trim()) return;
+
+  evento.preventDefault();
+  const rangoReemplazo = document.createRange();
+  if (bloque === editor) rangoReemplazo.selectNodeContents(editor);
+  else rangoReemplazo.selectNode(bloque);
+  seleccion.removeAllRanges();
+  seleccion.addRange(rangoReemplazo);
+
+  const etiqueta = atajo.tipo === "puntos" ? "ul" : "ol";
+  let aplicado = false;
+  try {
+    aplicado = document.execCommand("insertHTML", false, `<${etiqueta}><li><br></li></${etiqueta}>`);
+  } catch (error) {
+    console.warn("[APUNTES] No se pudo crear la lista automática", error);
+  }
+  if (!aplicado) {
+    const lista = document.createElement(etiqueta);
+    const item = document.createElement("li");
+    item.append(document.createElement("br"));
+    lista.append(item);
+    rangoReemplazo.deleteContents();
+    rangoReemplazo.insertNode(lista);
+    const nuevoCursor = document.createRange();
+    nuevoCursor.selectNodeContents(item);
+    nuevoCursor.collapse(true);
+    seleccion.removeAllRanges();
+    seleccion.addRange(nuevoCursor);
+  }
+
+  guardarSeleccionEditor();
+  marcarCambios();
+  renderizarMarcadoresApunte();
+  ponerEstado(atajo.tipo === "puntos" ? "Lista con puntos creada automáticamente" : "Lista numerada creada automáticamente");
 }
 
 function inicializarSelectorColores() {
@@ -2112,15 +2200,18 @@ function abrirMenuContextualTexto(evento) {
   cerrarMenuInsertar();
   cerrarPropiedadesObjeto();
   cerrarMenuExportacion();
+  cerrarSubmenusMenuContextualTexto();
 
+  menu.hidden = false;
   const rectContenedor = contenedor.getBoundingClientRect();
   const ancho = menu.offsetWidth || 176;
-  const alto = menu.offsetHeight || 320;
+  const alto = menu.offsetHeight || 150;
   const izquierda = Math.min(Math.max(8, evento.clientX - rectContenedor.left), Math.max(8, rectContenedor.width - ancho - 8));
   const arriba = Math.min(Math.max(8, evento.clientY - rectContenedor.top), Math.max(8, rectContenedor.height - alto - 8));
   menu.style.left = `${Math.round(izquierda)}px`;
   menu.style.top = `${Math.round(arriba)}px`;
-  menu.hidden = false;
+  const tamano = document.getElementById("tamanoFuenteContextual");
+  if (tamano) tamano.value = String(obtenerTamanoFuenteSeleccion());
 }
 
 function hayTextoSeleccionadoEnEditor(editor) {
@@ -2133,11 +2224,24 @@ function hayTextoSeleccionadoEnEditor(editor) {
 function cerrarMenuContextualTexto({ devolverFoco = false } = {}) {
   const menu = document.getElementById("menuContextualTexto");
   if (!menu || menu.hidden) return;
+  cerrarSubmenusMenuContextualTexto();
   menu.hidden = true;
   if (devolverFoco) restaurarSeleccionEditor();
 }
 
 function ejecutarAccionMenuContextualTexto(evento) {
+  const alternador = evento.target instanceof Element ? evento.target.closest("button[data-submenu-texto-toggle]") : null;
+  if (alternador) {
+    evento.preventDefault();
+    alternarSubmenuMenuContextualTexto(alternador.dataset.submenuTextoToggle);
+    return;
+  }
+  const botonTamano = evento.target instanceof Element ? evento.target.closest("button[data-tamano-fuente-contextual]") : null;
+  if (botonTamano) {
+    evento.preventDefault();
+    if (aplicarTamanoFuenteSeleccion(botonTamano.dataset.tamanoFuenteContextual)) cerrarMenuContextualTexto();
+    return;
+  }
   const boton = evento.target instanceof Element ? evento.target.closest("button[data-accion-texto]") : null;
   const accion = boton?.dataset.accionTexto;
   if (!accion) return;
@@ -2148,10 +2252,141 @@ function ejecutarAccionMenuContextualTexto(evento) {
   if (accion === "fondo-apunte") return alternarPaletaFondoApunte();
   if (accion === "bold") return ejecutarFormato("bold");
   if (accion === "quitar-resaltado") return quitarResaltadoSeleccion();
-  if (accion === "limpiar") return ejecutarFormato("removeFormat");
+  if (accion === "limpiar") return limpiarFormatoSeleccion();
   if (accion === "sublista") return ejecutarFormato("indent");
   if (accion === "reducir-sublista") return ejecutarFormato("outdent");
   return ejecutarLista(accion);
+}
+
+function alternarSubmenuMenuContextualTexto(nombre) {
+  const submenu = document.querySelector(`[data-submenu-texto="${CSS.escape(String(nombre || ""))}"]`);
+  const alternador = document.querySelector(`[data-submenu-texto-toggle="${CSS.escape(String(nombre || ""))}"]`);
+  if (!submenu || !alternador) return;
+  const abrir = submenu.hidden;
+  cerrarSubmenusMenuContextualTexto();
+  if (!abrir) return;
+  submenu.hidden = false;
+  alternador.setAttribute("aria-expanded", "true");
+  posicionarSubmenuMenuContextualTexto(submenu);
+}
+
+function cerrarSubmenusMenuContextualTexto() {
+  document.querySelectorAll("[data-submenu-texto]").forEach((submenu) => {
+    submenu.hidden = true;
+    submenu.classList.remove("menu-contextual-texto__submenu--izquierda");
+    submenu.style.removeProperty("top");
+  });
+  document.querySelectorAll("[data-submenu-texto-toggle]").forEach((boton) => boton.setAttribute("aria-expanded", "false"));
+}
+
+function posicionarSubmenuMenuContextualTexto(submenu) {
+  const contenedor = document.querySelector(".apuntes-editor");
+  if (!contenedor) return;
+  const rectContenedor = contenedor.getBoundingClientRect();
+  submenu.classList.remove("menu-contextual-texto__submenu--izquierda");
+  submenu.style.top = "-5px";
+  let rectSubmenu = submenu.getBoundingClientRect();
+  if (rectSubmenu.right > rectContenedor.right - 8) {
+    submenu.classList.add("menu-contextual-texto__submenu--izquierda");
+    rectSubmenu = submenu.getBoundingClientRect();
+  }
+  let arriba = -5;
+  const desbordeInferior = rectSubmenu.bottom - (rectContenedor.bottom - 8);
+  if (desbordeInferior > 0) arriba -= desbordeInferior;
+  const limiteSuperior = rectContenedor.top + 8;
+  if (rectSubmenu.top + (arriba + 5) < limiteSuperior) arriba += limiteSuperior - (rectSubmenu.top + arriba + 5);
+  submenu.style.top = `${Math.round(arriba)}px`;
+}
+
+function obtenerTamanoFuenteSeleccion() {
+  const seleccion = window.getSelection();
+  const nodo = seleccion?.rangeCount ? seleccion.getRangeAt(0).startContainer : null;
+  const elemento = nodo?.nodeType === Node.ELEMENT_NODE ? nodo : nodo?.parentElement;
+  const tamano = Number(elemento?.closest?.("[data-tamano-fuente-pt]")?.dataset.tamanoFuentePt);
+  return Number.isFinite(tamano) && tamano >= 6 && tamano <= 96
+    ? tamano
+    : disposicionHojaActual.tamanioFuente;
+}
+
+function aplicarTamanoFuenteSeleccion(valor) {
+  const valorNormalizado = String(valor ?? "").trim();
+  const numero = Number(valorNormalizado);
+  const tamano = Math.min(96, Math.max(6, Math.round(numero)));
+  const editor = obtenerEditor();
+  if (!valorNormalizado || !Number.isFinite(numero) || !editor || !restaurarSeleccionEditor() || !hayTextoSeleccionadoEnEditor(editor)) {
+    ponerEstado("Selecciona texto y usa un tamaño entre 6 y 96 puntos.", true);
+    return false;
+  }
+  try {
+    document.execCommand("styleWithCSS", false, false);
+    if (!document.execCommand("fontSize", false, "7")) throw new Error("El navegador no aplicó el tamaño de fuente");
+  } catch (error) {
+    console.warn("[APUNTES] No se pudo aplicar el tamaño de fuente", error);
+    ponerEstado("No fue posible cambiar el tamaño de la selección.", true);
+    return false;
+  }
+
+  const escala = Number.parseFloat(document.getElementById("hojaApunte")?.style.getPropertyValue("--apunte-escala-visual")) || 1;
+  const convertidos = [];
+  editor.querySelectorAll('font[size="7"]').forEach((fuente) => {
+    const span = document.createElement("span");
+    span.className = "tamano-fuente-apunte";
+    span.dataset.tamanoFuentePt = String(tamano);
+    span.style.cssText = fuente.style.cssText;
+    const color = fuente.getAttribute("color");
+    if (color) span.style.color = color;
+    span.style.fontSize = `${Number((tamano * 25.4 * escala / 72).toFixed(2))}px`;
+    while (fuente.firstChild) span.append(fuente.firstChild);
+    fuente.replaceWith(span);
+    convertidos.push(span);
+  });
+  if (!convertidos.length) {
+    ponerEstado("No fue posible cambiar el tamaño de la selección.", true);
+    return false;
+  }
+
+  const seleccion = window.getSelection();
+  const rango = document.createRange();
+  rango.setStartBefore(convertidos[0]);
+  rango.setEndAfter(convertidos.at(-1));
+  seleccion?.removeAllRanges();
+  seleccion?.addRange(rango);
+  guardarSeleccionEditor();
+  marcarCambios();
+  programarRenderizadoIndicadoresMarcadores();
+  ponerEstado(`Tamaño de fuente: ${tamano} pt`);
+  return true;
+}
+
+function limpiarFormatoSeleccion() {
+  const aplicado = ejecutarFormato("removeFormat");
+  if (!aplicado) return false;
+  normalizarTamanosFuenteTrasLimpiar();
+  guardarSeleccionEditor();
+  programarRenderizadoIndicadoresMarcadores();
+  return true;
+}
+
+function normalizarTamanosFuenteTrasLimpiar() {
+  const editor = obtenerEditor();
+  if (!editor) return;
+  const contenedores = [...editor.querySelectorAll(".tamano-fuente-apunte[data-tamano-fuente-pt]")];
+  contenedores.forEach((contenedor) => {
+    // Chromium vacía el font-size del contenedor seleccionado y crea descendientes
+    // con el tamaño anterior para conservar únicamente los fragmentos no elegidos.
+    if (contenedor.style.fontSize) return;
+    const puntos = Number(contenedor.dataset.tamanoFuentePt);
+    if (!Number.isFinite(puntos) || puntos < 6 || puntos > 96) return;
+    contenedor.querySelectorAll("[style]").forEach((descendiente) => {
+      if (!descendiente.style.fontSize) return;
+      const propietario = descendiente.closest("[data-tamano-fuente-pt]");
+      if (propietario !== contenedor) return;
+      descendiente.classList.add("tamano-fuente-apunte");
+      descendiente.dataset.tamanoFuentePt = String(puntos);
+    });
+    contenedor.classList.remove("tamano-fuente-apunte");
+    delete contenedor.dataset.tamanoFuentePt;
+  });
 }
 
 function aplicarColor(tipo, color) {
