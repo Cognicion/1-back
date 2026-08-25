@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260824-apuntes-cinta-espacio-v4">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260825-apuntes-margenes-preajustes-v10">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -109,7 +109,6 @@
         <div class="selector-color">
           <button id="abrirColorTexto" type="button" class="control-color" aria-haspopup="dialog" aria-expanded="false" aria-controls="paletaColorTexto" title="Color de texto">
             <span class="control-color__muestra control-color__muestra--texto" aria-hidden="true">A</span>
-            <span>Texto</span>
           </button>
         </div>
         <label class="control-tamano-fuente" title="Tamaño de fuente del documento">
@@ -127,9 +126,6 @@
             <span>Resaltar</span>
           </button>
         </div>
-        <button id="quitarResaltado" type="button" class="boton-formato boton-formato--ancho" aria-label="Quitar resaltado" title="Quitar resaltado de la selección">
-          <span aria-hidden="true">▧</span><span>Quitar resaltado</span>
-        </button>
         <div class="selector-color">
           <button id="abrirFondoApunte" type="button" class="control-color" aria-haspopup="dialog" aria-expanded="false" aria-controls="paletaFondoApunte" title="Fondo del apunte">
             <span class="control-color__muestra control-color__muestra--lienzo" aria-hidden="true"></span>
@@ -146,7 +142,13 @@
         </button>
         <span class="separador-formato" aria-hidden="true"></span>
         <div class="grupo-formato-desplegable">
-          <button type="button" class="boton-formato boton-formato--ancho" data-menu-formato-toggle="listas" aria-expanded="false" aria-controls="menuFormatoListas" title="Opciones de listas"><span aria-hidden="true">• 1.</span><span>Listas</span><span aria-hidden="true">⌄</span></button>
+          <button type="button" class="boton-formato boton-listas" data-menu-formato-toggle="listas" aria-label="Listas" aria-expanded="false" aria-controls="menuFormatoListas" title="Listas">
+            <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+              <circle cx="4" cy="5" r="1"></circle><path d="M8 5h8"></path>
+              <circle cx="4" cy="10" r="1"></circle><path d="M8 10h8"></path>
+              <circle cx="4" cy="15" r="1"></circle><path d="M8 15h8"></path>
+            </svg>
+          </button>
           <div id="menuFormatoListas" class="menu-formato-compacto" data-menu-formato="listas" role="menu" aria-label="Opciones de listas" hidden>
             <button id="listaPuntos" type="button" role="menuitem"><span aria-hidden="true">•</span><span>Lista con puntos</span></button>
             <button id="listaNumeros" type="button" role="menuitem"><span aria-hidden="true">1.</span><span>Lista numerada</span></button>
@@ -206,6 +208,7 @@
           <span>Últimos usados</span>
           <div id="coloresRecientesFondoTexto" class="paleta-color__cuadricula paleta-color__cuadricula--recientes" aria-live="polite" aria-label="Últimos colores utilizados"></div>
         </div>
+        <button id="quitarResaltado" type="button" class="paleta-color__quitar-resaltado" title="Quitar resaltado de la selección">Quitar resaltado</button>
       </section>
 
       <section id="paletaFondoApunte" class="paleta-color paleta-fondo-apunte" role="dialog" aria-label="Fondo del apunte" hidden>
@@ -246,11 +249,16 @@
         <div class="control-zoom-hoja" aria-label="Zoom de hoja">
           <span>Zoom</span><button id="zoomHojaMenos" type="button" aria-label="Alejar hoja">−</button><output id="zoomHojaValor" aria-live="polite">100%</output><button id="zoomHojaMas" type="button" aria-label="Acercar hoja">+</button>
         </div>
-        <fieldset class="margenes-hoja"><legend>Márgenes (mm)</legend>
-          <label><span>Superior</span><input id="margenSuperiorHoja" type="number" min="5" max="50" step="1" inputmode="numeric"></label>
-          <label><span>Derecho</span><input id="margenDerechoHoja" type="number" min="5" max="50" step="1" inputmode="numeric"></label>
-          <label><span>Inferior</span><input id="margenInferiorHoja" type="number" min="5" max="50" step="1" inputmode="numeric"></label>
-          <label><span>Izquierdo</span><input id="margenIzquierdoHoja" type="number" min="5" max="50" step="1" inputmode="numeric"></label>
+        <label><span>Márgenes</span>
+          <select id="preajusteMargenesHoja" aria-label="Preajuste de márgenes">
+            <option value="personalizado">Personalizados</option><option value="normal">Normal</option><option value="estrecho">Estrecho</option><option value="moderado">Moderado</option><option value="ancho">Ancho</option><option value="reflejado">Reflejado</option>
+          </select>
+        </label>
+        <fieldset class="margenes-hoja"><legend>Márgenes personalizados (mm)</legend>
+          <label><span>Superior</span><input id="margenSuperiorHoja" type="number" min="5" max="60" step="0.1" inputmode="decimal"></label>
+          <label><span>Derecho</span><input id="margenDerechoHoja" type="number" min="5" max="60" step="0.1" inputmode="decimal"></label>
+          <label><span>Inferior</span><input id="margenInferiorHoja" type="number" min="5" max="60" step="0.1" inputmode="decimal"></label>
+          <label><span>Izquierdo</span><input id="margenIzquierdoHoja" type="number" min="5" max="60" step="0.1" inputmode="decimal"></label>
         </fieldset>
         <label><span>Tamaño de fuente</span>
           <input id="tamanoFuenteHoja" type="number" min="6" max="96" step="1" inputmode="numeric" value="12" aria-label="Tamaño de fuente del documento en puntos">
@@ -350,6 +358,7 @@
             aria-multiline="true"
             aria-label="Contenido del apunte"
             data-placeholder="Escribe tus apuntes, ideas clínicas o borradores..."
+            lang="es-MX"
             spellcheck="true"
           ></div>
           <div id="objetosApunteDelante" class="capa-objetos-apunte capa-objetos-apunte--delante" aria-label="Objetos movibles del apunte"></div>
@@ -406,7 +415,7 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260824-apuntes-cinta-espacio-v4"></script>
+  <script type="module" src="js/apuntes.js?v=20260825-apuntes-margenes-preajustes-v10"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>

@@ -29,7 +29,11 @@ test("normaliza, limita y conserva el contrato de objetos del lienzo", () => {
     ancho: 14,
     alto: 70,
     texto: "Texto seguro",
-    color: "#a1b2c3"
+    color: "#a1b2c3",
+    fondo: "color",
+    colorFondo: "#101814",
+    contorno: "linea",
+    grosorContorno: 1
   });
 });
 

@@ -16,6 +16,15 @@ export const DISPOSICION_HOJA_PREDETERMINADA = Object.freeze({
   tamanioFuente: 12
 });
 
+export const PREAJUSTES_MARGENES_HOJA = Object.freeze([
+  Object.freeze({ id: "normal", etiqueta: "Normal", margenes: Object.freeze({ superior: 25.4, derecho: 30, inferior: 25.4, izquierdo: 30 }) }),
+  Object.freeze({ id: "estrecho", etiqueta: "Estrecho", margenes: Object.freeze({ superior: 12.7, derecho: 12.7, inferior: 12.7, izquierdo: 12.7 }) }),
+  Object.freeze({ id: "moderado", etiqueta: "Moderado", margenes: Object.freeze({ superior: 25.4, derecho: 19.1, inferior: 25.4, izquierdo: 19.1 }) }),
+  Object.freeze({ id: "ancho", etiqueta: "Ancho", margenes: Object.freeze({ superior: 25.4, derecho: 50.8, inferior: 25.4, izquierdo: 50.8 }) }),
+  // En una hoja individual, izquierdo representa el margen interior y derecho el exterior.
+  Object.freeze({ id: "reflejado", etiqueta: "Reflejado", margenes: Object.freeze({ superior: 25.4, derecho: 25.4, inferior: 25.4, izquierdo: 31.8 }) })
+]);
+
 const FORMATOS_POR_ID = new Map(FORMATOS_HOJA.map((formato) => [formato.id, formato]));
 
 function numeroEnRango(valor, predeterminado, minimo, maximo) {
@@ -34,10 +43,10 @@ export function normalizarDisposicionHoja(valor = {}) {
     orientacion,
     zoom: numeroEnRango(valor?.zoom, predeterminada.zoom, 25, 800),
     margenes: Object.freeze({
-      superior: numeroEnRango(margenes.superior, predeterminada.margenes.superior, 5, 50),
-      derecho: numeroEnRango(margenes.derecho, predeterminada.margenes.derecho, 5, 50),
-      inferior: numeroEnRango(margenes.inferior, predeterminada.margenes.inferior, 5, 50),
-      izquierdo: numeroEnRango(margenes.izquierdo, predeterminada.margenes.izquierdo, 5, 50)
+      superior: numeroEnRango(margenes.superior, predeterminada.margenes.superior, 5, 60),
+      derecho: numeroEnRango(margenes.derecho, predeterminada.margenes.derecho, 5, 60),
+      inferior: numeroEnRango(margenes.inferior, predeterminada.margenes.inferior, 5, 60),
+      izquierdo: numeroEnRango(margenes.izquierdo, predeterminada.margenes.izquierdo, 5, 60)
     }),
     tamanioFuente: numeroEnRango(valor?.tamanioFuente, predeterminada.tamanioFuente, 6, 96)
   });

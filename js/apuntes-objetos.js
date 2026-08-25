@@ -269,10 +269,14 @@ function crearElementoObjeto(controlador, objeto, indice) {
     elemento.append(contenido);
   } else {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    const trazo = trazoFlecha(objeto);
     svg.setAttribute("viewBox", "0 0 100 100");
     svg.setAttribute("preserveAspectRatio", "none");
     svg.setAttribute("aria-hidden", "true");
-    svg.innerHTML = `<path d="${trazoFlecha(objeto)}"></path>`;
+    // El trazo visible es deliberadamente fino. La segunda ruta, invisible,
+    // amplía solamente la zona de clic para que una flecha ya insertada se
+    // pueda volver a seleccionar y arrastrar sin cubrir todo el documento.
+    svg.innerHTML = `<path class="objeto-apunte__trazo-flecha" d="${trazo}"></path><path class="objeto-apunte__zona-flecha" d="${trazo}"></path>`;
     elemento.append(svg);
   }
 

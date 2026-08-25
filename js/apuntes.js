@@ -2,10 +2,11 @@ import { auth, db } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { sanitizarHTMLRico } from "./apuntes-rich-text.js?v=20260822-apuntes-interlineado-v1";
 import { inicializarSidebarApuntes } from "./apuntes-sidebar.js";
-import { inicializarObjetosApunte, textoObjetosApunte } from "./apuntes-objetos.js?v=20260822-apuntes-objetos-estilo-anclas-v1";
+import { inicializarObjetosApunte, textoObjetosApunte } from "./apuntes-objetos.js?v=20260825-apuntes-flecha-seleccion-v2";
 import { descargarApuntePdf, descargarApunteWord } from "./apuntes-export.js";
 import {
   DISPOSICION_HOJA_PREDETERMINADA,
+  PREAJUSTES_MARGENES_HOJA,
   etiquetaDisposicionHoja,
   normalizarDisposicionHoja,
   obtenerMedidasHoja
@@ -215,13 +216,16 @@ function inicializarInterfaz() {
     boton.addEventListener("click", () => alternarMenuFormatoCompacto(boton.dataset.menuFormatoToggle));
   });
   document.addEventListener("pointerdown", (evento) => {
-    if (evento.target instanceof Element && evento.target.closest(".grupo-formato-desplegable")) return;
+    if (evento.target instanceof Element && evento.target.closest(".grupo-formato-desplegable, [data-menu-formato]")) return;
     cerrarMenusFormatoCompacto();
   });
   document.getElementById("quitarFormato")?.addEventListener("pointerdown", conservarFocoEditor);
   document.getElementById("quitarFormato")?.addEventListener("click", () => ejecutarFormato("removeFormat"));
   document.getElementById("quitarResaltado")?.addEventListener("pointerdown", conservarFocoEditor);
-  document.getElementById("quitarResaltado")?.addEventListener("click", quitarResaltadoSeleccion);
+  document.getElementById("quitarResaltado")?.addEventListener("click", () => {
+    quitarResaltadoSeleccion();
+    cerrarPaletasColor();
+  });
   document.getElementById("listaPuntos")?.addEventListener("pointerdown", conservarFocoEditor);
   document.getElementById("listaPuntos")?.addEventListener("click", () => { ejecutarLista("puntos"); cerrarMenusFormatoCompacto(); });
   document.getElementById("listaNumeros")?.addEventListener("pointerdown", conservarFocoEditor);
@@ -259,6 +263,7 @@ function inicializarInterfaz() {
   document.getElementById("tamanoFuenteRapido")?.addEventListener("change", (evento) => {
     aplicarDisposicionHoja({ ...disposicionHojaActual, tamanioFuente: evento.target.value });
   });
+  document.getElementById("preajusteMargenesHoja")?.addEventListener("change", aplicarPreajusteMargenesHoja);
   ["margenSuperiorHoja", "margenDerechoHoja", "margenInferiorHoja", "margenIzquierdoHoja"].forEach((id) => {
     document.getElementById(id)?.addEventListener("change", aplicarDisposicionDesdeControles);
   });
@@ -1300,7 +1305,8 @@ function alternarMenuFormatoCompacto(tipo) {
   cerrarMenusFormatoCompacto();
   if (abrir) {
     const rect = boton.getBoundingClientRect();
-    menu.style.left = `${Math.min(rect.left, window.innerWidth - 188)}px`;
+    if (menu.parentElement !== document.body) document.body.appendChild(menu);
+    menu.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - 188))}px`;
     menu.style.top = `${rect.bottom + 5}px`;
   }
   menu.hidden = !abrir;
@@ -1498,6 +1504,8 @@ function actualizarControlesDisposicionHoja() {
     const control = document.getElementById(id);
     if (control) control.value = valor;
   });
+  const preajusteMargenes = document.getElementById("preajusteMargenesHoja");
+  if (preajusteMargenes) preajusteMargenes.value = idPreajusteMargenes(disposicion.margenes);
   const zoom = document.getElementById("zoomHojaValor");
   if (zoom) zoom.textContent = `${disposicion.zoom}%`;
   const barraZoom = document.getElementById("zoomHojaBarra");
@@ -1560,6 +1568,19 @@ function aplicarDisposicionHoja(valor, { marcar = true } = {}) {
 
 function aplicarDisposicionDesdeControles() {
   aplicarDisposicionHoja(disposicionDesdeControles());
+}
+
+function idPreajusteMargenes(margenes) {
+  const encontrado = PREAJUSTES_MARGENES_HOJA.find((preajuste) => (
+    Object.entries(preajuste.margenes).every(([lado, valor]) => Number(margenes?.[lado]) === valor)
+  ));
+  return encontrado?.id || "personalizado";
+}
+
+function aplicarPreajusteMargenesHoja(evento) {
+  const preajuste = PREAJUSTES_MARGENES_HOJA.find((item) => item.id === evento.target.value);
+  if (!preajuste) return;
+  aplicarDisposicionHoja({ ...disposicionHojaActual, margenes: preajuste.margenes });
 }
 
 function cambiarZoomHoja(delta) {
@@ -1820,6 +1841,9 @@ function abrirMenuContextualTexto(evento) {
   const menu = document.getElementById("menuContextualTexto");
   const contenedor = document.querySelector(".apuntes-editor");
   if (!editor || !menu || !contenedor || guardandoApunte || eliminandoApunte) return;
+  // Sin una selección explícita se conserva el menú nativo: el navegador
+  // subraya errores y ofrece sus sugerencias ortográficas habituales.
+  if (!hayTextoSeleccionadoEnEditor(editor)) return;
   evento.preventDefault();
   guardarSeleccionEditor();
   cerrarPaletasColor();
@@ -1835,6 +1859,13 @@ function abrirMenuContextualTexto(evento) {
   menu.style.left = `${Math.round(izquierda)}px`;
   menu.style.top = `${Math.round(arriba)}px`;
   menu.hidden = false;
+}
+
+function hayTextoSeleccionadoEnEditor(editor) {
+  const seleccion = window.getSelection();
+  if (!seleccion?.rangeCount || seleccion.isCollapsed) return false;
+  const rango = seleccion.getRangeAt(0);
+  return editor.contains(rango.commonAncestorContainer) && Boolean(rango.toString().trim());
 }
 
 function cerrarMenuContextualTexto({ devolverFoco = false } = {}) {
