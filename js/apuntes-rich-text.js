@@ -36,8 +36,6 @@ function limpiarNodoRico(nodo, documento) {
     limpio.dataset.marcadorId = nodo.dataset.marcadorId;
     const colorMarcador = colorCSSSeguro(nodo.dataset.marcadorColor);
     if (colorMarcador) limpio.dataset.marcadorColor = colorMarcador;
-    limpio.setAttribute("tabindex", "0");
-    limpio.setAttribute("role", "button");
   }
   if (etiqueta === "OL") {
     const tipoLista = nodo.getAttribute("type");

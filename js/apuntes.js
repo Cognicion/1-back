@@ -101,6 +101,7 @@ let coloresRecientes = [];
 let objetosApunteController = null;
 let disposicionHojaActual = normalizarDisposicionHoja(DISPOSICION_HOJA_PREDETERMINADA);
 let frameVistaHoja = 0;
+let frameIndicadoresMarcadores = 0;
 let temporizadorVistaHoja = 0;
 let claveVistaHoja = "";
 let colorMarcadorActual = "#f6c85f";
@@ -240,10 +241,12 @@ function inicializarInterfaz() {
   document.getElementById("reducirSublista")?.addEventListener("pointerdown", conservarFocoEditor);
   document.getElementById("reducirSublista")?.addEventListener("click", () => { ejecutarFormato("outdent"); cerrarMenusFormatoCompacto(); });
   document.getElementById("abrirInsertarApunte")?.addEventListener("click", alternarMenuInsertar);
+  document.getElementById("abrirMarcadoresApunte")?.addEventListener("pointerdown", conservarFocoEditor);
   document.getElementById("abrirMarcadoresApunte")?.addEventListener("click", alternarMarcadoresApunte);
   document.getElementById("cerrarMarcadoresApunte")?.addEventListener("click", () => cerrarMarcadoresApunte({ devolverFoco: true }));
   document.getElementById("crearMarcadorApunte")?.addEventListener("pointerdown", conservarFocoEditor);
   document.getElementById("crearMarcadorApunte")?.addEventListener("click", crearMarcadorApunte);
+  document.getElementById("verMarcadoresApunte")?.addEventListener("click", abrirMarcadoresApunte);
   document.getElementById("insertarCuadroTexto")?.addEventListener("click", () => insertarObjetoApunte("texto"));
   document.getElementById("insertarFlecha")?.addEventListener("click", () => insertarObjetoApunte("flecha"));
   document.getElementById("abrirPropiedadesObjeto")?.addEventListener("click", alternarPropiedadesObjeto);
@@ -988,7 +991,7 @@ function ponerEdicionOcupada(ocupada) {
     document.getElementById("nuevoApunte"),
     document.getElementById("guardarRapidoApunte"),
     document.getElementById("abrirArchivoApunte"),
-    ...document.querySelectorAll(".barra-formato button, .barra-formato input, .barra-formato select, .cinta-formato-contenedor > button, .menu-insertar button, .panel-objeto button, .panel-objeto input, .panel-objeto select, .panel-disposicion-hoja button, .panel-disposicion-hoja input, .panel-disposicion-hoja select, .menu-archivo button, .menu-archivo select")
+    ...document.querySelectorAll(".barra-formato button, .barra-formato input, .barra-formato select, .cinta-formato-contenedor > button, .menu-insertar button, .menu-marcadores-apunte button, .panel-objeto button, .panel-objeto input, .panel-objeto select, .panel-disposicion-hoja button, .panel-disposicion-hoja input, .panel-disposicion-hoja select, .menu-archivo button, .menu-archivo select")
   ].filter(Boolean);
 
   controles.forEach((control) => { control.disabled = ocupada; });
@@ -1021,16 +1024,13 @@ function inicializarMarcadoresApunte() {
       actualizarColorMarcadorActivo();
     });
   });
-  obtenerEditor()?.addEventListener("click", (evento) => {
-    const marcador = evento.target instanceof Element ? evento.target.closest(".marcador-apunte[data-marcador-id]") : null;
-    if (marcador) revelarMarcadorApunte(marcador.dataset.marcadorId);
-  });
-  obtenerEditor()?.addEventListener("keydown", (evento) => {
-    if (evento.key !== "Enter" && evento.key !== " ") return;
-    const marcador = evento.target instanceof Element ? evento.target.closest(".marcador-apunte[data-marcador-id]") : null;
-    if (!marcador) return;
-    evento.preventDefault();
-    revelarMarcadorApunte(marcador.dataset.marcadorId);
+  obtenerEditor()?.addEventListener("scroll", programarRenderizadoIndicadoresMarcadores, { passive: true });
+  document.getElementById("lienzoApunte")?.addEventListener("scroll", programarRenderizadoIndicadoresMarcadores, { passive: true });
+  document.getElementById("indicadoresMarcadoresApunte")?.addEventListener("click", (evento) => {
+    const boton = evento.target instanceof Element ? evento.target.closest("[data-ir-marcador]") : null;
+    if (!boton) return;
+    abrirMarcadoresApunte();
+    revelarMarcadorApunte(boton.dataset.irMarcador);
   });
   document.getElementById("listaMarcadoresApunte")?.addEventListener("click", (evento) => {
     const boton = evento.target instanceof Element ? evento.target.closest("[data-ir-marcador]") : null;
@@ -1042,7 +1042,7 @@ function inicializarMarcadoresApunte() {
 
 function actualizarColorMarcadorActivo() {
   document.querySelectorAll("[data-color-marcador]").forEach((boton) => {
-    boton.setAttribute("aria-pressed", String(boton.dataset.colorMarcador === colorMarcadorActual));
+    boton.setAttribute("aria-checked", String(boton.dataset.colorMarcador === colorMarcadorActual));
   });
 }
 
@@ -1059,10 +1059,6 @@ function crearMarcadorApunte() {
   marcador.className = "marcador-apunte";
   marcador.dataset.marcadorId = `marcador-${globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`}`;
   marcador.dataset.marcadorColor = colorMarcadorActual;
-  marcador.style.setProperty("--marcador-color", colorMarcadorActual);
-  marcador.setAttribute("tabindex", "0");
-  marcador.setAttribute("role", "button");
-  marcador.setAttribute("aria-label", `Marcador: ${rango.toString().trim().slice(0, 80)}`);
   try {
     rango.surroundContents(marcador);
   } catch {
@@ -1073,10 +1069,12 @@ function crearMarcadorApunte() {
   seleccion?.removeAllRanges();
   const nuevoRango = document.createRange();
   nuevoRango.selectNodeContents(marcador);
+  nuevoRango.collapse(false);
   seleccion?.addRange(nuevoRango);
   guardarSeleccionEditor();
   marcarCambios();
   renderizarMarcadoresApunte();
+  cerrarMenuMarcadoresApunte();
   ponerEstado("Marcador añadido");
 }
 
@@ -1093,11 +1091,9 @@ function marcadoresDelApunte() {
 
 function renderizarMarcadoresApunte() {
   const lista = document.getElementById("listaMarcadoresApunte");
-  if (!lista) return;
   const marcadores = marcadoresDelApunte();
-  document.querySelectorAll(".marcador-apunte[data-marcador-id]").forEach((elemento) => {
-    elemento.style.setProperty("--marcador-color", elemento.dataset.marcadorColor || "#f6c85f");
-  });
+  programarRenderizadoIndicadoresMarcadores();
+  if (!lista) return;
   lista.replaceChildren();
   if (!marcadores.length) {
     const vacio = document.createElement("p");
@@ -1111,10 +1107,53 @@ function renderizarMarcadoresApunte() {
     boton.type = "button";
     boton.className = "item-marcador-apunte";
     boton.dataset.irMarcador = marcador.id;
+    boton.style.setProperty("--color-marcador", marcador.color);
+    if (marcador.elemento.dataset.marcadorActivo === "true") boton.dataset.marcadorActivo = "true";
     boton.innerHTML = `<span class="item-marcador-apunte__color" style="--color-marcador:${marcador.color}"></span><span class="item-marcador-apunte__texto"></span>`;
     boton.querySelector(".item-marcador-apunte__texto").textContent = marcador.texto;
     lista.append(boton);
   });
+}
+
+function programarRenderizadoIndicadoresMarcadores() {
+  if (frameIndicadoresMarcadores) window.cancelAnimationFrame(frameIndicadoresMarcadores);
+  frameIndicadoresMarcadores = window.requestAnimationFrame(() => {
+    frameIndicadoresMarcadores = 0;
+    renderizarIndicadoresMarcadores();
+  });
+}
+
+function renderizarIndicadoresMarcadores() {
+  const lienzo = document.getElementById("lienzoApunte");
+  const hoja = document.getElementById("hojaApunte");
+  const capa = document.getElementById("indicadoresMarcadoresApunte");
+  if (!lienzo || !hoja || !capa) return;
+
+  const rectLienzo = lienzo.getBoundingClientRect();
+  const izquierda = Math.max(3, hoja.offsetLeft - 22);
+  const posicionesPorLinea = new Map();
+  const fragmento = document.createDocumentFragment();
+  marcadoresDelApunte().forEach((marcador) => {
+    const rectMarcador = marcador.elemento.getClientRects()[0];
+    if (!rectMarcador) return;
+    const posicionNatural = Math.round(rectMarcador.top - rectLienzo.top + lienzo.scrollTop);
+    const claveLinea = Math.round(posicionNatural / 5) * 5;
+    const repetidos = posicionesPorLinea.get(claveLinea) || 0;
+    posicionesPorLinea.set(claveLinea, repetidos + 1);
+
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.className = "indicador-marcador-apunte";
+    boton.dataset.irMarcador = marcador.id;
+    boton.style.left = `${izquierda}px`;
+    boton.style.top = `${posicionNatural + (repetidos * 6)}px`;
+    boton.style.setProperty("--color-marcador", marcador.color);
+    boton.title = marcador.texto;
+    boton.setAttribute("aria-label", `Marcador: ${marcador.texto}`);
+    if (marcador.elemento.dataset.marcadorActivo === "true") boton.dataset.marcadorActivo = "true";
+    fragmento.append(boton);
+  });
+  capa.replaceChildren(fragmento);
 }
 
 function revelarMarcadorApunte(id) {
@@ -1123,31 +1162,66 @@ function revelarMarcadorApunte(id) {
   document.querySelectorAll(".marcador-apunte[data-marcador-activo]").forEach((elemento) => elemento.removeAttribute("data-marcador-activo"));
   marcador.dataset.marcadorActivo = "true";
   marcador.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
-  marcador.focus({ preventScroll: true });
-  window.setTimeout(() => marcador.removeAttribute("data-marcador-activo"), 1400);
+  renderizarMarcadoresApunte();
+  window.setTimeout(() => {
+    marcador.removeAttribute("data-marcador-activo");
+    renderizarMarcadoresApunte();
+  }, 1400);
 }
 
 function abrirMarcadoresApunte() {
   const panel = document.getElementById("panelMarcadoresApunte");
-  const boton = document.getElementById("abrirMarcadoresApunte");
+  const boton = document.getElementById("verMarcadoresApunte");
   if (!panel || !boton || boton.disabled) return;
+  cerrarMenuMarcadoresApunte();
   cerrarMenuInsertar(); cerrarMenuExportacion(); cerrarPaletasColor(); cerrarPropiedadesObjeto(); cerrarDisposicionHoja();
   panel.hidden = false;
   boton.setAttribute("aria-expanded", "true");
   renderizarMarcadoresApunte();
+  posicionarPanelMarcadoresApunte();
 }
 
 function cerrarMarcadoresApunte({ devolverFoco = false } = {}) {
   const panel = document.getElementById("panelMarcadoresApunte");
   if (!panel || panel.hidden) return;
   panel.hidden = true;
-  document.getElementById("abrirMarcadoresApunte")?.setAttribute("aria-expanded", "false");
+  document.getElementById("verMarcadoresApunte")?.setAttribute("aria-expanded", "false");
   if (devolverFoco) document.getElementById("abrirMarcadoresApunte")?.focus();
 }
 
-function alternarMarcadoresApunte() {
+function posicionarPanelMarcadoresApunte() {
+  const editor = document.querySelector(".apuntes-editor");
+  const lienzo = document.getElementById("lienzoApunte");
   const panel = document.getElementById("panelMarcadoresApunte");
-  if (panel?.hidden) abrirMarcadoresApunte(); else cerrarMarcadoresApunte();
+  if (!editor || !lienzo || !panel || panel.hidden) return;
+  const rectEditor = editor.getBoundingClientRect();
+  const rectLienzo = lienzo.getBoundingClientRect();
+  panel.style.top = `${Math.round(rectLienzo.top - rectEditor.top)}px`;
+  panel.style.height = `${Math.round(rectLienzo.height)}px`;
+}
+
+function abrirMenuMarcadoresApunte() {
+  const menu = document.getElementById("menuMarcadoresApunte");
+  const boton = document.getElementById("abrirMarcadoresApunte");
+  if (!menu || !boton || boton.disabled) return;
+  cerrarPaletasColor(); cerrarMenuContextualTexto(); cerrarMenuInsertar(); cerrarPropiedadesObjeto(); cerrarDisposicionHoja(); cerrarMenuExportacion();
+  menu.hidden = false;
+  boton.setAttribute("aria-expanded", "true");
+  posicionarPaletaColor(menu, boton);
+}
+
+function cerrarMenuMarcadoresApunte({ devolverFoco = false } = {}) {
+  const menu = document.getElementById("menuMarcadoresApunte");
+  const boton = document.getElementById("abrirMarcadoresApunte");
+  if (!menu || menu.hidden) return;
+  menu.hidden = true;
+  boton?.setAttribute("aria-expanded", "false");
+  if (devolverFoco) boton?.focus();
+}
+
+function alternarMarcadoresApunte() {
+  const menu = document.getElementById("menuMarcadoresApunte");
+  if (menu?.hidden) abrirMenuMarcadoresApunte(); else cerrarMenuMarcadoresApunte();
 }
 
 function inicializarObjetosApunteUI() {
@@ -1238,6 +1312,7 @@ function abrirPropiedadesObjeto() {
   const boton = document.getElementById("abrirPropiedadesObjeto");
   if (!panel || !boton) return;
   cerrarMenuInsertar();
+  cerrarMenuMarcadoresApunte();
   cerrarMenuExportacion();
   cerrarPaletasColor();
   cerrarDisposicionHoja();
@@ -1705,6 +1780,8 @@ function actualizarVistaHoja() {
   hoja.style.setProperty("--apunte-factor-zoom", String(valoresVista.factorZoom));
   hoja.style.setProperty("--apunte-escala-visual", String(valoresVista.escalaVisual));
   hoja.style.setProperty("--apunte-tamano-fuente", `${valoresVista.tamanioFuente}px`);
+  posicionarPanelMarcadoresApunte();
+  programarRenderizadoIndicadoresMarcadores();
 }
 
 function aplicarDisposicionHoja(valor, { marcar = true } = {}) {
@@ -1748,6 +1825,7 @@ function abrirDisposicionHoja() {
   cerrarPaletasColor();
   cerrarMenuContextualTexto();
   cerrarMenuInsertar();
+  cerrarMenuMarcadoresApunte();
   cerrarPropiedadesObjeto();
   cerrarMarcadoresApunte();
   cerrarMenuExportacion();
@@ -1970,12 +2048,12 @@ function cerrarPaletasColor({ devolverFoco = false } = {}) {
 
 function cerrarPaletasAlHacerClickFuera(evento) {
   const destino = evento.target;
-  if (destino instanceof Element && destino.closest(".selector-color, .paleta-color, .menu-contextual-texto, .menu-insertar, .panel-objeto, .panel-marcadores-apunte, .panel-disposicion-hoja, .menu-archivo, #abrirInsertarApunte, #abrirMarcadoresApunte, #abrirPropiedadesObjeto, #abrirDisposicionHoja, #abrirArchivoApunte")) return;
+  if (destino instanceof Element && destino.closest(".selector-color, .paleta-color, .menu-contextual-texto, .menu-insertar, .menu-marcadores-apunte, .panel-objeto, .panel-marcadores-apunte, .panel-disposicion-hoja, .menu-archivo, #abrirInsertarApunte, #abrirMarcadoresApunte, #abrirPropiedadesObjeto, #abrirDisposicionHoja, #abrirArchivoApunte")) return;
   cerrarPaletasColor();
   cerrarMenuContextualTexto();
   cerrarMenuInsertar();
+  cerrarMenuMarcadoresApunte();
   cerrarPropiedadesObjeto();
-  cerrarMarcadoresApunte();
   cerrarDisposicionHoja();
   cerrarMenuExportacion();
 }
@@ -1985,6 +2063,7 @@ function cerrarPaletasConEscape(evento) {
     || !document.getElementById("paletaFondoApunte")?.hidden
     || !document.getElementById("menuContextualTexto")?.hidden
     || !document.getElementById("propiedadesObjeto")?.hidden
+    || !document.getElementById("menuMarcadoresApunte")?.hidden
     || !document.getElementById("panelMarcadoresApunte")?.hidden
     || !document.getElementById("panelDisposicionHoja")?.hidden
     || !document.getElementById("menuInsertarApunte")?.hidden
@@ -1994,6 +2073,7 @@ function cerrarPaletasConEscape(evento) {
   cerrarPaletasColor({ devolverFoco: true });
   cerrarMenuContextualTexto({ devolverFoco: true });
   cerrarMenuInsertar({ devolverFoco: true });
+  cerrarMenuMarcadoresApunte({ devolverFoco: true });
   cerrarPropiedadesObjeto({ devolverFoco: true });
   cerrarMarcadoresApunte({ devolverFoco: true });
   cerrarDisposicionHoja({ devolverFoco: true });

@@ -1319,6 +1319,7 @@ body.pagina-apuntes > main.apuntes-shell {
 }
 
 .menu-insertar,
+.menu-marcadores-apunte,
 .panel-objeto,
 .panel-marcadores-apunte,
 .panel-disposicion-hoja,
@@ -1338,6 +1339,7 @@ body.pagina-apuntes > main.apuntes-shell {
 }
 
 .menu-insertar[hidden],
+.menu-marcadores-apunte[hidden],
 .panel-objeto[hidden],
 .panel-marcadores-apunte[hidden],
 .panel-disposicion-hoja[hidden],
@@ -1370,6 +1372,39 @@ body.pagina-apuntes > main.apuntes-shell {
   text-align: left;
 }
 
+.menu-marcadores-apunte {
+  left: 16px;
+  top: 66px;
+  width: min(232px, calc(100% - 32px));
+  align-content: start;
+}
+
+.menu-marcadores-apunte > strong {
+  font-size: 12px;
+}
+
+.menu-marcadores-apunte > p {
+  margin: 0;
+  color: var(--apuntes-texto-suave);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.apuntes-shell .menu-marcadores-apunte > button {
+  min-height: 31px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 9px;
+  border: 1px solid var(--apuntes-borde);
+  border-radius: 7px;
+  color: var(--apuntes-texto);
+  background: var(--apuntes-superficie-hover);
+  box-shadow: none;
+  font-size: 11px;
+  text-align: left;
+}
+
 .panel-objeto {
   right: 16px;
   top: 66px;
@@ -1377,16 +1412,17 @@ body.pagina-apuntes > main.apuntes-shell {
 
 .panel-marcadores-apunte {
   position: absolute;
-  z-index: 9;
+  z-index: 10;
   right: 16px;
   top: 66px;
-  width: min(264px, calc(100% - 32px));
-  max-height: min(560px, calc(100% - 82px));
+  width: min(276px, calc(100% - 32px));
+  max-height: none;
   display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
   align-content: start;
   gap: 10px;
   padding: 12px;
-  overflow: auto;
+  overflow: hidden;
   border: 1px solid var(--apuntes-borde-fuerte);
   border-radius: 10px;
   color: var(--apuntes-texto);
@@ -1400,15 +1436,46 @@ body.pagina-apuntes > main.apuntes-shell {
 .panel-marcadores-apunte > p { margin: 0; color: var(--apuntes-texto-suave); font-size: 10px; line-height: 1.35; }
 .marcadores-colores { display: flex; gap: 7px; }
 .apuntes-shell .marcadores-colores button { width: 22px; min-width: 22px; height: 22px; min-height: 22px; padding: 0; border: 2px solid transparent; border-radius: 50%; background: var(--color-marcador); box-shadow: none; }
-.apuntes-shell .marcadores-colores button[aria-pressed="true"] { border-color: var(--apuntes-texto); box-shadow: 0 0 0 2px var(--apuntes-borde-fuerte); }
-.apuntes-shell .panel-marcadores-apunte__crear { min-height: 30px; padding: 0 9px; border: 1px solid var(--apuntes-borde); border-radius: 7px; color: var(--apuntes-texto); background: var(--apuntes-superficie-hover); box-shadow: none; font-size: 11px; font-weight: 700; }
-.lista-marcadores-apunte { display: grid; gap: 5px; }
+.apuntes-shell .marcadores-colores button[aria-checked="true"] { border-color: var(--apuntes-texto); box-shadow: 0 0 0 2px var(--apuntes-borde-fuerte); }
+.lista-marcadores-apunte { min-height: 0; display: grid; align-content: start; gap: 5px; overflow: auto; }
 .apuntes-shell .item-marcador-apunte { display: grid; grid-template-columns: 8px minmax(0, 1fr); align-items: start; gap: 8px; width: 100%; min-height: 34px; padding: 7px; border: 1px solid var(--apuntes-borde); border-radius: 7px; color: var(--apuntes-texto); background: transparent; box-shadow: none; text-align: left; }
+.apuntes-shell .item-marcador-apunte[data-marcador-activo="true"] { border-color: var(--color-marcador, var(--apuntes-borde-fuerte)); background: var(--apuntes-superficie-hover); }
 .item-marcador-apunte__color { width: 8px; height: 100%; min-height: 18px; border-radius: 999px; background: var(--color-marcador); }
 .item-marcador-apunte__texto { overflow: hidden; font-size: 11px; line-height: 1.3; text-overflow: ellipsis; }
 .lista-marcadores-apunte__vacia { margin: 0; color: var(--apuntes-texto-suave); font-size: 11px; }
-.marcador-apunte { border-radius: 2px; background: color-mix(in srgb, var(--marcador-color, #f6c85f) 32%, transparent); box-decoration-break: clone; cursor: pointer; }
-.marcador-apunte[data-marcador-activo="true"] { outline: 2px solid var(--marcador-color, #f6c85f); outline-offset: 2px; }
+.marcador-apunte { background: transparent; outline: 0; cursor: text; }
+
+.indicadores-marcadores-apunte {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  pointer-events: none;
+}
+
+.apuntes-shell .indicador-marcador-apunte {
+  position: absolute;
+  width: 15px;
+  min-width: 15px;
+  height: 19px;
+  min-height: 19px;
+  padding: 0;
+  border: 0;
+  border-radius: 2px 2px 1px 1px;
+  color: transparent;
+  background: var(--color-marcador, #f6c85f);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.32);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 73%, 0 100%);
+  pointer-events: auto;
+  transform: none;
+}
+
+.apuntes-shell .indicador-marcador-apunte:hover,
+.apuntes-shell .indicador-marcador-apunte:focus-visible,
+.apuntes-shell .indicador-marcador-apunte[data-marcador-activo="true"] {
+  filter: brightness(1.08);
+  box-shadow: 0 0 0 2px var(--apuntes-texto), 0 2px 6px rgba(0, 0, 0, 0.35);
+  transform: none;
+}
 
 .panel-disposicion-hoja {
   right: 16px;
@@ -1880,7 +1947,8 @@ body.pagina-apuntes > main.apuntes-shell {
   height: var(--hoja-alto, 736px);
   min-width: 180px;
   min-height: 250px;
-  margin: 24px auto 42px;
+  margin-block: 24px 42px;
+  margin-inline: max(28px, calc((100% - var(--hoja-ancho, 520px)) / 2));
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--apuntes-borde-fuerte) 60%, var(--apuntes-borde));
   border-radius: 2px;
