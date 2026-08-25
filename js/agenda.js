@@ -26,9 +26,15 @@ onAuthStateChanged(auth, async (user) => {
 async function cargarPacientes() {
   const select = $("pacienteCita");
   select.innerHTML = "<option value=\"\">Paciente no registrado / sin paciente</option>";
-  const snap = await listarPacientes(medicoUid, { forzar: true });
-  pacientes = snap.docs.map((d) => ({ id: d.id, nombre: obtenerNombrePacienteParaMostrar(d.data()) || "Paciente sin nombre" })).sort((a, b) => a.nombre.localeCompare(b.nombre));
-  select.innerHTML += pacientes.map((p) => `<option value="${p.id}">${escaparHTML(p.nombre)}</option>`).join("");
+  try {
+    const snap = await listarPacientes(medicoUid, { forzar: true });
+    pacientes = snap.docs.map((d) => ({ id: d.id, nombre: obtenerNombrePacienteParaMostrar(d.data()) || "Paciente sin nombre" })).sort((a, b) => a.nombre.localeCompare(b.nombre));
+    select.innerHTML += pacientes.map((p) => `<option value="${p.id}">${escaparHTML(p.nombre)}</option>`).join("");
+  } catch (error) {
+    pacientes = [];
+    console.error("Agenda: no se pudieron cargar pacientes registrados.", error);
+    select.innerHTML = "<option value=\"\">Paciente no registrado / sin paciente</option><option value=\"\" disabled>No se pudieron cargar pacientes registrados</option>";
+  }
 }
 function rangoVisible() { return { inicio: aFecha(new Date(fechaCalendario.getFullYear(), fechaCalendario.getMonth(), 1)), fin: aFecha(new Date(fechaCalendario.getFullYear(), fechaCalendario.getMonth() + 1, 0)) }; }
 function rangoConsulta() { const inicio = new Date(fechaCalendario.getFullYear(), fechaCalendario.getMonth() - 1, 1); const fin = new Date(fechaCalendario.getFullYear(), fechaCalendario.getMonth() + 2, 0); return { inicio: aFecha(inicio), fin: aFecha(fin) }; }
@@ -38,10 +44,14 @@ async function cargarEventos() {
   const legacySnap = getDocs(query(agendaRef(), where("fecha", ">=", inicio), where("fecha", "<=", fin)));
   const modernSnap = getDocs(query(agendaRef(), where("startDate", "<=", fin), where("endDate", ">=", inicio)));
   const recurringSnap = getDocs(query(agendaRef(), where("recurrence", "in", ["weekly", "biweekly", "monthly"])));
-  const [legacy, modern, recurring] = await Promise.all([legacySnap, modernSnap, recurringSnap]);
+  const resultados = await Promise.allSettled([legacySnap, modernSnap, recurringSnap]);
+  const rechazados = resultados.filter((resultado) => resultado.status === "rejected");
+  rechazados.forEach((resultado) => console.error("Agenda: consulta de eventos fallida; se conservarán las consultas disponibles.", resultado.reason));
+  const exitosos = resultados.filter((resultado) => resultado.status === "fulfilled").map((resultado) => resultado.value);
   const documentos = new Map();
-  [...legacy.docs, ...modern.docs, ...recurring.docs].forEach((snapshot) => documentos.set(snapshot.id, { id: snapshot.id, ...snapshot.data() }));
+  exitosos.flatMap((resultado) => resultado.docs).forEach((snapshot) => documentos.set(snapshot.id, { id: snapshot.id, ...snapshot.data() }));
   eventos = [...documentos.values()].map(normalizarEvento); renderizarEventos(); renderizarCalendario();
+  if (!exitosos.length) lista.textContent = "No se pudieron cargar los eventos. Revisa la consola y la configuración de Firestore.";
 }
 function normalizarEvento(raw) {
   const antiguo = !raw.type && (raw.pacienteId !== undefined || raw.tipo !== undefined), type = raw.type || (antiguo ? "appointment" : "event");

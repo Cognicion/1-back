@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260825-apuntes-menu-tamano-persistente-v22">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260825-apuntes-buscar-reemplazar-fuentes-v23">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -115,6 +115,12 @@
             <span aria-hidden="true">⌄</span>
           </button>
         </div>
+        <label class="control-familia-fuente" title="Tipo de fuente">
+          <span class="visualmente-oculto">Tipo de fuente</span>
+          <select id="familiaFuenteApunte" aria-label="Tipo de fuente del texto seleccionado">
+            <option value="Aptos">Aptos</option><option value="Arial" selected>Arial</option><option value="Calibri">Calibri</option><option value="Georgia">Georgia</option><option value="Times New Roman">Times New Roman</option><option value="Verdana">Verdana</option><option value="Tahoma">Tahoma</option><option value="Trebuchet MS">Trebuchet MS</option><option value="Courier New">Courier New</option>
+          </select>
+        </label>
         <label class="control-tamano-fuente" title="Tamaño de fuente del documento">
           <span class="visualmente-oculto">Tamaño de fuente</span>
           <input id="tamanoFuenteRapido" type="number" min="6" max="96" step="1" inputmode="numeric" value="12" aria-label="Tamaño de fuente del documento en puntos"><span aria-hidden="true">pt</span>
@@ -171,6 +177,9 @@
           </div>
         </div>
         <button type="button" class="boton-formato" data-editor-command="formatBlock" data-editor-value="blockquote" aria-label="Cita" title="Cita">❝</button>
+        <button id="abrirBuscarReemplazar" type="button" class="boton-formato boton-formato--ancho" aria-haspopup="dialog" aria-expanded="false" aria-controls="panelBuscarReemplazar" title="Buscar y reemplazar">
+          <span aria-hidden="true">⌕</span><span>Buscar</span>
+        </button>
         <span class="separador-formato" aria-hidden="true"></span>
         <button id="abrirMarcadoresApunte" type="button" class="boton-formato boton-formato--ancho" aria-haspopup="menu" aria-expanded="false" aria-controls="menuMarcadoresApunte" title="Marcadores">
           <span aria-hidden="true">▮</span><span>Marcadores</span>
@@ -238,6 +247,25 @@
           </div>
         </div>
         <button id="restablecerFondoApunte" type="button" class="paleta-fondo-apunte__restablecer">Usar fondo del tema</button>
+      </section>
+
+      <section id="panelBuscarReemplazar" class="panel-buscar-reemplazar" role="dialog" aria-label="Buscar y reemplazar en el apunte" hidden>
+        <div class="panel-buscar-reemplazar__encabezado">
+          <strong>Buscar y reemplazar</strong>
+          <button id="cerrarBuscarReemplazar" type="button" aria-label="Cerrar búsqueda">×</button>
+        </div>
+        <label><span>Buscar palabra o símbolo</span><input id="buscarEnApunte" type="search" autocomplete="off" spellcheck="false" placeholder="Texto o símbolo"></label>
+        <div class="panel-buscar-reemplazar__navegacion">
+          <output id="resultadoBuscarEnApunte" aria-live="polite">Escribe algo para buscar.</output>
+          <button id="coincidenciaAnterior" type="button" aria-label="Coincidencia anterior">↑</button>
+          <button id="coincidenciaSiguiente" type="button" aria-label="Coincidencia siguiente">↓</button>
+        </div>
+        <label><span>Reemplazar por</span><input id="reemplazarEnApunte" type="text" autocomplete="off" spellcheck="false" placeholder="Texto nuevo"></label>
+        <label class="panel-buscar-reemplazar__opcion"><input id="buscarCoincidirMayusculas" type="checkbox"><span>Distinguir mayúsculas</span></label>
+        <div class="panel-buscar-reemplazar__acciones">
+          <button id="reemplazarCoincidencia" type="button">Reemplazar</button>
+          <button id="reemplazarTodasCoincidencias" type="button">Reemplazar todo</button>
+        </div>
       </section>
 
       <section id="panelDisposicionHoja" class="panel-disposicion-hoja" role="dialog" aria-label="Disposición de hoja" hidden>
@@ -366,6 +394,7 @@
           <div class="menu-contextual-texto__submenu" data-submenu-texto="fuente" role="menu" aria-label="Opciones de fuente" hidden>
             <button type="button" data-accion-texto="bold" role="menuitem">Negrita</button>
             <button type="button" data-accion-texto="texto" role="menuitem">Color de texto</button>
+            <label class="menu-contextual-texto__tamano menu-contextual-texto__familia"><span>Fuente</span><select id="familiaFuenteContextual" aria-label="Tipo de fuente de la selección"><option value="Aptos">Aptos</option><option value="Arial" selected>Arial</option><option value="Calibri">Calibri</option><option value="Georgia">Georgia</option><option value="Times New Roman">Times New Roman</option><option value="Verdana">Verdana</option><option value="Tahoma">Tahoma</option><option value="Trebuchet MS">Trebuchet MS</option><option value="Courier New">Courier New</option></select></label>
             <label class="menu-contextual-texto__tamano"><span>Tamaño (pt)</span><input id="tamanoFuenteContextual" type="number" min="6" max="96" step="1" value="12" inputmode="numeric" aria-label="Tamaño de fuente de la selección en puntos"></label>
             <div class="menu-contextual-texto__tamanos" role="group" aria-label="Tamaños de fuente sugeridos">
               <button type="button" role="menuitem" data-tamano-fuente-contextual="10">10</button><button type="button" role="menuitem" data-tamano-fuente-contextual="12">12</button><button type="button" role="menuitem" data-tamano-fuente-contextual="14">14</button><button type="button" role="menuitem" data-tamano-fuente-contextual="18">18</button><button type="button" role="menuitem" data-tamano-fuente-contextual="24">24</button><button type="button" role="menuitem" data-tamano-fuente-contextual="32">32</button>
@@ -467,7 +496,7 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260825-apuntes-menu-tamano-persistente-v22"></script>
+  <script type="module" src="js/apuntes.js?v=20260825-apuntes-buscar-reemplazar-fuentes-v23"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>

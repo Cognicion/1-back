@@ -27,8 +27,9 @@ import {
   normalizarColoresRecientes,
   registrarColorReciente
 } from "../js/apuntes-color-history.js";
-import { tamanoFuentePtSeguro } from "../js/apuntes-rich-text.js";
+import { familiaFuenteSegura, tamanoFuentePtSeguro } from "../js/apuntes-rich-text.js";
 import { detectarAtajoLista, tipoSublistaOrdenada } from "../js/apuntes-auto-list.js";
+import { buscarCoincidenciasLiterales, reemplazarCoincidenciasLiterales } from "../js/apuntes-search-replace.js";
 
 const leer = (ruta) => readFileSync(new URL(ruta, import.meta.url), "utf8");
 const html = leer("../apuntes.html");
@@ -112,6 +113,26 @@ test("el tamaño de fuente contextual solo conserva puntos válidos", () => {
   assert.equal(tamanoFuentePtSeguro(5), "");
   assert.equal(tamanoFuentePtSeguro(97), "");
   assert.equal(tamanoFuentePtSeguro("invalido"), "");
+});
+
+test("las familias tipográficas se limitan al catálogo seguro", () => {
+  assert.equal(familiaFuenteSegura("Arial"), "Arial");
+  assert.equal(familiaFuenteSegura('"Times New Roman", serif'), "Times New Roman");
+  assert.equal(familiaFuenteSegura("courier new"), "Courier New");
+  assert.equal(familiaFuenteSegura("url(javascript:alert(1))"), "");
+});
+
+test("buscar y reemplazar trata palabras y símbolos como texto literal", () => {
+  assert.deepEqual(buscarCoincidenciasLiterales("A+B y a+b", "a+b"), [
+    { inicio: 0, fin: 3 },
+    { inicio: 6, fin: 9 }
+  ]);
+  assert.deepEqual(buscarCoincidenciasLiterales("A+B y a+b", "a+b", true), [{ inicio: 6, fin: 9 }]);
+  assert.deepEqual(reemplazarCoincidenciasLiterales("A+B y a+b", "a+b", "suma"), {
+    texto: "suma y suma",
+    cantidad: 2
+  });
+  assert.deepEqual(buscarCoincidenciasLiterales("texto", ""), []);
 });
 
 test("los atajos de inicio de párrafo detectan listas sin falsos positivos", () => {
@@ -201,8 +222,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=2\.115-navbar-unica-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260825-apuntes-menu-tamano-persistente-v22/);
-  assert.match(html, /apuntes\.js\?v=20260825-apuntes-menu-tamano-persistente-v22/);
+  assert.match(html, /apuntes\.css\?v=20260825-apuntes-buscar-reemplazar-fuentes-v23/);
+  assert.match(html, /apuntes\.js\?v=20260825-apuntes-buscar-reemplazar-fuentes-v23/);
   assert.match(html, /id="formatoCursiva"[^>]*data-editor-command="italic"/);
   assert.match(html, /id="formatoSubrayado"[^>]*data-editor-command="underline"/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
@@ -283,6 +304,12 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /id="aumentarSublista"/);
   assert.match(html, /id="reducirSublista"/);
   assert.match(html, /id="interlineadoApunte"/);
+  assert.match(html, /id="familiaFuenteApunte"/);
+  assert.match(html, /id="familiaFuenteContextual"/);
+  assert.match(html, /id="abrirBuscarReemplazar"[^>]*aria-controls="panelBuscarReemplazar"/);
+  assert.match(html, /id="buscarEnApunte"/);
+  assert.match(html, /id="reemplazarEnApunte"/);
+  assert.match(html, /id="reemplazarTodasCoincidencias"/);
   assert.match(html, /id="fondoObjeto"/);
   assert.match(html, /id="contornoObjeto"/);
   assert.match(html, /id="grosorContornoObjeto"/);
@@ -424,6 +451,12 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(controlador, /tamanioFuente \* 25\.4 \* escala \/ 72/);
   assert.match(controlador, /--apunte-escala-visual/);
   assert.match(controlador, /function aplicarTamanoFuenteSeleccion/);
+  assert.match(controlador, /function aplicarFamiliaFuenteSeleccion/);
+  assert.match(controlador, /function seleccionarCoincidenciaBusqueda/);
+  assert.match(controlador, /function reemplazarCoincidenciaActual/);
+  assert.match(controlador, /function reemplazarTodasCoincidencias/);
+  assert.match(controlador, /buscarCoincidenciasLiterales/);
+  assert.match(controlador, /reemplazarCoincidenciasLiterales/);
   assert.doesNotMatch(controlador, /aplicarTamanoFuenteSeleccion\([^\n]+\)\) cerrarMenuContextualTexto\(\)/);
   assert.match(controlador, /tamanoFuenteContextual"\)\?\.addEventListener\("change",[\s\S]*?aplicarTamanoFuenteSeleccion\(evento\.target\.value\)/);
   assert.match(controlador, /function actualizarTamanosFuentePersonalizados/);
@@ -484,12 +517,14 @@ test("la persistencia rica mantiene texto plano y sanea el HTML", () => {
   assert.match(controlador, /objetosLienzoActualizado === apunte\.fechaActualizacion/);
   assert.match(controlador, /import \{ inicializarObjetosApunte, textoObjetosApunte \} from "\.\/apuntes-objetos\.js\?v=/);
   assert.match(controlador, /import \{ descargarApuntePdf, descargarApunteWord \} from "\.\/apuntes-export\.js\?v=20260825-apuntes-sublistas-jerarquicas-v20"/);
-  assert.match(controlador, /import \{ sanitizarHTMLRico \} from "\.\/apuntes-rich-text\.js\?v=20260825-apuntes-sublistas-jerarquicas-v20"/);
+  assert.match(controlador, /import \{ familiaFuenteSegura, sanitizarHTMLRico \} from "\.\/apuntes-rich-text\.js\?v=20260825-apuntes-buscar-reemplazar-fuentes-v23"/);
   assert.match(textoRico, /new Set\(\["B", "STRONG", "BR", "DIV", "P", "SPAN", "FONT", "UL", "OL", "LI"\]\)/);
   assert.match(textoRico, /etiqueta === "OL"/);
   assert.match(textoRico, /marcador-apunte/);
   assert.match(textoRico, /dataset\.marcadorId/);
   assert.match(textoRico, /tamanoFuentePtSeguro/);
+  assert.match(textoRico, /familiaFuenteSegura/);
+  assert.match(textoRico, /style\.fontFamily = familiaFuente/);
   assert.match(textoRico, /dataset\.tamanoFuentePt/);
   assert.match(textoRico, /\["1", "a", "A", "i", "I"\]/);
   assert.doesNotMatch(textoRico, /limpio\.setAttribute\("(?:tabindex|role)"/);
@@ -586,6 +621,7 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-25-apuntes-sublistas-jerarquicas-v20/);
   assert.match(version, /2026-08-25-apuntes-seleccion-lista-color-dividido-v21/);
   assert.match(version, /2026-08-25-apuntes-menu-tamano-persistente-v22/);
+  assert.match(version, /2026-08-25-apuntes-buscar-reemplazar-fuentes-v23/);
   assert.match(version, /2026-08-22-apuntes-subcarpetas-hotfix-v1/);
   assert.match(version, /2026-08-22-apuntes-insertar-controles-v1/);
   assert.match(version, /2026-08-22-apuntes-contexto-fondo-retraible-v1/);

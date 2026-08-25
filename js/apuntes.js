@@ -1,7 +1,8 @@
 import { auth, db } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
-import { sanitizarHTMLRico } from "./apuntes-rich-text.js?v=20260825-apuntes-sublistas-jerarquicas-v20";
+import { familiaFuenteSegura, sanitizarHTMLRico } from "./apuntes-rich-text.js?v=20260825-apuntes-buscar-reemplazar-fuentes-v23";
 import { detectarAtajoLista, tipoSublistaOrdenada } from "./apuntes-auto-list.js?v=20260825-apuntes-sublistas-jerarquicas-v20";
+import { buscarCoincidenciasLiterales, reemplazarCoincidenciasLiterales } from "./apuntes-search-replace.js?v=20260825-apuntes-buscar-reemplazar-fuentes-v23";
 import { inicializarSidebarApuntes } from "./apuntes-sidebar.js";
 import { inicializarObjetosApunte, textoObjetosApunte } from "./apuntes-objetos.js?v=20260825-apuntes-flecha-seleccion-v2";
 import { descargarApuntePdf, descargarApunteWord } from "./apuntes-export.js?v=20260825-apuntes-sublistas-jerarquicas-v20";
@@ -107,6 +108,8 @@ let frameIndicadoresMarcadores = 0;
 let temporizadorVistaHoja = 0;
 let claveVistaHoja = "";
 let colorMarcadorActual = "#f6c85f";
+let indiceCoincidenciaBusqueda = -1;
+let firmaBusquedaActual = "";
 const parametrosEntradaApuntes = new URLSearchParams(window.location.search);
 const apunteSolicitado = String(parametrosEntradaApuntes.get("apunte") || "").trim().slice(0, 160);
 const crearApunteSolicitado = parametrosEntradaApuntes.get("nuevo") === "1";
@@ -191,7 +194,11 @@ function inicializarInterfaz() {
       marcarCambios();
     });
   });
-  editor?.addEventListener("input", () => { marcarCambios(); renderizarMarcadoresApunte(); });
+  editor?.addEventListener("input", () => {
+    marcarCambios();
+    renderizarMarcadoresApunte();
+    if (!document.getElementById("panelBuscarReemplazar")?.hidden) actualizarResultadosBusqueda({ reiniciar: true });
+  });
   editor?.addEventListener("blur", normalizarEditorVacio);
   editor?.addEventListener("beforeinput", convertirAtajoListaAntesDeInsertar);
   editor?.addEventListener("keydown", gestionarAtajosEditor);
@@ -265,6 +272,17 @@ function inicializarInterfaz() {
   document.getElementById("menuContextualObjeto")?.addEventListener("click", gestionarMenuContextualObjeto);
   document.getElementById("menuContextualObjeto")?.addEventListener("change", gestionarMenuContextualObjeto);
   document.getElementById("interlineadoApunte")?.addEventListener("change", (evento) => aplicarInterlineado(evento.target.value));
+  document.getElementById("familiaFuenteApunte")?.addEventListener("change", (evento) => aplicarFamiliaFuenteSeleccion(evento.target.value));
+  document.getElementById("familiaFuenteContextual")?.addEventListener("change", (evento) => aplicarFamiliaFuenteSeleccion(evento.target.value));
+  document.getElementById("abrirBuscarReemplazar")?.addEventListener("click", () => alternarBuscarReemplazar());
+  document.getElementById("cerrarBuscarReemplazar")?.addEventListener("click", () => cerrarBuscarReemplazar({ devolverFoco: true }));
+  document.getElementById("buscarEnApunte")?.addEventListener("input", () => actualizarResultadosBusqueda({ reiniciar: true }));
+  document.getElementById("buscarCoincidirMayusculas")?.addEventListener("change", () => actualizarResultadosBusqueda({ reiniciar: true }));
+  document.getElementById("buscarEnApunte")?.addEventListener("keydown", gestionarTeclasBusqueda);
+  document.getElementById("coincidenciaAnterior")?.addEventListener("click", () => seleccionarCoincidenciaBusqueda(-1));
+  document.getElementById("coincidenciaSiguiente")?.addEventListener("click", () => seleccionarCoincidenciaBusqueda(1));
+  document.getElementById("reemplazarCoincidencia")?.addEventListener("click", reemplazarCoincidenciaActual);
+  document.getElementById("reemplazarTodasCoincidencias")?.addEventListener("click", reemplazarTodasCoincidencias);
   document.getElementById("abrirArchivoApunte")?.addEventListener("click", alternarMenuExportacion);
   document.getElementById("descargarApunteWord")?.addEventListener("click", () => exportarApunte("word"));
   document.getElementById("descargarApuntePdf")?.addEventListener("click", () => exportarApunte("pdf"));
@@ -297,7 +315,7 @@ function inicializarInterfaz() {
   editor?.addEventListener("contextmenu", abrirMenuContextualTexto);
   document.getElementById("menuContextualTexto")?.addEventListener("click", ejecutarAccionMenuContextualTexto);
   document.getElementById("menuContextualTexto")?.addEventListener("pointerdown", (evento) => {
-    if (evento.target instanceof Element && evento.target.closest("input")) return;
+    if (evento.target instanceof Element && evento.target.closest("input, select")) return;
     conservarFocoEditor(evento);
   });
   document.getElementById("tamanoFuenteContextual")?.addEventListener("change", (evento) => {
@@ -1220,7 +1238,7 @@ function abrirMenuMarcadoresApunte() {
   const menu = document.getElementById("menuMarcadoresApunte");
   const boton = document.getElementById("abrirMarcadoresApunte");
   if (!menu || !boton || boton.disabled) return;
-  cerrarPaletasColor(); cerrarMenuContextualTexto(); cerrarMenuInsertar(); cerrarPropiedadesObjeto(); cerrarDisposicionHoja(); cerrarMenuExportacion();
+  cerrarPaletasColor(); cerrarMenuContextualTexto(); cerrarMenuInsertar(); cerrarPropiedadesObjeto(); cerrarDisposicionHoja(); cerrarBuscarReemplazar(); cerrarMenuExportacion();
   menu.hidden = false;
   boton.setAttribute("aria-expanded", "true");
   posicionarPaletaColor(menu, boton);
@@ -1332,6 +1350,7 @@ function abrirPropiedadesObjeto() {
   cerrarMenuExportacion();
   cerrarPaletasColor();
   cerrarDisposicionHoja();
+  cerrarBuscarReemplazar();
   cerrarMarcadoresApunte();
   panel.hidden = false;
   boton.setAttribute("aria-expanded", "true");
@@ -1491,6 +1510,7 @@ function alternarMenuExportacion() {
   cerrarPropiedadesObjeto();
   cerrarMenuInsertar();
   cerrarDisposicionHoja();
+  cerrarBuscarReemplazar();
   menu.hidden = estabaAbierto;
   boton.setAttribute("aria-expanded", String(!estabaAbierto));
 }
@@ -1512,6 +1532,7 @@ function abrirMenuInsertar() {
   cerrarPropiedadesObjeto();
   cerrarMenuExportacion();
   cerrarDisposicionHoja();
+  cerrarBuscarReemplazar();
   menu.hidden = false;
   boton.setAttribute("aria-expanded", "true");
 }
@@ -1550,6 +1571,165 @@ function alternarMenuFormatoCompacto(tipo) {
   }
   menu.hidden = !abrir;
   boton.setAttribute("aria-expanded", String(abrir));
+}
+
+function alternarBuscarReemplazar({ enfocarReemplazo = false } = {}) {
+  const panel = document.getElementById("panelBuscarReemplazar");
+  if (!panel || panel.hidden) abrirBuscarReemplazar({ enfocarReemplazo });
+  else cerrarBuscarReemplazar({ devolverFoco: true });
+}
+
+function abrirBuscarReemplazar({ enfocarReemplazo = false } = {}) {
+  const panel = document.getElementById("panelBuscarReemplazar");
+  const boton = document.getElementById("abrirBuscarReemplazar");
+  if (!panel || !boton || boton.disabled) return;
+  cerrarPaletasColor();
+  cerrarMenuContextualTexto();
+  cerrarMenusFormatoCompacto();
+  cerrarMenuInsertar();
+  cerrarMenuMarcadoresApunte();
+  cerrarPropiedadesObjeto();
+  cerrarDisposicionHoja();
+  cerrarMenuExportacion();
+  panel.hidden = false;
+  boton.setAttribute("aria-expanded", "true");
+  posicionarPaletaColor(panel, boton);
+  actualizarResultadosBusqueda({ reiniciar: true });
+  requestAnimationFrame(() => document.getElementById(enfocarReemplazo ? "reemplazarEnApunte" : "buscarEnApunte")?.focus());
+}
+
+function cerrarBuscarReemplazar({ devolverFoco = false } = {}) {
+  const panel = document.getElementById("panelBuscarReemplazar");
+  const boton = document.getElementById("abrirBuscarReemplazar");
+  if (!panel || panel.hidden) return;
+  panel.hidden = true;
+  boton?.setAttribute("aria-expanded", "false");
+  if (devolverFoco) restaurarSeleccionEditor();
+}
+
+function opcionesBusquedaActual() {
+  const consulta = document.getElementById("buscarEnApunte")?.value || "";
+  const distinguirMayusculas = Boolean(document.getElementById("buscarCoincidirMayusculas")?.checked);
+  return {
+    consulta,
+    distinguirMayusculas,
+    firma: `${consulta}\u0000${distinguirMayusculas ? "1" : "0"}`
+  };
+}
+
+function nodosTextoBuscables() {
+  const editor = obtenerEditor();
+  if (!editor) return [];
+  const caminante = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT);
+  const nodos = [];
+  let nodo = caminante.nextNode();
+  while (nodo) {
+    if (nodo.data) nodos.push(nodo);
+    nodo = caminante.nextNode();
+  }
+  return nodos;
+}
+
+function coincidenciasBusquedaActuales() {
+  const { consulta, distinguirMayusculas } = opcionesBusquedaActual();
+  if (!consulta) return [];
+  return nodosTextoBuscables().flatMap((nodo) => (
+    buscarCoincidenciasLiterales(nodo.data, consulta, distinguirMayusculas)
+      .map(({ inicio, fin }) => ({ nodo, inicio, fin }))
+  ));
+}
+
+function mostrarResultadoBusqueda(cantidad, mensaje = "") {
+  const salida = document.getElementById("resultadoBuscarEnApunte");
+  const hayCoincidencias = cantidad > 0;
+  if (salida) {
+    salida.textContent = mensaje || (hayCoincidencias
+      ? `${indiceCoincidenciaBusqueda >= 0 ? indiceCoincidenciaBusqueda + 1 : 0} de ${cantidad} coincidencias`
+      : "Sin coincidencias");
+  }
+  ["coincidenciaAnterior", "coincidenciaSiguiente", "reemplazarCoincidencia", "reemplazarTodasCoincidencias"].forEach((id) => {
+    const boton = document.getElementById(id);
+    if (boton) boton.disabled = !hayCoincidencias;
+  });
+}
+
+function actualizarResultadosBusqueda({ reiniciar = false } = {}) {
+  const { consulta, firma } = opcionesBusquedaActual();
+  if (reiniciar || firma !== firmaBusquedaActual) indiceCoincidenciaBusqueda = -1;
+  firmaBusquedaActual = firma;
+  if (!consulta) {
+    mostrarResultadoBusqueda(0, "Escribe algo para buscar.");
+    return [];
+  }
+  const coincidencias = coincidenciasBusquedaActuales();
+  if (indiceCoincidenciaBusqueda >= coincidencias.length) indiceCoincidenciaBusqueda = -1;
+  mostrarResultadoBusqueda(coincidencias.length);
+  return coincidencias;
+}
+
+function seleccionarCoincidenciaBusqueda(direccion = 1) {
+  const { firma } = opcionesBusquedaActual();
+  if (firma !== firmaBusquedaActual) indiceCoincidenciaBusqueda = -1;
+  firmaBusquedaActual = firma;
+  const coincidencias = coincidenciasBusquedaActuales();
+  if (!coincidencias.length) {
+    mostrarResultadoBusqueda(0);
+    return false;
+  }
+
+  if (indiceCoincidenciaBusqueda < 0) indiceCoincidenciaBusqueda = direccion < 0 ? coincidencias.length - 1 : 0;
+  else indiceCoincidenciaBusqueda = (indiceCoincidenciaBusqueda + direccion + coincidencias.length) % coincidencias.length;
+  const coincidencia = coincidencias[indiceCoincidenciaBusqueda];
+  const rango = document.createRange();
+  rango.setStart(coincidencia.nodo, coincidencia.inicio);
+  rango.setEnd(coincidencia.nodo, coincidencia.fin);
+  const seleccion = window.getSelection();
+  seleccion?.removeAllRanges();
+  seleccion?.addRange(rango);
+  guardarSeleccionEditor();
+  coincidencia.nodo.parentElement?.scrollIntoView({ block: "center", inline: "nearest" });
+  mostrarResultadoBusqueda(coincidencias.length);
+  return true;
+}
+
+function gestionarTeclasBusqueda(evento) {
+  if (evento.key !== "Enter") return;
+  evento.preventDefault();
+  seleccionarCoincidenciaBusqueda(evento.shiftKey ? -1 : 1);
+}
+
+function reemplazarCoincidenciaActual() {
+  const coincidencias = coincidenciasBusquedaActuales();
+  if (!coincidencias.length) return mostrarResultadoBusqueda(0);
+  if (indiceCoincidenciaBusqueda < 0 || indiceCoincidenciaBusqueda >= coincidencias.length) indiceCoincidenciaBusqueda = 0;
+  const coincidencia = coincidencias[indiceCoincidenciaBusqueda];
+  const reemplazo = document.getElementById("reemplazarEnApunte")?.value || "";
+  coincidencia.nodo.data = `${coincidencia.nodo.data.slice(0, coincidencia.inicio)}${reemplazo}${coincidencia.nodo.data.slice(coincidencia.fin)}`;
+  indiceCoincidenciaBusqueda = -1;
+  marcarCambios();
+  renderizarMarcadoresApunte();
+  const restantes = actualizarResultadosBusqueda();
+  ponerEstado(`1 reemplazo realizado. ${restantes.length} coincidencias restantes.`);
+}
+
+function reemplazarTodasCoincidencias() {
+  const { consulta, distinguirMayusculas } = opcionesBusquedaActual();
+  if (!consulta) return mostrarResultadoBusqueda(0, "Escribe algo para buscar.");
+  const reemplazo = document.getElementById("reemplazarEnApunte")?.value || "";
+  let cantidad = 0;
+  nodosTextoBuscables().forEach((nodo) => {
+    const resultado = reemplazarCoincidenciasLiterales(nodo.data, consulta, reemplazo, distinguirMayusculas);
+    if (!resultado.cantidad) return;
+    nodo.data = resultado.texto;
+    cantidad += resultado.cantidad;
+  });
+  indiceCoincidenciaBusqueda = -1;
+  if (cantidad) {
+    marcarCambios();
+    renderizarMarcadoresApunte();
+  }
+  actualizarResultadosBusqueda();
+  ponerEstado(cantidad ? `${cantidad} reemplazos realizados.` : "No se encontraron coincidencias.");
 }
 
 function alternarMenuInsertar() {
@@ -1878,6 +2058,7 @@ function abrirDisposicionHoja() {
   cerrarPropiedadesObjeto();
   cerrarMarcadoresApunte();
   cerrarMenuExportacion();
+  cerrarBuscarReemplazar();
   panel.hidden = false;
   boton.setAttribute("aria-expanded", "true");
   programarActualizacionVistaHoja({ forzar: true });
@@ -1919,6 +2100,7 @@ function alternarCintaFormato() {
     cerrarPaletasColor();
     cerrarMenuContextualTexto();
     cerrarMenusFormatoCompacto();
+    cerrarBuscarReemplazar();
   }
   programarActualizacionVistaHoja({ forzar: true });
 }
@@ -2147,6 +2329,7 @@ function alternarPaletaFondoApunte() {
   cerrarPaletasColor();
   cerrarMenuContextualTexto();
   cerrarDisposicionHoja();
+  cerrarBuscarReemplazar();
   if (estabaAbierta) return;
   panel.hidden = false;
   boton.setAttribute("aria-expanded", "true");
@@ -2172,6 +2355,7 @@ function alternarPaletaColor(tipo) {
   cerrarPaletasColor();
   cerrarPaletaFondoApunte();
   cerrarDisposicionHoja();
+  cerrarBuscarReemplazar();
   if (estabaAbierta) return;
 
   panel.hidden = false;
@@ -2209,13 +2393,14 @@ function cerrarPaletasColor({ devolverFoco = false } = {}) {
 
 function cerrarPaletasAlHacerClickFuera(evento) {
   const destino = evento.target;
-  if (destino instanceof Element && destino.closest(".selector-color, .paleta-color, .menu-contextual-texto, .menu-insertar, .menu-marcadores-apunte, .panel-objeto, .panel-marcadores-apunte, .panel-disposicion-hoja, .menu-archivo, #abrirInsertarApunte, #abrirMarcadoresApunte, #abrirPropiedadesObjeto, #abrirDisposicionHoja, #abrirArchivoApunte")) return;
+  if (destino instanceof Element && destino.closest(".selector-color, .paleta-color, .menu-contextual-texto, .menu-insertar, .menu-marcadores-apunte, .panel-objeto, .panel-marcadores-apunte, .panel-disposicion-hoja, .panel-buscar-reemplazar, .menu-archivo, #abrirInsertarApunte, #abrirMarcadoresApunte, #abrirPropiedadesObjeto, #abrirDisposicionHoja, #abrirBuscarReemplazar, #abrirArchivoApunte")) return;
   cerrarPaletasColor();
   cerrarMenuContextualTexto();
   cerrarMenuInsertar();
   cerrarMenuMarcadoresApunte();
   cerrarPropiedadesObjeto();
   cerrarDisposicionHoja();
+  cerrarBuscarReemplazar();
   cerrarMenuExportacion();
 }
 
@@ -2227,6 +2412,7 @@ function cerrarPaletasConEscape(evento) {
     || !document.getElementById("menuMarcadoresApunte")?.hidden
     || !document.getElementById("panelMarcadoresApunte")?.hidden
     || !document.getElementById("panelDisposicionHoja")?.hidden
+    || !document.getElementById("panelBuscarReemplazar")?.hidden
     || !document.getElementById("menuInsertarApunte")?.hidden
     || !document.getElementById("menuArchivoApunte")?.hidden;
   if (evento.key !== "Escape" || !hayPanelAbierto) return;
@@ -2238,6 +2424,7 @@ function cerrarPaletasConEscape(evento) {
   cerrarPropiedadesObjeto({ devolverFoco: true });
   cerrarMarcadoresApunte({ devolverFoco: true });
   cerrarDisposicionHoja({ devolverFoco: true });
+  cerrarBuscarReemplazar({ devolverFoco: true });
   cerrarMenuExportacion({ devolverFoco: true });
 }
 
@@ -2361,6 +2548,30 @@ function obtenerTamanoFuenteSeleccion() {
   return Number.isFinite(tamano) && tamano >= 6 && tamano <= 96
     ? tamano
     : disposicionHojaActual.tamanioFuente;
+}
+
+function aplicarFamiliaFuenteSeleccion(valor) {
+  const familia = familiaFuenteSegura(valor);
+  if (!familia) {
+    ponerEstado("Selecciona un tipo de fuente válido.", true);
+    return false;
+  }
+  const aplicado = ejecutarFormato("fontName", familia);
+  if (!aplicado) return false;
+  sincronizarSelectoresFamiliaFuente(familia);
+  ponerEstado(`Fuente: ${familia}`);
+  return true;
+}
+
+function sincronizarSelectoresFamiliaFuente(valor) {
+  const familia = familiaFuenteSegura(valor);
+  if (!familia) return;
+  ["familiaFuenteApunte", "familiaFuenteContextual"].forEach((id) => {
+    const selector = document.getElementById(id);
+    if (!selector || ![...selector.options].some((opcion) => opcion.value === familia)) return;
+    selector.value = familia;
+    selector.style.fontFamily = familia;
+  });
 }
 
 function aplicarTamanoFuenteSeleccion(valor) {
@@ -2574,6 +2785,7 @@ function actualizarEstadoFormato() {
   if (!negrita) return;
   try {
     negrita.setAttribute("aria-pressed", String(document.queryCommandState("bold")));
+    sincronizarSelectoresFamiliaFuente(document.queryCommandValue("fontName"));
   } catch (_) {
     negrita.setAttribute("aria-pressed", "false");
   }
@@ -2585,6 +2797,11 @@ function gestionarAtajosEditor(evento) {
   if (tecla === "tab" && obtenerListaSeleccionada()) {
     evento.preventDefault();
     cambiarNivelLista(evento.shiftKey ? -1 : 1);
+    return;
+  }
+  if (tieneModificador && !evento.altKey && !evento.shiftKey && ["f", "h"].includes(tecla)) {
+    evento.preventDefault();
+    abrirBuscarReemplazar({ enfocarReemplazo: tecla === "h" });
     return;
   }
   if (tieneModificador && !evento.altKey && !evento.shiftKey && ["b", "i", "u"].includes(tecla)) {
@@ -2625,6 +2842,7 @@ function inicializarAyudasAtajos() {
     ["listaPuntos", "Lista con puntos", "Ctrl/⌘ + Mayús + 8", "Control+Shift+8 Meta+Shift+8"],
     ["aumentarSublista", "Aumentar nivel de lista", "Tab", "Tab"],
     ["reducirSublista", "Reducir nivel de lista", "Mayús + Tab", "Shift+Tab"],
+    ["abrirBuscarReemplazar", "Buscar y reemplazar", "Ctrl/⌘ + F o H", "Control+F Meta+F Control+H Meta+H"],
     ["abrirMarcadoresApunte", "Marcadores", "Ctrl/⌘ + Alt + M", "Control+Alt+M Meta+Alt+M"]
   ];
 

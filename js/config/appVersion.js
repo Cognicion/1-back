@@ -129,5 +129,6 @@
 // deployment marker: 2026-08-25-apuntes-sublistas-jerarquicas-v20 (+0.001)
 // deployment marker: 2026-08-25-apuntes-seleccion-lista-color-dividido-v21 (+0.001)
 // deployment marker: 2026-08-25-apuntes-menu-tamano-persistente-v22 (+0.001)
-export const APP_VERSION = "2.140";
+// deployment marker: 2026-08-25-apuntes-buscar-reemplazar-fuentes-v23 (+0.001)
+export const APP_VERSION = "2.141";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

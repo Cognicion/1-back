@@ -1,5 +1,16 @@
 const ETIQUETAS_PERMITIDAS = new Set(["B", "STRONG", "BR", "DIV", "P", "SPAN", "FONT", "UL", "OL", "LI"]);
 const ETIQUETAS_DESCARTADAS = new Set(["SCRIPT", "STYLE", "IFRAME", "OBJECT", "EMBED", "SVG", "MATH"]);
+const FAMILIAS_FUENTE_PERMITIDAS = new Map([
+  ["aptos", "Aptos"],
+  ["arial", "Arial"],
+  ["calibri", "Calibri"],
+  ["courier new", "Courier New"],
+  ["georgia", "Georgia"],
+  ["tahoma", "Tahoma"],
+  ["times new roman", "Times New Roman"],
+  ["trebuchet ms", "Trebuchet MS"],
+  ["verdana", "Verdana"]
+]);
 
 export function sanitizarHTMLRico(html, documento = document) {
   const plantilla = documento.createElement("template");
@@ -29,9 +40,11 @@ function limpiarNodoRico(nodo, documento) {
   const fondo = colorCSSSeguro(nodo.style?.backgroundColor || nodo.getAttribute("bgcolor"));
   const interlineado = interlineadoSeguro(nodo.style?.lineHeight);
   const tamanoFuentePt = tamanoFuentePtSeguro(nodo.dataset?.tamanoFuentePt);
+  const familiaFuente = familiaFuenteSegura(nodo.getAttribute("face") || nodo.style?.fontFamily);
   if (color) limpio.style.color = color;
   if (fondo) limpio.style.backgroundColor = fondo;
   if (interlineado) limpio.style.lineHeight = interlineado;
+  if (familiaFuente) limpio.style.fontFamily = familiaFuente;
   if (tamanoFuentePt) {
     limpio.classList.add("tamano-fuente-apunte");
     limpio.dataset.tamanoFuentePt = tamanoFuentePt;
@@ -61,6 +74,12 @@ export function tamanoFuentePtSeguro(valor) {
   const candidato = Number(valor);
   if (!Number.isFinite(candidato) || candidato < 6 || candidato > 96) return "";
   return String(Math.round(candidato * 10) / 10);
+}
+
+export function familiaFuenteSegura(valor) {
+  const primeraFamilia = String(valor || "").split(",")[0].trim().replace(/^["']|["']$/g, "");
+  if (!primeraFamilia || primeraFamilia.length > 40) return "";
+  return FAMILIAS_FUENTE_PERMITIDAS.get(primeraFamilia.toLocaleLowerCase("es-MX")) || "";
 }
 
 export function colorCSSSeguro(valor) {
