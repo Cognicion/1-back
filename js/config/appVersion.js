@@ -119,5 +119,7 @@
 // deployment marker: 2026-08-25-apuntes-margenes-preajustes-v10 (+0.001)
 // deployment marker: 2026-08-25-apuntes-marcadores-v11 (+0.001)
 // deployment marker: 2026-08-25-apuntes-superior-retraible-v12 (+0.001)
-export const APP_VERSION = "2.130";
+// deployment marker: 2026-08-25-apuntes-superior-visible-v13 (+0.001)
+// deployment marker: 2026-08-25-apuntes-atajos-v14 (+0.001)
+export const APP_VERSION = "2.132";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

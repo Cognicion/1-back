@@ -80,10 +80,6 @@ body.bloqueado main {
 }
 
 .boton-alternar-superior {
-  position: fixed;
-  z-index: 70;
-  top: 8px;
-  right: 10px;
   width: 24px;
   min-width: 24px;
   height: 24px;
@@ -98,6 +94,36 @@ body.bloqueado main {
   line-height: 1;
 }
 
+.boton-restaurar-superior {
+  position: fixed;
+  z-index: 100;
+  top: 5px;
+  right: 8px;
+  display: none;
+  width: 26px;
+  min-width: 26px;
+  height: 26px;
+  min-height: 26px;
+  padding: 0;
+  border: 1px solid var(--apuntes-borde);
+  border-radius: 6px;
+  color: var(--apuntes-texto);
+  background: var(--apuntes-superficie);
+  box-shadow: none;
+}
+
+.apuntes-shell .boton-alternar-superior {
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+  border-color: var(--apuntes-borde);
+  color: var(--apuntes-texto-suave);
+  background: transparent;
+  box-shadow: none;
+}
+
 body.pagina-apuntes.apuntes-superior-retraido > .topbar-apuntes { display: none; }
 body.pagina-apuntes.apuntes-superior-retraido .apuntes-editor {
   grid-template-rows: minmax(0, 1fr) 24px;
@@ -106,7 +132,7 @@ body.pagina-apuntes.apuntes-superior-retraido .apuntes-editor {
 }
 body.pagina-apuntes.apuntes-superior-retraido .menu-principal-apunte,
 body.pagina-apuntes.apuntes-superior-retraido .cinta-formato-contenedor { display: none; }
-body.pagina-apuntes.apuntes-superior-retraido .boton-alternar-superior { top: 5px; right: 8px; }
+body.pagina-apuntes.apuntes-superior-retraido .boton-restaurar-superior { display: block; }
 
 .topbar-apuntes .global-header-branding {
   grid-column: 1;

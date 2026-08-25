@@ -161,6 +161,7 @@ function inicializarInterfaz() {
   inicializarDisposicionHojaUI();
   inicializarObjetosApunteUI();
   inicializarMarcadoresApunte();
+  inicializarAyudasAtajos();
 
   buscador?.addEventListener("input", renderizarLista);
   document.getElementById("nuevoApunte")?.addEventListener("click", () => {
@@ -262,6 +263,7 @@ function inicializarInterfaz() {
   document.getElementById("descargarApuntePdf")?.addEventListener("click", () => exportarApunte("pdf"));
   document.getElementById("alternarBarraFormato")?.addEventListener("click", alternarCintaFormato);
   document.getElementById("alternarEspacioSuperior")?.addEventListener("click", alternarEspacioSuperior);
+  document.getElementById("restaurarEspacioSuperior")?.addEventListener("click", alternarEspacioSuperior);
   document.getElementById("abrirDisposicionHoja")?.addEventListener("click", alternarDisposicionHoja);
   document.getElementById("cerrarDisposicionHoja")?.addEventListener("click", () => cerrarDisposicionHoja({ devolverFoco: true }));
   document.getElementById("formatoHoja")?.addEventListener("change", aplicarDisposicionDesdeControles);
@@ -2164,20 +2166,59 @@ function actualizarEstadoFormato() {
 
 function gestionarAtajosEditor(evento) {
   const tecla = evento.key.toLocaleLowerCase("es");
+  const tieneModificador = evento.ctrlKey || evento.metaKey;
   if (tecla === "tab" && obtenerListaSeleccionada()) {
     evento.preventDefault();
     ejecutarFormato(evento.shiftKey ? "outdent" : "indent");
     return;
   }
-  if ((evento.ctrlKey || evento.metaKey) && tecla === "b") {
+  if (tieneModificador && !evento.altKey && !evento.shiftKey && ["b", "i", "u"].includes(tecla)) {
     evento.preventDefault();
     guardarSeleccionEditor();
-    ejecutarFormato("bold");
+    ejecutarFormato({ b: "bold", i: "italic", u: "underline" }[tecla]);
+    return;
   }
-  if ((evento.ctrlKey || evento.metaKey) && tecla === "s") {
+  if (tieneModificador && evento.shiftKey && !evento.altKey && evento.code === "Digit7") {
+    evento.preventDefault();
+    ejecutarLista("numeros");
+    return;
+  }
+  if (tieneModificador && evento.shiftKey && !evento.altKey && evento.code === "Digit8") {
+    evento.preventDefault();
+    ejecutarLista("puntos");
+    return;
+  }
+  if (tieneModificador && evento.altKey && tecla === "m") {
+    evento.preventDefault();
+    alternarMarcadoresApunte();
+    return;
+  }
+  if (tieneModificador && !evento.altKey && tecla === "s") {
     evento.preventDefault();
     void guardarApunte();
   }
+}
+
+function inicializarAyudasAtajos() {
+  const atajos = [
+    ["formatoNegrita", "Negrita", "Ctrl/⌘ + B", "Control+B Meta+B"],
+    ["formatoCursiva", "Cursiva", "Ctrl/⌘ + I", "Control+I Meta+I"],
+    ["formatoSubrayado", "Subrayado", "Ctrl/⌘ + U", "Control+U Meta+U"],
+    ["guardarRapidoApunte", "Guardar rápidamente", "Ctrl/⌘ + S", "Control+S Meta+S"],
+    ["guardarApunteArchivo", "Guardar", "Ctrl/⌘ + S", "Control+S Meta+S"],
+    ["listaNumeros", "Lista numerada", "Ctrl/⌘ + Mayús + 7", "Control+Shift+7 Meta+Shift+7"],
+    ["listaPuntos", "Lista con puntos", "Ctrl/⌘ + Mayús + 8", "Control+Shift+8 Meta+Shift+8"],
+    ["aumentarSublista", "Aumentar nivel de lista", "Tab", "Tab"],
+    ["reducirSublista", "Reducir nivel de lista", "Mayús + Tab", "Shift+Tab"],
+    ["abrirMarcadoresApunte", "Marcadores", "Ctrl/⌘ + Alt + M", "Control+Alt+M Meta+Alt+M"]
+  ];
+
+  atajos.forEach(([id, etiqueta, atajo, accesible]) => {
+    const boton = document.getElementById(id);
+    if (!boton) return;
+    boton.title = `${etiqueta} · ${atajo}`;
+    boton.setAttribute("aria-keyshortcuts", accesible);
+  });
 }
 
 function pegarComoTextoSeguro(evento) {

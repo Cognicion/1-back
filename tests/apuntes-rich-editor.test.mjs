@@ -171,8 +171,10 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=2\.115-navbar-unica-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260825-apuntes-superior-retraible-v12/);
-  assert.match(html, /apuntes\.js\?v=20260825-apuntes-superior-retraible-v12/);
+  assert.match(html, /apuntes\.css\?v=20260825-apuntes-atajos-v14/);
+  assert.match(html, /apuntes\.js\?v=20260825-apuntes-atajos-v14/);
+  assert.match(html, /id="formatoCursiva"[^>]*data-editor-command="italic"/);
+  assert.match(html, /id="formatoSubrayado"[^>]*data-editor-command="underline"/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
   assert.match(html, /id="abrirMarcadoresApunte"[^>]*aria-controls="panelMarcadoresApunte"/);
   assert.match(html, /id="panelMarcadoresApunte"[^>]*aria-label="Marcadores del apunte"/);
@@ -223,6 +225,7 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.doesNotMatch(html, /id="alternarTituloApunte"/);
   assert.match(html, /id="alternarBarraFormato"[^>]*aria-controls="barraFormatoApunte"/);
   assert.match(html, /id="alternarEspacioSuperior"[^>]*aria-label="Contraer encabezado"/);
+  assert.match(html, /id="restaurarEspacioSuperior"[^>]*aria-label="Mostrar encabezado"/);
   assert.match(html, /id="lienzoApunte"/);
   assert.match(html, /id="hojaApunte" class="hoja-apunte"/);
   assert.doesNotMatch(html, /id="etiquetaVistaHoja"/);
@@ -486,6 +489,8 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-25-apuntes-margenes-preajustes-v10/);
   assert.match(version, /2026-08-25-apuntes-marcadores-v11/);
   assert.match(version, /2026-08-25-apuntes-superior-retraible-v12/);
+  assert.match(version, /2026-08-25-apuntes-superior-visible-v13/);
+  assert.match(version, /2026-08-25-apuntes-atajos-v14/);
   assert.match(version, /2026-08-22-apuntes-subcarpetas-hotfix-v1/);
   assert.match(version, /2026-08-22-apuntes-insertar-controles-v1/);
   assert.match(version, /2026-08-22-apuntes-contexto-fondo-retraible-v1/);

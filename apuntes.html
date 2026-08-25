@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260825-apuntes-superior-retraible-v12">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260825-apuntes-atajos-v14">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -33,7 +33,7 @@
       <div data-accesos-rapidos data-global-header-access></div>
     </nav>
   </header>
-  <button id="alternarEspacioSuperior" type="button" class="boton-alternar-superior" aria-expanded="true" aria-label="Contraer encabezado" title="Contraer encabezado">⌃</button>
+  <button id="restaurarEspacioSuperior" type="button" class="boton-restaurar-superior" aria-label="Mostrar encabezado" title="Mostrar encabezado">⌄</button>
 
   <main class="apuntes-shell">
     <aside id="sidebarApuntes" class="apuntes-sidebar" aria-label="Organización de apuntes">
@@ -78,6 +78,7 @@
             <path class="boton-alternar-sidebar__flecha" d="m15 9-3 3 3 3"></path>
           </svg>
         </button>
+        <button id="alternarEspacioSuperior" type="button" class="boton-alternar-superior" aria-expanded="true" aria-label="Contraer encabezado" title="Contraer encabezado">⌃</button>
         <button id="abrirArchivoApunte" type="button" class="boton-archivo-apunte" aria-haspopup="dialog" aria-expanded="false" aria-controls="menuArchivoApunte">Archivo</button>
         <button id="guardarRapidoApunte" type="button" class="boton-guardar-rapido" aria-label="Guardar rápidamente" title="Guardar rápidamente">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h12l3 3v15H5z"></path><path d="M8 3v6h8V3M8 20v-6h8v6"></path></svg>
@@ -96,14 +97,14 @@
       <div class="cinta-formato-contenedor">
         <div id="barraFormatoApunte" class="barra-formato" role="toolbar" aria-label="Formato de texto">
         <div class="cinta-grupo" aria-label="Fuente">
-        <button type="button" class="boton-formato" data-editor-command="italic" aria-label="Cursiva" title="Cursiva"><em>I</em></button>
-        <button type="button" class="boton-formato" data-editor-command="underline" aria-label="Subrayado" title="Subrayado"><u>U</u></button>
+        <button id="formatoCursiva" type="button" class="boton-formato" data-editor-command="italic" aria-label="Cursiva" title="Cursiva"><em>I</em></button>
+        <button id="formatoSubrayado" type="button" class="boton-formato" data-editor-command="underline" aria-label="Subrayado" title="Subrayado"><u>U</u></button>
         <button type="button" class="boton-formato" data-editor-command="strikeThrough" aria-label="Tachado" title="Tachado"><s>S</s></button>
         <button type="button" class="boton-formato" data-editor-command="subscript" aria-label="Subíndice" title="Subíndice">x<sub>2</sub></button>
         <button type="button" class="boton-formato" data-editor-command="superscript" aria-label="Superíndice" title="Superíndice">x<sup>2</sup></button>
         </div>
         <span class="separador-formato" aria-hidden="true"></span>
-        <button id="formatoNegrita" type="button" class="boton-formato" data-command="bold" aria-label="Negrita" aria-pressed="false" title="Negrita (Ctrl+B)">
+        <button id="formatoNegrita" type="button" class="boton-formato" data-command="bold" aria-label="Negrita" aria-pressed="false" title="Negrita">
           <strong aria-hidden="true">B</strong>
         </button>
         <span class="separador-formato" aria-hidden="true"></span>
@@ -433,7 +434,7 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260825-apuntes-superior-retraible-v12"></script>
+  <script type="module" src="js/apuntes.js?v=20260825-apuntes-atajos-v14"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>
