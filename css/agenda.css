@@ -152,6 +152,13 @@ button:hover {
   box-shadow: 0 0 28px rgba(82,152,102,0.28);
 }
 
+.oculto { display: none !important; }
+.subcampos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.checkline { display: flex; align-items: center; gap: 8px; padding-top: 24px; }
+.checkline input { width: auto; }
+.boton-secundario { background: rgba(255,255,255,0.10); }
+.ayuda-vinculacion { grid-column: 1 / -1; margin: -4px 0 0; color: var(--celtic-300); font-size: 12px; }
+
 .lista-citas {
   display: grid;
   gap: 12px;
@@ -189,6 +196,16 @@ button:hover {
   background: rgba(8,12,20,0.68);
 }
 
+button.dia {
+  width: 100%;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  background: rgba(8,12,20,0.68);
+}
+
+button.dia:hover { border-color: var(--celtic-300); }
+
 .dia-nombre {
   min-height: auto;
   color: var(--celtic-300);
@@ -215,6 +232,12 @@ button:hover {
   font-size: 12px;
 }
 
+.evento.tipo-block,
+.evento.tipo-vacation { background: rgba(178, 82, 82, 0.35); }
+.evento.tipo-appointment { background: rgba(82,152,102,0.20); }
+.evento.tipo-meeting,
+.evento.tipo-academic { background: rgba(76, 126, 180, 0.28); }
+
 @media (max-width: 900px) {
   .header,
   .agenda-hero,
@@ -227,4 +250,6 @@ button:hover {
   .calendario {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .subcampos { grid-template-columns: 1fr; }
 }

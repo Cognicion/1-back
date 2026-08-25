@@ -226,8 +226,15 @@ service cloud.firestore {
 
       // Mantiene el comportamiento heredado de las subcolecciones existentes,
       // pero excluye los documentos internos administrados por el backend de Mi nube.
+      // La agenda contiene datos privados del profesional. El wildcard heredado
+      // no debe convertirla en una colección legible por cualquier usuario autenticado.
+      match /agenda/{eventoId} {
+        allow read, write: if isSelf(uid) || isAdmin();
+      }
+
       match /{subcollection}/{subdocument=**} {
         allow read, write: if signedIn()
+                          && subcollection != "agenda"
                           && subcollection != "cloudFiles"
                           && subcollection != "cloudStorageUsage"
                           && subcollection != "cloudUploadReservations"

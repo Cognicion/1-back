@@ -29,9 +29,11 @@
   <section class="card agenda-hero">
     <div>
       <h2 id="tituloMes">Calendario</h2>
-      <p class="ayuda">Organiza consultas, pendientes clinicos y fechas de seguimiento.</p>
+      <p class="ayuda">Agenda consultas, eventos profesionales y periodos de disponibilidad.</p>
     </div>
     <div class="acciones">
+      <button id="nuevoEvento" type="button">+ Nuevo evento</button>
+      <button id="nuevaCita" type="button">Nueva cita</button>
       <button id="mesAnterior">Mes anterior</button>
       <button id="mesActual">Hoy</button>
       <button id="mesSiguiente">Mes siguiente</button>
@@ -40,25 +42,55 @@
 
   <section class="grid-dos">
     <div class="card">
-      <h2>Nueva cita</h2>
+      <h2 id="tituloFormulario">Nuevo evento</h2>
       <form id="formCita" class="formulario">
-        <label>Paciente (opcional)
+        <input id="eventoId" type="hidden">
+        <input id="googleCalendarEventId" type="hidden">
+        <input id="eventoEstado" type="hidden">
+        <label>Tipo
+          <select id="tipoEvento">
+            <option value="appointment">Cita médica</option>
+            <option value="event">Evento</option>
+            <option value="meeting">Reunión</option>
+            <option value="academic">Actividad académica</option>
+            <option value="shift">Guardia</option>
+            <option value="block">Bloquear horario</option>
+            <option value="vacation">Vacaciones</option>
+            <option value="other">Otro</option>
+          </select>
+        </label>
+        <label id="campoTitulo">Título
+          <input id="tituloEvento" placeholder="Ej. Desayuno con laboratorio">
+        </label>
+        <label id="campoPaciente">Paciente
           <select id="pacienteCita"></select>
         </label>
+        <p id="ayudaVinculacion" class="ayuda-vinculacion oculto">Esta cita conserva al paciente externo. Para vincularla, selecciona un paciente registrado y guarda; se actualizará este mismo evento.</p>
+        <label id="campoPacienteExterno" class="campo-amplio oculto">Paciente no registrado
+          <input id="pacienteNombreExterno" placeholder="Nombre del paciente">
+        </label>
+        <div id="datosPacienteExterno" class="campo-amplio subcampos oculto">
+          <label>Teléfono (opcional)<input id="pacienteTelefonoExterno" type="tel"></label>
+          <label>Correo (opcional)<input id="pacienteCorreoExterno" type="email"></label>
+        </div>
         <label>Fecha
           <input id="fechaCita" type="date" required>
         </label>
         <label>Hora
           <input id="horaCita" type="time" lang="en-GB" step="60" required>
         </label>
-        <label>Tipo
-          <select id="tipoCita">
-            <option>Consulta</option>
-            <option>Seguimiento</option>
-            <option>Primera vez</option>
-            <option>Rehabilitacion cognitiva</option>
-            <option>Entrega de resultados</option>
-          </select>
+        <label>Hora de finalización (opcional)
+          <input id="horaFinEvento" type="time" lang="en-GB" step="60">
+        </label>
+        <label>Duración (minutos)
+          <input id="duracionEvento" type="number" min="1" step="5" value="60">
+        </label>
+        <label class="checkline"><input id="todoElDia" type="checkbox"> Todo el día</label>
+        <label>Finaliza (opcional para varios días)
+          <input id="fechaFinEvento" type="date">
+        </label>
+        <label>Ubicación (opcional)
+          <input id="ubicacionEvento">
         </label>
         <label>Recordatorio
           <input id="recordatorioCita" placeholder="Ej. confirmar 24 h antes">
@@ -69,12 +101,23 @@
         <label class="campo-amplio">Notas
           <textarea id="notasCita" placeholder="Objetivo clinico o indicaciones breves"></textarea>
         </label>
-        <button type="submit">Guardar cita</button>
+        <label class="campo-amplio">Recurrencia (opcional)
+          <select id="recurrenciaEvento">
+            <option value="">No se repite</option>
+            <option value="weekly">Cada semana</option>
+            <option value="biweekly">Cada 2 semanas</option>
+            <option value="monthly">Cada mes</option>
+          </select>
+        </label>
+        <div class="acciones campo-amplio">
+          <button type="submit" id="guardarEvento">Guardar evento</button>
+          <button type="button" id="cancelarEdicion" class="boton-secundario oculto">Cancelar</button>
+        </div>
       </form>
     </div>
 
     <div class="card">
-      <h2>Proximas citas</h2>
+      <h2>Próximos eventos</h2>
       <div id="listaCitas" class="lista-citas">Cargando agenda...</div>
     </div>
   </section>
@@ -84,7 +127,7 @@
   </section>
 </main>
 
-<script type="module" src="js/agenda.js?v=20260719-admin-universal-modules"></script>
+<script type="module" src="js/agenda.js?v=20260824-agenda-profesional-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>
