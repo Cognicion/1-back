@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260825-apuntes-contexto-agrupado-v18">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260825-apuntes-seleccion-lista-color-dividido-v21">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -107,9 +107,12 @@
           <strong aria-hidden="true">B</strong>
         </button>
         <span class="separador-formato" aria-hidden="true"></span>
-        <div class="selector-color">
-          <button id="abrirColorTexto" type="button" class="control-color" aria-haspopup="dialog" aria-expanded="false" aria-controls="paletaColorTexto" title="Color de texto">
+        <div class="selector-color selector-color--dividido" role="group" aria-label="Color de texto">
+          <button id="aplicarUltimoColorTexto" type="button" class="control-color control-color--aplicar" title="Aplicar el último color de texto">
             <span class="control-color__muestra control-color__muestra--texto" aria-hidden="true">A</span>
+          </button>
+          <button id="abrirColorTexto" type="button" class="control-color control-color--desplegar" aria-haspopup="dialog" aria-expanded="false" aria-controls="paletaColorTexto" aria-label="Abrir colores de texto" title="Más colores de texto">
+            <span aria-hidden="true">⌄</span>
           </button>
         </div>
         <label class="control-tamano-fuente" title="Tamaño de fuente del documento">
@@ -464,7 +467,7 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260825-apuntes-auto-listas-v19"></script>
+  <script type="module" src="js/apuntes.js?v=20260825-apuntes-seleccion-lista-color-dividido-v21"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>

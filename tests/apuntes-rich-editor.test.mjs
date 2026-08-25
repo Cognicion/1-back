@@ -28,7 +28,7 @@ import {
   registrarColorReciente
 } from "../js/apuntes-color-history.js";
 import { tamanoFuentePtSeguro } from "../js/apuntes-rich-text.js";
-import { detectarAtajoLista } from "../js/apuntes-auto-list.js";
+import { detectarAtajoLista, tipoSublistaOrdenada } from "../js/apuntes-auto-list.js";
 
 const leer = (ruta) => readFileSync(new URL(ruta, import.meta.url), "utf8");
 const html = leer("../apuntes.html");
@@ -124,6 +124,14 @@ test("los atajos de inicio de párrafo detectan listas sin falsos positivos", ()
   assert.equal(detectarAtajoLista("texto."), null);
 });
 
+test("las sublistas ordenadas alternan números, letras y romanos", () => {
+  assert.equal(tipoSublistaOrdenada(), "a");
+  assert.equal(tipoSublistaOrdenada("1"), "a");
+  assert.equal(tipoSublistaOrdenada("a"), "i");
+  assert.equal(tipoSublistaOrdenada("A"), "I");
+  assert.equal(tipoSublistaOrdenada("i"), "1");
+});
+
 test("las subcarpetas preservan su árbol, orden y previenen ciclos", () => {
   const carpetas = [
     { id: "raiz", nombre: "Estudio" },
@@ -175,7 +183,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /id="colorTexto" type="color"/);
   assert.match(html, /id="colorFondoTexto" type="color"/);
   assert.match(html, /id="abrirColorTexto"[^>]*aria-controls="paletaColorTexto"/);
-  const botonColorTexto = html.match(/<button id="abrirColorTexto"[\s\S]*?<\/button>/)?.[0] || "";
+  assert.match(html, /selector-color selector-color--dividido/);
+  const botonColorTexto = html.match(/<button id="aplicarUltimoColorTexto"[\s\S]*?<\/button>/)?.[0] || "";
   assert.match(botonColorTexto, /control-color__muestra--texto[^>]*>A<\/span>/);
   assert.doesNotMatch(botonColorTexto, />Texto<\/span>/);
   assert.match(html, /id="abrirColorFondoTexto"[^>]*aria-controls="paletaColorFondoTexto"/);
@@ -192,8 +201,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=2\.115-navbar-unica-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260825-apuntes-contexto-agrupado-v18/);
-  assert.match(html, /apuntes\.js\?v=20260825-apuntes-auto-listas-v19/);
+  assert.match(html, /apuntes\.css\?v=20260825-apuntes-seleccion-lista-color-dividido-v21/);
+  assert.match(html, /apuntes\.js\?v=20260825-apuntes-seleccion-lista-color-dividido-v21/);
   assert.match(html, /id="formatoCursiva"[^>]*data-editor-command="italic"/);
   assert.match(html, /id="formatoSubrayado"[^>]*data-editor-command="underline"/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
@@ -290,7 +299,16 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(controlador, /import \{[\s\S]*registrarColorReciente[\s\S]*\} from "\.\/apuntes-color-history\.js"/);
   assert.match(controlador, /const COLORES_PREDEFINIDOS/);
   assert.match(controlador, /function aplicarColor\(tipo, color\)/);
+  assert.match(controlador, /addEventListener\("dblclick", seleccionarElementoListaConDobleClick\)/);
+  assert.match(controlador, /function seleccionarElementoListaConDobleClick\(evento\)/);
+  assert.match(controlador, /rango\.selectNodeContents\(elementoLista\)/);
+  assert.match(controlador, /rango\.setEndBefore\(listaAnidada\)/);
+  assert.match(controlador, /aplicarColor\("texto", document\.getElementById\("colorTexto"\)\?\.value \|\| ""\)/);
+  assert.match(controlador, /cognicion:apuntes:ultimo-color-texto:\$\{uidMedico\}/);
   assert.match(controlador, /function ejecutarLista\(tipo\)/);
+  assert.match(controlador, /function cambiarNivelLista\(direccion\)/);
+  assert.match(controlador, /function normalizarEstilosSublistas/);
+  assert.match(controlador, /cambiarNivelLista\(evento\.shiftKey \? -1 : 1\)/);
   assert.match(controlador, /document\.body\.appendChild\(menu\)/);
   assert.match(controlador, /\.grupo-formato-desplegable, \[data-menu-formato\]/);
   assert.doesNotMatch(controlador, /new ResizeObserver/);
@@ -311,7 +329,7 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.doesNotMatch(controlador, /alternarTituloApunte/);
   assert.match(controlador, /insertUnorderedList/);
   assert.match(controlador, /insertOrderedList/);
-  assert.match(controlador, /ejecutarFormato\(evento\.shiftKey \? "outdent" : "indent"\)/);
+  assert.match(controlador, /cambiarNivelLista\(evento\.shiftKey \? -1 : 1\)/);
   assert.match(controlador, /carpetaPadreId: carpetaPadreId \|\| null/);
   assert.match(controlador, /data-accion="nueva-subcarpeta"/);
   assert.match(controlador, /if \(accion === "nueva-subcarpeta"\) \{\s*abrirDialogoCarpeta\("", carpetaId\);\s*return;\s*\}\s*\n\s*if \(accion === "renombrar-carpeta"\)/);
@@ -353,6 +371,8 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(css, /\.editor-contenido:empty::before/);
   assert.match(css, /\.paleta-color\s*\{[\s\S]*position:\s*absolute/);
   assert.match(css, /\.paleta-color__cuadricula\s*\{[\s\S]*repeat\(5, minmax\(0, 1fr\)\)/);
+  assert.match(css, /\.selector-color--dividido\s*\{[\s\S]*display:\s*inline-flex/);
+  assert.match(css, /\.control-color--desplegar\s*\{[\s\S]*border-left:/);
   assert.match(css, /\.apuntes-shell \.opcion-color\s*\{[\s\S]*background:\s*var\(--color-muestra\)/);
   assert.match(reportes, /contraerPorDefectoEnApuntes/);
   assert.match(reportes, /classList\.contains\("pagina-apuntes"\)/);
@@ -415,6 +435,9 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(css, /\.editor-contenido::selection[\s\S]*background:\s*#2563eb/);
   assert.match(css, /\.menu-contextual-texto\s*\{[\s\S]*grid-template-columns:\s*1fr/);
   assert.match(css, /\.menu-contextual-texto__submenu\s*\{/);
+  assert.match(css, /ol ol\[type="a"\] > li::marker[\s\S]*counter\(list-item, lower-alpha\) "\) "/);
+  assert.match(css, /\.editor-contenido ul ul[\s\S]*list-style-type:\s*circle/);
+  assert.match(css, /\.editor-contenido ul ul ul[\s\S]*list-style-type:\s*square/);
   assert.match(css, /\.boton-alternar-cinta\s*\{/);
   assert.match(html, /id="zoomHojaBarraPie" type="range" min="25" max="800"/);
   assert.match(controlador, /function alternarCintaFormato/);
@@ -458,14 +481,15 @@ test("la persistencia rica mantiene texto plano y sanea el HTML", () => {
   assert.match(controlador, /objetosLienzoActualizado:\s*fechaActualizacion/);
   assert.match(controlador, /objetosLienzoActualizado === apunte\.fechaActualizacion/);
   assert.match(controlador, /import \{ inicializarObjetosApunte, textoObjetosApunte \} from "\.\/apuntes-objetos\.js\?v=/);
-  assert.match(controlador, /import \{ descargarApuntePdf, descargarApunteWord \} from "\.\/apuntes-export\.js"/);
-  assert.match(controlador, /import \{ sanitizarHTMLRico \} from "\.\/apuntes-rich-text\.js\?v=20260825-apuntes-contexto-agrupado-v18"/);
+  assert.match(controlador, /import \{ descargarApuntePdf, descargarApunteWord \} from "\.\/apuntes-export\.js\?v=20260825-apuntes-sublistas-jerarquicas-v20"/);
+  assert.match(controlador, /import \{ sanitizarHTMLRico \} from "\.\/apuntes-rich-text\.js\?v=20260825-apuntes-sublistas-jerarquicas-v20"/);
   assert.match(textoRico, /new Set\(\["B", "STRONG", "BR", "DIV", "P", "SPAN", "FONT", "UL", "OL", "LI"\]\)/);
   assert.match(textoRico, /etiqueta === "OL"/);
   assert.match(textoRico, /marcador-apunte/);
   assert.match(textoRico, /dataset\.marcadorId/);
   assert.match(textoRico, /tamanoFuentePtSeguro/);
   assert.match(textoRico, /dataset\.tamanoFuentePt/);
+  assert.match(textoRico, /\["1", "a", "A", "i", "I"\]/);
   assert.doesNotMatch(textoRico, /limpio\.setAttribute\("(?:tabindex|role)"/);
   assert.match(textoRico, /new Set\(\["SCRIPT", "STYLE", "IFRAME", "OBJECT", "EMBED", "SVG", "MATH"\]\)/);
   assert.match(controlador, /addEventListener\("paste", pegarComoTextoSeguro\)/);
@@ -557,6 +581,8 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-25-apuntes-cabecera-una-fila-v17/);
   assert.match(version, /2026-08-25-apuntes-contexto-agrupado-v18/);
   assert.match(version, /2026-08-25-apuntes-auto-listas-v19/);
+  assert.match(version, /2026-08-25-apuntes-sublistas-jerarquicas-v20/);
+  assert.match(version, /2026-08-25-apuntes-seleccion-lista-color-dividido-v21/);
   assert.match(version, /2026-08-22-apuntes-subcarpetas-hotfix-v1/);
   assert.match(version, /2026-08-22-apuntes-insertar-controles-v1/);
   assert.match(version, /2026-08-22-apuntes-contexto-fondo-retraible-v1/);

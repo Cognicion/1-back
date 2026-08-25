@@ -45,7 +45,7 @@ function limpiarNodoRico(nodo, documento) {
   }
   if (etiqueta === "OL") {
     const tipoLista = nodo.getAttribute("type");
-    if (["1", "a", "A"].includes(tipoLista)) limpio.setAttribute("type", tipoLista);
+    if (["1", "a", "A", "i", "I"].includes(tipoLista)) limpio.setAttribute("type", tipoLista);
   }
   nodo.childNodes.forEach((hijo) => limpio.appendChild(limpiarNodoRico(hijo, documento)));
   return limpio;

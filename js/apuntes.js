@@ -1,10 +1,10 @@
 import { auth, db } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
-import { sanitizarHTMLRico } from "./apuntes-rich-text.js?v=20260825-apuntes-contexto-agrupado-v18";
-import { detectarAtajoLista } from "./apuntes-auto-list.js?v=20260825-apuntes-auto-listas-v19";
+import { sanitizarHTMLRico } from "./apuntes-rich-text.js?v=20260825-apuntes-sublistas-jerarquicas-v20";
+import { detectarAtajoLista, tipoSublistaOrdenada } from "./apuntes-auto-list.js?v=20260825-apuntes-sublistas-jerarquicas-v20";
 import { inicializarSidebarApuntes } from "./apuntes-sidebar.js";
 import { inicializarObjetosApunte, textoObjetosApunte } from "./apuntes-objetos.js?v=20260825-apuntes-flecha-seleccion-v2";
-import { descargarApuntePdf, descargarApunteWord } from "./apuntes-export.js";
+import { descargarApuntePdf, descargarApunteWord } from "./apuntes-export.js?v=20260825-apuntes-sublistas-jerarquicas-v20";
 import {
   DISPOSICION_HOJA_PREDETERMINADA,
   PREAJUSTES_MARGENES_HOJA,
@@ -65,6 +65,7 @@ const COLORES_PREDEFINIDOS = Object.freeze({
 const CONFIGURACION_COLORES = Object.freeze({
   texto: Object.freeze({
     botonId: "abrirColorTexto",
+    accionBotonId: "aplicarUltimoColorTexto",
     panelId: "paletaColorTexto",
     controlId: "colorTexto",
     recientesId: "coloresRecientesTexto",
@@ -194,6 +195,7 @@ function inicializarInterfaz() {
   editor?.addEventListener("blur", normalizarEditorVacio);
   editor?.addEventListener("beforeinput", convertirAtajoListaAntesDeInsertar);
   editor?.addEventListener("keydown", gestionarAtajosEditor);
+  editor?.addEventListener("dblclick", seleccionarElementoListaConDobleClick);
   editor?.addEventListener("paste", pegarComoTextoSeguro);
   lista?.addEventListener("click", gestionarClickLista);
 
@@ -239,9 +241,9 @@ function inicializarInterfaz() {
   document.getElementById("listaLetras")?.addEventListener("pointerdown", conservarFocoEditor);
   document.getElementById("listaLetras")?.addEventListener("click", () => { ejecutarLista("letras"); cerrarMenusFormatoCompacto(); });
   document.getElementById("aumentarSublista")?.addEventListener("pointerdown", conservarFocoEditor);
-  document.getElementById("aumentarSublista")?.addEventListener("click", () => { ejecutarFormato("indent"); cerrarMenusFormatoCompacto(); });
+  document.getElementById("aumentarSublista")?.addEventListener("click", () => { cambiarNivelLista(1); cerrarMenusFormatoCompacto(); });
   document.getElementById("reducirSublista")?.addEventListener("pointerdown", conservarFocoEditor);
-  document.getElementById("reducirSublista")?.addEventListener("click", () => { ejecutarFormato("outdent"); cerrarMenusFormatoCompacto(); });
+  document.getElementById("reducirSublista")?.addEventListener("click", () => { cambiarNivelLista(-1); cerrarMenusFormatoCompacto(); });
   document.getElementById("abrirInsertarApunte")?.addEventListener("click", alternarMenuInsertar);
   document.getElementById("abrirMarcadoresApunte")?.addEventListener("pointerdown", conservarFocoEditor);
   document.getElementById("abrirMarcadoresApunte")?.addEventListener("click", alternarMarcadoresApunte);
@@ -598,6 +600,7 @@ function seleccionarApunte(id, { omitirConfirmacion = false, restaurarFoco = fal
     if (htmlEstaVigente) editor.innerHTML = sanitizarHTMLRico(apunte.contenidoHtml);
     else editor.textContent = apunte.contenido || "";
   }
+  normalizarEstilosSublistas();
   renderizarMarcadoresApunte();
   aplicarFondoApunte(apunte.fondoLienzo, { marcar: false });
   aplicarDisposicionHoja(apunte.disposicionHoja, { marcar: false });
@@ -1637,6 +1640,28 @@ function ejecutarFormato(comando, valor = null) {
   return aplicado;
 }
 
+function seleccionarElementoListaConDobleClick(evento) {
+  if (!(evento.target instanceof Element) || evento.button !== 0) return false;
+  const editor = obtenerEditor();
+  const elementoLista = evento.target.closest("li");
+  if (!editor || !elementoLista || !editor.contains(elementoLista)) return false;
+
+  const rango = document.createRange();
+  const listaAnidada = [...elementoLista.children].find((hijo) => hijo.matches("ol, ul"));
+  rango.setStart(elementoLista, 0);
+  if (listaAnidada) rango.setEndBefore(listaAnidada);
+  else rango.selectNodeContents(elementoLista);
+  if (rango.collapsed || !rango.toString().trim()) return false;
+
+  evento.preventDefault();
+  const seleccion = window.getSelection();
+  seleccion.removeAllRanges();
+  seleccion.addRange(rango);
+  guardarSeleccionEditor();
+  ponerEstado("Elemento de lista seleccionado");
+  return true;
+}
+
 function quitarResaltadoSeleccion() {
   return ejecutarFormato("hiliteColor", "transparent");
 }
@@ -1948,6 +1973,30 @@ function ejecutarLista(tipo) {
   return true;
 }
 
+function cambiarNivelLista(direccion) {
+  const aplicado = ejecutarFormato(direccion < 0 ? "outdent" : "indent");
+  if (!aplicado) return false;
+  normalizarEstilosSublistas();
+  guardarSeleccionEditor();
+  ponerEstado(direccion < 0 ? "Nivel de lista reducido" : "Sublista creada");
+  return true;
+}
+
+function normalizarEstilosSublistas() {
+  const editor = obtenerEditor();
+  if (!editor) return 0;
+  let cambios = 0;
+  editor.querySelectorAll("ol").forEach((lista) => {
+    const listaPadre = lista.parentElement?.closest("ol, ul");
+    if (listaPadre?.tagName !== "OL") return;
+    const tipoEsperado = tipoSublistaOrdenada(listaPadre.getAttribute("type") || "1");
+    if (lista.getAttribute("type") === tipoEsperado) return;
+    lista.setAttribute("type", tipoEsperado);
+    cambios += 1;
+  });
+  return cambios;
+}
+
 function convertirAtajoListaAntesDeInsertar(evento) {
   if (!evento.cancelable || evento.defaultPrevented || evento.isComposing || evento.inputType !== "insertText" || evento.data !== " ") return;
   const editor = obtenerEditor();
@@ -2015,7 +2064,7 @@ function inicializarSelectorColores() {
   const temaClaro = document.documentElement.dataset.theme === "light";
   const colorTexto = document.getElementById("colorTexto");
   const colorFondo = document.getElementById("colorFondoTexto");
-  if (colorTexto) colorTexto.value = temaClaro ? "#17211b" : "#f6e8d5";
+  if (colorTexto) colorTexto.value = recuperarUltimoColorTexto() || (temaClaro ? "#17211b" : "#f6e8d5");
   if (colorFondo) colorFondo.value = temaClaro ? "#fff0a6" : "#7a4d16";
 
   Object.entries(CONFIGURACION_COLORES).forEach(([tipo, configuracion]) => {
@@ -2052,6 +2101,12 @@ function inicializarSelectorColores() {
 
     control?.addEventListener("input", () => actualizarMuestraColor(tipo, control.value));
     control?.addEventListener("change", () => aplicarColor(tipo, control.value));
+  });
+
+  const aplicarUltimoColorTexto = document.getElementById("aplicarUltimoColorTexto");
+  aplicarUltimoColorTexto?.addEventListener("pointerdown", conservarFocoEditor);
+  aplicarUltimoColorTexto?.addEventListener("click", () => {
+    aplicarColor("texto", document.getElementById("colorTexto")?.value || "");
   });
 
   const botonFondoApunte = document.getElementById("abrirFondoApunte");
@@ -2253,8 +2308,8 @@ function ejecutarAccionMenuContextualTexto(evento) {
   if (accion === "bold") return ejecutarFormato("bold");
   if (accion === "quitar-resaltado") return quitarResaltadoSeleccion();
   if (accion === "limpiar") return limpiarFormatoSeleccion();
-  if (accion === "sublista") return ejecutarFormato("indent");
-  if (accion === "reducir-sublista") return ejecutarFormato("outdent");
+  if (accion === "sublista") return cambiarNivelLista(1);
+  if (accion === "reducir-sublista") return cambiarNivelLista(-1);
   return ejecutarLista(accion);
 }
 
@@ -2398,6 +2453,7 @@ function aplicarColor(tipo, color) {
   if (control) control.value = colorSeguro;
   actualizarMuestraColor(tipo, colorSeguro);
   const aplicado = ejecutarFormato(configuracion.comando, colorSeguro);
+  if (tipo === "texto") guardarUltimoColorTexto(colorSeguro);
 
   coloresRecientes = registrarColorReciente(coloresRecientes, colorSeguro);
   guardarColoresRecientes();
@@ -2419,10 +2475,36 @@ function actualizarMuestraColor(tipo, color) {
 
   const muestra = document.querySelector(configuracion.muestraSelector);
   const boton = document.getElementById(configuracion.botonId);
+  const botonAccion = document.getElementById(configuracion.accionBotonId || "");
   if (muestra) muestra.style[configuracion.propiedadMuestra] = colorSeguro;
   if (boton) {
     boton.style.setProperty("--color-activo", colorSeguro);
     boton.setAttribute("aria-label", `${configuracion.etiqueta}: ${colorSeguro}. Abrir paleta de colores`);
+  }
+  if (botonAccion) {
+    botonAccion.style.setProperty("--color-activo", colorSeguro);
+    botonAccion.setAttribute("aria-label", `Aplicar ${colorSeguro} como color de texto`);
+    botonAccion.title = `Aplicar último color de texto (${colorSeguro})`;
+  }
+}
+
+function claveUltimoColorTexto() {
+  return `cognicion:apuntes:ultimo-color-texto:${uidMedico}`;
+}
+
+function recuperarUltimoColorTexto() {
+  try {
+    return normalizarColorHex(localStorage.getItem(claveUltimoColorTexto()) || "");
+  } catch (_) {
+    return "";
+  }
+}
+
+function guardarUltimoColorTexto(color) {
+  try {
+    localStorage.setItem(claveUltimoColorTexto(), color);
+  } catch (_) {
+    // La acción rápida conserva el color durante la sesión aunque no haya almacenamiento local.
   }
 }
 
@@ -2502,7 +2584,7 @@ function gestionarAtajosEditor(evento) {
   const tieneModificador = evento.ctrlKey || evento.metaKey;
   if (tecla === "tab" && obtenerListaSeleccionada()) {
     evento.preventDefault();
-    ejecutarFormato(evento.shiftKey ? "outdent" : "indent");
+    cambiarNivelLista(evento.shiftKey ? -1 : 1);
     return;
   }
   if (tieneModificador && !evento.altKey && !evento.shiftKey && ["b", "i", "u"].includes(tecla)) {

@@ -35,6 +35,16 @@ test("exporta tamaño, márgenes y fuente de la disposición elegida", () => {
   assert.match(html, /font:16\.00pt\/1\.52 Arial/);
 });
 
+test("la exportación conserva la jerarquía visual de las sublistas", () => {
+  const html = construirHtmlApunteExportable({
+    contenidoHtml: '<ol><li>Uno</li><ol type="a"><li>Dos</li></ol></ol>'
+  });
+
+  assert.match(html, /<ol type="a"><li>Dos<\/li><\/ol>/);
+  assert.match(html, /ol ol\[type="a"\] > li::marker \{ content:counter\(list-item, lower-alpha\) "\) "; \}/);
+  assert.match(html, /ul ul \{ list-style-type:circle; \}/);
+});
+
 test("crea un DOCX válido con el documento y la alternativa HTML", async () => {
   const blob = crearDocxApunte({
     titulo: "Apunte de prueba",

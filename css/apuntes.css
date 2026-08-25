@@ -914,6 +914,19 @@ body.pagina-apuntes > main.apuntes-shell {
   flex: 0 0 auto;
 }
 
+.selector-color--dividido {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid transparent;
+  border-radius: 7px;
+}
+
+.selector-color--dividido:focus-within,
+.selector-color--dividido:hover {
+  border-color: var(--apuntes-borde);
+  background: rgba(255, 255, 255, 0.045);
+}
+
 .barra-formato[hidden] {
   display: none !important;
 }
@@ -1138,6 +1151,39 @@ body.pagina-apuntes > main.apuntes-shell {
   border-right: 1px solid currentColor;
   border-bottom: 1px solid currentColor;
   transform: translateY(-1px) rotate(45deg);
+}
+
+.apuntes-shell .selector-color--dividido .control-color {
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.apuntes-shell .selector-color--dividido .control-color--aplicar {
+  width: 28px;
+  padding: 0 5px;
+  border-radius: 6px 0 0 6px;
+}
+
+.apuntes-shell .selector-color--dividido .control-color--desplegar {
+  width: 18px;
+  padding: 0;
+  border-left: 1px solid var(--apuntes-borde);
+  border-radius: 0 6px 6px 0;
+  justify-content: center;
+  font-size: 10px;
+}
+
+.apuntes-shell .selector-color--dividido .control-color--aplicar::after,
+.apuntes-shell .selector-color--dividido .control-color--desplegar::after {
+  display: none;
+}
+
+.apuntes-shell .selector-color--dividido .control-color:hover,
+.apuntes-shell .selector-color--dividido .control-color:focus-visible,
+.apuntes-shell .selector-color--dividido .control-color[aria-expanded="true"] {
+  border-color: transparent;
+  background: var(--apuntes-superficie-hover);
 }
 
 .apuntes-shell .control-color:hover,
@@ -2140,6 +2186,34 @@ body.pagina-apuntes > main.apuntes-shell {
 
 .editor-contenido ol[type="a"] {
   list-style-type: lower-alpha;
+}
+
+.editor-contenido ol[type="A"] {
+  list-style-type: upper-alpha;
+}
+
+.editor-contenido ol[type="i"] {
+  list-style-type: lower-roman;
+}
+
+.editor-contenido ol[type="I"] {
+  list-style-type: upper-roman;
+}
+
+.editor-contenido ol ol[type="a"] > li::marker {
+  content: counter(list-item, lower-alpha) ") ";
+}
+
+.editor-contenido ol ol[type="A"] > li::marker {
+  content: counter(list-item, upper-alpha) ") ";
+}
+
+.editor-contenido ul ul {
+  list-style-type: circle;
+}
+
+.editor-contenido ul ul ul {
+  list-style-type: square;
 }
 
 .editor-contenido :where(ul, ol) :where(ul, ol) {

@@ -65,6 +65,10 @@ export function construirHtmlApunteExportable({ titulo = "Sin título", contenid
     h1 { margin:0 0 10mm; color:#631b2a; font:700 19pt/1.2 Georgia, serif; }
     .apunte-exportable__contenido { position:relative; z-index:2; min-height:${Math.max(60, altoContenido - 22)}mm; white-space:pre-wrap; overflow-wrap:anywhere; }
     .apunte-exportable__contenido p, .apunte-exportable__contenido div { margin:0 0 5pt; }
+    .apunte-exportable__contenido ol ol[type="a"] > li::marker { content:counter(list-item, lower-alpha) ") "; }
+    .apunte-exportable__contenido ol ol[type="A"] > li::marker { content:counter(list-item, upper-alpha) ") "; }
+    .apunte-exportable__contenido ul ul { list-style-type:circle; }
+    .apunte-exportable__contenido ul ul ul { list-style-type:square; }
     .objeto-exportable { position:absolute; box-sizing:border-box; overflow:hidden; }
     .objeto-exportable--texto { padding:7pt 9pt; border:1pt solid currentColor; border-radius:3pt; background:rgba(255,255,255,.78); white-space:pre-wrap; }
     .objeto-exportable--cuadrado { border-radius:0; background:#fff; }
