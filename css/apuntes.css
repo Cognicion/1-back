@@ -94,22 +94,29 @@ body.bloqueado main {
   line-height: 1;
 }
 
-.boton-restaurar-superior {
+body.pagina-apuntes .apuntes-shell .boton-restaurar-superior {
   position: fixed;
-  z-index: 100;
-  top: 5px;
-  right: 8px;
-  display: none;
-  width: 26px;
-  min-width: 26px;
-  height: 26px;
-  min-height: 26px;
+  z-index: 1000;
+  top: 7px;
+  right: 9px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  min-width: 30px;
+  height: 28px;
+  min-height: 28px;
   padding: 0;
-  border: 1px solid var(--apuntes-borde);
-  border-radius: 6px;
+  border: 1px solid var(--apuntes-borde-fuerte);
+  border-radius: 7px;
   color: var(--apuntes-texto);
   background: var(--apuntes-superficie);
-  box-shadow: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  font-size: 17px;
+  line-height: 1;
+}
+
+body.pagina-apuntes .apuntes-shell .boton-restaurar-superior[hidden] {
+  display: none;
 }
 
 .apuntes-shell .boton-alternar-superior {
@@ -132,7 +139,7 @@ body.pagina-apuntes.apuntes-superior-retraido .apuntes-editor {
 }
 body.pagina-apuntes.apuntes-superior-retraido .menu-principal-apunte,
 body.pagina-apuntes.apuntes-superior-retraido .cinta-formato-contenedor { display: none; }
-body.pagina-apuntes.apuntes-superior-retraido .boton-restaurar-superior { display: block; }
+body.pagina-apuntes.apuntes-superior-retraido .boton-restaurar-superior { display: grid; }
 
 .topbar-apuntes .global-header-branding {
   grid-column: 1;
@@ -1796,9 +1803,11 @@ body.pagina-apuntes > main.apuntes-shell {
 /* Cabecera única: título, controles de plegado y acciones quedan en una sola línea. */
 .apuntes-shell .menu-principal-apunte {
   display: grid;
-  grid-template-columns: 28px auto 30px minmax(0, 1fr) 30px;
+  grid-template-columns: 28px 24px auto 30px minmax(0, 1fr) 30px;
+  grid-template-rows: 42px;
   align-items: center;
   gap: 5px;
+  height: 42px;
   min-height: 42px;
 }
 
@@ -1807,11 +1816,12 @@ body.pagina-apuntes > main.apuntes-shell {
   min-width: 0;
 }
 
-.menu-principal-apunte > #alternarSidebarApuntes { grid-column: 1; }
-.menu-principal-apunte > #abrirArchivoApunte { grid-column: 2; }
-.menu-principal-apunte > #guardarRapidoApunte { grid-column: 3; }
-.menu-principal-apunte > #camposCabeceraApunte { grid-column: 4; }
-.menu-principal-apunte > #alternarBarraFormato { grid-column: 5; }
+.menu-principal-apunte > #alternarSidebarApuntes { grid-column: 1; grid-row: 1; }
+.menu-principal-apunte > #alternarEspacioSuperior { grid-column: 2; grid-row: 1; }
+.menu-principal-apunte > #abrirArchivoApunte { grid-column: 3; grid-row: 1; }
+.menu-principal-apunte > #guardarRapidoApunte { grid-column: 4; grid-row: 1; }
+.menu-principal-apunte > #camposCabeceraApunte { grid-column: 5; grid-row: 1; }
+.menu-principal-apunte > #alternarBarraFormato { grid-column: 6; grid-row: 1; }
 
 .apuntes-shell .menu-principal-apunte .campo-titulo input {
   width: 100%;
@@ -1905,7 +1915,7 @@ body.pagina-apuntes > main.apuntes-shell {
 
 @media (max-width: 899px) {
   .apuntes-shell .menu-principal-apunte {
-    grid-template-columns: 36px auto 30px minmax(0, 1fr) 30px;
+    grid-template-columns: 36px 24px auto 30px minmax(0, 1fr) 30px;
   }
 }
 

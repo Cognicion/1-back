@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260825-apuntes-marcadores-margen-v15">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260825-apuntes-cabecera-una-fila-v17">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -33,8 +33,6 @@
       <div data-accesos-rapidos data-global-header-access></div>
     </nav>
   </header>
-  <button id="restaurarEspacioSuperior" type="button" class="boton-restaurar-superior" aria-label="Mostrar encabezado" title="Mostrar encabezado">⌄</button>
-
   <main class="apuntes-shell">
     <aside id="sidebarApuntes" class="apuntes-sidebar" aria-label="Organización de apuntes">
       <label class="campo-busqueda">
@@ -61,8 +59,9 @@
 
     <section class="apuntes-editor" aria-label="Editor de apuntes">
       <input id="apunteId" type="hidden">
+      <button id="restaurarEspacioSuperior" type="button" class="boton-restaurar-superior" aria-label="Mostrar barras superiores" title="Mostrar barras superiores" hidden>⌄</button>
 
-      <div class="menu-principal-apunte" aria-label="Acciones del apunte">
+      <div id="menuPrincipalApunte" class="menu-principal-apunte" aria-label="Acciones del apunte">
         <button
           id="alternarSidebarApuntes"
           type="button"
@@ -441,7 +440,7 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260825-apuntes-marcadores-margen-v15"></script>
+  <script type="module" src="js/apuntes.js?v=20260825-apuntes-cabecera-una-fila-v17"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>

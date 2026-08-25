@@ -171,8 +171,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=2\.115-navbar-unica-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260825-apuntes-marcadores-margen-v15/);
-  assert.match(html, /apuntes\.js\?v=20260825-apuntes-marcadores-margen-v15/);
+  assert.match(html, /apuntes\.css\?v=20260825-apuntes-cabecera-una-fila-v17/);
+  assert.match(html, /apuntes\.js\?v=20260825-apuntes-cabecera-una-fila-v17/);
   assert.match(html, /id="formatoCursiva"[^>]*data-editor-command="italic"/);
   assert.match(html, /id="formatoSubrayado"[^>]*data-editor-command="underline"/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
@@ -229,7 +229,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.doesNotMatch(html, /id="alternarTituloApunte"/);
   assert.match(html, /id="alternarBarraFormato"[^>]*aria-controls="barraFormatoApunte"/);
   assert.match(html, /id="alternarEspacioSuperior"[^>]*aria-label="Contraer encabezado"/);
-  assert.match(html, /id="restaurarEspacioSuperior"[^>]*aria-label="Mostrar encabezado"/);
+  assert.match(html, /id="restaurarEspacioSuperior"[^>]*aria-label="Mostrar barras superiores"[^>]*hidden/);
+  assert.match(html, /id="menuPrincipalApunte" class="menu-principal-apunte"/);
   assert.match(html, /id="lienzoApunte"/);
   assert.match(html, /id="hojaApunte" class="hoja-apunte"/);
   assert.doesNotMatch(html, /id="etiquetaVistaHoja"/);
@@ -381,7 +382,17 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(html, /id="zoomHojaBarraPie" type="range" min="25" max="800"/);
   assert.match(controlador, /function alternarCintaFormato/);
   assert.match(controlador, /function alternarEspacioSuperior/);
+  assert.match(controlador, /function mostrarEspacioSuperior/);
+  assert.match(controlador, /function establecerEspacioSuperior/);
+  assert.match(controlador, /restaurar\.hidden = !retraido/);
   assert.match(css, /\.boton-alternar-superior\s*\{/);
+  assert.match(css, /\.boton-restaurar-superior\[hidden\]\s*\{[\s\S]*display:\s*none/);
+  assert.match(css, /grid-template-columns:\s*28px 24px auto 30px minmax\(0, 1fr\) 30px/);
+  assert.match(css, /grid-template-rows:\s*42px/);
+  assert.match(css, /#alternarSidebarApuntes\s*\{\s*grid-column:\s*1;\s*grid-row:\s*1/);
+  assert.match(css, /#alternarEspacioSuperior\s*\{\s*grid-column:\s*2;\s*grid-row:\s*1/);
+  assert.match(css, /#abrirArchivoApunte\s*\{\s*grid-column:\s*3;\s*grid-row:\s*1/);
+  assert.match(css, /#camposCabeceraApunte\s*\{\s*grid-column:\s*5;\s*grid-row:\s*1/);
   assert.match(css, /apuntes-superior-retraido > \.topbar-apuntes/);
   assert.match(controlador, /function aplicarInterlineado/);
   assert.match(controlador, /function gestionarMenuContextualObjeto/);
@@ -503,6 +514,8 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-25-apuntes-superior-visible-v13/);
   assert.match(version, /2026-08-25-apuntes-atajos-v14/);
   assert.match(version, /2026-08-25-apuntes-marcadores-margen-v15/);
+  assert.match(version, /2026-08-25-apuntes-restaurar-barras-v16/);
+  assert.match(version, /2026-08-25-apuntes-cabecera-una-fila-v17/);
   assert.match(version, /2026-08-22-apuntes-subcarpetas-hotfix-v1/);
   assert.match(version, /2026-08-22-apuntes-insertar-controles-v1/);
   assert.match(version, /2026-08-22-apuntes-contexto-fondo-retraible-v1/);

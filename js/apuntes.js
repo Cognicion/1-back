@@ -266,7 +266,7 @@ function inicializarInterfaz() {
   document.getElementById("descargarApuntePdf")?.addEventListener("click", () => exportarApunte("pdf"));
   document.getElementById("alternarBarraFormato")?.addEventListener("click", alternarCintaFormato);
   document.getElementById("alternarEspacioSuperior")?.addEventListener("click", alternarEspacioSuperior);
-  document.getElementById("restaurarEspacioSuperior")?.addEventListener("click", alternarEspacioSuperior);
+  document.getElementById("restaurarEspacioSuperior")?.addEventListener("click", mostrarEspacioSuperior);
   document.getElementById("abrirDisposicionHoja")?.addEventListener("click", alternarDisposicionHoja);
   document.getElementById("cerrarDisposicionHoja")?.addEventListener("click", () => cerrarDisposicionHoja({ devolverFoco: true }));
   document.getElementById("formatoHoja")?.addEventListener("change", aplicarDisposicionDesdeControles);
@@ -1875,13 +1875,31 @@ function alternarCintaFormato() {
 }
 
 function alternarEspacioSuperior() {
-  const retraido = document.body.classList.toggle("apuntes-superior-retraido");
+  establecerEspacioSuperior(!document.body.classList.contains("apuntes-superior-retraido"));
+}
+
+function mostrarEspacioSuperior() {
+  establecerEspacioSuperior(false);
+}
+
+function establecerEspacioSuperior(retraido) {
+  document.body.classList.toggle("apuntes-superior-retraido", retraido);
   const boton = document.getElementById("alternarEspacioSuperior");
+  const restaurar = document.getElementById("restaurarEspacioSuperior");
   boton?.setAttribute("aria-expanded", String(!retraido));
   boton?.setAttribute("aria-label", retraido ? "Mostrar encabezado" : "Contraer encabezado");
   if (boton) {
     boton.title = retraido ? "Mostrar encabezado" : "Contraer encabezado";
     boton.textContent = retraido ? "⌄" : "⌃";
+  }
+  if (restaurar) restaurar.hidden = !retraido;
+  if (retraido) {
+    cerrarPaletasColor();
+    cerrarMenuContextualTexto();
+    cerrarMenusFormatoCompacto();
+    cerrarMenuInsertar();
+    cerrarMenuMarcadoresApunte();
+    cerrarMenuExportacion();
   }
   programarActualizacionVistaHoja({ forzar: true });
 }
