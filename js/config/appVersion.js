@@ -117,5 +117,7 @@
 // deployment marker: 2026-08-25-apuntes-resaltado-menu-v8 (+0.001)
 // deployment marker: 2026-08-25-apuntes-ortografia-nativa-v9 (+0.001)
 // deployment marker: 2026-08-25-apuntes-margenes-preajustes-v10 (+0.001)
-export const APP_VERSION = "2.128";
+// deployment marker: 2026-08-25-apuntes-marcadores-v11 (+0.001)
+// deployment marker: 2026-08-25-apuntes-superior-retraible-v12 (+0.001)
+export const APP_VERSION = "2.130";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

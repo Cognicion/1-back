@@ -31,6 +31,14 @@ function limpiarNodoRico(nodo, documento) {
   if (color) limpio.style.color = color;
   if (fondo) limpio.style.backgroundColor = fondo;
   if (interlineado) limpio.style.lineHeight = interlineado;
+  if (etiqueta === "SPAN" && /^marcador-[a-z0-9-]{8,80}$/i.test(nodo.dataset?.marcadorId || "")) {
+    limpio.className = "marcador-apunte";
+    limpio.dataset.marcadorId = nodo.dataset.marcadorId;
+    const colorMarcador = colorCSSSeguro(nodo.dataset.marcadorColor);
+    if (colorMarcador) limpio.dataset.marcadorColor = colorMarcador;
+    limpio.setAttribute("tabindex", "0");
+    limpio.setAttribute("role", "button");
+  }
   if (etiqueta === "OL") {
     const tipoLista = nodo.getAttribute("type");
     if (["1", "a", "A"].includes(tipoLista)) limpio.setAttribute("type", tipoLista);

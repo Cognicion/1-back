@@ -171,9 +171,12 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=2\.115-navbar-unica-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260825-apuntes-margenes-preajustes-v10/);
-  assert.match(html, /apuntes\.js\?v=20260825-apuntes-margenes-preajustes-v10/);
+  assert.match(html, /apuntes\.css\?v=20260825-apuntes-superior-retraible-v12/);
+  assert.match(html, /apuntes\.js\?v=20260825-apuntes-superior-retraible-v12/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
+  assert.match(html, /id="abrirMarcadoresApunte"[^>]*aria-controls="panelMarcadoresApunte"/);
+  assert.match(html, /id="panelMarcadoresApunte"[^>]*aria-label="Marcadores del apunte"/);
+  assert.match(html, /data-color-marcador="#f6c85f"/);
   assert.match(html, /id="menuInsertarApunte"[^>]*aria-label="Insertar en el apunte"/);
   assert.match(html, /id="insertarCuadroTexto"/);
   assert.match(html, /id="insertarFlecha"/);
@@ -219,6 +222,7 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /id="zoomHojaMasVista"/);
   assert.doesNotMatch(html, /id="alternarTituloApunte"/);
   assert.match(html, /id="alternarBarraFormato"[^>]*aria-controls="barraFormatoApunte"/);
+  assert.match(html, /id="alternarEspacioSuperior"[^>]*aria-label="Contraer encabezado"/);
   assert.match(html, /id="lienzoApunte"/);
   assert.match(html, /id="hojaApunte" class="hoja-apunte"/);
   assert.doesNotMatch(html, /id="etiquetaVistaHoja"/);
@@ -369,8 +373,15 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(css, /\.boton-alternar-cinta\s*\{/);
   assert.match(html, /id="zoomHojaBarraPie" type="range" min="25" max="800"/);
   assert.match(controlador, /function alternarCintaFormato/);
+  assert.match(controlador, /function alternarEspacioSuperior/);
+  assert.match(css, /\.boton-alternar-superior\s*\{/);
+  assert.match(css, /apuntes-superior-retraido > \.topbar-apuntes/);
   assert.match(controlador, /function aplicarInterlineado/);
   assert.match(controlador, /function gestionarMenuContextualObjeto/);
+  assert.match(controlador, /function crearMarcadorApunte/);
+  assert.match(controlador, /function renderizarMarcadoresApunte/);
+  assert.match(controlador, /function revelarMarcadorApunte/);
+  assert.match(css, /\.marcador-apunte\s*\{/);
   assert.match(objetosApunte, /objeto-apunte__punto-ancla/);
   assert.match(objetosApunte, /objeto-apunte__zona-flecha/);
   assert.match(css, /\.objeto-apunte--flecha svg\s*\{[\s\S]*pointer-events:\s*auto/);
@@ -390,6 +401,8 @@ test("la persistencia rica mantiene texto plano y sanea el HTML", () => {
   assert.match(controlador, /import \{ sanitizarHTMLRico \} from "\.\/apuntes-rich-text\.js\?v=20260822-apuntes-interlineado-v1"/);
   assert.match(textoRico, /new Set\(\["B", "STRONG", "BR", "DIV", "P", "SPAN", "FONT", "UL", "OL", "LI"\]\)/);
   assert.match(textoRico, /etiqueta === "OL"/);
+  assert.match(textoRico, /marcador-apunte/);
+  assert.match(textoRico, /dataset\.marcadorId/);
   assert.match(textoRico, /new Set\(\["SCRIPT", "STYLE", "IFRAME", "OBJECT", "EMBED", "SVG", "MATH"\]\)/);
   assert.match(controlador, /addEventListener\("paste", pegarComoTextoSeguro\)/);
   assert.match(controlador, /runTransaction/);
@@ -471,6 +484,8 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-25-apuntes-resaltado-menu-v8/);
   assert.match(version, /2026-08-25-apuntes-ortografia-nativa-v9/);
   assert.match(version, /2026-08-25-apuntes-margenes-preajustes-v10/);
+  assert.match(version, /2026-08-25-apuntes-marcadores-v11/);
+  assert.match(version, /2026-08-25-apuntes-superior-retraible-v12/);
   assert.match(version, /2026-08-22-apuntes-subcarpetas-hotfix-v1/);
   assert.match(version, /2026-08-22-apuntes-insertar-controles-v1/);
   assert.match(version, /2026-08-22-apuntes-contexto-fondo-retraible-v1/);

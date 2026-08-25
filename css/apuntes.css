@@ -79,6 +79,35 @@ body.bloqueado main {
   backdrop-filter: blur(8px) !important;
 }
 
+.boton-alternar-superior {
+  position: fixed;
+  z-index: 70;
+  top: 8px;
+  right: 10px;
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+  border: 1px solid var(--apuntes-borde);
+  border-radius: 6px;
+  color: var(--apuntes-texto-suave);
+  background: var(--apuntes-superficie);
+  box-shadow: none;
+  font-size: 15px;
+  line-height: 1;
+}
+
+body.pagina-apuntes.apuntes-superior-retraido > .topbar-apuntes { display: none; }
+body.pagina-apuntes.apuntes-superior-retraido .apuntes-editor {
+  grid-template-rows: minmax(0, 1fr) 24px;
+  gap: 0;
+  padding: 0 8px 2px;
+}
+body.pagina-apuntes.apuntes-superior-retraido .menu-principal-apunte,
+body.pagina-apuntes.apuntes-superior-retraido .cinta-formato-contenedor { display: none; }
+body.pagina-apuntes.apuntes-superior-retraido .boton-alternar-superior { top: 5px; right: 8px; }
+
 .topbar-apuntes .global-header-branding {
   grid-column: 1;
   width: 100%;
@@ -1265,6 +1294,7 @@ body.pagina-apuntes > main.apuntes-shell {
 
 .menu-insertar,
 .panel-objeto,
+.panel-marcadores-apunte,
 .panel-disposicion-hoja,
 .menu-archivo,
 .menu-contextual-texto {
@@ -1283,6 +1313,7 @@ body.pagina-apuntes > main.apuntes-shell {
 
 .menu-insertar[hidden],
 .panel-objeto[hidden],
+.panel-marcadores-apunte[hidden],
 .panel-disposicion-hoja[hidden],
 .menu-archivo[hidden],
 .menu-contextual-texto[hidden] {
@@ -1317,6 +1348,41 @@ body.pagina-apuntes > main.apuntes-shell {
   right: 16px;
   top: 66px;
 }
+
+.panel-marcadores-apunte {
+  position: absolute;
+  z-index: 9;
+  right: 16px;
+  top: 66px;
+  width: min(264px, calc(100% - 32px));
+  max-height: min(560px, calc(100% - 82px));
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 12px;
+  overflow: auto;
+  border: 1px solid var(--apuntes-borde-fuerte);
+  border-radius: 10px;
+  color: var(--apuntes-texto);
+  background: var(--apuntes-superficie, #151918);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28);
+}
+
+.panel-marcadores-apunte__encabezado { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.panel-marcadores-apunte__encabezado strong { font-size: 12px; }
+.panel-marcadores-apunte__encabezado button { width: 26px; min-width: 26px; height: 26px; min-height: 26px; padding: 0; }
+.panel-marcadores-apunte > p { margin: 0; color: var(--apuntes-texto-suave); font-size: 10px; line-height: 1.35; }
+.marcadores-colores { display: flex; gap: 7px; }
+.apuntes-shell .marcadores-colores button { width: 22px; min-width: 22px; height: 22px; min-height: 22px; padding: 0; border: 2px solid transparent; border-radius: 50%; background: var(--color-marcador); box-shadow: none; }
+.apuntes-shell .marcadores-colores button[aria-pressed="true"] { border-color: var(--apuntes-texto); box-shadow: 0 0 0 2px var(--apuntes-borde-fuerte); }
+.apuntes-shell .panel-marcadores-apunte__crear { min-height: 30px; padding: 0 9px; border: 1px solid var(--apuntes-borde); border-radius: 7px; color: var(--apuntes-texto); background: var(--apuntes-superficie-hover); box-shadow: none; font-size: 11px; font-weight: 700; }
+.lista-marcadores-apunte { display: grid; gap: 5px; }
+.apuntes-shell .item-marcador-apunte { display: grid; grid-template-columns: 8px minmax(0, 1fr); align-items: start; gap: 8px; width: 100%; min-height: 34px; padding: 7px; border: 1px solid var(--apuntes-borde); border-radius: 7px; color: var(--apuntes-texto); background: transparent; box-shadow: none; text-align: left; }
+.item-marcador-apunte__color { width: 8px; height: 100%; min-height: 18px; border-radius: 999px; background: var(--color-marcador); }
+.item-marcador-apunte__texto { overflow: hidden; font-size: 11px; line-height: 1.3; text-overflow: ellipsis; }
+.lista-marcadores-apunte__vacia { margin: 0; color: var(--apuntes-texto-suave); font-size: 11px; }
+.marcador-apunte { border-radius: 2px; background: color-mix(in srgb, var(--marcador-color, #f6c85f) 32%, transparent); box-decoration-break: clone; cursor: pointer; }
+.marcador-apunte[data-marcador-activo="true"] { outline: 2px solid var(--marcador-color, #f6c85f); outline-offset: 2px; }
 
 .panel-disposicion-hoja {
   right: 16px;
@@ -2248,9 +2314,10 @@ body.pagina-apuntes > main.apuntes-shell {
   min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
-  padding-right: 0;
+  min-height: 24px;
+  padding: 0;
 }
 
 .acciones-apuntes span {

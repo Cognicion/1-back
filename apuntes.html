@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260825-apuntes-margenes-preajustes-v10">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260825-apuntes-superior-retraible-v12">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -33,6 +33,7 @@
       <div data-accesos-rapidos data-global-header-access></div>
     </nav>
   </header>
+  <button id="alternarEspacioSuperior" type="button" class="boton-alternar-superior" aria-expanded="true" aria-label="Contraer encabezado" title="Contraer encabezado">⌃</button>
 
   <main class="apuntes-shell">
     <aside id="sidebarApuntes" class="apuntes-sidebar" aria-label="Organización de apuntes">
@@ -168,6 +169,9 @@
         </div>
         <button type="button" class="boton-formato" data-editor-command="formatBlock" data-editor-value="blockquote" aria-label="Cita" title="Cita">❝</button>
         <span class="separador-formato" aria-hidden="true"></span>
+        <button id="abrirMarcadoresApunte" type="button" class="boton-formato boton-formato--ancho" aria-haspopup="dialog" aria-expanded="false" aria-controls="panelMarcadoresApunte" title="Crear o ver marcadores">
+          <span aria-hidden="true">▮</span><span>Marcadores</span>
+        </button>
         <button id="abrirInsertarApunte" type="button" class="boton-formato boton-formato--ancho" aria-haspopup="dialog" aria-expanded="false" aria-controls="menuInsertarApunte" title="Insertar en el apunte">
           <span aria-hidden="true">＋</span><span>Insertar</span>
         </button>
@@ -278,6 +282,20 @@
           <span aria-hidden="true">⚙</span><span>Objeto</span>
         </button>
       </section>
+
+      <aside id="panelMarcadoresApunte" class="panel-marcadores-apunte" aria-label="Marcadores del apunte" hidden>
+        <div class="panel-marcadores-apunte__encabezado"><strong>Marcadores</strong><button id="cerrarMarcadoresApunte" type="button" aria-label="Cerrar marcadores">×</button></div>
+        <p>Selecciona un texto, elige un color y crea un marcador.</p>
+        <div id="coloresMarcadorApunte" class="marcadores-colores" aria-label="Color del marcador">
+          <button type="button" data-color-marcador="#f6c85f" style="--color-marcador:#f6c85f" aria-label="Marcador amarillo"></button>
+          <button type="button" data-color-marcador="#75b798" style="--color-marcador:#75b798" aria-label="Marcador verde"></button>
+          <button type="button" data-color-marcador="#7bb7e3" style="--color-marcador:#7bb7e3" aria-label="Marcador azul"></button>
+          <button type="button" data-color-marcador="#db7f9c" style="--color-marcador:#db7f9c" aria-label="Marcador rosa"></button>
+          <button type="button" data-color-marcador="#c69be2" style="--color-marcador:#c69be2" aria-label="Marcador morado"></button>
+        </div>
+        <button id="crearMarcadorApunte" type="button" class="panel-marcadores-apunte__crear">Añadir marcador a la selección</button>
+        <div id="listaMarcadoresApunte" class="lista-marcadores-apunte" aria-live="polite"></div>
+      </aside>
 
       <section id="propiedadesObjeto" class="panel-objeto" role="dialog" aria-label="Propiedades del objeto" hidden>
         <div class="panel-objeto__encabezado">
@@ -415,7 +433,7 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260825-apuntes-margenes-preajustes-v10"></script>
+  <script type="module" src="js/apuntes.js?v=20260825-apuntes-superior-retraible-v12"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>
