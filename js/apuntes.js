@@ -301,12 +301,12 @@ function inicializarInterfaz() {
     conservarFocoEditor(evento);
   });
   document.getElementById("tamanoFuenteContextual")?.addEventListener("change", (evento) => {
-    if (aplicarTamanoFuenteSeleccion(evento.target.value)) cerrarMenuContextualTexto();
+    aplicarTamanoFuenteSeleccion(evento.target.value);
   });
   document.getElementById("tamanoFuenteContextual")?.addEventListener("keydown", (evento) => {
     if (evento.key !== "Enter") return;
     evento.preventDefault();
-    if (aplicarTamanoFuenteSeleccion(evento.currentTarget.value)) cerrarMenuContextualTexto();
+    aplicarTamanoFuenteSeleccion(evento.currentTarget.value);
   });
   document.addEventListener("selectionchange", guardarSeleccionEditor);
 
@@ -2294,7 +2294,7 @@ function ejecutarAccionMenuContextualTexto(evento) {
   const botonTamano = evento.target instanceof Element ? evento.target.closest("button[data-tamano-fuente-contextual]") : null;
   if (botonTamano) {
     evento.preventDefault();
-    if (aplicarTamanoFuenteSeleccion(botonTamano.dataset.tamanoFuenteContextual)) cerrarMenuContextualTexto();
+    aplicarTamanoFuenteSeleccion(botonTamano.dataset.tamanoFuenteContextual);
     return;
   }
   const boton = evento.target instanceof Element ? evento.target.closest("button[data-accion-texto]") : null;

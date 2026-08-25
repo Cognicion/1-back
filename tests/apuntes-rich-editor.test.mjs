@@ -201,8 +201,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=2\.115-navbar-unica-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260825-apuntes-seleccion-lista-color-dividido-v21/);
-  assert.match(html, /apuntes\.js\?v=20260825-apuntes-seleccion-lista-color-dividido-v21/);
+  assert.match(html, /apuntes\.css\?v=20260825-apuntes-menu-tamano-persistente-v22/);
+  assert.match(html, /apuntes\.js\?v=20260825-apuntes-menu-tamano-persistente-v22/);
   assert.match(html, /id="formatoCursiva"[^>]*data-editor-command="italic"/);
   assert.match(html, /id="formatoSubrayado"[^>]*data-editor-command="underline"/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
@@ -424,6 +424,8 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(controlador, /tamanioFuente \* 25\.4 \* escala \/ 72/);
   assert.match(controlador, /--apunte-escala-visual/);
   assert.match(controlador, /function aplicarTamanoFuenteSeleccion/);
+  assert.doesNotMatch(controlador, /aplicarTamanoFuenteSeleccion\([^\n]+\)\) cerrarMenuContextualTexto\(\)/);
+  assert.match(controlador, /tamanoFuenteContextual"\)\?\.addEventListener\("change",[\s\S]*?aplicarTamanoFuenteSeleccion\(evento\.target\.value\)/);
   assert.match(controlador, /function actualizarTamanosFuentePersonalizados/);
   assert.match(controlador, /function limpiarFormatoSeleccion/);
   assert.match(controlador, /function normalizarTamanosFuenteTrasLimpiar/);
@@ -583,6 +585,7 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-25-apuntes-auto-listas-v19/);
   assert.match(version, /2026-08-25-apuntes-sublistas-jerarquicas-v20/);
   assert.match(version, /2026-08-25-apuntes-seleccion-lista-color-dividido-v21/);
+  assert.match(version, /2026-08-25-apuntes-menu-tamano-persistente-v22/);
   assert.match(version, /2026-08-22-apuntes-subcarpetas-hotfix-v1/);
   assert.match(version, /2026-08-22-apuntes-insertar-controles-v1/);
   assert.match(version, /2026-08-22-apuntes-contexto-fondo-retraible-v1/);
