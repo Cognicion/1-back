@@ -5,9 +5,10 @@ import vm from "node:vm";
 import { CATALOGO_DIAGNOSTICOS } from "../data/catalogoDiagnosticos.js";
 
 const raiz = new URL("../../", import.meta.url);
-const [html, javascript] = await Promise.all([
+const [html, javascript, estilos] = await Promise.all([
   readFile(new URL("biblioteca.html", raiz), "utf8"),
-  readFile(new URL("js/biblioteca.js", raiz), "utf8")
+  readFile(new URL("js/biblioteca.js", raiz), "utf8"),
+  readFile(new URL("css/biblioteca.css", raiz), "utf8")
 ]);
 
 function extraerBloque(inicio, fin) {
@@ -64,6 +65,58 @@ test("el índice CIE-10 declara siempre las letras A-Z, su rango y título", () 
   assert.match(javascript, /data-letra-cie10/);
   assert.match(javascript, /cantidad\.toLocaleString\("es-MX"\)/);
   assert.match(javascript, /estado-cobertura/);
+  assert.match(javascript, /class="letras-cie10-lista" role="list"/);
+  assert.match(javascript, /class="letra-cie10-fila" role="listitem"/);
+  assert.doesNotMatch(javascript, /letras-cie10-grid/);
+  assert.match(estilos, /\.letras-cie10-lista\s*\{[^}]*gap:\s*0;[^}]*border:[^}]*border-radius:/s);
+  assert.match(estilos, /\.letra-cie10-fila \+ \.letra-cie10-fila\s*\{[^}]*border-top:/s);
+  assert.match(estilos, /\.letras-cie10-lista \.letra-cie10-card:hover\s*\{[^}]*box-shadow:\s*none\s*!important;[^}]*transform:\s*none\s*!important;/s);
+  assert.match(estilos, /@media \(max-width: 760px\)\s*\{\s*\.navegacion-diagnosticos \.letras-cie10-lista \.letra-cie10-card\s*\{[^}]*grid-template-columns:/s);
+  assert.match(javascript, /CAPITULOS_CIE10_FICHAS_COMPLETAS = new Set\(\["C", "D", "E"\]\)/);
+  assert.match(javascript, /CAPITULOS_CIE10_CODIGOS_COMPLETOS = new Set\(\["A", "B", "C", "D", "E", "F", "G"\]\)/);
+});
+
+test("el buscador A-Z filtra letra, rango o título sin tocar búsquedas de otras vistas", () => {
+  const filas = [
+    { dataset: { letra: "A", rango: "A00-A99", titulo: "Ciertas enfermedades infecciosas y parasitarias" }, hidden: false },
+    { dataset: { letra: "G", rango: "G00-G99", titulo: "Enfermedades del sistema nervioso" }, hidden: false },
+    { dataset: { letra: "Z", rango: "Z00-Z99", titulo: "Factores que influyen en el estado de salud" }, hidden: false }
+  ];
+  const resumen = { textContent: "" };
+  const estadoVacio = { hidden: true };
+  const panel = {
+    querySelectorAll(selector) { return selector === "[data-fila-letra-cie10]" ? filas : []; },
+    querySelector(selector) {
+      if (selector === "[data-resumen-filtro-letras]") return resumen;
+      if (selector === "[data-sin-resultados-letras]") return estadoVacio;
+      return null;
+    }
+  };
+  const bloqueFiltro = extraerBloque("function filtrarIndiceLetrasCie10", "\nfunction renderizarIndiceLetrasCie10");
+  assert.doesNotMatch(bloqueFiltro, /busquedasPorTab|\bfiltro\s*=/);
+
+  const contexto = { panel };
+  vm.createContext(contexto);
+  vm.runInContext(`
+    ${extraerBloque("function normalizarNombreDiagnostico", "\nfunction escaparHTML")}
+    ${bloqueFiltro}
+    filtrarIndiceLetrasCie10(panel, "sistema nervioso");
+  `, contexto);
+  assert.equal(filas[0].hidden, true);
+  assert.equal(filas[1].hidden, false);
+  assert.equal(filas[2].hidden, true);
+  assert.equal(resumen.textContent, "1 de 3 letras");
+  assert.equal(estadoVacio.hidden, true);
+
+  vm.runInContext('filtrarIndiceLetrasCie10(panel, "G")', contexto);
+  assert.deepEqual(filas.filter((fila) => !fila.hidden).map((fila) => fila.dataset.letra), ["G"]);
+
+  vm.runInContext('filtrarIndiceLetrasCie10(panel, "sin coincidencia")', contexto);
+  assert.ok(filas.every((fila) => fila.hidden));
+  assert.equal(resumen.textContent, "0 de 3 letras");
+  assert.equal(estadoVacio.hidden, false);
+  assert.match(javascript, /id="buscadorLetrasCie10" type="search"/);
+  assert.match(javascript, /data-sin-resultados-letras hidden/);
 });
 
 test("la lista proyecta un solo catálogo sin romper lazy loading ni lotes", () => {

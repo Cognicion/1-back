@@ -68,6 +68,10 @@ function entidadesG() {
   return CATALOGO_DIAGNOSTICOS.filter((diagnostico) => diagnostico.sistemas?.cie10?.codigo?.startsWith("G"));
 }
 
+function entidadG(codigo) {
+  return entidadesG().find((diagnostico) => diagnostico.codigo === codigo);
+}
+
 function sha256(valores) {
   return createHash("sha256").update([...valores].sort().join("\n")).digest("hex");
 }
@@ -123,7 +127,14 @@ test("cada entidad G conserva jerarquía, búsqueda, propiedades clínicas y 15 
       assert.ok(Array.isArray(valor) ? valor.length : String(valor || "").trim(), `${diagnostico.codigo}:${propiedad}`);
     }
     assert.equal(diagnostico.propiedadesPorFuente.cie10.fuente.sourceVerified, true, diagnostico.codigo);
-    assert.equal(diagnostico.propiedadesPorFuente.cie10.completionStatus, "complete", diagnostico.codigo);
+    assert.equal(diagnostico.propiedadesPorFuente.cie10.completionStatus, "partial", diagnostico.codigo);
+    assert.equal(diagnostico.sistemas.cie10.completionStatus, "partial", diagnostico.codigo);
+    assert.equal(diagnostico.propiedadesPorFuente.cie10.evidenciaClinica.verificada, false, diagnostico.codigo);
+    assert.equal(diagnostico.propiedadesPorFuente.cie10.evidenciaClinica.estado, "fuente_clinica_especifica_pendiente", diagnostico.codigo);
+    assert.match(diagnostico.propiedadesPorFuente.cie10.evidenciaClinica.nota, /fuente clínica específica pendiente/i, diagnostico.codigo);
+    assert.equal(diagnostico.sistemas.cie10.review.classificationSourceVerified, true, diagnostico.codigo);
+    assert.equal(diagnostico.sistemas.cie10.review.clinicalEvidenceVerified, false, diagnostico.codigo);
+    assert.equal(Object.hasOwn(diagnostico.sistemas.cie10.review, "sourceVerified"), false, diagnostico.codigo);
     assert.ok(diagnostico.farmacologia, diagnostico.codigo);
     assert.equal(sistema.criteriosLazy, true, diagnostico.codigo);
     assert.equal(typeof Object.getOwnPropertyDescriptor(sistema, "criterios")?.get, "function", diagnostico.codigo);
@@ -159,6 +170,66 @@ test("las altas oficiales en español están presentes y los códigos ajenos u o
   for (const codigo of ["G31.84", "G56.4", "G90.3"]) assert.equal(porCodigo.has(codigo), false, codigo);
   assert.equal(entidadesG().filter((item) => item.codigo === "G40.0").length, 1);
   assert.equal(entidadesG().filter((item) => item.codigo === "G93.0").length, 1);
+  assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.integridad.codigosLegacyConservados, 574);
+  assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.integridad.codigosLegacyOmitidos, 1);
+});
+
+test("los perfiles G09 y G73.7 no heredan tratamiento de una familia vecina", () => {
+  const secuela = entidadG("G09").propiedadesPorFuente.cie10.clinicas;
+  assert.match(secuela.definicionClinica, /secuela de una enfermedad inflamatoria/i);
+  assert.match(secuela.tratamientoEspecifico, /no indica antimicrobianos, antivirales ni inmunoterapia/i);
+  assert.doesNotMatch(secuela.tratamientoEspecifico, /^Antimicrobianos, antivirales, inmunoterapia/i);
+
+  const miopatia = entidadG("G73.7").propiedadesPorFuente.cie10.clinicas;
+  assert.match(miopatia.definicionClinica, /enfermedad primaria del músculo/i);
+  assert.doesNotMatch(miopatia.definicionClinica, /trastorno de la unión neuromuscular o manifestación mioneural/i);
+});
+
+test("G91-G99 selecciona perfiles clínicos prudentes por código y no por rango amplio", () => {
+  for (const codigo of ["G91", "G91.0", "G94.0", "G94.1", "G94.2"]) {
+    assert.match(entidadG(codigo).propiedadesPorFuente.cie10.clinicas.definicionClinica, /hidrocefalia/i, codigo);
+  }
+
+  const rutas = [
+    ["G92", /encefalopatía tóxica/i, /no indica neurocirugía ni inmunoterapia/i],
+    ["G93", /otro trastorno del encéfalo/i, /no autoriza derivación, neurocirugía, antimicrobianos ni inmunoterapia/i],
+    ["G94.3", /manifestación encefálica/i, /código de manifestación no indica neurocirugía/i],
+    ["G94.8", /manifestación encefálica/i, /código de manifestación no indica neurocirugía/i],
+    ["G96", /otro trastorno del sistema nervioso central/i, /no indica neurocirugía, antimicrobianos ni inmunoterapia/i],
+    ["G97", /posterior a un procedimiento/i, /no autoriza reparación, neurocirugía, antimicrobianos ni inmunoterapia/i],
+    ["G98", /categoría residual/i, /no indica un tratamiento, derivación o procedimiento específico/i],
+    ["G99", /manifestación del sistema nervioso/i, /no indica neurocirugía, antimicrobianos, inmunoterapia/i],
+    ["G99.8", /manifestación del sistema nervioso/i, /no indica neurocirugía, antimicrobianos, inmunoterapia/i]
+  ];
+  for (const [codigo, definicion, tratamiento] of rutas) {
+    const clinicas = entidadG(codigo).propiedadesPorFuente.cie10.clinicas;
+    assert.match(clinicas.definicionClinica, definicion, codigo);
+    assert.match(clinicas.tratamientoEspecifico, tratamiento, codigo);
+  }
+
+  for (const codigo of ["G99.0", "G99.1"]) {
+    const clinicas = entidadG(codigo).propiedadesPorFuente.cie10.clinicas;
+    assert.match(clinicas.definicionClinica, /sistema nervioso autónomo/i, codigo);
+    assert.doesNotMatch(clinicas.definicionClinica, /síndrome de dolor regional complejo/i, codigo);
+    assert.match(clinicas.tratamientoEspecifico, /no indican un fármaco, procedimiento o derivación específicos/i, codigo);
+  }
+  assert.match(entidadG("G99.2").propiedadesPorFuente.cie10.clinicas.definicionClinica, /médula espinal/i);
+  assert.match(entidadG("G99.2").propiedadesPorFuente.cie10.clinicas.tratamientoEspecifico, /no indica descompresión, antimicrobianos, inmunoterapia/i);
+});
+
+test("G90.7 declara traducción propia y mantiene pendiente la fuente española", () => {
+  const diagnostico = entidadG("G90.7");
+  const propiedades = diagnostico.propiedadesPorFuente.cie10;
+  assert.equal(propiedades.fuente.sourceVerified, true, "la clasificación OMS permanece verificada");
+  assert.equal(propiedades.fuente.alcanceVerificado, "clasificacion_oms");
+  assert.equal(propiedades.fuenteNomenclaturaEs.sourceVerified, false);
+  assert.equal(propiedades.fuenteNomenclaturaEs.estado, "fuente_pendiente");
+  assert.equal(propiedades.fuenteNomenclaturaEs.organismo, "COGNICIÓN");
+  assert.match(propiedades.fuenteNomenclaturaEs.documento, /traducción propia no oficial/i);
+  assert.ok(diagnostico.sistemas.cie10.notas.some((nota) => /fuente oficial en español pendiente/i.test(nota)));
+  assert.ok(diagnostico.sistemas.cie10.criterios[0].items.some((item) => /traducción española de trabajo, no verificada/i.test(item.texto)));
+  const referencias = diagnostico.referencias.map((item) => item.url).join(" ");
+  assert.doesNotMatch(referencias, /paho|repositoriodeis|cemece|saludchiapas/i);
 });
 
 test("la búsqueda parcial encuentra G por código, nombre oficial y sinónimo", () => {

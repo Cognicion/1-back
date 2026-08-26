@@ -64,7 +64,7 @@ const LETRAS_CIE10_BIBLIOTECA = [
   { letra: "Z", rango: "Z00-Z99", titulo: "Factores que influyen en el estado de salud y contacto con los servicios de salud" }
 ];
 const CAPITULOS_CIE10_CODIGOS_COMPLETOS = new Set(["A", "B", "C", "D", "E", "F", "G"]);
-const CAPITULOS_CIE10_FICHAS_COMPLETAS = new Set(["C", "D", "E", "G"]);
+const CAPITULOS_CIE10_FICHAS_COMPLETAS = new Set(["C", "D", "E"]);
 let DIAGNOSTICOS_VALIDOS = [];
 let diagnosticosPorId = new Map();
 const TAMANO_LOTE_DIAGNOSTICOS = 120;
@@ -218,7 +218,7 @@ function usuarioPuedeUsarBiblioteca(user, usuario = {}) {
 
 const libraryRoot = document.querySelector("[data-library-root]");
 const datosBibliotecaListos = libraryRoot
-  ? import("./data/catalogoDiagnosticos.js?v=20260825-biblioteca-catalogos-g-v1").then((diagnosticosModule) => {
+    ? import("./data/catalogoDiagnosticos.js?v=20260825-biblioteca-catalogos-g-v2").then((diagnosticosModule) => {
     DIAGNOSTICOS_VALIDOS = validarDiagnosticosBiblioteca(diagnosticosModule.CATALOGO_DIAGNOSTICOS);
     diagnosticosPorId = new Map(DIAGNOSTICOS_VALIDOS.map((diagnostico) => [diagnostico.id, diagnostico]));
     poblarCategoriasBiblioteca([]);
@@ -562,6 +562,26 @@ function renderizarSeleccionCatalogos(panel) {
   conectarNavegacionDiagnosticos(panel);
 }
 
+function filtrarIndiceLetrasCie10(panel, termino = "") {
+  const filtroLetras = normalizarNombreDiagnostico(termino);
+  const filas = [...panel.querySelectorAll("[data-fila-letra-cie10]")];
+  const filtroEsLetra = /^[a-z]$/.test(filtroLetras);
+  let visibles = 0;
+  filas.forEach((fila) => {
+    const textoBusqueda = [fila.dataset.letra, fila.dataset.rango, fila.dataset.titulo].filter(Boolean).join(" ");
+    const coincideFiltro = !filtroLetras || (filtroEsLetra
+      ? normalizarNombreDiagnostico(fila.dataset.letra) === filtroLetras
+      : normalizarNombreDiagnostico(textoBusqueda).includes(filtroLetras));
+    fila.hidden = !coincideFiltro;
+    if (coincideFiltro) visibles += 1;
+  });
+
+  const resumen = panel.querySelector("[data-resumen-filtro-letras]");
+  if (resumen) resumen.textContent = filtroLetras ? `${visibles} de ${filas.length} letras` : `${filas.length} letras`;
+  const estadoVacio = panel.querySelector("[data-sin-resultados-letras]");
+  if (estadoVacio) estadoVacio.hidden = visibles > 0;
+}
+
 function renderizarIndiceLetrasCie10(panel) {
   const diagnosticosCie10 = obtenerDiagnosticosCatalogo("cie10");
   const cantidades = new Map(LETRAS_CIE10_BIBLIOTECA.map(({ letra }) => [
@@ -577,24 +597,42 @@ function renderizarIndiceLetrasCie10(panel) {
       <h2 tabindex="-1" data-foco-navegacion>Selecciona una letra</h2>
       <p>Se muestran las 26 letras y su estado de cobertura en la base actual.</p>
     </header>
-    <div class="letras-cie10-grid">
+    <section class="buscador-letras-cie10" aria-labelledby="etiquetaBuscadorLetrasCie10">
+      <label id="etiquetaBuscadorLetrasCie10" for="buscadorLetrasCie10">Buscar por letra, rango o título</label>
+      <div class="buscador-letras-cie10__controles">
+        <input id="buscadorLetrasCie10" type="search" placeholder="Ej. G, G00-G99 o sistema nervioso" autocomplete="off" spellcheck="false" aria-controls="listaLetrasCie10" aria-describedby="resumenFiltroLetrasCie10">
+        <span id="resumenFiltroLetrasCie10" class="buscador-letras-cie10__resumen" data-resumen-filtro-letras role="status" aria-live="polite">${LETRAS_CIE10_BIBLIOTECA.length} letras</span>
+      </div>
+    </section>
+    <div id="listaLetrasCie10" class="letras-cie10-lista" role="list" aria-label="Capítulos alfabéticos CIE-10">
       ${LETRAS_CIE10_BIBLIOTECA.map(({ letra, rango, titulo }) => {
         const cantidad = cantidades.get(letra) || 0;
         const estado = etiquetaEstadoLetraCie10(letra, cantidad);
         return `
-          <button type="button" class="letra-cie10-card" data-letra-cie10="${letra}" aria-label="${letra}, ${escaparHTML(titulo)}, ${cantidad} diagnósticos, ${escaparHTML(estado.texto)}">
-            <span class="letra-cie10-card__letra" aria-hidden="true">${letra}</span>
-            <span class="letra-cie10-card__contenido">
+          <div class="letra-cie10-fila" role="listitem" data-fila-letra-cie10 data-letra="${letra}" data-rango="${rango}" data-titulo="${escaparHTML(titulo)}">
+            <button type="button" class="letra-cie10-card" data-letra-cie10="${letra}" aria-label="${letra}, ${escaparHTML(titulo)}, ${cantidad} diagnósticos, ${escaparHTML(estado.texto)}">
+              <span class="letra-cie10-card__letra" aria-hidden="true">${letra}</span>
               <span class="letra-cie10-card__rango">${rango}</span>
               <span class="letra-cie10-card__titulo">${escaparHTML(titulo)}</span>
               <span class="letra-cie10-card__resumen">${cantidad.toLocaleString("es-MX")} diagnósticos</span>
               <span class="estado-cobertura estado-cobertura--${estado.clase}">${escaparHTML(estado.texto)}</span>
-            </span>
-          </button>`;
+            </button>
+          </div>`;
       }).join("")}
+    </div>
+    <div class="estado-vacio-biblioteca estado-vacio-letras-cie10" data-sin-resultados-letras hidden>
+      <h3>Sin coincidencias</h3>
+      <p>No hay letras, rangos o títulos que coincidan con la búsqueda.</p>
     </div>`;
   poblarCategoriasBiblioteca([]);
   conectarNavegacionDiagnosticos(panel);
+  const buscadorLetras = panel.querySelector("#buscadorLetrasCie10");
+  buscadorLetras?.addEventListener("input", () => filtrarIndiceLetrasCie10(panel, buscadorLetras.value));
+  buscadorLetras?.addEventListener("keydown", (evento) => {
+    if (evento.key !== "Escape" || !buscadorLetras.value) return;
+    buscadorLetras.value = "";
+    filtrarIndiceLetrasCie10(panel);
+  });
 }
 
 function encabezadoListaDiagnosticos(totalBase, totalFiltrado) {

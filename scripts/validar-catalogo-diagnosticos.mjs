@@ -43,7 +43,8 @@ assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.integridad.codigosCFaltantes, 0);
 assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.integridad.codigosDFaltantes, 0);
 assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.integridad.codigosEFaltantes, 0);
 assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.integridad.codigosGFaltantes, 0);
-assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.integridad.codigosLegacyOmitidos, 0);
+assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.integridad.codigosLegacyConservados, 574);
+assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.integridad.codigosLegacyOmitidos, 1);
 assert.equal(CATALOGO_DIAGNOSTICOS.length, 3580);
 assert.equal(new Set(CATALOGO_DIAGNOSTICOS.map((diagnostico) => diagnostico.id)).size, CATALOGO_DIAGNOSTICOS.length);
 assert.equal(CIE10.length, 3561);
@@ -86,7 +87,7 @@ assert.deepEqual(archivosDatos.filter((archivo) => /(?:diagnostic|cie10|cie11)/i
 for (const [archivo, modulo] of [
   ["paciente.html", "js/paciente.js?v=20260818-grafica-signos-ejes-v2"],
   ["nota.html", "js/nota.js?v=20260818-envio-piso-header-v1"],
-  ["biblioteca.html", "js/biblioteca.js?v=20260825-biblioteca-catalogos-g-v1"],
+  ["biblioteca.html", "js/biblioteca.js?v=20260825-biblioteca-catalogos-g-v2"],
   ["laboratorio-farmacologia.html", "js/laboratorio-farmacologia.js?v=20260816-cie10-cde-v1"]
 ]) {
   assert.match(await readFile(resolve(root, archivo), "utf8"), new RegExp(modulo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
