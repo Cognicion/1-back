@@ -110,6 +110,7 @@ let frameVistaHoja = 0;
 let frameIndicadoresMarcadores = 0;
 let temporizadorVistaHoja = 0;
 let claveVistaHoja = "";
+let anclaZoomHojaPendiente = null;
 let colorMarcadorActual = "#f6c85f";
 let indiceCoincidenciaBusqueda = -1;
 let firmaBusquedaActual = "";
@@ -206,8 +207,8 @@ function inicializarInterfaz() {
     if (!document.getElementById("panelBuscarReemplazar")?.hidden) actualizarResultadosBusqueda({ reiniciar: true });
   });
   editor?.addEventListener("blur", normalizarEditorVacio);
-  editor?.addEventListener("beforeinput", prepararModoResaltadoAntesDeInsertar);
   editor?.addEventListener("beforeinput", convertirAtajoListaAntesDeInsertar);
+  editor?.addEventListener("beforeinput", prepararModoResaltadoAntesDeInsertar);
   editor?.addEventListener("keydown", gestionarAtajosEditor);
   editor?.addEventListener("dblclick", seleccionarElementoListaConDobleClick);
   editor?.addEventListener("paste", pegarComoTextoSeguro);
@@ -301,6 +302,7 @@ function inicializarInterfaz() {
   document.getElementById("descargarApunteWord")?.addEventListener("click", () => exportarApunte("word"));
   document.getElementById("descargarApuntePdf")?.addEventListener("click", () => exportarApunte("pdf"));
   document.getElementById("alternarBarraFormato")?.addEventListener("click", alternarCintaFormato);
+  document.getElementById("alternarBarraFormatoFlotante")?.addEventListener("click", alternarCintaFormato);
   document.getElementById("alternarEspacioSuperior")?.addEventListener("click", alternarEspacioSuperior);
   document.getElementById("restaurarEspacioSuperior")?.addEventListener("click", mostrarEspacioSuperior);
   document.getElementById("abrirDisposicionHoja")?.addEventListener("click", alternarDisposicionHoja);
@@ -308,8 +310,11 @@ function inicializarInterfaz() {
   document.getElementById("formatoHoja")?.addEventListener("change", aplicarDisposicionDesdeControles);
   document.getElementById("orientacionHoja")?.addEventListener("change", aplicarDisposicionDesdeControles);
   document.getElementById("tamanoFuenteHoja")?.addEventListener("change", aplicarDisposicionDesdeControles);
+  ["tamanoFuenteRapido", "tamanoFuenteContextual"].forEach((id) => {
+    document.getElementById(id)?.addEventListener("pointerdown", guardarSeleccionEditor);
+  });
   document.getElementById("tamanoFuenteRapido")?.addEventListener("change", (evento) => {
-    aplicarDisposicionHoja({ ...disposicionHojaActual, tamanioFuente: evento.target.value });
+    aplicarTamanoFuenteRapido(evento.target.value);
   });
   document.getElementById("preajusteMargenesHoja")?.addEventListener("change", aplicarPreajusteMargenesHoja);
   ["margenSuperiorHoja", "margenDerechoHoja", "margenInferiorHoja", "margenIzquierdoHoja"].forEach((id) => {
@@ -320,10 +325,10 @@ function inicializarInterfaz() {
   document.getElementById("zoomHojaMenosVista")?.addEventListener("click", () => cambiarZoomHoja(-25));
   document.getElementById("zoomHojaMasVista")?.addEventListener("click", () => cambiarZoomHoja(25));
   document.getElementById("zoomHojaBarra")?.addEventListener("input", (evento) => {
-    aplicarDisposicionHoja({ ...disposicionHojaActual, zoom: evento.target.value });
+    aplicarZoomHoja(evento.target.value);
   });
   document.getElementById("zoomHojaBarraPie")?.addEventListener("input", (evento) => {
-    aplicarDisposicionHoja({ ...disposicionHojaActual, zoom: evento.target.value });
+    aplicarZoomHoja(evento.target.value);
   });
   document.getElementById("lienzoApunte")?.addEventListener("wheel", manejarZoomHojaConRueda, { passive: false });
   editor?.addEventListener("contextmenu", abrirMenuContextualTexto);
@@ -2116,7 +2121,10 @@ function actualizarVistaHoja() {
     tamanioFuente: Number((disposicionHojaActual.tamanioFuente * 25.4 * escala / 72).toFixed(2))
   };
   const nuevaClaveVista = Object.values(valoresVista).join("|");
-  if (nuevaClaveVista === claveVistaHoja) return;
+  if (nuevaClaveVista === claveVistaHoja) {
+    anclaZoomHojaPendiente = null;
+    return;
+  }
   claveVistaHoja = nuevaClaveVista;
   hoja.style.setProperty("--hoja-ancho", `${valoresVista.ancho}px`);
   hoja.style.setProperty("--hoja-alto", `${valoresVista.alto}px`);
@@ -2130,6 +2138,7 @@ function actualizarVistaHoja() {
   hoja.style.setProperty("--apunte-escala-visual", String(valoresVista.escalaVisual));
   hoja.style.setProperty("--apunte-tamano-fuente", `${valoresVista.tamanioFuente}px`);
   actualizarTamanosFuentePersonalizados(valoresVista.escalaVisual);
+  restaurarAnclaZoomHoja();
   posicionarPanelMarcadoresApunte();
   programarRenderizadoIndicadoresMarcadores();
 }
@@ -2168,14 +2177,71 @@ function aplicarPreajusteMargenesHoja(evento) {
   aplicarDisposicionHoja({ ...disposicionHojaActual, margenes: preajuste.margenes });
 }
 
-function cambiarZoomHoja(delta) {
-  aplicarDisposicionHoja({ ...disposicionHojaActual, zoom: disposicionHojaActual.zoom + delta });
+function rectanguloRangoZoom(rango) {
+  if (!rango) return null;
+  const rectangulo = rango.getClientRects?.()[0] || rango.getBoundingClientRect?.();
+  if (!rectangulo || !Number.isFinite(rectangulo.left) || !Number.isFinite(rectangulo.top)) return null;
+  return rectangulo;
+}
+
+function capturarAnclaZoomHoja(referencia = null) {
+  const visor = document.getElementById("lienzoApunte");
+  const hoja = document.getElementById("hojaApunte");
+  const editor = obtenerEditor();
+  if (!visor || !hoja || !editor) return null;
+  const rectVisor = visor.getBoundingClientRect();
+  const rango = seleccionEditor && editor.contains(seleccionEditor.commonAncestorContainer)
+    ? seleccionEditor.cloneRange()
+    : null;
+  const rectRango = rectanguloRangoZoom(rango);
+  const rangoVisible = rectRango
+    && rectRango.left >= rectVisor.left && rectRango.left <= rectVisor.right
+    && rectRango.top >= rectVisor.top && rectRango.top <= rectVisor.bottom;
+  const usaPuntero = Number.isFinite(referencia?.clientX) && Number.isFinite(referencia?.clientY);
+  const clientX = usaPuntero
+    ? referencia.clientX
+    : (rangoVisible ? rectRango.left : rectVisor.left + (rectVisor.width / 2));
+  const clientY = usaPuntero
+    ? referencia.clientY
+    : (rangoVisible ? rectRango.top : rectVisor.top + (rectVisor.height / 2));
+  const rectHoja = hoja.getBoundingClientRect();
+  return {
+    clientX,
+    clientY,
+    rango: !usaPuntero && rangoVisible ? rango : null,
+    proporcionX: rectHoja.width ? (clientX - rectHoja.left) / rectHoja.width : 0.5,
+    proporcionY: rectHoja.height ? (clientY - rectHoja.top) / rectHoja.height : 0.5
+  };
+}
+
+function restaurarAnclaZoomHoja() {
+  const ancla = anclaZoomHojaPendiente;
+  anclaZoomHojaPendiente = null;
+  if (!ancla) return;
+  const visor = document.getElementById("lienzoApunte");
+  const hoja = document.getElementById("hojaApunte");
+  if (!visor || !hoja) return;
+  const rectRango = rectanguloRangoZoom(ancla.rango);
+  const rectHoja = hoja.getBoundingClientRect();
+  const actualX = rectRango?.left ?? (rectHoja.left + (rectHoja.width * ancla.proporcionX));
+  const actualY = rectRango?.top ?? (rectHoja.top + (rectHoja.height * ancla.proporcionY));
+  visor.scrollLeft += actualX - ancla.clientX;
+  visor.scrollTop += actualY - ancla.clientY;
+}
+
+function aplicarZoomHoja(zoom, referencia = null) {
+  if (!anclaZoomHojaPendiente) anclaZoomHojaPendiente = capturarAnclaZoomHoja(referencia);
+  aplicarDisposicionHoja({ ...disposicionHojaActual, zoom });
+}
+
+function cambiarZoomHoja(delta, referencia = null) {
+  aplicarZoomHoja(disposicionHojaActual.zoom + delta, referencia);
 }
 
 function manejarZoomHojaConRueda(evento) {
   if (!evento.ctrlKey) return;
   evento.preventDefault();
-  cambiarZoomHoja(evento.deltaY < 0 ? 25 : -25);
+  cambiarZoomHoja(evento.deltaY < 0 ? 25 : -25, evento);
 }
 
 function abrirDisposicionHoja() {
@@ -2213,18 +2279,14 @@ function alternarDisposicionHoja() {
 
 function alternarCintaFormato() {
   const contenido = document.getElementById("barraFormatoApunte");
-  const boton = document.getElementById("alternarBarraFormato");
-  if (!contenido || !boton) return;
+  const botones = [
+    document.getElementById("alternarBarraFormato"),
+    document.getElementById("alternarBarraFormatoFlotante")
+  ].filter(Boolean);
+  if (!contenido || !botones.length) return;
   contenido.hidden = !contenido.hidden;
   const expandido = !contenido.hidden;
-  boton.setAttribute("aria-expanded", String(expandido));
-  boton.setAttribute("aria-label", expandido ? "Contraer cinta" : "Expandir cinta");
-  boton.title = expandido ? "Contraer cinta" : "Expandir cinta";
-  const icono = boton.querySelector("[aria-hidden='true']");
-  if (icono) {
-    const letra = icono.dataset.collapseLetter || "";
-    icono.innerHTML = `${expandido ? "↑" : "↓"}${letra ? `<sub>${letra}</sub>` : ""}`;
-  }
+  botones.forEach((boton) => actualizarBotonCintaFormato(boton, expandido));
   contenido.parentElement?.classList.toggle("cinta-formato-contenedor--colapsada", !expandido);
   contenido.closest(".apuntes-editor")?.classList.toggle("apuntes-editor--cinta-colapsada", !expandido);
   if (!expandido) {
@@ -2234,6 +2296,16 @@ function alternarCintaFormato() {
     cerrarBuscarReemplazar();
   }
   programarActualizacionVistaHoja({ forzar: true });
+}
+
+function actualizarBotonCintaFormato(boton, expandido) {
+  boton.setAttribute("aria-expanded", String(expandido));
+  boton.setAttribute("aria-label", expandido ? "Contraer cinta" : "Expandir cinta");
+  boton.title = expandido ? "Contraer cinta" : "Expandir cinta";
+  const icono = boton.querySelector("[aria-hidden='true']");
+  if (!icono) return;
+  const letra = icono.dataset.collapseLetter || "";
+  icono.innerHTML = `${expandido ? "↑" : "↓"}${letra ? `<sub>${letra}</sub>` : ""}`;
 }
 
 function alternarEspacioSuperior() {
@@ -2248,6 +2320,7 @@ function establecerEspacioSuperior(retraido) {
   document.body.classList.toggle("apuntes-superior-retraido", retraido);
   const boton = document.getElementById("alternarEspacioSuperior");
   const restaurar = document.getElementById("restaurarEspacioSuperior");
+  const cintaFlotante = document.getElementById("alternarBarraFormatoFlotante");
   boton?.setAttribute("aria-expanded", String(!retraido));
   boton?.setAttribute("aria-label", retraido ? "Mostrar fila del título" : "Contraer fila del título");
   if (boton) {
@@ -2255,6 +2328,10 @@ function establecerEspacioSuperior(retraido) {
     boton.textContent = retraido ? "⌄" : "⌃";
   }
   if (restaurar) restaurar.hidden = !retraido;
+  if (cintaFlotante) {
+    cintaFlotante.hidden = !retraido;
+    actualizarBotonCintaFormato(cintaFlotante, !document.getElementById("barraFormatoApunte")?.hidden);
+  }
   if (retraido) {
     cerrarPaletasColor();
     cerrarMenuContextualTexto();
@@ -2274,7 +2351,85 @@ function obtenerListaSeleccionada() {
   return elemento?.closest?.("ol, ul") || null;
 }
 
+function obtenerBloqueEditable(nodo, editor) {
+  const elemento = nodo?.nodeType === Node.ELEMENT_NODE ? nodo : nodo?.parentElement;
+  if (!elemento || (elemento !== editor && !editor.contains(elemento))) return null;
+  const bloque = elemento?.closest?.("p, div, h1, h2, h3, h4, h5, h6, blockquote");
+  return bloque && editor.contains(bloque) ? bloque : editor;
+}
+
+function fragmentoConContenido(fragmento) {
+  return Boolean(fragmento?.textContent || fragmento?.querySelector?.("br, img, svg, canvas, table"));
+}
+
+function copiarAtributosBloqueAItem(bloque, item) {
+  if (bloque === obtenerEditor()) return;
+  [...bloque.attributes].forEach(({ name, value }) => {
+    if (name !== "id") item.setAttribute(name, value);
+  });
+}
+
+function crearBloqueResidual(bloque, contenido, editor) {
+  const residual = bloque === editor ? document.createElement("div") : bloque.cloneNode(false);
+  residual.removeAttribute("id");
+  residual.append(contenido);
+  return residual;
+}
+
+function convertirSeleccionParcialEnLista(tipo) {
+  const editor = obtenerEditor();
+  const seleccion = window.getSelection();
+  if (!editor || !seleccion?.rangeCount || seleccion.isCollapsed) return false;
+
+  const rango = seleccion.getRangeAt(0);
+  const bloqueInicio = obtenerBloqueEditable(rango.startContainer, editor);
+  const bloqueFin = obtenerBloqueEditable(rango.endContainer, editor);
+  if (!bloqueInicio || bloqueInicio !== bloqueFin || bloqueInicio.closest("li")) return false;
+
+  const rangoBloque = document.createRange();
+  rangoBloque.selectNodeContents(bloqueInicio);
+  const rangoAntes = rangoBloque.cloneRange();
+  rangoAntes.setEnd(rango.startContainer, rango.startOffset);
+  const rangoDespues = rangoBloque.cloneRange();
+  rangoDespues.setStart(rango.endContainer, rango.endOffset);
+
+  const contenidoAntes = rangoAntes.cloneContents();
+  const contenidoSeleccionado = rango.cloneContents();
+  const contenidoDespues = rangoDespues.cloneContents();
+  if (!fragmentoConContenido(contenidoSeleccionado)) return false;
+
+  const lista = document.createElement(tipo === "puntos" ? "ul" : "ol");
+  if (tipo === "letras") lista.setAttribute("type", "a");
+  const item = document.createElement("li");
+  copiarAtributosBloqueAItem(bloqueInicio, item);
+  item.append(contenidoSeleccionado);
+  lista.append(item);
+
+  const reemplazos = [];
+  if (fragmentoConContenido(contenidoAntes)) {
+    reemplazos.push(crearBloqueResidual(bloqueInicio, contenidoAntes, editor));
+  }
+  reemplazos.push(lista);
+  if (fragmentoConContenido(contenidoDespues)) {
+    reemplazos.push(crearBloqueResidual(bloqueInicio, contenidoDespues, editor));
+  }
+  if (bloqueInicio === editor) editor.replaceChildren(...reemplazos);
+  else bloqueInicio.replaceWith(...reemplazos);
+
+  const nuevoRango = document.createRange();
+  nuevoRango.selectNodeContents(item);
+  seleccion.removeAllRanges();
+  seleccion.addRange(nuevoRango);
+  guardarSeleccionEditor();
+  marcarCambios();
+  actualizarEstadoFormato();
+  ponerEstado("Selección convertida en lista");
+  return true;
+}
+
 function ejecutarLista(tipo) {
+  restaurarSeleccionEditor();
+  if (convertirSeleccionParcialEnLista(tipo)) return true;
   const comando = tipo === "puntos" ? "insertUnorderedList" : "insertOrderedList";
   if (!ejecutarFormato(comando)) return false;
   if (tipo !== "letras") return true;
@@ -2310,8 +2465,38 @@ function normalizarEstilosSublistas() {
   return cambios;
 }
 
+function crearRangoPrefijoRenglon(bloque, rangoCursor) {
+  const rango = document.createRange();
+  rango.selectNodeContents(bloque);
+  try {
+    rango.setEnd(rangoCursor.startContainer, rangoCursor.startOffset);
+  } catch (_) {
+    return null;
+  }
+
+  if (rangoCursor.startContainer.nodeType === Node.TEXT_NODE) {
+    const textoAnterior = rangoCursor.startContainer.data.slice(0, rangoCursor.startOffset);
+    const ultimoSalto = Math.max(textoAnterior.lastIndexOf("\n"), textoAnterior.lastIndexOf("\r"));
+    if (ultimoSalto >= 0) {
+      rango.setStart(rangoCursor.startContainer, ultimoSalto + 1);
+      return rango;
+    }
+  }
+
+  let ultimoSaltoHtml = null;
+  bloque.querySelectorAll?.("br").forEach((salto) => {
+    try {
+      if (rango.intersectsNode(salto)) ultimoSaltoHtml = salto;
+    } catch (_) {
+      // Los nodos desconectados durante una composición no forman parte del renglón actual.
+    }
+  });
+  if (ultimoSaltoHtml) rango.setStartAfter(ultimoSaltoHtml);
+  return rango;
+}
+
 function convertirAtajoListaAntesDeInsertar(evento) {
-  if (!evento.cancelable || evento.defaultPrevented || evento.isComposing || evento.inputType !== "insertText" || evento.data !== " ") return;
+  if (!evento.cancelable || evento.defaultPrevented || evento.isComposing || evento.inputType !== "insertText" || ![" ", "\u00a0"].includes(evento.data)) return;
   const editor = obtenerEditor();
   const seleccion = window.getSelection();
   if (!editor || !seleccion?.rangeCount || !seleccion.isCollapsed) return;
@@ -2324,25 +2509,20 @@ function convertirAtajoListaAntesDeInsertar(evento) {
   if (!editor.contains(bloque) && bloque !== editor) return;
   if (bloque.tagName === "LI" || bloque.closest("ol, ul")) return;
 
-  const rangoPrefijo = document.createRange();
-  rangoPrefijo.selectNodeContents(bloque);
-  try {
-    rangoPrefijo.setEnd(rangoCursor.startContainer, rangoCursor.startOffset);
-  } catch (_) {
-    return;
-  }
+  const rangoPrefijo = crearRangoPrefijoRenglon(bloque, rangoCursor);
+  if (!rangoPrefijo) return;
   const atajo = detectarAtajoLista(rangoPrefijo.toString());
   if (!atajo) return;
 
   const rangoSufijo = document.createRange();
   rangoSufijo.selectNodeContents(bloque);
   rangoSufijo.setStart(rangoCursor.startContainer, rangoCursor.startOffset);
-  if (rangoSufijo.toString().replace(/[\u200b\ufeff]/gi, "").trim()) return;
-
   evento.preventDefault();
-  const rangoReemplazo = document.createRange();
-  if (bloque === editor) rangoReemplazo.selectNodeContents(editor);
-  else rangoReemplazo.selectNode(bloque);
+  const rangoReemplazo = rangoPrefijo.cloneRange();
+  const reemplazaBloqueCompleto = bloque !== editor
+    && !bloque.querySelector("br")
+    && !fragmentoConContenido(rangoSufijo.cloneContents());
+  if (reemplazaBloqueCompleto) rangoReemplazo.selectNode(bloque);
   seleccion.removeAllRanges();
   seleccion.addRange(rangoReemplazo);
 
@@ -2813,6 +2993,17 @@ function aplicarTamanoFuenteSeleccion(valor) {
   return true;
 }
 
+function aplicarTamanoFuenteRapido(valor) {
+  const editor = obtenerEditor();
+  const seleccionGuardadaValida = editor
+    && seleccionEditor
+    && !seleccionEditor.collapsed
+    && editor.contains(seleccionEditor.commonAncestorContainer);
+  if (seleccionGuardadaValida) return aplicarTamanoFuenteSeleccion(valor);
+  aplicarDisposicionHoja({ ...disposicionHojaActual, tamanioFuente: valor });
+  return true;
+}
+
 function limpiarFormatoSeleccion() {
   const aplicado = ejecutarFormato("removeFormat");
   if (!aplicado) return false;
@@ -2883,7 +3074,7 @@ function aplicarComandoResaltadoInsercion(color) {
 }
 
 function prepararModoResaltadoAntesDeInsertar(evento) {
-  if (!String(evento.inputType || "").startsWith("insert")) return;
+  if (evento.defaultPrevented || !String(evento.inputType || "").startsWith("insert")) return;
   const editor = obtenerEditor();
   const seleccion = window.getSelection();
   if (!editor || !seleccion?.rangeCount || !editor.contains(seleccion.getRangeAt(0).commonAncestorContainer)) return;
@@ -3145,9 +3336,41 @@ function actualizarEstadoFormato() {
   }
 }
 
+function elementoListaAlInicioDelCursor() {
+  const editor = obtenerEditor();
+  const seleccion = window.getSelection();
+  if (!editor || !seleccion?.rangeCount || !seleccion.isCollapsed) return null;
+  const rango = seleccion.getRangeAt(0);
+  if (!editor.contains(rango.commonAncestorContainer)) return null;
+  const nodo = rango.startContainer.nodeType === Node.ELEMENT_NODE
+    ? rango.startContainer
+    : rango.startContainer.parentElement;
+  const item = nodo?.closest?.("li");
+  if (!item || !editor.contains(item)) return null;
+  const rangoAnterior = document.createRange();
+  rangoAnterior.selectNodeContents(item);
+  rangoAnterior.setEnd(rango.startContainer, rango.startOffset);
+  return fragmentoConContenido(rangoAnterior.cloneContents()) ? null : item;
+}
+
+function quitarListaDeLineaConBackspace(evento) {
+  if (!elementoListaAlInicioDelCursor()) return false;
+  guardarSeleccionEditor();
+  const aplicado = ejecutarFormato("outdent");
+  if (!aplicado) return false;
+  evento.preventDefault();
+  normalizarEstilosSublistas();
+  guardarSeleccionEditor();
+  ponerEstado("Lista quitada de la línea");
+  return true;
+}
+
 function gestionarAtajosEditor(evento) {
   const tecla = evento.key.toLocaleLowerCase("es");
   const tieneModificador = evento.ctrlKey || evento.metaKey;
+  if (tecla === "backspace" && !tieneModificador && !evento.altKey && !evento.shiftKey) {
+    if (quitarListaDeLineaConBackspace(evento)) return;
+  }
   if (tecla === "tab" && obtenerListaSeleccionada()) {
     evento.preventDefault();
     cambiarNivelLista(evento.shiftKey ? -1 : 1);

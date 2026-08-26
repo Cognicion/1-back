@@ -136,7 +136,30 @@ body.pagina-apuntes.apuntes-superior-retraido .apuntes-editor {
   gap: 8px;
 }
 body.pagina-apuntes.apuntes-superior-retraido .menu-principal-apunte { display: none; }
-body.pagina-apuntes.apuntes-superior-retraido .boton-restaurar-superior { display: grid; }
+body.pagina-apuntes.apuntes-superior-retraido .cinta-formato-contenedor {
+  box-sizing: border-box;
+  padding-inline-start: 72px;
+}
+body.pagina-apuntes.apuntes-superior-retraido .apuntes-shell .boton-restaurar-superior {
+  position: absolute;
+  z-index: 30;
+  top: 6px;
+  right: auto;
+  left: 8px;
+  display: grid;
+}
+body.pagina-apuntes.apuntes-superior-retraido .apuntes-shell .boton-alternar-cinta--flotante {
+  position: absolute;
+  z-index: 30;
+  top: 6px;
+  right: auto;
+  left: 42px;
+  display: grid;
+}
+
+.apuntes-shell .boton-alternar-cinta--flotante[hidden] {
+  display: none;
+}
 
 .topbar-apuntes .global-header-branding {
   grid-column: 1;
@@ -2339,6 +2362,8 @@ body.pagina-apuntes > main.apuntes-shell {
   box-sizing: border-box;
   padding: var(--margen-superior, 14px) var(--margen-derecho, 14px) var(--margen-inferior, 14px) var(--margen-izquierdo, 14px);
   overflow: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   border: 0;
   border-radius: 11px;
   color: var(--apunte-texto, var(--apuntes-texto));
@@ -2349,6 +2374,12 @@ body.pagina-apuntes > main.apuntes-shell {
   overflow-wrap: anywhere;
   /* El cursor sigue el contraste automático del lienzo, incluso con fondo blanco. */
   caret-color: var(--apunte-texto, var(--apuntes-texto));
+}
+
+.editor-contenido::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 .editor-contenido::selection,

@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260826-apuntes-listas-color-heredado-v28">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260826-apuntes-scroll-unico-v35">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -59,7 +59,10 @@
 
     <section class="apuntes-editor" aria-label="Editor de apuntes">
       <input id="apunteId" type="hidden">
-      <button id="restaurarEspacioSuperior" type="button" class="boton-restaurar-superior" aria-label="Mostrar fila del título" title="Mostrar fila del título" hidden>⌄</button>
+      <button id="restaurarEspacioSuperior" type="button" class="boton-restaurar-superior" aria-label="Mostrar fila del título" title="Mostrar fila del título" hidden>⌃</button>
+      <button id="alternarBarraFormatoFlotante" type="button" class="boton-alternar-cinta boton-alternar-cinta--flotante" aria-controls="barraFormatoApunte" aria-expanded="true" aria-label="Contraer cinta" title="Contraer cinta" hidden>
+        <span aria-hidden="true" data-collapse-letter="C">↑<sub>C</sub></span>
+      </button>
 
       <div id="menuPrincipalApunte" class="menu-principal-apunte" aria-label="Acciones del apunte">
         <button
@@ -121,9 +124,9 @@
             <option value="Aptos">Aptos</option><option value="Arial" selected>Arial</option><option value="Calibri">Calibri</option><option value="Georgia">Georgia</option><option value="Times New Roman">Times New Roman</option><option value="Verdana">Verdana</option><option value="Tahoma">Tahoma</option><option value="Trebuchet MS">Trebuchet MS</option><option value="Courier New">Courier New</option>
           </select>
         </label>
-        <label class="control-tamano-fuente" title="Tamaño de fuente del documento">
+        <label class="control-tamano-fuente" title="Tamaño de fuente">
           <span class="visualmente-oculto">Tamaño de fuente</span>
-          <input id="tamanoFuenteRapido" type="number" min="6" max="96" step="1" inputmode="numeric" value="12" aria-label="Tamaño de fuente del documento en puntos"><span aria-hidden="true">pt</span>
+          <input id="tamanoFuenteRapido" type="number" min="6" max="96" step="1" inputmode="numeric" value="12" aria-label="Tamaño de fuente en puntos"><span aria-hidden="true">pt</span>
         </label>
         <label class="control-interlineado" title="Interlineado">
           <span class="visualmente-oculto">Interlineado</span>
@@ -551,7 +554,7 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260826-apuntes-marcadores-editar-eliminar-v27"></script>
+  <script type="module" src="js/apuntes.js?v=20260826-apuntes-scroll-unico-v35"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>

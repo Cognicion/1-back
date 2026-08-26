@@ -138,5 +138,12 @@
 // deployment marker: 2026-08-26-apuntes-titulo-fila-independiente-v26 (+0.001)
 // deployment marker: 2026-08-26-apuntes-marcadores-editar-eliminar-v27 (+0.001)
 // deployment marker: 2026-08-26-apuntes-listas-color-heredado-v28 (+0.001)
-export const APP_VERSION = "2.149";
+// deployment marker: 2026-08-26-apuntes-controles-plegado-visibles-v29 (+0.001)
+// deployment marker: 2026-08-26-apuntes-lista-seleccion-parcial-v30 (+0.001)
+// deployment marker: 2026-08-26-apuntes-zoom-anclado-v31 (+0.001)
+// deployment marker: 2026-08-26-apuntes-backspace-quita-lista-v32 (+0.001)
+// deployment marker: 2026-08-26-apuntes-atajo-punto-renglon-v33 (+0.001)
+// deployment marker: 2026-08-26-apuntes-tamano-conserva-seleccion-v34 (+0.001)
+// deployment marker: 2026-08-26-apuntes-scroll-unico-v35 (+0.001)
+export const APP_VERSION = "2.156";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

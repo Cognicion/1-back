@@ -232,8 +232,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=2\.115-navbar-unica-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260826-apuntes-listas-color-heredado-v28/);
-  assert.match(html, /apuntes\.js\?v=20260826-apuntes-marcadores-editar-eliminar-v27/);
+  assert.match(html, /apuntes\.css\?v=20260826-apuntes-scroll-unico-v35/);
+  assert.match(html, /apuntes\.js\?v=20260826-apuntes-scroll-unico-v35/);
   assert.match(html, /id="formatoCursiva"[^>]*data-editor-command="italic"/);
   assert.match(html, /id="formatoSubrayado"[^>]*data-editor-command="underline"/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
@@ -306,12 +306,13 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /value="ancho">Ancho</);
   assert.match(html, /value="reflejado">Reflejado</);
   assert.match(html, /id="tamanoFuenteHoja"/);
-  assert.match(html, /id="tamanoFuenteRapido" type="number"[^>]*aria-label="Tamaño de fuente del documento en puntos"/);
+  assert.match(html, /id="tamanoFuenteRapido" type="number"[^>]*aria-label="Tamaño de fuente en puntos"/);
   assert.match(html, /id="zoomHojaBarraPie" type="range"[^>]*max="800"/);
   assert.match(html, /id="zoomHojaMenosVista"/);
   assert.match(html, /id="zoomHojaMasVista"/);
   assert.doesNotMatch(html, /id="alternarTituloApunte"/);
   assert.match(html, /id="alternarBarraFormato"[^>]*aria-controls="barraFormatoApunte"/);
+  assert.match(html, /id="alternarBarraFormatoFlotante"[^>]*aria-controls="barraFormatoApunte"[^>]*hidden/);
   assert.match(html, /id="alternarEspacioSuperior"[^>]*aria-label="Contraer fila del título"/);
   assert.match(html, /id="restaurarEspacioSuperior"[^>]*aria-label="Mostrar fila del título"[^>]*hidden/);
   assert.match(html, /id="menuPrincipalApunte" class="menu-principal-apunte"/);
@@ -381,7 +382,7 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
     "la nota debe cargar su disposición antes de mostrar el editor"
   );
   assert.match(controlador, /shell\.addEventListener\("apuntes:sidebar"/);
-  assert.match(controlador, /if \(nuevaClaveVista === claveVistaHoja\) return/);
+  assert.match(controlador, /if \(nuevaClaveVista === claveVistaHoja\) \{\s*anclaZoomHojaPendiente = null;\s*return;\s*\}/);
   assert.match(controlador, /const cajaVisor = visor\.getBoundingClientRect\(\)/);
   const calculoVistaHoja = controlador.match(/function actualizarVistaHoja\(\) \{[\s\S]*?\n\}/)?.[0] || "";
   assert.doesNotMatch(calculoVistaHoja, /visor\.client(?:Width|Height)/);
@@ -519,6 +520,9 @@ test("el layout usa el lienzo completo y evita controles flotantes", () => {
   assert.match(controlador, /restaurar\.hidden = !retraido/);
   assert.match(css, /\.boton-alternar-superior\s*\{/);
   assert.match(css, /\.boton-restaurar-superior\[hidden\]\s*\{[\s\S]*display:\s*none/);
+  assert.match(css, /apuntes-superior-retraido \.apuntes-shell \.boton-restaurar-superior\s*\{[^}]*position:\s*absolute[^}]*top:\s*6px[^}]*left:\s*8px[^}]*display:\s*grid/);
+  assert.match(css, /apuntes-superior-retraido \.cinta-formato-contenedor\s*\{[^}]*padding-inline-start:\s*72px/);
+  assert.match(css, /apuntes-superior-retraido \.apuntes-shell \.boton-alternar-cinta--flotante\s*\{[^}]*position:\s*absolute[^}]*left:\s*42px[^}]*display:\s*grid/);
   assert.match(css, /grid-template-columns:\s*28px 24px auto 30px minmax\(0, 1fr\) 30px/);
   assert.match(css, /grid-template-rows:\s*42px/);
   assert.match(css, /#alternarSidebarApuntes\s*\{\s*grid-column:\s*1;\s*grid-row:\s*1/);
@@ -676,6 +680,13 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-26-apuntes-titulo-fila-independiente-v26/);
   assert.match(version, /2026-08-26-apuntes-marcadores-editar-eliminar-v27/);
   assert.match(version, /2026-08-26-apuntes-listas-color-heredado-v28/);
+  assert.match(version, /2026-08-26-apuntes-controles-plegado-visibles-v29/);
+  assert.match(version, /2026-08-26-apuntes-lista-seleccion-parcial-v30/);
+  assert.match(version, /2026-08-26-apuntes-zoom-anclado-v31/);
+  assert.match(version, /2026-08-26-apuntes-backspace-quita-lista-v32/);
+  assert.match(version, /2026-08-26-apuntes-atajo-punto-renglon-v33/);
+  assert.match(version, /2026-08-26-apuntes-tamano-conserva-seleccion-v34/);
+  assert.match(version, /2026-08-26-apuntes-scroll-unico-v35/);
   assert.match(version, /2026-08-22-apuntes-subcarpetas-hotfix-v1/);
   assert.match(version, /2026-08-22-apuntes-insertar-controles-v1/);
   assert.match(version, /2026-08-22-apuntes-contexto-fondo-retraible-v1/);
@@ -689,4 +700,51 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   const versionVisible = version.match(/APP_VERSION = "(\d+\.\d+)"/);
   assert.ok(versionVisible, "APP_VERSION debe seguir siendo visible y numérica");
   assert.ok(Number(versionVisible[1]) >= 2.103, "versiones posteriores no deben invalidar la regresión de Mis apuntes");
+});
+
+test("las listas respetan una selección parcial dentro del párrafo", () => {
+  assert.match(controlador, /function convertirSeleccionParcialEnLista\(tipo\)/);
+  assert.match(controlador, /rangoAntes\.setEnd\(rango\.startContainer, rango\.startOffset\)/);
+  assert.match(controlador, /rangoDespues\.setStart\(rango\.endContainer, rango\.endOffset\)/);
+  assert.match(controlador, /item\.append\(contenidoSeleccionado\)/);
+  assert.match(controlador, /if \(bloqueInicio === editor\) editor\.replaceChildren\(\.\.\.reemplazos\)/);
+  assert.match(controlador, /restaurarSeleccionEditor\(\);\s*if \(convertirSeleccionParcialEnLista\(tipo\)\) return true;/);
+});
+
+test("el zoom conserva la zona visible de escritura", () => {
+  assert.match(controlador, /let anclaZoomHojaPendiente = null/);
+  assert.match(controlador, /function capturarAnclaZoomHoja\(referencia = null\)/);
+  assert.match(controlador, /seleccionEditor && editor\.contains\(seleccionEditor\.commonAncestorContainer\)/);
+  assert.match(controlador, /function restaurarAnclaZoomHoja\(\)[\s\S]*visor\.scrollLeft \+= actualX - ancla\.clientX;[\s\S]*visor\.scrollTop \+= actualY - ancla\.clientY/);
+  assert.match(controlador, /function aplicarZoomHoja\(zoom, referencia = null\)/);
+  assert.match(controlador, /cambiarZoomHoja\(evento\.deltaY < 0 \? 25 : -25, evento\)/);
+});
+
+test("Backspace al inicio quita la lista de esa línea sin fusionarla", () => {
+  assert.match(controlador, /function elementoListaAlInicioDelCursor\(\)/);
+  assert.match(controlador, /rangoAnterior\.selectNodeContents\(item\);\s*rangoAnterior\.setEnd\(rango\.startContainer, rango\.startOffset\)/);
+  assert.match(controlador, /function quitarListaDeLineaConBackspace\(evento\)[\s\S]*ejecutarFormato\("outdent"\)[\s\S]*evento\.preventDefault\(\)/);
+  assert.match(controlador, /if \(tecla === "backspace"[^}]*quitarListaDeLineaConBackspace\(evento\)/);
+});
+
+test("punto y espacio crean una lista desde el inicio del renglón actual", () => {
+  assert.match(controlador, /function crearRangoPrefijoRenglon\(bloque, rangoCursor\)/);
+  assert.match(controlador, /textoAnterior\.lastIndexOf\("\\n"\)/);
+  assert.match(controlador, /rango\.intersectsNode\(salto\)/);
+  assert.match(controlador, /\[" ", "\\u00a0"\]\.includes\(evento\.data\)/);
+  assert.match(controlador, /const rangoReemplazo = rangoPrefijo\.cloneRange\(\)/);
+  assert.match(controlador, /addEventListener\("beforeinput", convertirAtajoListaAntesDeInsertar\);\s*editor\?\.addEventListener\("beforeinput", prepararModoResaltadoAntesDeInsertar\)/);
+  assert.match(controlador, /function prepararModoResaltadoAntesDeInsertar\(evento\) \{\s*if \(evento\.defaultPrevented \|\|/);
+});
+
+test("el control numérico conserva la selección y cambia su tamaño", () => {
+  assert.match(controlador, /\["tamanoFuenteRapido", "tamanoFuenteContextual"\]\.forEach[\s\S]*addEventListener\("pointerdown", guardarSeleccionEditor\)/);
+  assert.match(controlador, /tamanoFuenteRapido"\)\?\.addEventListener\("change", \(evento\) => \{\s*aplicarTamanoFuenteRapido\(evento\.target\.value\)/);
+  assert.match(controlador, /function aplicarTamanoFuenteRapido\(valor\)[\s\S]*!seleccionEditor\.collapsed[\s\S]*aplicarTamanoFuenteSeleccion\(valor\)/);
+});
+
+test("el documento muestra una sola barra de desplazamiento", () => {
+  assert.match(css, /\.editor-contenido\s*\{[^}]*overflow:\s*auto;[^}]*scrollbar-width:\s*none;[^}]*-ms-overflow-style:\s*none;/);
+  assert.match(css, /\.editor-contenido::\-webkit-scrollbar\s*\{[^}]*width:\s*0;[^}]*height:\s*0;[^}]*display:\s*none;/);
+  assert.match(css, /\.lienzo-apunte\s*\{[^}]*overflow:\s*auto/);
 });
