@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis apuntes | Cognición</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/apuntes.css?v=20260825-apuntes-buscar-reemplazar-fuentes-v23">
+  <link rel="stylesheet" href="css/apuntes.css?v=20260826-apuntes-listas-color-heredado-v28">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -59,7 +59,7 @@
 
     <section class="apuntes-editor" aria-label="Editor de apuntes">
       <input id="apunteId" type="hidden">
-      <button id="restaurarEspacioSuperior" type="button" class="boton-restaurar-superior" aria-label="Mostrar barras superiores" title="Mostrar barras superiores" hidden>⌄</button>
+      <button id="restaurarEspacioSuperior" type="button" class="boton-restaurar-superior" aria-label="Mostrar fila del título" title="Mostrar fila del título" hidden>⌄</button>
 
       <div id="menuPrincipalApunte" class="menu-principal-apunte" aria-label="Acciones del apunte">
         <button
@@ -77,7 +77,7 @@
             <path class="boton-alternar-sidebar__flecha" d="m15 9-3 3 3 3"></path>
           </svg>
         </button>
-        <button id="alternarEspacioSuperior" type="button" class="boton-alternar-superior" aria-expanded="true" aria-label="Contraer encabezado" title="Contraer encabezado">⌃</button>
+        <button id="alternarEspacioSuperior" type="button" class="boton-alternar-superior" aria-expanded="true" aria-label="Contraer fila del título" title="Contraer fila del título">⌃</button>
         <button id="abrirArchivoApunte" type="button" class="boton-archivo-apunte" aria-haspopup="dialog" aria-expanded="false" aria-controls="menuArchivoApunte">Archivo</button>
         <button id="guardarRapidoApunte" type="button" class="boton-guardar-rapido" aria-label="Guardar rápidamente" title="Guardar rápidamente">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h12l3 3v15H5z"></path><path d="M8 3v6h8V3M8 20v-6h8v6"></path></svg>
@@ -130,10 +130,12 @@
           <select id="interlineadoApunte" aria-label="Interlineado"><option value="1">1</option><option value="1.15">1.15</option><option value="1.5" selected>1.5</option><option value="2">2</option><option value="2.5">2.5</option><option value="3">3</option></select>
           <span aria-hidden="true">↕</span>
         </label>
-        <div class="selector-color">
-          <button id="abrirColorFondoTexto" type="button" class="control-color" aria-haspopup="dialog" aria-expanded="false" aria-controls="paletaColorFondoTexto" title="Resaltar texto">
+        <div class="selector-color selector-color--dividido" role="group" aria-label="Resaltado de texto">
+          <button id="aplicarUltimoResaltado" type="button" class="control-color control-color--aplicar" aria-pressed="false" title="Aplicar el último color de resaltado">
             <span class="control-color__muestra control-color__muestra--fondo" aria-hidden="true">A</span>
-            <span>Resaltar</span>
+          </button>
+          <button id="abrirColorFondoTexto" type="button" class="control-color control-color--desplegar" aria-haspopup="dialog" aria-expanded="false" aria-controls="paletaColorFondoTexto" aria-label="Abrir colores de resaltado" title="Más colores de resaltado">
+            <span aria-hidden="true">⌄</span>
           </button>
         </div>
         <div class="selector-color">
@@ -334,6 +336,11 @@
         <div id="listaMarcadoresApunte" class="lista-marcadores-apunte" aria-live="polite"></div>
       </aside>
 
+      <section id="menuContextualMarcador" class="menu-contextual-marcador" role="menu" aria-label="Acciones del marcador" hidden>
+        <button type="button" data-accion-marcador="editar" role="menuitem">Editar</button>
+        <button type="button" data-accion-marcador="eliminar" class="menu-contextual-marcador__eliminar" role="menuitem">Eliminar</button>
+      </section>
+
       <section id="propiedadesObjeto" class="panel-objeto" role="dialog" aria-label="Propiedades del objeto" hidden>
         <div class="panel-objeto__encabezado">
           <strong>Objeto</strong>
@@ -393,7 +400,15 @@
           <button type="button" data-submenu-texto-toggle="fuente" role="menuitem" aria-haspopup="menu" aria-expanded="false">Fuente <span aria-hidden="true">›</span></button>
           <div class="menu-contextual-texto__submenu" data-submenu-texto="fuente" role="menu" aria-label="Opciones de fuente" hidden>
             <button type="button" data-accion-texto="bold" role="menuitem">Negrita</button>
-            <button type="button" data-accion-texto="texto" role="menuitem">Color de texto</button>
+            <button type="button" data-accion-texto="italic" role="menuitem">Cursiva</button>
+            <button type="button" data-accion-texto="underline" role="menuitem">Subrayado</button>
+            <button type="button" data-accion-texto="strikeThrough" role="menuitem">Tachado</button>
+            <button type="button" data-accion-texto="subscript" role="menuitem">Subíndice</button>
+            <button type="button" data-accion-texto="superscript" role="menuitem">Superíndice</button>
+            <div class="menu-contextual-texto__acciones-color" role="group" aria-label="Color de texto">
+              <button type="button" data-accion-texto="aplicar-color-texto" role="menuitem">Aplicar último color</button>
+              <button type="button" data-accion-texto="elegir-color-texto" role="menuitem">Elegir color…</button>
+            </div>
             <label class="menu-contextual-texto__tamano menu-contextual-texto__familia"><span>Fuente</span><select id="familiaFuenteContextual" aria-label="Tipo de fuente de la selección"><option value="Aptos">Aptos</option><option value="Arial" selected>Arial</option><option value="Calibri">Calibri</option><option value="Georgia">Georgia</option><option value="Times New Roman">Times New Roman</option><option value="Verdana">Verdana</option><option value="Tahoma">Tahoma</option><option value="Trebuchet MS">Trebuchet MS</option><option value="Courier New">Courier New</option></select></label>
             <label class="menu-contextual-texto__tamano"><span>Tamaño (pt)</span><input id="tamanoFuenteContextual" type="number" min="6" max="96" step="1" value="12" inputmode="numeric" aria-label="Tamaño de fuente de la selección en puntos"></label>
             <div class="menu-contextual-texto__tamanos" role="group" aria-label="Tamaños de fuente sugeridos">
@@ -403,9 +418,21 @@
           </div>
         </div>
         <div class="menu-contextual-texto__grupo">
+          <button type="button" data-submenu-texto-toggle="parrafo" role="menuitem" aria-haspopup="menu" aria-expanded="false">Párrafo <span aria-hidden="true">›</span></button>
+          <div class="menu-contextual-texto__submenu" data-submenu-texto="parrafo" role="menu" aria-label="Opciones de párrafo" hidden>
+            <label class="menu-contextual-texto__tamano"><span>Interlineado</span><select id="interlineadoContextual" aria-label="Interlineado de la selección"><option value="1">1</option><option value="1.15">1.15</option><option value="1.5" selected>1.5</option><option value="2">2</option><option value="2.5">2.5</option><option value="3">3</option></select></label>
+            <button type="button" data-accion-texto="alinear-izquierda" role="menuitem">Alinear a la izquierda</button>
+            <button type="button" data-accion-texto="alinear-centro" role="menuitem">Centrar</button>
+            <button type="button" data-accion-texto="alinear-derecha" role="menuitem">Alinear a la derecha</button>
+            <button type="button" data-accion-texto="justificar" role="menuitem">Justificar</button>
+            <button type="button" data-accion-texto="cita" role="menuitem">Cita</button>
+          </div>
+        </div>
+        <div class="menu-contextual-texto__grupo">
           <button type="button" data-submenu-texto-toggle="resaltado" role="menuitem" aria-haspopup="menu" aria-expanded="false">Resaltado <span aria-hidden="true">›</span></button>
           <div class="menu-contextual-texto__submenu" data-submenu-texto="resaltado" role="menu" aria-label="Opciones de resaltado" hidden>
-            <button type="button" data-accion-texto="resaltar" role="menuitem">Aplicar resaltado</button>
+            <button type="button" data-accion-texto="aplicar-resaltado" role="menuitem">Aplicar último color</button>
+            <button type="button" data-accion-texto="elegir-resaltado" role="menuitem">Elegir color…</button>
             <button type="button" data-accion-texto="quitar-resaltado" role="menuitem">Quitar resaltado</button>
           </div>
         </div>
@@ -423,6 +450,15 @@
           <button type="button" data-submenu-texto-toggle="pagina" role="menuitem" aria-haspopup="menu" aria-expanded="false">Página <span aria-hidden="true">›</span></button>
           <div class="menu-contextual-texto__submenu" data-submenu-texto="pagina" role="menu" aria-label="Opciones de página" hidden>
             <button type="button" data-accion-texto="fondo-apunte" role="menuitem">Fondo del apunte</button>
+            <button type="button" data-accion-texto="disposicion-hoja" role="menuitem">Disposición de hoja</button>
+          </div>
+        </div>
+        <div class="menu-contextual-texto__grupo">
+          <button type="button" data-submenu-texto-toggle="herramientas" role="menuitem" aria-haspopup="menu" aria-expanded="false">Herramientas <span aria-hidden="true">›</span></button>
+          <div class="menu-contextual-texto__submenu" data-submenu-texto="herramientas" role="menu" aria-label="Herramientas del apunte" hidden>
+            <button type="button" data-accion-texto="buscar" role="menuitem">Buscar y reemplazar</button>
+            <button type="button" data-accion-texto="marcadores" role="menuitem">Marcadores</button>
+            <button type="button" data-accion-texto="insertar" role="menuitem">Insertar</button>
           </div>
         </div>
       </section>
@@ -496,7 +532,26 @@
     </form>
   </dialog>
 
-  <script type="module" src="js/apuntes.js?v=20260825-apuntes-buscar-reemplazar-fuentes-v23"></script>
+  <dialog id="dialogoEditarMarcador" class="dialogo-carpeta dialogo-editar-marcador" aria-labelledby="tituloDialogoEditarMarcador">
+    <form id="formularioEditarMarcador" method="dialog">
+      <input id="marcadorEditarId" type="hidden">
+      <h2 id="tituloDialogoEditarMarcador">Editar marcador</h2>
+      <div class="dialogo-editar-marcador__texto">
+        <span>Texto marcado</span>
+        <p id="textoMarcadorEditar"></p>
+      </div>
+      <label>
+        <span>Comentario</span>
+        <textarea id="comentarioMarcadorEditar" maxlength="500" rows="5" placeholder="Añade una nota o comentario sobre este texto"></textarea>
+      </label>
+      <div class="dialogo-carpeta__acciones">
+        <button id="cancelarEditarMarcador" type="button" class="boton-secundario-apuntes">Cancelar</button>
+        <button type="submit">Guardar comentario</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="js/apuntes.js?v=20260826-apuntes-marcadores-editar-eliminar-v27"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js?v=20260820-apuntes-navbar-v1"></script>
 </body>

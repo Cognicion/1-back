@@ -16,6 +16,7 @@ const busquedasPorTab = { diagnosticos: "", vademecum: "", citocromos: "" };
 let categoriaActual = "todas";
 let catalogoDiagnosticoActual = null;
 let letraCie10Actual = null;
+let grupoFarmacologicoActual = null;
 const SYSTEM_ORDER = ["cie10", "cie11", "dsm5"];
 const SISTEMA_LABEL = { cie10: "CIE-10", cie11: "CIE-11", dsm5: "DSM-5-TR" };
 const CATALOGOS_DIAGNOSTICOS = [
@@ -287,6 +288,74 @@ function coincide(texto) {
   return !filtro || normalizarNombreDiagnostico(texto).includes(filtro);
 }
 
+const ETIQUETA_GRUPO_FARMACOLOGICO_PENDIENTE = "Grupo farmacológico pendiente";
+const CLAVE_GRUPO_FARMACOLOGICO_PENDIENTE = "__grupo_farmacologico_pendiente__";
+const ETIQUETAS_GRUPO_NO_CLASIFICADO = new Set([
+  "",
+  "medicamento",
+  "sin categoria",
+  "sin grupo",
+  "no especificado"
+]);
+
+function etiquetaGrupoFarmacologico(medicamento = {}) {
+  const etiquetas = [medicamento.grupoFarmacologico, medicamento.clase, medicamento.clasePrincipal]
+    .map((valor) => String(valor || "").trim())
+    .filter(Boolean);
+  return etiquetas.find((etiqueta) => !ETIQUETAS_GRUPO_NO_CLASIFICADO.has(normalizarNombreDiagnostico(etiqueta)))
+    || ETIQUETA_GRUPO_FARMACOLOGICO_PENDIENTE;
+}
+
+function claveGrupoFarmacologico(etiqueta = "") {
+  return etiqueta === ETIQUETA_GRUPO_FARMACOLOGICO_PENDIENTE
+    ? CLAVE_GRUPO_FARMACOLOGICO_PENDIENTE
+    : normalizarNombreDiagnostico(etiqueta);
+}
+
+function preferirEtiquetaGrupo(actual = "", candidata = "") {
+  const acentos = (valor) => (String(valor).match(/[áéíóúüñ]/gi) || []).length;
+  return acentos(candidata) > acentos(actual) ? candidata : actual;
+}
+
+function obtenerGruposFarmacologicos() {
+  const grupos = new Map();
+  MEDICAMENTOS_MAESTROS.forEach((medicamento) => {
+    const nombre = etiquetaGrupoFarmacologico(medicamento);
+    const id = claveGrupoFarmacologico(nombre);
+    if (!grupos.has(id)) grupos.set(id, { id, nombre, medicamentos: [] });
+    const grupo = grupos.get(id);
+    grupo.nombre = preferirEtiquetaGrupo(grupo.nombre, nombre);
+    grupo.medicamentos.push(medicamento);
+  });
+  return [...grupos.values()]
+    .map((grupo) => ({
+      ...grupo,
+      medicamentos: grupo.medicamentos.sort((a, b) => a.nombre.localeCompare(b.nombre, "es", { sensitivity: "base" }))
+    }))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, "es", { sensitivity: "base" }));
+}
+
+function estadoCoberturaGrupoFarmacologico(grupo = {}) {
+  const medicamentos = grupo.medicamentos || [];
+  if (!medicamentos.length || grupo.id === CLAVE_GRUPO_FARMACOLOGICO_PENDIENTE) {
+    return { texto: "Pendiente", clase: "pendiente", verificados: 0, parciales: 0, pendientes: medicamentos.length };
+  }
+  const verificados = medicamentos.filter((medicamento) => medicamento.estadoFuente === "verificada_local").length;
+  const parciales = medicamentos.filter((medicamento) => medicamento.estadoFuente === "fuente_regulatoria_parcial").length;
+  const pendientes = medicamentos.length - verificados - parciales;
+  if (verificados === medicamentos.length) return { texto: "Fuentes verificadas", clase: "completa", verificados, parciales, pendientes };
+  if (!pendientes && parciales) return { texto: "En revisión", clase: "revision", verificados, parciales, pendientes };
+  if (verificados || parciales) return { texto: "Cobertura parcial", clase: "parcial", verificados, parciales, pendientes };
+  return { texto: "Fuente pendiente", clase: "pendiente", verificados, parciales, pendientes };
+}
+
+function textoBusquedaGrupoFarmacologico(grupo = {}) {
+  return [
+    grupo.nombre,
+    ...(grupo.medicamentos || []).map((medicamento) => textoMedicamentoParaBusqueda(medicamento))
+  ].filter(Boolean).join(" ");
+}
+
 function listaResumen(titulo, items = [], limite = 6) {
   const valores = (items || []).filter(Boolean).slice(0, limite);
   if (!valores.length) return "";
@@ -476,7 +545,10 @@ function actualizarControlesBiblioteca() {
 
   if (!buscadorBiblioteca) return;
   if (tabActual === "vademecum") {
-    buscadorBiblioteca.placeholder = "Buscar medicamento, indicación o propiedad...";
+    const grupo = obtenerGruposFarmacologicos().find((item) => item.id === grupoFarmacologicoActual);
+    buscadorBiblioteca.placeholder = grupo
+      ? `Buscar medicamento en ${grupo.nombre}...`
+      : "Buscar grupo farmacológico o medicamento...";
   } else if (tabActual === "citocromos") {
     buscadorBiblioteca.placeholder = "Buscar citocromo o medicamento relacionado...";
   } else if (catalogoDiagnosticoActual === "cie10") {
@@ -938,6 +1010,172 @@ function anexarSiguienteLoteDiagnosticos(panel) {
   sentinel.replaceWith(boton);
 }
 
+function enfocarYAnunciarNavegacionVademecum(panel) {
+  const encabezado = panel.querySelector("[data-foco-navegacion]");
+  encabezado?.focus();
+  const estado = document.getElementById("estadoNavegacionBiblioteca");
+  if (!estado || !encabezado) return;
+  const resumen = encabezado.closest("header")?.querySelector("p:last-child")?.textContent?.trim();
+  estado.textContent = "";
+  queueMicrotask(() => {
+    estado.textContent = [encabezado.textContent?.trim(), resumen].filter(Boolean).join(". ");
+  });
+}
+
+function conectarNavegacionVademecum(panel) {
+  panel.querySelectorAll("[data-grupo-farmacologico]").forEach((boton) => boton.addEventListener("click", () => {
+    grupoFarmacologicoActual = boton.dataset.grupoFarmacologico;
+    render();
+    enfocarYAnunciarNavegacionVademecum(panel);
+  }));
+  panel.querySelectorAll("[data-volver-grupos-farmacologicos]").forEach((boton) => boton.addEventListener("click", () => {
+    grupoFarmacologicoActual = null;
+    render();
+    enfocarYAnunciarNavegacionVademecum(panel);
+  }));
+}
+
+function renderizarIndiceGruposFarmacologicos(panel) {
+  const grupos = obtenerGruposFarmacologicos();
+  const visibles = grupos.filter((grupo) => coincide(textoBusquedaGrupoFarmacologico(grupo)));
+  const resumen = visibles.length === grupos.length
+    ? `${grupos.length.toLocaleString("es-MX")} grupos · ${MEDICAMENTOS_MAESTROS.length.toLocaleString("es-MX")} medicamentos`
+    : `${visibles.length.toLocaleString("es-MX")} de ${grupos.length.toLocaleString("es-MX")} grupos`;
+  panel.className = "navegacion-diagnosticos navegacion-grupos-farmacologicos";
+  panel.innerHTML = `
+    <header class="encabezado-navegacion-diagnosticos">
+      <p class="sobretitulo-biblioteca">Tratamientos</p>
+      <h2 tabindex="-1" data-foco-navegacion>Selecciona un grupo farmacológico</h2>
+      <p>${resumen}. Cada medicamento conserva la ficha del catálogo farmacológico maestro.</p>
+    </header>
+    ${visibles.length ? `
+      <div class="grupos-farmacologicos-lista" role="list" aria-label="Grupos farmacológicos">
+        ${visibles.map((grupo) => {
+          const cobertura = estadoCoberturaGrupoFarmacologico(grupo);
+          const inicial = grupo.nombre.trim().charAt(0).toUpperCase() || "?";
+          const detalleCobertura = `${cobertura.verificados} verificadas · ${cobertura.parciales} parciales · ${cobertura.pendientes} pendientes`;
+          return `<div class="grupo-farmacologico-fila" role="listitem">
+            <button type="button" class="grupo-farmacologico-card" data-grupo-farmacologico="${escaparHTML(grupo.id)}" aria-label="${escaparHTML(grupo.nombre)}, ${grupo.medicamentos.length} medicamentos, ${escaparHTML(cobertura.texto)}">
+              <span class="grupo-farmacologico-card__inicial" aria-hidden="true">${escaparHTML(inicial)}</span>
+              <span class="grupo-farmacologico-card__nombre">${escaparHTML(grupo.nombre)}</span>
+              <span class="grupo-farmacologico-card__cantidad">${grupo.medicamentos.length.toLocaleString("es-MX")} medicamento${grupo.medicamentos.length === 1 ? "" : "s"}</span>
+              <span class="estado-cobertura estado-cobertura--${cobertura.clase}" title="${escaparHTML(detalleCobertura)}">${escaparHTML(cobertura.texto)}</span>
+              <span class="grupo-farmacologico-card__flecha" aria-hidden="true">›</span>
+            </button>
+          </div>`;
+        }).join("")}
+      </div>`
+      : `<div class="estado-vacio-biblioteca"><h3>Sin coincidencias</h3><p>No hay grupos o medicamentos relacionados con “${escaparHTML(busquedasPorTab.vademecum || "")}”.</p></div>`}`;
+  poblarCategoriasBiblioteca([]);
+  conectarNavegacionVademecum(panel);
+}
+
+function estadoFuenteMedicamento(medicamento = {}) {
+  if (medicamento.estadoFuente === "verificada_local") return { texto: "Fuente verificada", clase: "completa" };
+  if (medicamento.estadoFuente === "fuente_regulatoria_parcial") return { texto: "Fuente parcial", clase: "revision" };
+  return { texto: "Fuente pendiente", clase: "pendiente" };
+}
+
+function renderizarDetallesMedicamento(medicamento, detalles) {
+  const presentaciones = medicamento.presentaciones || [];
+  const presentacionesVisibles = presentaciones.slice(0, 8).map((presentacion) => presentacion.texto).filter(Boolean);
+  const presentacionesRestantes = Math.max(0, presentaciones.length - presentacionesVisibles.length);
+  const fuente = medicamento.fuente || "Fuente pendiente";
+  const paginaSeccion = medicamento.paginaSeccion && medicamento.paginaSeccion !== "fuente pendiente"
+    ? medicamento.paginaSeccion
+    : "Página o sección pendiente";
+  detalles.innerHTML = `
+    <div class="medicamento-ficha-grid">
+      <p><strong>Dosis habitual:</strong> ${escaparHTML(medicamento.dosisHabitual || "Dato no encontrado en fuente local")}</p>
+      ${medicamento.brandNames?.length ? `<p><strong>Marcas comerciales:</strong> ${escaparHTML(medicamento.brandNames.slice(0, 8).join(", "))}</p>` : ""}
+      <p><strong>Presentaciones:</strong> ${presentacionesVisibles.length ? escaparHTML(presentacionesVisibles.join("; ")) : "Sin presentaciones cargadas"}${presentacionesRestantes ? `; +${presentacionesRestantes} más` : ""}</p>
+      ${medicamento.especialidades?.length ? `<p><strong>Áreas:</strong> ${escaparHTML(medicamento.especialidades.join(", "))}</p>` : ""}
+      ${medicamento.mecanismoAccion ? `<p><strong>Mecanismo de acción:</strong> ${escaparHTML(medicamento.mecanismoAccion)}</p>` : ""}
+      ${medicamento.vidaMedia ? `<p><strong>Vida media:</strong> ${escaparHTML(medicamento.vidaMedia)}</p>` : ""}
+      ${medicamento.metabolismo ? `<p><strong>Metabolismo:</strong> ${escaparHTML(medicamento.metabolismo)}</p>` : ""}
+      ${medicamento.cyp?.length ? `<p><strong>CYP:</strong> ${escaparHTML(medicamento.cyp.join(", "))}</p>` : ""}
+      ${listaResumen("Indicaciones", medicamento.indicaciones || medicamento.indications)}
+      ${listaResumen("Contraindicaciones", medicamento.contraindicaciones || medicamento.contraindications)}
+      ${listaResumen("Tener precaución en", medicamento.precauciones || medicamento.precautions)}
+      ${listaResumen("Efectos adversos frecuentes o relevantes", medicamento.efectosAdversos)}
+      ${medicamento.monitoring?.length ? `<p><strong>Monitoreo:</strong> ${escaparHTML(medicamento.monitoring.slice(0, 6).join(", "))}</p>` : ""}
+      ${medicamento.notas ? `<p>${escaparHTML(medicamento.notas)}</p>` : ""}
+      <div class="medicamento-fuente">
+        <p><strong>Fuente:</strong> ${escaparHTML(fuente)}</p>
+        <p><strong>Página/sección:</strong> ${escaparHTML(paginaSeccion)}</p>
+        ${medicamento.confianza ? `<p><strong>Confianza:</strong> ${escaparHTML(medicamento.confianza)}</p>` : ""}
+      </div>
+      <p class="aviso-clinico-biblioteca">Contenido de apoyo clínico. Validar contra ficha técnica, protocolos locales y juicio profesional.</p>
+    </div>`;
+  detalles.dataset.rendered = "true";
+}
+
+function renderizarMedicamentoVademecum(medicamento) {
+  const panelId = `medicamento-${medicamento.id}-detalle`.replace(/[^a-zA-Z0-9_-]/g, "-");
+  const estadoFuente = estadoFuenteMedicamento(medicamento);
+  const presentaciones = medicamento.presentaciones?.length || 0;
+  return `<article class="diagnostico-row medicamento-row" data-medicamento-id="${escaparHTML(medicamento.id)}">
+    <header class="diagnostico-row__summary medicamento-row__summary">
+      <div class="diagnostico-row__main medicamento-row__main">
+        <h3>${escaparHTML(medicamento.nombre)}</h3>
+        <p>${escaparHTML(medicamento.genericName || medicamento.nombre)}</p>
+        <span class="tag diagnostico-row__category">${escaparHTML(etiquetaGrupoFarmacologico(medicamento))}</span>
+      </div>
+      <div class="diagnostico-row__codes medicamento-row__resumen">
+        <span>${presentaciones.toLocaleString("es-MX")} presentación${presentaciones === 1 ? "" : "es"}</span>
+        <span>${escaparHTML(medicamento.dosisHabitual || "Dosis pendiente")}</span>
+        <span class="estado-cobertura estado-cobertura--${estadoFuente.clase}">${escaparHTML(estadoFuente.texto)}</span>
+      </div>
+      <button type="button" class="diagnostico-row__toggle" data-medicamento-toggle aria-expanded="false" aria-controls="${panelId}">Ver ficha</button>
+    </header>
+    <section id="${panelId}" class="diagnostico-row__details medicamento-row__details" data-medicamento-details hidden></section>
+  </article>`;
+}
+
+function conectarAcordeonesMedicamentos(panel) {
+  panel.querySelectorAll("[data-medicamento-toggle]").forEach((boton) => boton.addEventListener("click", () => {
+    const fila = boton.closest("[data-medicamento-id]");
+    const detalles = fila.querySelector("[data-medicamento-details]");
+    const medicamento = MEDICAMENTOS_BIBLIOTECA_POR_ID.get(fila.dataset.medicamentoId);
+    const abierto = boton.getAttribute("aria-expanded") === "true";
+    boton.setAttribute("aria-expanded", String(!abierto));
+    boton.textContent = abierto ? "Ver ficha" : "Ocultar ficha";
+    detalles.hidden = abierto;
+    if (!abierto && !detalles.dataset.rendered && medicamento) renderizarDetallesMedicamento(medicamento, detalles);
+  }));
+}
+
+function renderizarListaMedicamentosGrupo(panel) {
+  const grupos = obtenerGruposFarmacologicos();
+  const grupo = grupos.find((item) => item.id === grupoFarmacologicoActual);
+  if (!grupo) {
+    grupoFarmacologicoActual = null;
+    renderizarIndiceGruposFarmacologicos(panel);
+    return;
+  }
+  const medicamentos = grupo.medicamentos.filter((medicamento) => coincide(textoMedicamentoParaBusqueda(medicamento)));
+  const cobertura = estadoCoberturaGrupoFarmacologico(grupo);
+  const resumen = medicamentos.length === grupo.medicamentos.length
+    ? `${grupo.medicamentos.length.toLocaleString("es-MX")} medicamentos`
+    : `${medicamentos.length.toLocaleString("es-MX")} de ${grupo.medicamentos.length.toLocaleString("es-MX")} medicamentos`;
+  panel.className = "diagnosticos-lista medicamentos-lista";
+  panel.innerHTML = `
+    <header class="encabezado-lista-diagnosticos encabezado-lista-medicamentos">
+      <div class="acciones-ruta-biblioteca">
+        <button type="button" class="boton-regreso-biblioteca" data-volver-grupos-farmacologicos>← Grupos farmacológicos</button>
+      </div>
+      <p class="sobretitulo-biblioteca">Tratamientos · ${escaparHTML(grupo.nombre)}</p>
+      <h2 tabindex="-1" data-foco-navegacion>${escaparHTML(grupo.nombre)}</h2>
+      <p>${resumen} · <span class="estado-cobertura estado-cobertura--${cobertura.clase}">${escaparHTML(cobertura.texto)}</span></p>
+    </header>
+    ${medicamentos.length
+      ? medicamentos.map(renderizarMedicamentoVademecum).join("")
+      : `<div class="estado-vacio-biblioteca"><h3>Sin resultados</h3><p>No hay medicamentos del grupo que coincidan con la búsqueda actual.</p></div>`}`;
+  poblarCategoriasBiblioteca([]);
+  conectarNavegacionVademecum(panel);
+  conectarAcordeonesMedicamentos(panel);
+}
+
 function render() {
   const panel = document.getElementById("panelBiblioteca");
   observadorCargaDiagnosticos?.disconnect();
@@ -952,27 +1190,8 @@ function render() {
     return;
   }
   if (tabActual === "vademecum") {
-    panel.innerHTML = MEDICAMENTOS_MAESTROS
-      .filter((m) => coincide(textoMedicamentoParaBusqueda(m)))
-      .map((m) => `
-        <article class="card">
-          <h3>${m.nombre}</h3>
-          <span class="tag">${m.clase}</span>
-          <p><strong>Dosis habitual:</strong> ${m.dosisHabitual}</p>
-          ${m.brandNames?.length ? `<p><strong>Marcas comerciales:</strong> ${m.brandNames.slice(0, 8).join(", ")}</p>` : ""}
-          <p><strong>Presentaciones:</strong> ${(m.presentaciones || []).slice(0, 4).map((p) => p.texto).join("; ") || "Sin presentaciones cargadas"}</p>
-          ${m.especialidades?.length ? `<p><strong>Áreas:</strong> ${m.especialidades.join(", ")}</p>` : ""}
-          ${m.mecanismoAccion ? `<p><strong>Mecanismo de acción:</strong> ${m.mecanismoAccion}</p>` : ""}
-          ${m.vidaMedia ? `<p><strong>Vida media:</strong> ${m.vidaMedia}</p>` : ""}
-          ${listaResumen("Indicaciones", m.indicaciones || m.indications)}
-          ${listaResumen("Contraindicaciones", m.contraindicaciones || m.contraindications)}
-          ${listaResumen("Tener precaución en", m.precauciones || m.precautions)}
-          ${listaResumen("Efectos adversos frecuentes o relevantes", m.efectosAdversos)}
-          ${m.monitoring?.length ? `<p><strong>Monitoreo:</strong> ${m.monitoring.slice(0, 4).join(", ")}</p>` : ""}
-          <p>${m.notas}</p>
-          <p class="muted">Contenido de apoyo clínico. Validar contra ficha técnica, protocolos locales y juicio profesional.</p>
-        </article>
-      `).join("");
+    if (grupoFarmacologicoActual) renderizarListaMedicamentosGrupo(panel);
+    else renderizarIndiceGruposFarmacologicos(panel);
     return;
   }
 

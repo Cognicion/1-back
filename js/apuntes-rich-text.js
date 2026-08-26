@@ -55,6 +55,8 @@ function limpiarNodoRico(nodo, documento) {
     limpio.dataset.marcadorId = nodo.dataset.marcadorId;
     const colorMarcador = colorCSSSeguro(nodo.dataset.marcadorColor);
     if (colorMarcador) limpio.dataset.marcadorColor = colorMarcador;
+    const comentarioMarcador = comentarioMarcadorSeguro(nodo.dataset?.marcadorComentario);
+    if (comentarioMarcador) limpio.dataset.marcadorComentario = comentarioMarcador;
   }
   if (etiqueta === "OL") {
     const tipoLista = nodo.getAttribute("type");
@@ -62,6 +64,10 @@ function limpiarNodoRico(nodo, documento) {
   }
   nodo.childNodes.forEach((hijo) => limpio.appendChild(limpiarNodoRico(hijo, documento)));
   return limpio;
+}
+
+export function comentarioMarcadorSeguro(valor) {
+  return String(valor || "").replace(/\r\n?/g, "\n").trim().slice(0, 500);
 }
 
 function interlineadoSeguro(valor) {

@@ -132,5 +132,11 @@
 // deployment marker: 2026-08-25-apuntes-buscar-reemplazar-fuentes-v23 (+0.001)
 // deployment marker: 2026-08-25-biblioteca-catalogos-cie10-g-v1 (+0.001)
 // deployment marker: 2026-08-25-biblioteca-letras-filas-busqueda-v2 (+0.001)
-export const APP_VERSION = "2.143";
+// deployment marker: 2026-08-25-biblioteca-grupos-farmacologicos-v3 (+0.001)
+// deployment marker: 2026-08-26-apuntes-resaltado-dividido-modo-v24 (+0.001)
+// deployment marker: 2026-08-26-apuntes-menu-contextual-cinta-v25 (+0.001)
+// deployment marker: 2026-08-26-apuntes-titulo-fila-independiente-v26 (+0.001)
+// deployment marker: 2026-08-26-apuntes-marcadores-editar-eliminar-v27 (+0.001)
+// deployment marker: 2026-08-26-apuntes-listas-color-heredado-v28 (+0.001)
+export const APP_VERSION = "2.149";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

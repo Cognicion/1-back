@@ -1,6 +1,6 @@
 import { auth, db } from "./firebase.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
-import { familiaFuenteSegura, sanitizarHTMLRico } from "./apuntes-rich-text.js?v=20260825-apuntes-buscar-reemplazar-fuentes-v23";
+import { comentarioMarcadorSeguro, familiaFuenteSegura, sanitizarHTMLRico } from "./apuntes-rich-text.js?v=20260826-apuntes-marcadores-editar-eliminar-v27";
 import { detectarAtajoLista, tipoSublistaOrdenada } from "./apuntes-auto-list.js?v=20260825-apuntes-sublistas-jerarquicas-v20";
 import { buscarCoincidenciasLiterales, reemplazarCoincidenciasLiterales } from "./apuntes-search-replace.js?v=20260825-apuntes-buscar-reemplazar-fuentes-v23";
 import { inicializarSidebarApuntes } from "./apuntes-sidebar.js";
@@ -67,6 +67,7 @@ const CONFIGURACION_COLORES = Object.freeze({
   texto: Object.freeze({
     botonId: "abrirColorTexto",
     accionBotonId: "aplicarUltimoColorTexto",
+    accionEtiqueta: "Aplicar color de texto",
     panelId: "paletaColorTexto",
     controlId: "colorTexto",
     recientesId: "coloresRecientesTexto",
@@ -77,6 +78,8 @@ const CONFIGURACION_COLORES = Object.freeze({
   }),
   fondo: Object.freeze({
     botonId: "abrirColorFondoTexto",
+    accionBotonId: "aplicarUltimoResaltado",
+    accionEtiqueta: "Aplicar resaltado",
     panelId: "paletaColorFondoTexto",
     controlId: "colorFondoTexto",
     recientesId: "coloresRecientesFondoTexto",
@@ -110,6 +113,9 @@ let claveVistaHoja = "";
 let colorMarcadorActual = "#f6c85f";
 let indiceCoincidenciaBusqueda = -1;
 let firmaBusquedaActual = "";
+let modoResaltadoActivo = false;
+let escrituraSinResaltadoActiva = false;
+let marcadorContextualId = "";
 const parametrosEntradaApuntes = new URLSearchParams(window.location.search);
 const apunteSolicitado = String(parametrosEntradaApuntes.get("apunte") || "").trim().slice(0, 160);
 const crearApunteSolicitado = parametrosEntradaApuntes.get("nuevo") === "1";
@@ -200,6 +206,7 @@ function inicializarInterfaz() {
     if (!document.getElementById("panelBuscarReemplazar")?.hidden) actualizarResultadosBusqueda({ reiniciar: true });
   });
   editor?.addEventListener("blur", normalizarEditorVacio);
+  editor?.addEventListener("beforeinput", prepararModoResaltadoAntesDeInsertar);
   editor?.addEventListener("beforeinput", convertirAtajoListaAntesDeInsertar);
   editor?.addEventListener("keydown", gestionarAtajosEditor);
   editor?.addEventListener("dblclick", seleccionarElementoListaConDobleClick);
@@ -258,6 +265,12 @@ function inicializarInterfaz() {
   document.getElementById("crearMarcadorApunte")?.addEventListener("pointerdown", conservarFocoEditor);
   document.getElementById("crearMarcadorApunte")?.addEventListener("click", crearMarcadorApunte);
   document.getElementById("verMarcadoresApunte")?.addEventListener("click", abrirMarcadoresApunte);
+  document.getElementById("menuContextualMarcador")?.addEventListener("click", gestionarMenuContextualMarcador);
+  document.getElementById("formularioEditarMarcador")?.addEventListener("submit", guardarEdicionMarcador);
+  document.getElementById("cancelarEditarMarcador")?.addEventListener("click", cerrarEditorMarcador);
+  document.getElementById("dialogoEditarMarcador")?.addEventListener("close", () => {
+    document.getElementById("formularioEditarMarcador")?.reset();
+  });
   document.getElementById("insertarCuadroTexto")?.addEventListener("click", () => insertarObjetoApunte("texto"));
   document.getElementById("insertarFlecha")?.addEventListener("click", () => insertarObjetoApunte("flecha"));
   document.getElementById("abrirPropiedadesObjeto")?.addEventListener("click", alternarPropiedadesObjeto);
@@ -272,6 +285,7 @@ function inicializarInterfaz() {
   document.getElementById("menuContextualObjeto")?.addEventListener("click", gestionarMenuContextualObjeto);
   document.getElementById("menuContextualObjeto")?.addEventListener("change", gestionarMenuContextualObjeto);
   document.getElementById("interlineadoApunte")?.addEventListener("change", (evento) => aplicarInterlineado(evento.target.value));
+  document.getElementById("interlineadoContextual")?.addEventListener("change", (evento) => aplicarInterlineado(evento.target.value));
   document.getElementById("familiaFuenteApunte")?.addEventListener("change", (evento) => aplicarFamiliaFuenteSeleccion(evento.target.value));
   document.getElementById("familiaFuenteContextual")?.addEventListener("change", (evento) => aplicarFamiliaFuenteSeleccion(evento.target.value));
   document.getElementById("abrirBuscarReemplazar")?.addEventListener("click", () => alternarBuscarReemplazar());
@@ -603,6 +617,9 @@ function seleccionarApunte(id, { omitirConfirmacion = false, restaurarFoco = fal
   const idActual = document.getElementById("apunteId")?.value || "";
   if (!omitirConfirmacion && idActual === id) return;
   if (!omitirConfirmacion && !confirmarDescartarCambios()) return;
+  cerrarMenuContextualMarcador();
+  cerrarEditorMarcador();
+  desactivarModoResaltado({ aplicarAlCursor: false });
 
   document.getElementById("apunteId").value = apunte.id;
   document.getElementById("apunteTitulo").value = apunte.titulo || "";
@@ -650,6 +667,9 @@ function restaurarFocoLista(accion, id) {
 }
 
 function nuevoApunte(carpetaId = ETIQUETA_CARPETA_SIN_ASIGNAR) {
+  cerrarMenuContextualMarcador();
+  cerrarEditorMarcador();
+  desactivarModoResaltado({ aplicarAlCursor: false });
   const carpetaValida = carpetas.some((carpeta) => carpeta.id === carpetaId) ? carpetaId : "";
   document.getElementById("apunteId").value = "";
   document.getElementById("apunteTitulo").value = "";
@@ -1025,7 +1045,7 @@ function ponerEdicionOcupada(ocupada) {
     document.getElementById("nuevoApunte"),
     document.getElementById("guardarRapidoApunte"),
     document.getElementById("abrirArchivoApunte"),
-    ...document.querySelectorAll(".barra-formato button, .barra-formato input, .barra-formato select, .cinta-formato-contenedor > button, .menu-insertar button, .menu-marcadores-apunte button, .panel-objeto button, .panel-objeto input, .panel-objeto select, .panel-disposicion-hoja button, .panel-disposicion-hoja input, .panel-disposicion-hoja select, .menu-archivo button, .menu-archivo select")
+    ...document.querySelectorAll(".barra-formato button, .barra-formato input, .barra-formato select, .cinta-formato-contenedor > button, .menu-insertar button, .menu-marcadores-apunte button, .menu-contextual-marcador button, .dialogo-editar-marcador button, .dialogo-editar-marcador textarea, .panel-objeto button, .panel-objeto input, .panel-objeto select, .panel-disposicion-hoja button, .panel-disposicion-hoja input, .panel-disposicion-hoja select, .menu-archivo button, .menu-archivo select")
   ].filter(Boolean);
 
   controles.forEach((control) => { control.disabled = ocupada; });
@@ -1066,10 +1086,13 @@ function inicializarMarcadoresApunte() {
     abrirMarcadoresApunte();
     revelarMarcadorApunte(boton.dataset.irMarcador);
   });
+  document.getElementById("indicadoresMarcadoresApunte")?.addEventListener("contextmenu", abrirMenuContextualMarcador);
   document.getElementById("listaMarcadoresApunte")?.addEventListener("click", (evento) => {
     const boton = evento.target instanceof Element ? evento.target.closest("[data-ir-marcador]") : null;
     if (boton) revelarMarcadorApunte(boton.dataset.irMarcador);
   });
+  document.getElementById("listaMarcadoresApunte")?.addEventListener("contextmenu", abrirMenuContextualMarcador);
+  obtenerEditor()?.addEventListener("contextmenu", abrirMenuContextualMarcador);
   actualizarColorMarcadorActivo();
   renderizarMarcadoresApunte();
 }
@@ -1119,6 +1142,7 @@ function marcadoresDelApunte() {
     id: elemento.dataset.marcadorId,
     color: elemento.dataset.marcadorColor || "#f6c85f",
     texto: elemento.textContent.trim().replace(/\s+/g, " ").slice(0, 160),
+    comentario: comentarioMarcadorSeguro(elemento.dataset.marcadorComentario),
     elemento
   })).filter((marcador) => marcador.texto);
 }
@@ -1143,8 +1167,13 @@ function renderizarMarcadoresApunte() {
     boton.dataset.irMarcador = marcador.id;
     boton.style.setProperty("--color-marcador", marcador.color);
     if (marcador.elemento.dataset.marcadorActivo === "true") boton.dataset.marcadorActivo = "true";
-    boton.innerHTML = `<span class="item-marcador-apunte__color" style="--color-marcador:${marcador.color}"></span><span class="item-marcador-apunte__texto"></span>`;
+    boton.innerHTML = `<span class="item-marcador-apunte__color" style="--color-marcador:${marcador.color}"></span><span class="item-marcador-apunte__contenido"><span class="item-marcador-apunte__texto"></span><span class="item-marcador-apunte__comentario" hidden></span></span>`;
     boton.querySelector(".item-marcador-apunte__texto").textContent = marcador.texto;
+    const comentario = boton.querySelector(".item-marcador-apunte__comentario");
+    if (comentario && marcador.comentario) {
+      comentario.hidden = false;
+      comentario.textContent = marcador.comentario;
+    }
     lista.append(boton);
   });
 }
@@ -1182,12 +1211,110 @@ function renderizarIndicadoresMarcadores() {
     boton.style.left = `${izquierda}px`;
     boton.style.top = `${posicionNatural + (repetidos * 6)}px`;
     boton.style.setProperty("--color-marcador", marcador.color);
-    boton.title = marcador.texto;
-    boton.setAttribute("aria-label", `Marcador: ${marcador.texto}`);
+    const descripcion = marcador.comentario ? `${marcador.texto}. Comentario: ${marcador.comentario}` : marcador.texto;
+    boton.title = descripcion;
+    boton.setAttribute("aria-label", `Marcador: ${descripcion}`);
     if (marcador.elemento.dataset.marcadorActivo === "true") boton.dataset.marcadorActivo = "true";
     fragmento.append(boton);
   });
   capa.replaceChildren(fragmento);
+}
+
+function obtenerElementoMarcador(id) {
+  const seguro = String(id || "");
+  return seguro ? obtenerEditor()?.querySelector(`.marcador-apunte[data-marcador-id="${CSS.escape(seguro)}"]`) || null : null;
+}
+
+function abrirMenuContextualMarcador(evento) {
+  const destino = evento.target instanceof Element
+    ? evento.target.closest("[data-ir-marcador], .marcador-apunte[data-marcador-id]")
+    : null;
+  const id = destino?.dataset.irMarcador || destino?.dataset.marcadorId || "";
+  const marcador = obtenerElementoMarcador(id);
+  const menu = document.getElementById("menuContextualMarcador");
+  const contenedor = document.querySelector(".apuntes-editor");
+  if (!marcador || !menu || !contenedor) return;
+  evento.preventDefault();
+  evento.stopPropagation();
+  marcadorContextualId = id;
+  cerrarPaletasColor();
+  cerrarMenuContextualTexto();
+  cerrarMenuInsertar();
+  cerrarMenuMarcadoresApunte();
+  cerrarPropiedadesObjeto();
+  cerrarMenuExportacion();
+  menu.hidden = false;
+  const rectContenedor = contenedor.getBoundingClientRect();
+  const ancho = menu.offsetWidth || 132;
+  const alto = menu.offsetHeight || 64;
+  const izquierda = Math.min(Math.max(8, evento.clientX - rectContenedor.left), Math.max(8, rectContenedor.width - ancho - 8));
+  const arriba = Math.min(Math.max(8, evento.clientY - rectContenedor.top), Math.max(8, rectContenedor.height - alto - 8));
+  menu.style.left = `${Math.round(izquierda)}px`;
+  menu.style.top = `${Math.round(arriba)}px`;
+}
+
+function cerrarMenuContextualMarcador() {
+  const menu = document.getElementById("menuContextualMarcador");
+  if (menu) menu.hidden = true;
+}
+
+function gestionarMenuContextualMarcador(evento) {
+  const boton = evento.target instanceof Element ? evento.target.closest("[data-accion-marcador]") : null;
+  const accion = boton?.dataset.accionMarcador;
+  if (!accion || !marcadorContextualId) return;
+  evento.preventDefault();
+  const id = marcadorContextualId;
+  cerrarMenuContextualMarcador();
+  if (accion === "editar") abrirEditorMarcador(id);
+  if (accion === "eliminar") eliminarMarcadorApunte(id);
+}
+
+function abrirEditorMarcador(id) {
+  const marcador = obtenerElementoMarcador(id);
+  const dialogo = document.getElementById("dialogoEditarMarcador");
+  if (!marcador || !dialogo) return;
+  document.getElementById("marcadorEditarId").value = id;
+  document.getElementById("textoMarcadorEditar").textContent = marcador.textContent.trim().replace(/\s+/g, " ");
+  document.getElementById("comentarioMarcadorEditar").value = comentarioMarcadorSeguro(marcador.dataset.marcadorComentario);
+  if (!dialogo.open) dialogo.showModal();
+  requestAnimationFrame(() => document.getElementById("comentarioMarcadorEditar")?.focus());
+}
+
+function cerrarEditorMarcador() {
+  const dialogo = document.getElementById("dialogoEditarMarcador");
+  if (dialogo?.open) dialogo.close();
+}
+
+function guardarEdicionMarcador(evento) {
+  evento.preventDefault();
+  const id = document.getElementById("marcadorEditarId")?.value || "";
+  const marcador = obtenerElementoMarcador(id);
+  if (!marcador) {
+    cerrarEditorMarcador();
+    ponerEstado("El marcador ya no existe.", true);
+    return;
+  }
+  const comentario = comentarioMarcadorSeguro(document.getElementById("comentarioMarcadorEditar")?.value);
+  if (comentario) marcador.dataset.marcadorComentario = comentario;
+  else marcador.removeAttribute("data-marcador-comentario");
+  cerrarEditorMarcador();
+  marcarCambios();
+  renderizarMarcadoresApunte();
+  ponerEstado(comentario ? "Comentario del marcador guardado" : "Comentario del marcador eliminado");
+}
+
+function eliminarMarcadorApunte(id) {
+  const marcador = obtenerElementoMarcador(id);
+  if (!marcador) return;
+  const texto = marcador.textContent.trim().replace(/\s+/g, " ").slice(0, 80);
+  if (!window.confirm(`¿Eliminar el marcador de “${texto}”? El texto se conservará.`)) return;
+  const padre = marcador.parentNode;
+  marcador.replaceWith(...marcador.childNodes);
+  padre?.normalize();
+  marcadorContextualId = "";
+  marcarCambios();
+  renderizarMarcadoresApunte();
+  ponerEstado("Marcador eliminado; el texto se conservó");
 }
 
 function revelarMarcadorApunte(id) {
@@ -1238,7 +1365,7 @@ function abrirMenuMarcadoresApunte() {
   const menu = document.getElementById("menuMarcadoresApunte");
   const boton = document.getElementById("abrirMarcadoresApunte");
   if (!menu || !boton || boton.disabled) return;
-  cerrarPaletasColor(); cerrarMenuContextualTexto(); cerrarMenuInsertar(); cerrarPropiedadesObjeto(); cerrarDisposicionHoja(); cerrarBuscarReemplazar(); cerrarMenuExportacion();
+  cerrarPaletasColor(); cerrarMenuContextualTexto(); cerrarMenuContextualMarcador(); cerrarMenuInsertar(); cerrarPropiedadesObjeto(); cerrarDisposicionHoja(); cerrarBuscarReemplazar(); cerrarMenuExportacion();
   menu.hidden = false;
   boton.setAttribute("aria-expanded", "true");
   posicionarPaletaColor(menu, boton);
@@ -1482,6 +1609,10 @@ function aplicarInterlineado(valor) {
   }
   if (!bloques.size && editor) bloques.add(editor);
   bloques.forEach((bloque) => { bloque.style.lineHeight = String(numero); });
+  ["interlineadoApunte", "interlineadoContextual"].forEach((id) => {
+    const selector = document.getElementById(id);
+    if (selector) selector.value = String(numero);
+  });
   marcarCambios();
   guardarSeleccionEditor();
 }
@@ -2118,9 +2249,9 @@ function establecerEspacioSuperior(retraido) {
   const boton = document.getElementById("alternarEspacioSuperior");
   const restaurar = document.getElementById("restaurarEspacioSuperior");
   boton?.setAttribute("aria-expanded", String(!retraido));
-  boton?.setAttribute("aria-label", retraido ? "Mostrar encabezado" : "Contraer encabezado");
+  boton?.setAttribute("aria-label", retraido ? "Mostrar fila del título" : "Contraer fila del título");
   if (boton) {
-    boton.title = retraido ? "Mostrar encabezado" : "Contraer encabezado";
+    boton.title = retraido ? "Mostrar fila del título" : "Contraer fila del título";
     boton.textContent = retraido ? "⌄" : "⌃";
   }
   if (restaurar) restaurar.hidden = !retraido;
@@ -2247,7 +2378,7 @@ function inicializarSelectorColores() {
   const colorTexto = document.getElementById("colorTexto");
   const colorFondo = document.getElementById("colorFondoTexto");
   if (colorTexto) colorTexto.value = recuperarUltimoColorTexto() || (temaClaro ? "#17211b" : "#f6e8d5");
-  if (colorFondo) colorFondo.value = temaClaro ? "#fff0a6" : "#7a4d16";
+  if (colorFondo) colorFondo.value = recuperarUltimoColorFondoTexto() || (temaClaro ? "#fff0a6" : "#7a4d16");
 
   Object.entries(CONFIGURACION_COLORES).forEach(([tipo, configuracion]) => {
     const boton = document.getElementById(configuracion.botonId);
@@ -2290,6 +2421,10 @@ function inicializarSelectorColores() {
   aplicarUltimoColorTexto?.addEventListener("click", () => {
     aplicarColor("texto", document.getElementById("colorTexto")?.value || "");
   });
+
+  const aplicarUltimoResaltado = document.getElementById("aplicarUltimoResaltado");
+  aplicarUltimoResaltado?.addEventListener("pointerdown", conservarFocoEditor);
+  aplicarUltimoResaltado?.addEventListener("click", aplicarOAlternarResaltado);
 
   const botonFondoApunte = document.getElementById("abrirFondoApunte");
   const paletaFondoApunte = document.getElementById("paletaFondoApunte");
@@ -2393,9 +2528,10 @@ function cerrarPaletasColor({ devolverFoco = false } = {}) {
 
 function cerrarPaletasAlHacerClickFuera(evento) {
   const destino = evento.target;
-  if (destino instanceof Element && destino.closest(".selector-color, .paleta-color, .menu-contextual-texto, .menu-insertar, .menu-marcadores-apunte, .panel-objeto, .panel-marcadores-apunte, .panel-disposicion-hoja, .panel-buscar-reemplazar, .menu-archivo, #abrirInsertarApunte, #abrirMarcadoresApunte, #abrirPropiedadesObjeto, #abrirDisposicionHoja, #abrirBuscarReemplazar, #abrirArchivoApunte")) return;
+  if (destino instanceof Element && destino.closest(".selector-color, .paleta-color, .menu-contextual-texto, .menu-contextual-marcador, .menu-insertar, .menu-marcadores-apunte, .panel-objeto, .panel-marcadores-apunte, .panel-disposicion-hoja, .panel-buscar-reemplazar, .menu-archivo, #abrirInsertarApunte, #abrirMarcadoresApunte, #abrirPropiedadesObjeto, #abrirDisposicionHoja, #abrirBuscarReemplazar, #abrirArchivoApunte")) return;
   cerrarPaletasColor();
   cerrarMenuContextualTexto();
+  cerrarMenuContextualMarcador();
   cerrarMenuInsertar();
   cerrarMenuMarcadoresApunte();
   cerrarPropiedadesObjeto();
@@ -2408,6 +2544,7 @@ function cerrarPaletasConEscape(evento) {
   const hayPanelAbierto = Object.values(CONFIGURACION_COLORES).some((configuracion) => !document.getElementById(configuracion.panelId)?.hidden)
     || !document.getElementById("paletaFondoApunte")?.hidden
     || !document.getElementById("menuContextualTexto")?.hidden
+    || !document.getElementById("menuContextualMarcador")?.hidden
     || !document.getElementById("propiedadesObjeto")?.hidden
     || !document.getElementById("menuMarcadoresApunte")?.hidden
     || !document.getElementById("panelMarcadoresApunte")?.hidden
@@ -2419,6 +2556,7 @@ function cerrarPaletasConEscape(evento) {
   evento.preventDefault();
   cerrarPaletasColor({ devolverFoco: true });
   cerrarMenuContextualTexto({ devolverFoco: true });
+  cerrarMenuContextualMarcador();
   cerrarMenuInsertar({ devolverFoco: true });
   cerrarMenuMarcadoresApunte({ devolverFoco: true });
   cerrarPropiedadesObjeto({ devolverFoco: true });
@@ -2433,6 +2571,7 @@ function abrirMenuContextualTexto(evento) {
   const menu = document.getElementById("menuContextualTexto");
   const contenedor = document.querySelector(".apuntes-editor");
   if (!editor || !menu || !contenedor || guardandoApunte || eliminandoApunte) return;
+  if (evento.target instanceof Element && evento.target.closest(".marcador-apunte[data-marcador-id]")) return;
   // Sin una selección explícita se conserva el menú nativo: el navegador
   // subraya errores y ofrece sus sugerencias ortográficas habituales.
   if (!hayTextoSeleccionadoEnEditor(editor)) return;
@@ -2454,6 +2593,9 @@ function abrirMenuContextualTexto(evento) {
   menu.style.top = `${Math.round(arriba)}px`;
   const tamano = document.getElementById("tamanoFuenteContextual");
   if (tamano) tamano.value = String(obtenerTamanoFuenteSeleccion());
+  const interlineado = document.getElementById("interlineadoContextual");
+  if (interlineado) interlineado.value = String(obtenerInterlineadoSeleccion());
+  sincronizarFamiliaFuenteContextual();
 }
 
 function hayTextoSeleccionadoEnEditor(editor) {
@@ -2489,14 +2631,33 @@ function ejecutarAccionMenuContextualTexto(evento) {
   if (!accion) return;
   evento.preventDefault();
   cerrarMenuContextualTexto();
-  if (accion === "texto") return alternarPaletaColor("texto");
-  if (accion === "resaltar") return alternarPaletaColor("fondo");
+  if (accion === "aplicar-color-texto") return aplicarColor("texto", document.getElementById("colorTexto")?.value || "");
+  if (accion === "elegir-color-texto") return alternarPaletaColor("texto");
+  if (accion === "aplicar-resaltado") return aplicarOAlternarResaltado();
+  if (accion === "elegir-resaltado") return alternarPaletaColor("fondo");
   if (accion === "fondo-apunte") return alternarPaletaFondoApunte();
-  if (accion === "bold") return ejecutarFormato("bold");
+  if (accion === "disposicion-hoja") return alternarDisposicionHoja();
+  if (accion === "buscar") return alternarBuscarReemplazar();
+  if (accion === "marcadores") return alternarMarcadoresApunte();
+  if (accion === "insertar") return alternarMenuInsertar();
   if (accion === "quitar-resaltado") return quitarResaltadoSeleccion();
   if (accion === "limpiar") return limpiarFormatoSeleccion();
   if (accion === "sublista") return cambiarNivelLista(1);
   if (accion === "reducir-sublista") return cambiarNivelLista(-1);
+  const comandos = {
+    bold: "bold",
+    italic: "italic",
+    underline: "underline",
+    strikeThrough: "strikeThrough",
+    subscript: "subscript",
+    superscript: "superscript",
+    "alinear-izquierda": "justifyLeft",
+    "alinear-centro": "justifyCenter",
+    "alinear-derecha": "justifyRight",
+    justificar: "justifyFull"
+  };
+  if (comandos[accion]) return ejecutarFormato(comandos[accion]);
+  if (accion === "cita") return ejecutarFormato("formatBlock", "blockquote");
   return ejecutarLista(accion);
 }
 
@@ -2548,6 +2709,34 @@ function obtenerTamanoFuenteSeleccion() {
   return Number.isFinite(tamano) && tamano >= 6 && tamano <= 96
     ? tamano
     : disposicionHojaActual.tamanioFuente;
+}
+
+function obtenerInterlineadoSeleccion() {
+  const seleccion = window.getSelection();
+  const nodo = seleccion?.rangeCount ? seleccion.getRangeAt(0).startContainer : null;
+  const elemento = nodo?.nodeType === Node.ELEMENT_NODE ? nodo : nodo?.parentElement;
+  const bloque = elemento?.closest?.("p, div, li") || obtenerEditor();
+  const numero = Number.parseFloat(bloque ? window.getComputedStyle(bloque).lineHeight : "");
+  const tamano = Number.parseFloat(bloque ? window.getComputedStyle(bloque).fontSize : "");
+  const proporcion = Number.isFinite(numero) && Number.isFinite(tamano) && tamano > 0 ? numero / tamano : Number.NaN;
+  const opciones = [1, 1.15, 1.5, 2, 2.5, 3];
+  return opciones.reduce((cercana, opcion) => (
+    Math.abs(opcion - proporcion) < Math.abs(cercana - proporcion) ? opcion : cercana
+  ), 1.5);
+}
+
+function sincronizarFamiliaFuenteContextual() {
+  const seleccion = window.getSelection();
+  const nodo = seleccion?.rangeCount ? seleccion.getRangeAt(0).startContainer : null;
+  const elemento = nodo?.nodeType === Node.ELEMENT_NODE ? nodo : nodo?.parentElement;
+  const selector = document.getElementById("familiaFuenteContextual");
+  if (!elemento || !selector) return;
+  const familiaCalculada = window.getComputedStyle(elemento).fontFamily.split(",")[0].replace(/["']/g, "").trim();
+  const opcion = [...selector.options].find((item) => item.value.toLowerCase() === familiaCalculada.toLowerCase());
+  if (opcion) {
+    selector.value = opcion.value;
+    selector.style.fontFamily = opcion.value;
+  }
 }
 
 function aplicarFamiliaFuenteSeleccion(valor) {
@@ -2655,6 +2844,140 @@ function normalizarTamanosFuenteTrasLimpiar() {
   });
 }
 
+function aplicarOAlternarResaltado() {
+  if (modoResaltadoActivo) {
+    desactivarModoResaltado();
+    return true;
+  }
+
+  const editor = obtenerEditor();
+  if (!editor || !restaurarSeleccionEditor()) return false;
+  if (hayTextoSeleccionadoEnEditor(editor)) {
+    return aplicarColor("fondo", document.getElementById("colorFondoTexto")?.value || "");
+  }
+
+  modoResaltadoActivo = true;
+  escrituraSinResaltadoActiva = false;
+  aplicarComandoResaltadoInsercion(document.getElementById("colorFondoTexto")?.value || "");
+  actualizarModoResaltadoUI();
+  ponerEstado("Modo resaltado activo. Vuelve a presionar el botón para desactivarlo.");
+  return true;
+}
+
+function desactivarModoResaltado({ aplicarAlCursor = true } = {}) {
+  modoResaltadoActivo = false;
+  escrituraSinResaltadoActiva = Boolean(aplicarAlCursor);
+  actualizarModoResaltadoUI();
+  if (aplicarAlCursor) ponerEstado("Modo resaltado desactivado");
+}
+
+function aplicarComandoResaltadoInsercion(color) {
+  const colorSeguro = color === "transparent" ? "transparent" : normalizarColorHex(color);
+  if (!colorSeguro) return false;
+  try {
+    const aplicado = document.execCommand("hiliteColor", false, colorSeguro);
+    return aplicado || document.execCommand("backColor", false, colorSeguro);
+  } catch (_) {
+    return false;
+  }
+}
+
+function prepararModoResaltadoAntesDeInsertar(evento) {
+  if (!String(evento.inputType || "").startsWith("insert")) return;
+  const editor = obtenerEditor();
+  const seleccion = window.getSelection();
+  if (!editor || !seleccion?.rangeCount || !editor.contains(seleccion.getRangeAt(0).commonAncestorContainer)) return;
+  if (modoResaltadoActivo) {
+    aplicarComandoResaltadoInsercion(document.getElementById("colorFondoTexto")?.value || "");
+    return;
+  }
+  if (escrituraSinResaltadoActiva && ["insertText", "insertReplacementText"].includes(evento.inputType) && evento.data != null) {
+    evento.preventDefault();
+    insertarTextoFueraDeResaltado(evento.data);
+  }
+}
+
+function insertarTextoFueraDeResaltado(texto) {
+  const editor = obtenerEditor();
+  const seleccion = window.getSelection();
+  if (!editor || !seleccion?.rangeCount) return false;
+  const rango = seleccion.getRangeAt(0);
+  if (!editor.contains(rango.commonAncestorContainer)) return false;
+  if (!rango.collapsed) rango.deleteContents();
+
+  let elemento = rango.startContainer.nodeType === Node.ELEMENT_NODE ? rango.startContainer : rango.startContainer.parentElement;
+  let resaltado = null;
+  while (elemento && elemento !== editor) {
+    const fondo = elemento.style?.backgroundColor || "";
+    if (["SPAN", "FONT"].includes(elemento.tagName) && fondo && fondo !== "transparent" && fondo !== "rgba(0, 0, 0, 0)") {
+      resaltado = elemento;
+      break;
+    }
+    elemento = elemento.parentElement;
+  }
+
+  const contenido = String(texto);
+  let textoPlano;
+  let desplazamientoCursor;
+  if (!resaltado) {
+    if (rango.startContainer.nodeType === Node.TEXT_NODE) {
+      textoPlano = rango.startContainer;
+      textoPlano.insertData(rango.startOffset, contenido);
+      desplazamientoCursor = rango.startOffset + contenido.length;
+    } else {
+      const anterior = rango.startContainer.childNodes[rango.startOffset - 1];
+      if (anterior?.nodeType === Node.TEXT_NODE) {
+        textoPlano = anterior;
+        textoPlano.appendData(contenido);
+      } else {
+        textoPlano = document.createTextNode(contenido);
+        rango.insertNode(textoPlano);
+      }
+      desplazamientoCursor = textoPlano.data.length;
+    }
+  } else {
+    const rangoCola = document.createRange();
+    rangoCola.setStart(rango.startContainer, rango.startOffset);
+    rangoCola.setEnd(resaltado, resaltado.childNodes.length);
+    const cola = rangoCola.extractContents();
+    textoPlano = document.createTextNode(contenido);
+    desplazamientoCursor = contenido.length;
+    resaltado.after(textoPlano);
+    if (cola.textContent || cola.querySelector?.("br")) {
+      const continuacionResaltada = resaltado.cloneNode(false);
+      continuacionResaltada.removeAttribute("id");
+      continuacionResaltada.append(cola);
+      textoPlano.after(continuacionResaltada);
+    }
+    if (!resaltado.hasChildNodes()) resaltado.remove();
+  }
+
+  const nuevoCursor = document.createRange();
+  nuevoCursor.setStart(textoPlano, desplazamientoCursor);
+  nuevoCursor.collapse(true);
+  seleccion.removeAllRanges();
+  seleccion.addRange(nuevoCursor);
+  guardarSeleccionEditor();
+  if (textoPlano.data) {
+    marcarCambios();
+    renderizarMarcadoresApunte();
+  }
+  return true;
+}
+
+function actualizarModoResaltadoUI() {
+  const boton = document.getElementById("aplicarUltimoResaltado");
+  if (!boton) return;
+  const color = normalizarColorHex(document.getElementById("colorFondoTexto")?.value || "") || "#f6c85f";
+  boton.setAttribute("aria-pressed", String(modoResaltadoActivo));
+  boton.setAttribute("aria-label", modoResaltadoActivo
+    ? "Desactivar modo resaltado"
+    : `Aplicar ${color} como resaltado o activar el modo resaltado`);
+  boton.title = modoResaltadoActivo
+    ? "Desactivar modo resaltado"
+    : `Aplicar último resaltado (${color})`;
+}
+
 function aplicarColor(tipo, color) {
   const configuracion = CONFIGURACION_COLORES[tipo];
   const colorSeguro = normalizarColorHex(color);
@@ -2663,8 +2986,13 @@ function aplicarColor(tipo, color) {
   const control = document.getElementById(configuracion.controlId);
   if (control) control.value = colorSeguro;
   actualizarMuestraColor(tipo, colorSeguro);
-  const aplicado = ejecutarFormato(configuracion.comando, colorSeguro);
+  const editor = obtenerEditor();
+  const debeAplicarResaltado = tipo !== "fondo"
+    || modoResaltadoActivo
+    || Boolean(editor && restaurarSeleccionEditor() && hayTextoSeleccionadoEnEditor(editor));
+  const aplicado = debeAplicarResaltado ? ejecutarFormato(configuracion.comando, colorSeguro) : true;
   if (tipo === "texto") guardarUltimoColorTexto(colorSeguro);
+  if (tipo === "fondo") guardarUltimoColorFondoTexto(colorSeguro);
 
   coloresRecientes = registrarColorReciente(coloresRecientes, colorSeguro);
   guardarColoresRecientes();
@@ -2676,6 +3004,11 @@ function aplicarColor(tipo, color) {
   );
   renderizarColoresRecientes();
   cerrarPaletasColor();
+  if (tipo === "fondo") {
+    if (modoResaltadoActivo) aplicarComandoResaltadoInsercion(colorSeguro);
+    actualizarModoResaltadoUI();
+    if (!debeAplicarResaltado) ponerEstado(`Color de resaltado seleccionado: ${colorSeguro}`);
+  }
   return aplicado;
 }
 
@@ -2694,9 +3027,10 @@ function actualizarMuestraColor(tipo, color) {
   }
   if (botonAccion) {
     botonAccion.style.setProperty("--color-activo", colorSeguro);
-    botonAccion.setAttribute("aria-label", `Aplicar ${colorSeguro} como color de texto`);
-    botonAccion.title = `Aplicar último color de texto (${colorSeguro})`;
+    botonAccion.setAttribute("aria-label", `${configuracion.accionEtiqueta || "Aplicar color"}: ${colorSeguro}`);
+    botonAccion.title = `${configuracion.accionEtiqueta || "Aplicar color"} (${colorSeguro})`;
   }
+  if (tipo === "fondo") actualizarModoResaltadoUI();
 }
 
 function claveUltimoColorTexto() {
@@ -2716,6 +3050,26 @@ function guardarUltimoColorTexto(color) {
     localStorage.setItem(claveUltimoColorTexto(), color);
   } catch (_) {
     // La acción rápida conserva el color durante la sesión aunque no haya almacenamiento local.
+  }
+}
+
+function claveUltimoColorFondoTexto() {
+  return `cognicion:apuntes:ultimo-color-resaltado:${uidMedico}`;
+}
+
+function recuperarUltimoColorFondoTexto() {
+  try {
+    return normalizarColorHex(localStorage.getItem(claveUltimoColorFondoTexto()) || "");
+  } catch (_) {
+    return "";
+  }
+}
+
+function guardarUltimoColorFondoTexto(color) {
+  try {
+    localStorage.setItem(claveUltimoColorFondoTexto(), color);
+  } catch (_) {
+    // El selector conserva el color durante la sesión aunque no haya almacenamiento local.
   }
 }
 
@@ -2858,6 +3212,11 @@ function pegarComoTextoSeguro(evento) {
   const texto = evento.clipboardData?.getData("text/plain");
   if (texto === undefined) return;
   evento.preventDefault();
+  if (modoResaltadoActivo) aplicarComandoResaltadoInsercion(document.getElementById("colorFondoTexto")?.value || "");
+  if (escrituraSinResaltadoActiva) {
+    insertarTextoFueraDeResaltado(texto);
+    return;
+  }
   document.execCommand("insertText", false, texto);
 }
 
