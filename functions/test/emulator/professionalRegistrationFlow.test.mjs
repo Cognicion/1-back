@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, beforeEach, test } from "node:test";
 
+import admin from "firebase-admin";
 import {
   EmailAuthProvider,
   linkWithCredential,
@@ -17,12 +18,14 @@ import {
   createFlowClient,
   createRulesTestEnvironment,
   expectFirebaseError,
+  PROJECT_ID,
   uniqueRequestId
 } from "./environment.mjs";
 
 const ADMIN_UID = "uidProfessionalRegistrationAdmin";
 const clients = new Set();
 let environment;
+let adminApp;
 
 async function seedCode(code, overrides = {}) {
   await environment.withSecurityRulesDisabled(async (context) => {
@@ -58,6 +61,8 @@ async function emailClient(label) {
   const email = `${localPart}@example.test`;
   const credential = EmailAuthProvider.credential(email, "emulator-password-123");
   await linkWithCredential(client.auth.currentUser, credential);
+  await admin.auth(adminApp).updateUser(client.auth.currentUser.uid, { emailVerified: true });
+  await client.auth.currentUser.reload();
   await client.auth.currentUser.getIdToken(true);
   return { ...client, email, uid: client.auth.currentUser.uid };
 }
@@ -74,8 +79,21 @@ function payload(code, role = "medico", overrides = {}) {
   };
 }
 
+function freePayload(role = "medico", overrides = {}) {
+  return {
+    aceptaAviso: true,
+    aceptaBeta: true,
+    email: "forged-free-email@example.test",
+    modalidadRegistro: "gratuita",
+    nombre: "Profesional Gratuito Emulator",
+    rol: role,
+    ...overrides
+  };
+}
+
 before(async () => {
   environment = await createRulesTestEnvironment();
+  adminApp = admin.initializeApp({ projectId: PROJECT_ID }, `professional-registration-${process.pid}`);
 });
 
 beforeEach(async () => {
@@ -89,6 +107,7 @@ after(async () => {
     await terminate(client.firestore).catch(() => undefined);
     await client.destroy();
   }));
+  await adminApp?.delete();
   await environment?.cleanup();
 });
 
@@ -111,6 +130,10 @@ test("Auth email + callable crean el perfil y consumen el código atómicamente;
   assert.equal(profile.email, owner.email, "El backend debe usar el email del token Auth.");
   assert.notEqual(profile.email, "forged-email@example.test");
   assert.equal(profile.creadoConCodigoAutorizacion, code);
+  assert.equal(profile.modalidadRegistroProfesional, "codigo_admin");
+  assert.equal(profile.planCuentaProfesional, "profesional_codigo");
+  assert.equal(profile.limitePacientes, null);
+  assert.equal(profile.pacientesEnCuenta, 0);
 
   const consumed = await readAsBackend(`codigosAutorizacionMedico/${code}`);
   assert.equal(consumed.usado, true);
@@ -148,6 +171,39 @@ test("un código expirado o restringido a otro rol no crea perfil ni cambia su e
   );
   assert.equal(await readAsBackend(`usuarios/${wrongRoleUser.uid}`), null);
   assert.equal((await readAsBackend(`codigosAutorizacionMedico/${restrictedCode}`)).usado, false);
+});
+
+test("registerProfessional crea cuentas gratuitas de médico y psicólogo sin código y de forma idempotente", {
+  timeout: 60000
+}, async () => {
+  for (const role of ["medico", "psicologo"]) {
+    const owner = await emailClient(`free-${role}`);
+    const request = freePayload(role);
+
+    const created = await owner.call("registerProfessional", request);
+    assert.deepEqual(created, {
+      alreadyRegistered: false,
+      role,
+      uid: owner.uid
+    });
+
+    const profile = (await getDoc(doc(owner.firestore, "usuarios", owner.uid))).data();
+    assert.equal(profile.rol, role);
+    assert.equal(profile.email, owner.email, "El backend debe usar el email del token Auth.");
+    assert.notEqual(profile.email, "forged-free-email@example.test");
+    assert.equal(profile.modalidadRegistroProfesional, "gratuita");
+    assert.equal(profile.planCuentaProfesional, "profesional_gratuito");
+    assert.equal(profile.limitePacientes, 5);
+    assert.equal(profile.pacientesEnCuenta, 0);
+    assert.equal(Object.hasOwn(profile, "creadoConCodigoAutorizacion"), false);
+
+    const retry = await owner.call("registerProfessional", request);
+    assert.deepEqual(retry, {
+      alreadyRegistered: true,
+      role,
+      uid: owner.uid
+    });
+  }
 });
 
 test("reuso y dos altas concurrentes con un código conceden exactamente un perfil", {

@@ -192,11 +192,24 @@ async function markPatientPatternProfileState({ db, patientId, state, affectedPa
   }, { merge: true });
 }
 
+async function removePatientPatternProfile({ db, patientId }) {
+  const ref = profileRef(db, patientId);
+  if (typeof db.recursiveDelete === "function") {
+    await db.recursiveDelete(ref);
+    return { removed: true };
+  }
+  const snapshot = await ref.get();
+  if (!snapshot.exists) return { removed: false };
+  await ref.delete();
+  return { removed: true };
+}
+
 module.exports = {
   SUBCOLLECTIONS,
   fingerprint,
   loadPatientPatternProfile,
   markPatientPatternProfileState,
   persistPatientPatternProfile,
-  profileRef
+  profileRef,
+  removePatientPatternProfile
 };

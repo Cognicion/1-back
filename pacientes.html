@@ -53,6 +53,16 @@ h1{
     gap:18px;
 }
 
+.estado-plan-pacientes{
+    margin:0 0 22px;
+    padding:12px 15px;
+    border:1px solid rgba(82,152,102,.28);
+    border-radius:14px;
+    background:rgba(52,122,77,.12);
+    color:#d8f3df;
+    line-height:1.45;
+}
+
 .tarjeta{
     background:rgba(20, 24, 33, 0.92);
     border:1px solid rgba(255,255,255,0.10);
@@ -131,13 +141,15 @@ button:hover{
     >
 </div>
 
+<p id="estadoPlanPacientes" class="estado-plan-pacientes" hidden></p>
+
 <div id="listaPacientes" class="lista">
     <p style="color:#999;">Cargando pacientes...</p>
 </div>
 
 </div>
 
-<script type="module" src="js/pacientes.js?v=20260718-patient-access"></script>
+<script type="module" src="js/pacientes.js?v=20260826-cuenta-profesional-gratuita-v1"></script>
 
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>

@@ -12,7 +12,9 @@ const {
   validateProviderResult,
   buildMentalExamSection,
   validateMentalExamNarrative,
+  patientAllowsActorAccess,
   requiredInstitutionalFormatPermission,
+  validateActorAndSubjectAccess,
   runGenerateStructuredNoteFromDictation
 } = require("../noteGenerationHandler");
 
@@ -32,6 +34,14 @@ const defaultPatientDoc = {
   medicosAutorizados: [auth.uid]
 };
 
+assert.equal(patientAllowsActorAccess({ rol: "paciente", ownerUid: auth.uid }, auth.uid), true);
+assert.equal(patientAllowsActorAccess({ rol: "paciente", equipoClinicoIds: [auth.uid] }, auth.uid), true);
+assert.equal(patientAllowsActorAccess({
+  ...defaultPatientDoc,
+  estado: "vinculado",
+  vinculadoA: "paciente-destino"
+}, auth.uid), false);
+
 function professionalProfile(overrides = {}) {
   return {
     rol: "medico",
@@ -47,15 +57,27 @@ function fakeAdminDb(docsOrProfile = {}) {
     "paciente-1": defaultPatientDoc,
     "carlos-1": defaultPatientDoc
   };
-  return {
-    collection: () => ({
-      doc: (id) => ({
-        get: async () => ({
-          exists: Object.prototype.hasOwnProperty.call(docs, id),
-          data: () => docs[id] || {}
-        })
+  const reference = (path) => {
+    const parts = String(path).split("/");
+    const legacyKey = parts.length === 2 && parts[0] === "usuarios" ? parts[1] : path;
+    const value = () => (
+      Object.prototype.hasOwnProperty.call(docs, path) ? docs[path] : docs[legacyKey]
+    );
+    return {
+      get: async () => ({
+        exists: value() !== undefined,
+        data: () => value() || {}
+      }),
+      collection: (name) => ({
+        doc: (id) => reference(`${path}/${name}/${id}`)
       })
-    })
+    };
+  };
+  return {
+    collection: (name) => ({
+      doc: (id) => reference(`${name}/${id}`)
+    }),
+    doc: reference
   };
 }
 
@@ -205,6 +227,54 @@ const correctedCarlosEvolution = [
 ].join("\n\n");
 
 async function main() {
+for (const deletedUid of [auth.uid, "paciente-1"]) {
+  await assert.rejects(
+    validateActorAndSubjectAccess({
+      payload: basePayload(),
+      auth,
+      adminDb: fakeAdminDb({
+        __docs: {
+          [auth.uid]: professionalProfile(),
+          "paciente-1": defaultPatientDoc,
+          [`accountDeletionTombstones/${deletedUid}`]: {
+            accountUid: deletedUid,
+            deletionState: "in_progress"
+          }
+        }
+      }),
+      HttpsErrorClass: TestHttpsError,
+      requestId: `tombstone-${deletedUid}`,
+      logger: { info() {}, warn() {}, error() {} }
+    }),
+    (error) => error.code === "permission-denied"
+  );
+}
+
+await assert.rejects(
+  validateActorAndSubjectAccess({
+    payload: basePayload(),
+    auth,
+    adminDb: fakeAdminDb({
+      __docs: {
+        [auth.uid]: professionalProfile(),
+        "paciente-1": {
+          rol: "paciente",
+          estado: "vinculado",
+          vinculadoA: "paciente-destino"
+        },
+        [`usuarios/paciente-1/permisosMedicos/${auth.uid}`]: {
+          lectura: true,
+          rolPermiso: "colaborador"
+        }
+      }
+    }),
+    HttpsErrorClass: TestHttpsError,
+    requestId: "linked-origin-subdocument",
+    logger: { info() {}, warn() {}, error() {} }
+  }),
+  (error) => error.code === "permission-denied"
+);
+
 const result = await runWithOutput(JSON.stringify({
   sections: {
     evolution: {
@@ -785,6 +855,31 @@ await assert.rejects(
       __docs: {
         [auth.uid]: professionalProfile({ permisosFormatos: { [FORMAT_PERMISSION_FRAY]: true } }),
         "paciente-1": { rol: "paciente", medicoUid: "otro-medico", medicosAutorizados: [] }
+      }
+    }),
+    timeoutMs: 500
+  }),
+  (error) => error.code === "permission-denied" && /expediente/i.test(error.message)
+);
+
+await assert.rejects(
+  () => runGenerateStructuredNoteFromDictation({
+    data: basePayload(),
+    auth,
+    apiKey: "test-key",
+    OpenAIClass: class {},
+    HttpsErrorClass: TestHttpsError,
+    openaiClient: fakeOpenAIWithOutput("{}"),
+    logger: { info() {}, warn() {}, error() {} },
+    adminDb: fakeAdminDb({
+      __docs: {
+        [auth.uid]: professionalProfile({
+          modalidadRegistroProfesional: "gratuita",
+          planCuentaProfesional: "profesional_gratuito",
+          limitePacientes: 5,
+          pacientesEnCuenta: 5
+        }),
+        "paciente-1": defaultPatientDoc
       }
     }),
     timeoutMs: 500

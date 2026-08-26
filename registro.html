@@ -7,7 +7,7 @@
   <title>Crear cuenta | Cognicion</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
   <link rel="stylesheet" href="css/theme.css">
-  <link rel="stylesheet" href="css/registro.css">
+  <link rel="stylesheet" href="css/registro.css?v=20260826-cuenta-profesional-gratuita-v1">
   <link rel="stylesheet" href="css/legal.css">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
 <link rel="stylesheet" href="css/theme/public-pages-light.css">
@@ -48,8 +48,17 @@
     </div>
 
     <div id="camposMedicoRegistro" class="oculto">
-      <input id="codigoAutorizacionMedico" type="text" placeholder="Codigo de autorizacion generado por admin">
-      <small class="nota-registro">Los codigos profesionales duran 24 horas y solo pueden usarse una vez.</small>
+      <div class="modalidad-registro-profesional" role="group" aria-label="Modalidad de cuenta profesional">
+        <button type="button" class="activo" data-modalidad-profesional="gratuita">Cuenta gratuita</button>
+        <button type="button" data-modalidad-profesional="codigo_admin">Tengo un código</button>
+      </div>
+      <small id="notaModalidadProfesional" class="nota-registro nota-plan-gratuito">
+        Sin código. Incluye hasta 5 pacientes distintos en tu cuenta profesional.
+      </small>
+      <div id="campoCodigoProfesional" class="oculto">
+        <input id="codigoAutorizacionMedico" type="text" placeholder="Código de autorización generado por admin">
+        <small class="nota-registro">Los códigos profesionales duran 24 horas y solo pueden usarse una vez.</small>
+      </div>
     </div>
 
     <input id="password" type="password" placeholder="Contrasena">
@@ -80,7 +89,7 @@
   </section>
 </main>
 
-<script type="module" src="js/registro.js"></script>
+<script type="module" src="js/registro.js?v=20260826-cuenta-profesional-gratuita-v1"></script>
   <script type="module" src="js/services/visitasBootstrap.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>

@@ -8,6 +8,8 @@ const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { CLOUD_STORAGE_CONFIG } = require("./config");
 const { CloudStorageDomainError } = require("./errors");
 const { createCloudStorageService } = require("./service");
+const { parseStoragePath } = require("./validation");
+const { accountDeletionTombstonePath } = require("../accountSecurity/accountDeletion");
 
 if (!admin.apps.length) admin.initializeApp();
 
@@ -67,6 +69,46 @@ function authenticatedUid(request) {
   return request.auth.uid;
 }
 
+async function accountDeletionStatus(uid) {
+  const tombstone = await admin.firestore().doc(accountDeletionTombstonePath(uid)).get();
+  if (!tombstone.exists) return { active: true, cleanupAllowed: false };
+  const data = tombstone.data() || {};
+  const phase = String(data.deletionPhase || "").trim().toLowerCase();
+  return {
+    active: false,
+    cleanupAllowed: phase !== "preflight"
+  };
+}
+
+async function assertActiveAccount(uid) {
+  if (!(await accountDeletionStatus(uid)).active) {
+    throw new HttpsError("failed-precondition", "La cuenta está en proceso de eliminación.");
+  }
+}
+
+async function cleanupCloudResidueAfterDeletion(uid) {
+  const db = admin.firestore();
+  const bucket = admin.storage().bucket(CLOUD_STORAGE_CONFIG.bucket);
+  await db.recursiveDelete(db.doc(`usuarios/${uid}`));
+  for (const prefix of [`mi-nube/${uid}/`, `usuarios/${uid}/`]) {
+    const [files] = await bucket.getFiles({ prefix });
+    await Promise.all(files.map((file) => file.delete({ ignoreNotFound: true })));
+  }
+}
+
+function storageEventTarget(storagePath) {
+  const cloudPath = parseStoragePath(storagePath);
+  if (cloudPath) return { ...cloudPath, cloudManaged: true };
+  const profilePhotoMatch = String(storagePath || "")
+    .match(/^usuarios\/([^/]+)\/perfil\/foto-perfil$/u);
+  if (!profilePhotoMatch) return null;
+  return {
+    cloudManaged: false,
+    storagePath: profilePhotoMatch[0],
+    uid: profilePhotoMatch[1]
+  };
+}
+
 function toHttpsError(error) {
   if (error instanceof HttpsError) return error;
   if (error instanceof CloudStorageDomainError) {
@@ -100,10 +142,35 @@ function callableValue(value, seen = new WeakSet()) {
 
 function wrapCallable(operation) {
   return async (request) => {
+    let uid = "";
+    let deletionCleanupCompleted = false;
     try {
-      const result = await operation(authenticatedUid(request), request.data || {}, request);
+      uid = authenticatedUid(request);
+      await assertActiveAccount(uid);
+      const result = await operation(uid, request.data || {}, request);
+      const statusAfterOperation = await accountDeletionStatus(uid);
+      if (!statusAfterOperation.active) {
+        if (statusAfterOperation.cleanupAllowed) {
+          await cleanupCloudResidueAfterDeletion(uid);
+          deletionCleanupCompleted = true;
+        }
+        throw new HttpsError("failed-precondition", "La cuenta entró en eliminación durante la operación.");
+      }
       return callableValue(result);
     } catch (error) {
+      if (uid && !deletionCleanupCompleted) {
+        try {
+          const deletionStatus = await accountDeletionStatus(uid);
+          if (!deletionStatus.active && deletionStatus.cleanupAllowed) {
+            await cleanupCloudResidueAfterDeletion(uid);
+            deletionCleanupCompleted = true;
+          }
+        } catch (cleanupError) {
+          logger.error("[MI_NUBE] No fue posible completar la limpieza posterior a la eliminación", {
+            code: cleanupError?.code || cleanupError?.name || "error"
+          });
+        }
+      }
       throw toHttpsError(error);
     }
   };
@@ -121,14 +188,62 @@ const permanentlyDeleteCloudItem = onCall(LONG_CALLABLE_OPTIONS, wrapCallable((u
 const reconcileCloudStorageUsage = onCall(LONG_CALLABLE_OPTIONS, wrapCallable((uid) => getService().reconcileUsage(uid)));
 
 const cloudFileFinalized = onObjectFinalized(EVENT_OPTIONS, async (event) => {
-  const result = await getService().handleFinalizedObject(event.data || {}, event.id || "");
+  const object = event.data || {};
+  const target = storageEventTarget(object.name);
+  const statusBeforeEvent = target
+    ? await accountDeletionStatus(target.uid)
+    : { active: true, cleanupAllowed: false };
+  if (!statusBeforeEvent.active && statusBeforeEvent.cleanupAllowed) {
+    await admin.storage().bucket(CLOUD_STORAGE_CONFIG.bucket)
+      .file(target.storagePath)
+      .delete({ ignoreNotFound: true });
+    logger.info("[MI_NUBE] Objeto descartado porque la cuenta está bloqueada para eliminación.");
+    return;
+  }
+  if (target && !target.cloudManaged) {
+    const statusAfterEvent = await accountDeletionStatus(target.uid);
+    if (!statusAfterEvent.active && statusAfterEvent.cleanupAllowed) {
+      await admin.storage().bucket(CLOUD_STORAGE_CONFIG.bucket)
+        .file(target.storagePath)
+        .delete({ ignoreNotFound: true });
+    }
+    return;
+  }
+  const result = await getService().handleFinalizedObject(object, event.id || "");
+  if (target) {
+    const statusAfterEvent = await accountDeletionStatus(target.uid);
+    if (!statusAfterEvent.active && statusAfterEvent.cleanupAllowed) {
+      await admin.storage().bucket(CLOUD_STORAGE_CONFIG.bucket)
+        .file(target.storagePath)
+        .delete({ ignoreNotFound: true });
+      await cleanupCloudResidueAfterDeletion(target.uid);
+      return;
+    }
+  }
   if (result?.ignored !== true) logger.info("[MI_NUBE] Evento de archivo finalizado procesado", {
     rejected: result?.rejected === true
   });
 });
 
 const cloudFileDeleted = onObjectDeleted(EVENT_OPTIONS, async (event) => {
-  const result = await getService().handleDeletedObject(event.data?.name || "", event.id || "");
+  const storagePath = event.data?.name || "";
+  const target = storageEventTarget(storagePath);
+  const statusBeforeEvent = target
+    ? await accountDeletionStatus(target.uid)
+    : { active: true, cleanupAllowed: false };
+  if (!statusBeforeEvent.active && statusBeforeEvent.cleanupAllowed) {
+    logger.info("[MI_NUBE] Evento de borrado ignorado porque la cuenta está bloqueada para eliminación.");
+    return;
+  }
+  if (target && !target.cloudManaged) return;
+  const result = await getService().handleDeletedObject(storagePath, event.id || "");
+  if (target) {
+    const statusAfterEvent = await accountDeletionStatus(target.uid);
+    if (!statusAfterEvent.active && statusAfterEvent.cleanupAllowed) {
+      await cleanupCloudResidueAfterDeletion(target.uid);
+      return;
+    }
+  }
   if (result?.ignored !== true) logger.info("[MI_NUBE] Evento de archivo eliminado procesado", {
     releasedBytes: Number(result?.releasedBytes) || 0
   });

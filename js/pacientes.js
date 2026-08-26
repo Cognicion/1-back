@@ -7,7 +7,7 @@ import {
 import {
   obtenerUsuario,
   listarPacientes
-} from "./services/usuarios.js?v=20260816-expedientes-cognicion-v1";
+} from "./services/usuarios.js?v=20260826-cuenta-profesional-gratuita-v1";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
 
@@ -25,6 +25,16 @@ onAuthStateChanged(auth, async (user) => {
   return;
 }
 
+  const estadoPlan = document.getElementById("estadoPlanPacientes");
+  if (estadoPlan && usuario.planCuentaProfesional === "profesional_gratuito") {
+    const limite = Number.isInteger(Number(usuario.limitePacientes))
+      ? Number(usuario.limitePacientes)
+      : 5;
+    const usados = Math.max(0, Number(usuario.pacientesEnCuenta) || 0);
+    estadoPlan.hidden = false;
+    estadoPlan.textContent = `Cuenta profesional gratuita: ${usados} de ${limite} pacientes utilizados.`;
+  }
+
   const lista = document.getElementById("listaPacientes");
   lista.innerHTML = "";
 
@@ -34,7 +44,7 @@ onAuthStateChanged(auth, async (user) => {
     const datos = paciente.data();
     const nombrePaciente = obtenerNombrePacienteParaMostrar(datos) || "Sin nombre";
 
-    if (datos.estado === "suspendido") {
+    if (datos.estado === "suspendido" || (datos.estado === "vinculado" && datos.vinculadoA)) {
       return;
     }
 

@@ -40,7 +40,7 @@ import {
   marcarMensajesConversacionVistos,
   obtenerOCrearConversacion,
   enviarMensajeConversacion
-} from "./services/mensajes.js";
+} from "./services/mensajes.js?v=20260826-cuenta-profesional-gratuita-v1";
 
 performance.mark?.("cognicion:dashboard:module:start");
 console.time?.("COGNICION dashboard | modulo JS");

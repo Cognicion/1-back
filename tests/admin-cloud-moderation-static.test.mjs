@@ -41,7 +41,7 @@ test("Functions públicas nuevas están acotadas a listado y acceso de solo lect
 
 test("Rules de cliente conservan aislamiento por UID y no conceden excepción admin a cloudFiles", () => {
   const rules = read("firestore.rules");
-  assert.match(rules, /match \/cloudFiles\/\{fileId\} \{\s*allow read: if isSelf\(uid\);\s*allow create, update, delete: if false;/u);
+  assert.match(rules, /match \/cloudFiles\/\{fileId\} \{\s*allow read: if accountIsActive\(uid\) && isSelf\(uid\);\s*allow create, update, delete: if false;/u);
   const storageRules = read("storage.rules");
   assert.match(storageRules, /request\.auth\.uid == uid/u);
   assert.doesNotMatch(storageRules, /isAdmin|role|rol/u);

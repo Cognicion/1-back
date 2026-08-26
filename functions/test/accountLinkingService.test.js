@@ -4,6 +4,8 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { ACCOUNT_LINKING_ACTIONS } = require("../accountLinking/config");
 const { createAccountLinkingService } = require("../accountLinking/service");
+const { patientAllowsProfessionalAccess } = require("../accountLinking/validation");
+const { quotaAssignmentPath } = require("../accountSecurity/professionalPatientQuota");
 
 function clone(value) {
   return value === undefined ? undefined : structuredClone(value);
@@ -83,6 +85,10 @@ class FakeTransaction {
   update(reference, value) {
     if (!this.records.has(reference.path)) throw Object.assign(new Error("missing"), { code: 5 });
     this.records.set(reference.path, { ...clone(this.records.get(reference.path)), ...clone(value) });
+  }
+
+  delete(reference) {
+    this.records.delete(reference.path);
   }
 }
 
@@ -229,6 +235,109 @@ test("la creación médico→paciente usa el UID autenticado e impide expediente
   );
 });
 
+test("un colaborador de solo lectura o listado en arrays no puede crear ni consumir vínculos", async () => {
+  const records = baseRecords();
+  records[`usuarios/${IDS.provisional}`] = {
+    ...records[`usuarios/${IDS.provisional}`],
+    medicosAutorizados: [
+      ...records[`usuarios/${IDS.provisional}`].medicosAutorizados,
+      IDS.doctorOther
+    ]
+  };
+  records[`usuarios/${IDS.provisional}/permisosMedicos/${IDS.doctorOther}`] = {
+    administrarPermisos: false,
+    lectura: true,
+    rolPermiso: "colaborador"
+  };
+  const db = new FakeFirestore(records);
+  const service = createAccountLinkingService({
+    db,
+    now: fixedClock,
+    generateCode: codeGenerator("COG-WWWW-5555", "COG-XXXX-6666")
+  });
+
+  await assert.rejects(
+    service.execute({ uid: IDS.doctorOther }, {
+      accion: ACCOUNT_LINKING_ACTIONS.CREATE_DOCTOR_CODE,
+      pacienteId: IDS.provisional
+    }),
+    assertErrorCode("permission-denied")
+  );
+  assert.equal(db.data("codigosVinculacion/COG-WWWW-5555"), undefined);
+
+  const patientCode = await service.execute({ uid: IDS.patientAccount }, {
+    accion: ACCOUNT_LINKING_ACTIONS.CREATE_PATIENT_CODE
+  });
+  await assert.rejects(
+    service.execute({ uid: IDS.doctorOther }, {
+      accion: ACCOUNT_LINKING_ACTIONS.LINK_FROM_PATIENT_CODE,
+      codigo: patientCode.codigo,
+      expedienteProvisionalId: IDS.provisional
+    }),
+    assertErrorCode("permission-denied")
+  );
+  assert.equal(db.data(`codigosVinculacion/${patientCode.codigo}`).estadoProceso, "disponible");
+  assert.equal(db.data(`usuarios/${IDS.provisional}`).vinculacionReservaEstado, undefined);
+});
+
+test("un profesional tratante directo puede crear y consumir vínculos", async () => {
+  const directRecords = baseRecords();
+  directRecords[`usuarios/${IDS.provisional}`] = {
+    ...directRecords[`usuarios/${IDS.provisional}`],
+    creadoPor: IDS.doctorOther,
+    medicoTratanteUid: IDS.doctorOther
+  };
+  const creationDb = new FakeFirestore(directRecords);
+  const creationService = createAccountLinkingService({
+    db: creationDb,
+    now: fixedClock,
+    generateCode: codeGenerator("COG-YYYY-7777")
+  });
+  const doctorCode = await creationService.execute({ uid: IDS.doctorOther }, {
+    accion: ACCOUNT_LINKING_ACTIONS.CREATE_DOCTOR_CODE,
+    pacienteId: IDS.provisional
+  });
+  assert.equal(doctorCode.codigo, "COG-YYYY-7777");
+
+  const linkingDb = new FakeFirestore(directRecords);
+  const linkingService = createAccountLinkingService({
+    db: linkingDb,
+    now: fixedClock,
+    generateCode: codeGenerator("COG-ZZZZ-8888")
+  });
+  const patientCode = await linkingService.execute({ uid: IDS.patientAccount }, {
+    accion: ACCOUNT_LINKING_ACTIONS.CREATE_PATIENT_CODE
+  });
+  const linked = await linkingService.execute({ uid: IDS.doctorOther }, {
+    accion: ACCOUNT_LINKING_ACTIONS.LINK_FROM_PATIENT_CODE,
+    codigo: patientCode.codigo,
+    expedienteProvisionalId: IDS.provisional
+  });
+  assert.equal(linked.pacienteUid, IDS.patientAccount);
+  assert.equal(linkingDb.data(`codigosVinculacion/${patientCode.codigo}`).usadoPor, IDS.doctorOther);
+});
+
+test("un permiso explícito para administrar permite crear un vínculo sin relación directa", async () => {
+  const records = baseRecords();
+  records[`usuarios/${IDS.provisional}/permisosMedicos/${IDS.doctorOther}`] = {
+    administrarPermisos: true,
+    lectura: true,
+    rolPermiso: "tratante"
+  };
+  const db = new FakeFirestore(records);
+  const service = createAccountLinkingService({
+    db,
+    now: fixedClock,
+    generateCode: codeGenerator("COG-2222-AAAA")
+  });
+
+  const response = await service.execute({ uid: IDS.doctorOther }, {
+    accion: ACCOUNT_LINKING_ACTIONS.CREATE_DOCTOR_CODE,
+    pacienteId: IDS.provisional
+  });
+  assert.equal(response.codigo, "COG-2222-AAAA");
+});
+
 test("la creación paciente→médico se vincula a request.auth y rechaza perfiles no paciente", async () => {
   const db = new FakeFirestore(baseRecords());
   const service = createAccountLinkingService({
@@ -256,7 +365,41 @@ test("la creación paciente→médico se vincula a request.auth y rechaza perfil
 });
 
 test("médico→paciente reserva, copia IDs estables, sanea privilegios y finaliza idempotentemente", async () => {
-  const db = new FakeFirestore(baseRecords());
+  const records = baseRecords();
+  records[`usuarios/${IDS.doctor}`] = {
+    ...records[`usuarios/${IDS.doctor}`],
+    modalidadRegistroProfesional: "gratuita",
+    planCuentaProfesional: "profesional_gratuito",
+    limitePacientes: 5,
+    pacientesEnCuenta: 1
+  };
+  records[quotaAssignmentPath(IDS.doctor, IDS.provisional)] = {
+    professionalUid: IDS.doctor,
+    patientUid: IDS.provisional,
+    estado: "activo",
+    origen: "alta_profesional"
+  };
+  records[`usuarios/${IDS.doctorOther}`] = {
+    ...records[`usuarios/${IDS.doctorOther}`],
+    modalidadRegistroProfesional: "gratuita",
+    planCuentaProfesional: "profesional_gratuito",
+    limitePacientes: 5,
+    pacientesEnCuenta: 1
+  };
+  records[`usuarios/${IDS.provisional}/permisosMedicos/${IDS.doctorOther}`] = {
+    lectura: true,
+    agregarNotas: true,
+    editarPaciente: false,
+    administrarPermisos: false,
+    rolPermiso: "colaborador"
+  };
+  records[quotaAssignmentPath(IDS.doctorOther, IDS.provisional)] = {
+    professionalUid: IDS.doctorOther,
+    patientUid: IDS.provisional,
+    estado: "activo",
+    origen: "permiso_compartido"
+  };
+  const db = new FakeFirestore(records);
   const service = createAccountLinkingService({
     db,
     now: fixedClock,
@@ -291,13 +434,129 @@ test("médico→paciente reserva, copia IDs estables, sanea privilegios y finali
   assert.deepEqual(destination.medicosAutorizados, [IDS.doctor]);
   assert.equal(db.data(`usuarios/${IDS.patientAccount}/permisosMedicos/${IDS.intruderPatient}`), undefined);
   assert.equal(db.data(`usuarios/${IDS.patientAccount}/permisosMedicos/${IDS.doctor}`).lectura, true);
-  assert.deepEqual(db.data(`usuarios/${IDS.provisional}`).vinculadoA, IDS.patientAccount);
+  assert.deepEqual({
+    administrarPermisos: db.data(`usuarios/${IDS.patientAccount}/permisosMedicos/${IDS.doctorOther}`).administrarPermisos,
+    agregarNotas: db.data(`usuarios/${IDS.patientAccount}/permisosMedicos/${IDS.doctorOther}`).agregarNotas,
+    editarPaciente: db.data(`usuarios/${IDS.patientAccount}/permisosMedicos/${IDS.doctorOther}`).editarPaciente,
+    lectura: db.data(`usuarios/${IDS.patientAccount}/permisosMedicos/${IDS.doctorOther}`).lectura,
+    rolPermiso: db.data(`usuarios/${IDS.patientAccount}/permisosMedicos/${IDS.doctorOther}`).rolPermiso
+  }, {
+    administrarPermisos: false,
+    agregarNotas: true,
+    editarPaciente: false,
+    lectura: true,
+    rolPermiso: "colaborador"
+  });
+  const linkedOrigin = db.data(`usuarios/${IDS.provisional}`);
+  assert.deepEqual(linkedOrigin.vinculadoA, IDS.patientAccount);
+  assert.equal(linkedOrigin.creadoPor, "");
+  assert.equal(linkedOrigin.medicoTratanteUid, "");
+  assert.deepEqual(linkedOrigin.medicosAutorizados, []);
+  assert.equal(linkedOrigin.accesoRetiradoTrasVinculacion, true);
+  assert.equal(patientAllowsProfessionalAccess(linkedOrigin, IDS.doctor, { lectura: true }), false);
+  assert.equal(db.data(`usuarios/${IDS.provisional}/permisosMedicos/${IDS.doctorOther}`), undefined);
+  assert.equal(db.data(`usuarios/${IDS.provisional}/permisosMedicos/${IDS.intruderPatient}`), undefined);
+  assert.equal(db.data(`usuarios/${IDS.doctor}`).pacientesEnCuenta, 1);
+  assert.equal(db.data(quotaAssignmentPath(IDS.doctor, IDS.provisional)), undefined);
+  assert.equal(db.data(quotaAssignmentPath(IDS.doctor, IDS.patientAccount)).patientUid, IDS.patientAccount);
+  assert.equal(db.data(`usuarios/${IDS.doctorOther}`).pacientesEnCuenta, 1);
+  assert.equal(db.data(quotaAssignmentPath(IDS.doctorOther, IDS.provisional)), undefined);
+  assert.equal(db.data(quotaAssignmentPath(IDS.doctorOther, IDS.patientAccount)).patientUid, IDS.patientAccount);
 
   const code = db.data(`codigosVinculacion/${created.codigo}`);
   assert.equal(code.usado, true);
   assert.equal(code.estadoProceso, "completado");
   assert.equal(code.reservadoPorUid, IDS.patientAccount);
   assert.equal(code.destinoReservadoUid, IDS.patientAccount);
+  assert.equal(destination.vinculacionReservaEstado, "completado");
+});
+
+test("un profesional presente solo en arrays conserva lectura sin elevarse a tratante", async () => {
+  const records = baseRecords();
+  records[`usuarios/${IDS.provisional}`] = {
+    ...records[`usuarios/${IDS.provisional}`],
+    medicosAutorizados: [
+      ...records[`usuarios/${IDS.provisional}`].medicosAutorizados,
+      IDS.doctorOther
+    ]
+  };
+  const db = new FakeFirestore(records);
+  const service = createAccountLinkingService({
+    db,
+    now: fixedClock,
+    generateCode: codeGenerator("COG-ABCD-2345")
+  });
+  const created = await service.execute({ uid: IDS.doctor }, {
+    accion: ACCOUNT_LINKING_ACTIONS.CREATE_DOCTOR_CODE,
+    pacienteId: IDS.provisional
+  });
+
+  await service.execute({ uid: IDS.patientAccount }, {
+    accion: ACCOUNT_LINKING_ACTIONS.LINK_FROM_DOCTOR_CODE,
+    codigo: created.codigo
+  });
+
+  const permission = db.data(`usuarios/${IDS.patientAccount}/permisosMedicos/${IDS.doctorOther}`);
+  assert.deepEqual({
+    administrarPermisos: permission.administrarPermisos,
+    agregarNotas: permission.agregarNotas,
+    editarPaciente: permission.editarPaciente,
+    lectura: permission.lectura,
+    rolPermiso: permission.rolPermiso
+  }, {
+    administrarPermisos: false,
+    agregarNotas: false,
+    editarPaciente: false,
+    lectura: true,
+    rolPermiso: "estudiante"
+  });
+  assert.deepEqual(db.data(`usuarios/${IDS.patientAccount}`).medicosAutorizados, [IDS.doctor]);
+});
+
+test("un permiso embebido sin subdocumento conserva su rol y flags explícitos", async () => {
+  const records = baseRecords();
+  records[`usuarios/${IDS.provisional}`] = {
+    ...records[`usuarios/${IDS.provisional}`],
+    permisosMedicos: {
+      [IDS.doctorOther]: {
+        administrarPermisos: false,
+        agregarNotas: true,
+        editarPaciente: false,
+        lectura: true,
+        rolPermiso: "colaborador"
+      }
+    }
+  };
+  const db = new FakeFirestore(records);
+  const service = createAccountLinkingService({
+    db,
+    now: fixedClock,
+    generateCode: codeGenerator("COG-BCDE-3456")
+  });
+  const created = await service.execute({ uid: IDS.doctor }, {
+    accion: ACCOUNT_LINKING_ACTIONS.CREATE_DOCTOR_CODE,
+    pacienteId: IDS.provisional
+  });
+
+  await service.execute({ uid: IDS.patientAccount }, {
+    accion: ACCOUNT_LINKING_ACTIONS.LINK_FROM_DOCTOR_CODE,
+    codigo: created.codigo
+  });
+
+  const permission = db.data(`usuarios/${IDS.patientAccount}/permisosMedicos/${IDS.doctorOther}`);
+  assert.deepEqual({
+    administrarPermisos: permission.administrarPermisos,
+    agregarNotas: permission.agregarNotas,
+    editarPaciente: permission.editarPaciente,
+    lectura: permission.lectura,
+    rolPermiso: permission.rolPermiso
+  }, {
+    administrarPermisos: false,
+    agregarNotas: true,
+    editarPaciente: false,
+    lectura: true,
+    rolPermiso: "colaborador"
+  });
 });
 
 test("paciente→médico ignora el medicoUid suministrado y exige acceso real al expediente", async () => {
@@ -543,4 +802,90 @@ test("una colisión de código se reintenta sin sobrescribir el documento existe
   });
   assert.equal(result.codigo, "COG-PPPP-7777");
   assert.deepEqual(db.data("codigosVinculacion/COG-NNNN-6666"), { codigo: "COG-NNNN-6666", usado: false });
+});
+
+test("las marcas de eliminación bloquean la emisión y el consumo residual de códigos", async () => {
+  const actorRecords = baseRecords();
+  actorRecords[`accountDeletionTombstones/${IDS.doctor}`] = {
+    accountUid: IDS.doctor,
+    deletionState: "in_progress"
+  };
+  const blockedActorDb = new FakeFirestore(actorRecords);
+  const blockedActorService = createAccountLinkingService({
+    db: blockedActorDb,
+    now: fixedClock,
+    generateCode: codeGenerator("COG-TTTT-2222")
+  });
+
+  await assert.rejects(
+    blockedActorService.execute({ uid: IDS.doctor }, {
+      accion: ACCOUNT_LINKING_ACTIONS.CREATE_DOCTOR_CODE,
+      pacienteId: IDS.provisional
+    }),
+    assertErrorCode("failed-precondition")
+  );
+  assert.equal(blockedActorDb.data("codigosVinculacion/COG-TTTT-2222"), undefined);
+
+  const destinationDb = new FakeFirestore(baseRecords());
+  const destinationService = createAccountLinkingService({
+    db: destinationDb,
+    now: fixedClock,
+    generateCode: codeGenerator("COG-UUUU-3333")
+  });
+  const created = await destinationService.execute({ uid: IDS.doctor }, {
+    accion: ACCOUNT_LINKING_ACTIONS.CREATE_DOCTOR_CODE,
+    pacienteId: IDS.provisional
+  });
+  destinationDb.write(`accountDeletionTombstones/${IDS.patientAccount}`, {
+    accountUid: IDS.patientAccount,
+    deletionState: "in_progress"
+  });
+
+  await assert.rejects(
+    destinationService.execute({ uid: IDS.patientAccount }, {
+      accion: ACCOUNT_LINKING_ACTIONS.LINK_FROM_DOCTOR_CODE,
+      codigo: created.codigo
+    }),
+    assertErrorCode("failed-precondition")
+  );
+  assert.equal(destinationDb.data(`codigosVinculacion/${created.codigo}`).estadoProceso, "disponible");
+  assert.equal(destinationDb.data(`usuarios/${IDS.provisional}`).vinculacionReservaEstado, undefined);
+});
+
+test("si un profesional entra en eliminación tras reservar, la vinculación libera ambos pacientes sin copiar datos", async () => {
+  const db = new FakeFirestore(baseRecords());
+  let markDuringMerge = false;
+  const service = createAccountLinkingService({
+    db,
+    now: fixedClock,
+    generateCode: codeGenerator("COG-VVVV-4444"),
+    hooks: {
+      beforeMergeTransaction() {
+        if (!markDuringMerge) return;
+        db.write(`accountDeletionTombstones/${IDS.doctor}`, {
+          accountUid: IDS.doctor,
+          deletionState: "in_progress"
+        });
+      }
+    }
+  });
+  const created = await service.execute({ uid: IDS.doctor }, {
+    accion: ACCOUNT_LINKING_ACTIONS.CREATE_DOCTOR_CODE,
+    pacienteId: IDS.provisional
+  });
+  markDuringMerge = true;
+
+  await assert.rejects(
+    service.execute({ uid: IDS.patientAccount }, {
+      accion: ACCOUNT_LINKING_ACTIONS.LINK_FROM_DOCTOR_CODE,
+      codigo: created.codigo
+    }),
+    assertErrorCode("failed-precondition")
+  );
+
+  assert.equal(db.data(`codigosVinculacion/${created.codigo}`).estadoProceso, "disponible");
+  assert.equal(db.data(`usuarios/${IDS.provisional}`).vinculacionReservaEstado, "disponible");
+  assert.equal(db.data(`usuarios/${IDS.patientAccount}`).vinculacionReservaEstado, "disponible");
+  assert.equal(db.data(`usuarios/${IDS.provisional}`).estado, "provisional");
+  assert.equal(db.data(`usuarios/${IDS.patientAccount}/notas/n1`), undefined);
 });

@@ -3,6 +3,7 @@
 const admin = require("firebase-admin");
 const logger = require("firebase-functions/logger");
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
+const { accountDeletionTombstonePath } = require("./accountDeletion");
 
 if (!admin.apps.length) admin.initializeApp();
 
@@ -13,6 +14,13 @@ const PROFESSIONAL_ROLES = new Set([
   "psicologo",
   "enfermeria_salud_mental"
 ]);
+const PROFESSIONAL_REGISTRATION_MODES = Object.freeze({
+  AUTHORIZATION_CODE: "codigo_admin",
+  FREE: "gratuita"
+});
+const FREE_PROFESSIONAL_PLAN = "profesional_gratuito";
+const AUTHORIZED_PROFESSIONAL_PLAN = "profesional_codigo";
+const FREE_PATIENT_LIMIT = 5;
 
 class ProfessionalRegistrationError extends Error {
   constructor(code, message) {
@@ -47,6 +55,20 @@ function normalizeProfessionalRole(value) {
     throw new ProfessionalRegistrationError("invalid-argument", "El rol profesional solicitado no está permitido.");
   }
   return normalized;
+}
+
+function normalizeRegistrationMode(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === PROFESSIONAL_REGISTRATION_MODES.FREE) {
+    return PROFESSIONAL_REGISTRATION_MODES.FREE;
+  }
+  if (normalized === PROFESSIONAL_REGISTRATION_MODES.AUTHORIZATION_CODE) {
+    return PROFESSIONAL_REGISTRATION_MODES.AUTHORIZATION_CODE;
+  }
+  throw new ProfessionalRegistrationError(
+    "invalid-argument",
+    "Selecciona si deseas una cuenta gratuita o registrarte con código de autorización."
+  );
 }
 
 function dateFromFirestore(value) {
@@ -85,12 +107,14 @@ function buildProfessionalProfile({
   authorizationCode,
   authorizationData,
   email,
+  mode,
   name,
   now,
   role
 }) {
   const timestamp = now.toISOString();
-  return {
+  const isFree = mode === PROFESSIONAL_REGISTRATION_MODES.FREE;
+  const profile = {
     nombre: name,
     email,
     rol: role,
@@ -104,9 +128,16 @@ function buildProfessionalProfile({
     fechaAceptacionAviso: timestamp,
     versionAvisoPrivacidad: LEGAL_VERSION,
     fechaCreacion: timestamp,
-    creadoConCodigoAutorizacion: authorizationCode,
-    autorizadoPorAdminUid: String(authorizationData.creadoPorUid || "")
+    modalidadRegistroProfesional: mode,
+    planCuentaProfesional: isFree ? FREE_PROFESSIONAL_PLAN : AUTHORIZED_PROFESSIONAL_PLAN,
+    limitePacientes: isFree ? FREE_PATIENT_LIMIT : null,
+    pacientesEnCuenta: 0
   };
+  if (!isFree) {
+    profile.creadoConCodigoAutorizacion = authorizationCode;
+    profile.autorizadoPorAdminUid = String(authorizationData?.creadoPorUid || "");
+  }
+  return profile;
 }
 
 function createProfessionalRegistrationService({ db, now = () => new Date() }) {
@@ -126,6 +157,12 @@ function createProfessionalRegistrationService({ db, now = () => new Date() }) {
           "La cuenta autenticada no contiene un correo válido."
         );
       }
+      if (auth?.token?.email_verified !== true) {
+        throw new ProfessionalRegistrationError(
+          "failed-precondition",
+          "Verifica tu correo electrónico antes de completar el registro profesional."
+        );
+      }
       if (data.aceptaAviso !== true || data.aceptaBeta !== true) {
         throw new ProfessionalRegistrationError(
           "failed-precondition",
@@ -135,23 +172,38 @@ function createProfessionalRegistrationService({ db, now = () => new Date() }) {
 
       const name = requiredText(data.nombre, "nombre", 160);
       const role = normalizeProfessionalRole(data.rol);
-      const authorizationCode = normalizeAuthorizationCode(data.codigoAutorizacion);
-      const codeRef = db.doc(`codigosAutorizacionMedico/${authorizationCode}`);
+      const mode = normalizeRegistrationMode(data.modalidadRegistro || PROFESSIONAL_REGISTRATION_MODES.AUTHORIZATION_CODE);
+      const authorizationCode = mode === PROFESSIONAL_REGISTRATION_MODES.AUTHORIZATION_CODE
+        ? normalizeAuthorizationCode(data.codigoAutorizacion)
+        : "";
+      const codeRef = authorizationCode
+        ? db.doc(`codigosAutorizacionMedico/${authorizationCode}`)
+        : null;
       const profileRef = db.doc(`usuarios/${uid}`);
+      const deletionTombstoneRef = db.doc(accountDeletionTombstonePath(uid));
 
       return db.runTransaction(async (transaction) => {
-        const [codeSnapshot, profileSnapshot] = await Promise.all([
-          transaction.get(codeRef),
-          transaction.get(profileRef)
+        const [profileSnapshot, codeSnapshot, deletionTombstoneSnapshot] = await Promise.all([
+          transaction.get(profileRef),
+          codeRef ? transaction.get(codeRef) : Promise.resolve(null),
+          transaction.get(deletionTombstoneRef)
         ]);
+
+        if (deletionTombstoneSnapshot.exists) {
+          throw new ProfessionalRegistrationError(
+            "failed-precondition",
+            "Esta cuenta está en proceso de eliminación y no puede volver a registrarse."
+          );
+        }
 
         if (profileSnapshot.exists) {
           const existing = profileSnapshot.data() || {};
-          if (
-            existing.creadoConCodigoAutorizacion === authorizationCode
-            && existing.rol === role
-            && String(existing.email || "").trim().toLowerCase() === email
-          ) {
+          const sameIdentity = existing.rol === role
+            && String(existing.email || "").trim().toLowerCase() === email;
+          const sameMode = mode === PROFESSIONAL_REGISTRATION_MODES.FREE
+            ? existing.modalidadRegistroProfesional === PROFESSIONAL_REGISTRATION_MODES.FREE
+            : existing.creadoConCodigoAutorizacion === authorizationCode;
+          if (sameIdentity && sameMode) {
             return { alreadyRegistered: true, role, uid };
           }
           throw new ProfessionalRegistrationError(
@@ -160,57 +212,62 @@ function createProfessionalRegistrationService({ db, now = () => new Date() }) {
           );
         }
 
-        if (!codeSnapshot.exists) {
+        if (codeRef && !codeSnapshot.exists) {
           throw new ProfessionalRegistrationError("not-found", "El código de autorización no existe.");
         }
 
-        const codeData = codeSnapshot.data() || {};
-        if (codeData.usado !== false) {
-          throw new ProfessionalRegistrationError("failed-precondition", "El código de autorización ya fue utilizado.");
-        }
-
-        const expiration = dateFromFirestore(codeData.expiraEn);
         const currentDate = now();
-        if (!expiration || Number.isNaN(expiration.getTime()) || expiration.getTime() <= currentDate.getTime()) {
-          throw new ProfessionalRegistrationError(
-            "failed-precondition",
-            "El código de autorización expiró. Solicita uno nuevo al administrador."
-          );
-        }
-        if (!codeAllowsRole(codeData, role)) {
-          throw new ProfessionalRegistrationError(
-            "permission-denied",
-            "El código de autorización no permite el rol profesional solicitado."
-          );
-        }
+        const codeData = codeSnapshot?.data?.() || {};
+        if (codeRef) {
+          if (codeData.usado !== false) {
+            throw new ProfessionalRegistrationError("failed-precondition", "El código de autorización ya fue utilizado.");
+          }
 
-        const issuerUid = String(codeData.creadoPorUid || "").trim();
-        if (!issuerUid) {
-          throw new ProfessionalRegistrationError("permission-denied", "El código no tiene un emisor administrativo válido.");
-        }
-        const issuerSnapshot = await transaction.get(db.doc(`usuarios/${issuerUid}`));
-        if (!issuerSnapshot.exists || issuerSnapshot.data()?.rol !== "admin") {
-          throw new ProfessionalRegistrationError("permission-denied", "El código no fue emitido por un administrador válido.");
+          const expiration = dateFromFirestore(codeData.expiraEn);
+          if (!expiration || Number.isNaN(expiration.getTime()) || expiration.getTime() <= currentDate.getTime()) {
+            throw new ProfessionalRegistrationError(
+              "failed-precondition",
+              "El código de autorización expiró. Solicita uno nuevo al administrador."
+            );
+          }
+          if (!codeAllowsRole(codeData, role)) {
+            throw new ProfessionalRegistrationError(
+              "permission-denied",
+              "El código de autorización no permite el rol profesional solicitado."
+            );
+          }
+
+          const issuerUid = String(codeData.creadoPorUid || "").trim();
+          if (!issuerUid) {
+            throw new ProfessionalRegistrationError("permission-denied", "El código no tiene un emisor administrativo válido.");
+          }
+          const issuerSnapshot = await transaction.get(db.doc(`usuarios/${issuerUid}`));
+          if (!issuerSnapshot.exists || issuerSnapshot.data()?.rol !== "admin") {
+            throw new ProfessionalRegistrationError("permission-denied", "El código no fue emitido por un administrador válido.");
+          }
         }
 
         const profile = buildProfessionalProfile({
           authorizationCode,
           authorizationData: codeData,
           email,
+          mode,
           name,
           now: currentDate,
           role
         });
 
         transaction.create(profileRef, profile);
-        transaction.update(codeRef, {
-          usado: true,
-          usadoPorUid: uid,
-          usadoPorEmail: email,
-          usadoPorNombre: name,
-          usadoPorRol: role,
-          usadoEn: currentDate.toISOString()
-        });
+        if (codeRef) {
+          transaction.update(codeRef, {
+            usado: true,
+            usadoPorUid: uid,
+            usadoPorEmail: email,
+            usadoPorNombre: name,
+            usadoPorRol: role,
+            usadoEn: currentDate.toISOString()
+          });
+        }
 
         return { alreadyRegistered: false, role, uid };
       });
@@ -241,10 +298,24 @@ async function registerProfessionalRequest(request) {
   }
 }
 
-const registerProfessionalWithCode = onCall({ region: REGION, timeoutSeconds: 30 }, registerProfessionalRequest);
+const registerProfessional = onCall({ region: REGION, timeoutSeconds: 30 }, registerProfessionalRequest);
+const registerProfessionalWithCode = onCall(
+  { region: REGION, timeoutSeconds: 30 },
+  (request) => registerProfessionalRequest({
+    ...request,
+    data: {
+      ...(request.data || {}),
+      modalidadRegistro: PROFESSIONAL_REGISTRATION_MODES.AUTHORIZATION_CODE
+    }
+  })
+);
 
 module.exports = {
+  AUTHORIZED_PROFESSIONAL_PLAN,
+  FREE_PATIENT_LIMIT,
+  FREE_PROFESSIONAL_PLAN,
   LEGAL_VERSION,
+  PROFESSIONAL_REGISTRATION_MODES,
   PROFESSIONAL_ROLES,
   ProfessionalRegistrationError,
   buildProfessionalProfile,
@@ -252,6 +323,8 @@ module.exports = {
   createProfessionalRegistrationService,
   normalizeAuthorizationCode,
   normalizeProfessionalRole,
+  normalizeRegistrationMode,
+  registerProfessional,
   registerProfessionalRequest,
   registerProfessionalWithCode
 };

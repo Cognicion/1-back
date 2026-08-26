@@ -1,4 +1,4 @@
-const CACHE_VERSION = "20260818-admission-date-v1";
+const CACHE_VERSION = "20260826-cuenta-profesional-gratuita-v1";
 const STATIC_CACHE = `cognicion-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `cognicion-runtime-${CACHE_VERSION}`;
 

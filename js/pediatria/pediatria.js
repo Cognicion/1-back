@@ -9,6 +9,7 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { aplicarAparienciaGuardada } from "../services/apariencia.js";
+import { listarPacientes } from "../services/usuarios.js?v=20260826-cuenta-profesional-gratuita-v1";
 import {
   obtenerNombrePacienteParaMostrar,
   textoBusquedaPaciente
@@ -222,7 +223,10 @@ async function buscarPacientes() {
   }
   $("resultadosBusquedaPacientes").innerHTML = `<div class="ped-empty">Buscando pacientes...</div>`;
   try {
-    const snap = await getDocs(collection(db, "usuarios"));
+    const rol = normalizeText(estado.usuarioDatos.rol || estado.usuarioDatos.role || "");
+    const snap = rol.includes("admin")
+      ? await getDocs(collection(db, "usuarios"))
+      : await listarPacientes(estado.usuario?.uid || "");
     const resultados = [];
     snap.forEach((documento) => {
       const data = documento.data();

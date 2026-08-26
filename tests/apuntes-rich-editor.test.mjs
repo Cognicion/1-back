@@ -641,12 +641,14 @@ test("el editor flotante invalida formato solo cuando cambia el contenido", () =
   assert.match(persistencia, /validarRevisionApunte/);
   assert.match(persistencia, /transaccion\.delete\(referencia\)/);
   assert.match(nota, /nota\.js\?v=20260820-patient-notes-import-v1/);
-  assert.match(paciente, /paciente\.js\?v=20260820-apuntes-rich-folders-v1/);
+  assert.match(paciente, /paciente\.js\?v=20260826-cuenta-profesional-gratuita-v1/);
 });
 
 test("vinculación y eliminación administrativa conservan sus contratos vigentes", () => {
   assert.match(vinculacion, /manageAccountLinking/);
-  assert.match(admin, /"apuntesMedico",\s*"carpetasApuntes",\s*"borradoresMedico"/);
+  assert.match(admin, /async function eliminarPacienteMedianteBackend/);
+  assert.match(admin, /"eliminarPacienteDefinitivamente"/);
+  assert.doesNotMatch(admin, /async function eliminarPacienteConSubcolecciones/);
   assert.match(adminHtml, /admin\.js\?v=/);
 });
 

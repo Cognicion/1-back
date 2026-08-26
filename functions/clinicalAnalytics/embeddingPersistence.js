@@ -146,7 +146,7 @@ async function removeArtifacts({ db, fragmentIds = [], relationIds = [] }) {
   await commitOperations(db, operations);
 }
 
-async function updateEmbeddingCounters({ db, sourceCollection, previous = null, nextStatus, nextFragmentCount = 0 }) {
+function setEmbeddingCounterUpdates({ transaction, db, sourceCollection, previous = null, nextStatus, nextFragmentCount = 0 }) {
   const previousReady = previous?.status === "ready" ? 1 : 0;
   const nextReady = nextStatus === "ready" ? 1 : 0;
   const previousFailed = previous?.status === "failed" ? 1 : 0;
@@ -158,31 +158,53 @@ async function updateEmbeddingCounters({ db, sourceCollection, previous = null, 
   const source = CLINICAL_RECORD_SOURCE_CATALOG[sourceCollection] || { label: sourceCollection, domain: "otro" };
   const statusRef = db.collection(ANALYTICS_COLLECTIONS.embeddingStatus).doc("current");
   const sourceRef = db.collection(ANALYTICS_COLLECTIONS.embeddingSources).doc(sourceCollection);
-  await db.runTransaction(async (transaction) => {
-    transaction.set(statusRef, {
-      status: nextStatus === "failed" ? "degraded" : "ready",
-      indexedRecords: FieldValue.increment(recordDelta),
-      indexedFragments: FieldValue.increment(fragmentDelta),
-      failedRecords: FieldValue.increment(failureDelta),
-      processedOperations: FieldValue.increment(1),
-      lastProcessedAt: now,
-      embeddingModel: CLINICAL_EMBEDDING_CONFIG.model,
-      embeddingDimensions: CLINICAL_EMBEDDING_CONFIG.dimensions,
-      embeddingEngineVersion: CLINICAL_EMBEDDING_ENGINE_VERSION,
-      schemaVersion: CLINICAL_ANALYTICS_SCHEMA_VERSION,
-      directIdentifiersIncluded: false,
-      rawClinicalTextPersisted: false
-    }, { merge: true });
-    transaction.set(sourceRef, {
-      sourceCollection,
-      sourceLabel: source.label,
-      sourceDomain: source.domain,
-      indexedRecords: FieldValue.increment(recordDelta),
-      indexedFragments: FieldValue.increment(fragmentDelta),
-      failedRecords: FieldValue.increment(failureDelta),
-      lastProcessedAt: now,
-      embeddingEngineVersion: CLINICAL_EMBEDDING_ENGINE_VERSION
-    }, { merge: true });
+  transaction.set(statusRef, {
+    status: nextStatus === "failed" ? "degraded" : "ready",
+    indexedRecords: FieldValue.increment(recordDelta),
+    indexedFragments: FieldValue.increment(fragmentDelta),
+    failedRecords: FieldValue.increment(failureDelta),
+    processedOperations: FieldValue.increment(1),
+    lastProcessedAt: now,
+    embeddingModel: CLINICAL_EMBEDDING_CONFIG.model,
+    embeddingDimensions: CLINICAL_EMBEDDING_CONFIG.dimensions,
+    embeddingEngineVersion: CLINICAL_EMBEDDING_ENGINE_VERSION,
+    schemaVersion: CLINICAL_ANALYTICS_SCHEMA_VERSION,
+    directIdentifiersIncluded: false,
+    rawClinicalTextPersisted: false
+  }, { merge: true });
+  transaction.set(sourceRef, {
+    sourceCollection,
+    sourceLabel: source.label,
+    sourceDomain: source.domain,
+    indexedRecords: FieldValue.increment(recordDelta),
+    indexedFragments: FieldValue.increment(fragmentDelta),
+    failedRecords: FieldValue.increment(failureDelta),
+    lastProcessedAt: now,
+    embeddingEngineVersion: CLINICAL_EMBEDDING_ENGINE_VERSION
+  }, { merge: true });
+}
+
+async function updateEmbeddingCounters(options) {
+  await options.db.runTransaction(async (transaction) => {
+    setEmbeddingCounterUpdates({ ...options, transaction });
+  });
+}
+
+async function finalizeEmbeddingRemoval({ db, ref, sourceCollection = null }) {
+  return db.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    if (!snapshot.exists) return false;
+    const manifest = snapshot.data() || {};
+    transaction.delete(ref);
+    setEmbeddingCounterUpdates({
+      transaction,
+      db,
+      sourceCollection: manifest.sourceCollection || sourceCollection || "unknown",
+      previous: manifest,
+      nextStatus: "removed",
+      nextFragmentCount: 0
+    });
+    return true;
   });
 }
 
@@ -368,15 +390,7 @@ async function removeClinicalRecordEmbeddings({ db, patientId, sourceCollection,
     fragmentIds: manifest.fragmentIds || manifest.previousFragmentIds || [],
     relationIds: manifest.relationIds || manifest.previousRelationIds || []
   });
-  await ref.delete();
-  await updateEmbeddingCounters({
-    db,
-    sourceCollection,
-    previous: manifest,
-    nextStatus: "removed",
-    nextFragmentCount: 0
-  });
-  return { removed: true };
+  return { removed: await finalizeEmbeddingRemoval({ db, ref, sourceCollection }) };
 }
 
 async function removePatientEmbeddings({ db, patientId }) {
@@ -384,6 +398,7 @@ async function removePatientEmbeddings({ db, patientId }) {
   const snapshot = await db.collection(ANALYTICS_COLLECTIONS.embeddingManifests)
     .where("analyticsPatientId", "==", analyticsId)
     .get();
+  let removedRecords = 0;
   for (const doc of snapshot.docs) {
     const manifest = doc.data() || {};
     await removeArtifacts({
@@ -391,16 +406,9 @@ async function removePatientEmbeddings({ db, patientId }) {
       fragmentIds: manifest.fragmentIds || manifest.previousFragmentIds || [],
       relationIds: manifest.relationIds || manifest.previousRelationIds || []
     });
-    await doc.ref.delete();
-    await updateEmbeddingCounters({
-      db,
-      sourceCollection: manifest.sourceCollection,
-      previous: manifest,
-      nextStatus: "removed",
-      nextFragmentCount: 0
-    });
+    if (await finalizeEmbeddingRemoval({ db, ref: doc.ref })) removedRecords += 1;
   }
-  return { removedRecords: snapshot.size };
+  return { removedRecords };
 }
 
 function safeEmbeddingStatus(status = {}) {
@@ -470,10 +478,12 @@ async function readClinicalEmbeddingKnowledge({ db }) {
 module.exports = {
   assertSafeEmbeddingMetadata,
   embeddingId,
+  finalizeEmbeddingRemoval,
   indexClinicalRecordEmbeddings,
   readClinicalEmbeddingKnowledge,
   removeClinicalRecordEmbeddings,
   removePatientEmbeddings,
   safeEmbeddingStatus,
+  setEmbeddingCounterUpdates,
   sourceRecordHashFor
 };

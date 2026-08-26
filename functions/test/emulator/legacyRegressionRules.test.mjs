@@ -40,7 +40,18 @@ async function seedProfiles() {
         rol: "paciente",
         tieneCuenta: true
       }),
-      setDoc(doc(db, "usuarios", UID_OTHER_PATIENT), { rol: "paciente", tieneCuenta: true })
+      setDoc(doc(db, "usuarios", UID_OTHER_PATIENT), { rol: "paciente", tieneCuenta: true }),
+      setDoc(doc(db, `usuarios/${UID_PATIENT}/permisosMedicos/${UID_MEDICO}`), {
+        lectura: true,
+        rolPermiso: "tratante"
+      }),
+      setDoc(doc(db, `usuarios/${UID_PATIENT}/permisosMedicos/${UID_NURSE}`), {
+        administrarPermisos: true,
+        agregarNotas: true,
+        editarPaciente: true,
+        lectura: true,
+        rolPermiso: "tratante"
+      })
     ]);
   });
 }
@@ -67,12 +78,11 @@ test("login y perfiles siguen siendo legibles por sesión autenticada, nunca por
   await assertFails(getDoc(doc(anonymousDb, "usuarios", UID_PATIENT)));
 });
 
-test("expediente, notas, tratamientos, permisos, agenda e historia conservan CRUD autenticado heredado", async () => {
+test("expediente, notas, tratamientos, agenda e historia conservan CRUD autenticado heredado", async () => {
   const medicoDb = authenticatedDb(UID_MEDICO);
   const paths = [
     `usuarios/${UID_PATIENT}/notasMedicas/noteRegression`,
     `usuarios/${UID_PATIENT}/tratamientos/treatmentRegression`,
-    `usuarios/${UID_PATIENT}/permisosMedicos/${UID_MEDICO}`,
     `usuarios/${UID_MEDICO}/agenda/eventRegression`,
     `usuarios/${UID_PATIENT}/historiaClinica/historiaInicial`
   ];
@@ -89,6 +99,14 @@ test("expediente, notas, tratamientos, permisos, agenda e historia conservan CRU
     await assertFails(getDoc(doc(anonymousDb, path)));
     await assertFails(setDoc(doc(anonymousDb, path), { estadoPrueba: "intrusión" }));
   }
+});
+
+test("los permisos existentes siguen legibles pero sus mutaciones pasan por backend", async () => {
+  const medicoDb = authenticatedDb(UID_MEDICO);
+  const permissionPath = `usuarios/${UID_PATIENT}/permisosMedicos/${UID_MEDICO}`;
+  assert.equal((await assertSucceeds(getDoc(doc(medicoDb, permissionPath)))).data().lectura, true);
+  await assertFails(updateDoc(doc(medicoDb, permissionPath), { lectura: false }));
+  await assertFails(deleteDoc(doc(medicoDb, permissionPath)));
 });
 
 test("diagnósticos del perfil y el árbol pacientes siguen disponibles a personal clínico y al propietario", async () => {
@@ -125,4 +143,3 @@ test("auditoría conserva create autenticado, read admin y bloqueo de alteració
   await assertFails(deleteDoc(doc(adminDb, eventPath)));
   await assertFails(setDoc(doc(anonymousDb, "auditoria", "anonymousRegression"), { accion: "intrusión" }));
 });
-

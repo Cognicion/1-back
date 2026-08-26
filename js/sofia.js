@@ -22,7 +22,7 @@ import {
   generarRazonamientoClinico,
   generarRecomendacionesLaboratorio,
   obtenerBaseFarmacologicaInicial
-} from "./services/sofiaClinica.js?v=20260811-pharmacology-files-consolidated-v1";
+} from "./services/sofiaClinica.js?v=20260826-cuenta-profesional-gratuita-v1";
 
 aplicarAparienciaGuardada();
 

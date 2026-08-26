@@ -35,6 +35,65 @@ async function mapWithConcurrency(items, concurrency, mapper) {
   }
 }
 
+function clinicalVariablePatientDocument(doc, analyticsId) {
+  const segments = String(doc?.ref?.path || "").split("/");
+  return segments.length === 4
+    && segments[0] === ANALYTICS_COLLECTIONS.variables
+    && segments[2] === "patients"
+    && segments[3] === analyticsId;
+}
+
+async function removePatientClinicalAnalysisArtifacts({ db, patientId }) {
+  const analyticsId = analyticsPatientId(patientId);
+  const [runsSnapshot, patientVariablesSnapshot] = await Promise.all([
+    db.collection(ANALYTICS_COLLECTIONS.runs)
+      .where("analyticsPatientId", "==", analyticsId)
+      .get(),
+    db.collectionGroup("patients")
+      .where("analyticsPatientId", "==", analyticsId)
+      .get()
+  ]);
+  const patientVariableDocs = patientVariablesSnapshot.docs
+    .filter((doc) => clinicalVariablePatientDocument(doc, analyticsId));
+  const staleAt = new Date().toISOString();
+  const operations = [
+    ...runsSnapshot.docs.map((doc) => (batch) => batch.delete(doc.ref)),
+    ...patientVariableDocs.flatMap((doc) => {
+      const variablePath = doc.ref.path.split("/").slice(0, 2).join("/");
+      return [
+        (batch) => batch.delete(doc.ref),
+        (batch) => batch.set(db.doc(variablePath), {
+          aggregateState: "stale",
+          aggregateRebuildRequired: true,
+          aggregateStaleReason: "patient_removed",
+          aggregateStaleAt: staleAt
+        }, { merge: true })
+      ];
+    })
+  ];
+  const removedArtifacts = runsSnapshot.size + patientVariableDocs.length;
+  if (removedArtifacts) {
+    operations.push((batch) => batch.set(
+      db.collection(ANALYTICS_COLLECTIONS.queue).doc("aggregateRebuild"),
+      {
+        state: "stale",
+        rebuildRequired: true,
+        staleReason: "patient_removed",
+        staleAt,
+        schemaVersion: CLINICAL_ANALYTICS_SCHEMA_VERSION
+      },
+      { merge: true }
+    ));
+  }
+  await commitOperations(db, operations);
+  return {
+    analyticsPatientId: analyticsId,
+    removedRuns: runsSnapshot.size,
+    removedPatientVariables: patientVariableDocs.length,
+    aggregatesMarkedStale: removedArtifacts > 0
+  };
+}
+
 async function persistClinicalAnalysis({ db, patientId, variables, patterns, relationships, runId, actorUid = null, context = null, timeline = [] }) {
   const analyticsId = analyticsPatientId(patientId);
   const runRef = db.collection(ANALYTICS_COLLECTIONS.runs).doc(compactKey(runId));
@@ -95,4 +154,9 @@ async function readClinicalKnowledge({ db, limit = 100 }) {
   return localizeClinicalKnowledge({ variables, patterns, relationships, probabilities, evidence: mergedEvidence, ...matrixKnowledge, embeddingKnowledge, versions: { schemaVersion: CLINICAL_ANALYTICS_SCHEMA_VERSION, extractorVersion: CLINICAL_EXTRACTOR_VERSION, featureProfileVersion: CLINICAL_FEATURE_PROFILE_VERSION, patternEngineVersion: CLINICAL_PATTERN_ENGINE_VERSION, probabilityEngineVersion: CLINICAL_PROBABILITY_ENGINE_VERSION, matrixEngineVersion: CLINICAL_MATRIX_ENGINE_VERSION, embeddingEngineVersion: CLINICAL_EMBEDDING_ENGINE_VERSION, evidenceRegistryVersion: CLINICAL_EVIDENCE_REGISTRY_VERSION } });
 }
 
-module.exports = { persistClinicalAnalysis, readClinicalKnowledge };
+module.exports = {
+  clinicalVariablePatientDocument,
+  persistClinicalAnalysis,
+  readClinicalKnowledge,
+  removePatientClinicalAnalysisArtifacts
+};

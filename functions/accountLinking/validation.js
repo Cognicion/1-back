@@ -119,6 +119,7 @@ function codeIsExpired(codeData = {}, nowMs = Date.now()) {
 
 function patientAllowsProfessionalAccess(patient = {}, professionalUid = "", permission = {}) {
   if (!professionalUid || !isPatient(patient)) return false;
+  if (patient.estado === "vinculado" && patient.vinculadoA) return false;
 
   const directFields = [
     "creadoPor",

@@ -2,7 +2,7 @@ const { HttpsError } = require("firebase-functions/v2/https");
 const {
   assertAuthorizedPatientClinician,
   isProfessional,
-  patientAllowsProfessionalAccess
+  listAuthorizedPatientSnapshots
 } = require("./access");
 const { inferAge } = require("./variableExtractor");
 const { getOrBuildPatientPatternProfile } = require("./patientPatternProfileService");
@@ -61,11 +61,14 @@ function matchesPatient(doc, query) {
 }
 
 async function searchAuthorizedPatternPatients({ request, db }) {
-  await authorizedActor(request, db);
+  const { actor } = await authorizedActor(request, db);
   const query = normalized(request.data?.query).slice(0, 120);
-  const snapshot = await db.collection("usuarios").where("rol", "==", "paciente").get();
-  const patients = snapshot.docs
-    .filter((doc) => patientAllowsProfessionalAccess(doc.data() || {}, request.auth.uid))
+  const authorizedPatients = await listAuthorizedPatientSnapshots({
+    db,
+    professionalProfile: actor,
+    professionalUid: request.auth.uid
+  });
+  const patients = authorizedPatients
     .filter((doc) => matchesPatient(doc, query))
     .map((doc) => patientSummary(doc.id, doc.data() || {}))
     .sort((a, b) => a.label.localeCompare(b.label, "es"))

@@ -40,6 +40,12 @@ assert.equal(patientAllowsProfessionalAccess(pacienteEquipo, medicoA), true, "me
 assert.equal(patientAllowsProfessionalAccess(pacienteEquipo, medicoB), true, "medicoB ve paciente compartido explicito");
 assert.equal(patientAllowsProfessionalAccess(pacienteSinAsignacion, medicoA), false, "paciente sin asignacion queda excluido");
 assert.equal(patientAllowsProfessionalAccess({ rol: "medico", medicoTratanteUid: medicoA }, medicoA), false, "no se mezclan cuentas no paciente");
+assert.equal(patientAllowsProfessionalAccess({
+  rol: "paciente",
+  estado: "vinculado",
+  vinculadoA: "cuentaPaciente",
+  medicoTratanteUid: medicoA
+}, medicoA), false, "el expediente de origen vinculado no conserva acceso fuera de cuota");
 
 assert.throws(() => patientListCacheKey(""), /missing_actor_user_id/, "la cache no admite clave global");
 assert.match(patientListCacheKey(medicoA), /medicoA$/, "la cache queda aislada por actorUserId");
@@ -52,6 +58,8 @@ assert.equal(createAuthorizedPatientQueryDescriptors("").length, 0, "no se gener
 const usuariosService = readFileSync(new URL("../services/usuarios.js", import.meta.url), "utf8");
 assert.doesNotMatch(usuariosService, /uidMedico\s*\|\|\s*["']__todos__["']/, "no existe cache global de pacientes");
 assert.doesNotMatch(usuariosService, /where\("rol","==","paciente"\)\s*\);\s*return await getDocs\(q\)/, "no existe fallback de todos los pacientes");
+const patientCards = readFileSync(new URL("../pacientes.js", import.meta.url), "utf8");
+assert.match(patientCards, /datos\.estado === "vinculado" && datos\.vinculadoA/, "las tarjetas omiten el expediente de origen vinculado");
 
 const medicoPanel = readFileSync(new URL("../medico.js", import.meta.url), "utf8");
 assert.doesNotMatch(medicoPanel, /rolUsuarioActual\s*===\s*["']admin["']\s*\?\s*[""]\s*:\s*uidMedico/, "admin no activa listado global en panel medico");

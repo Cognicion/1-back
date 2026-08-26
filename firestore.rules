@@ -3,40 +3,168 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function accountIsActive(uid) {
+      return !exists(/databases/$(database)/documents/accountDeletionTombstones/$(uid));
+    }
+
     function signedIn() {
-      return request.auth != null;
+      return request.auth != null && accountIsActive(request.auth.uid);
     }
 
     function isSelf(uid) {
       return signedIn() && request.auth.uid == uid;
     }
 
+    function currentUserProfile() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
+    }
+
     function isAdmin() {
       return signedIn() &&
-        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol == "admin";
+        currentUserProfile().get("rol", "") == "admin";
     }
 
     function isMedico() {
       return signedIn() &&
-        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol == "medico";
+        currentUserProfile().get("rol", "") == "medico";
     }
 
     function isPsicologo() {
       return signedIn() &&
-        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol == "psicologo";
+        currentUserProfile().get("rol", "") == "psicologo";
     }
 
     function isEnfermeriaSaludMental() {
       return signedIn() &&
-        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol == "enfermeria_salud_mental";
+        currentUserProfile().get("rol", "") == "enfermeria_salud_mental";
     }
 
     function isPersonalSalud() {
       return isMedico() || isPsicologo() || isEnfermeriaSaludMental() || isAdmin();
     }
 
+    function isProfesionalClinico() {
+      return signedIn()
+        && ["medico", "psicologo", "enfermeria_salud_mental"]
+          .hasAny([currentUserProfile().get("rol", "")]);
+    }
+
     function isPaciente(data) {
       return data.get("rol", "") == "paciente";
+    }
+
+    function isActivePatientRecord(data) {
+      return isPaciente(data)
+        && !(data.get("estado", "") == "vinculado" && data.get("vinculadoA", "") != "");
+    }
+
+    function isFreeProfessional() {
+      return currentUserProfile().get("planCuentaProfesional", "") == "profesional_gratuito"
+        || currentUserProfile().get("modalidadRegistroProfesional", "") == "gratuita";
+    }
+
+    function validPatientQuotaAssignment(patientUid) {
+      return exists(
+          /databases/$(database)/documents/usuarios/$(request.auth.uid)/patientQuotaAssignments/$(patientUid)
+        )
+        && get(
+          /databases/$(database)/documents/usuarios/$(request.auth.uid)/patientQuotaAssignments/$(patientUid)
+        ).data.get("estado", "") == "activo";
+    }
+
+    function professionalPlanAllowsPatient(patientUid) {
+      return !isFreeProfessional() || validPatientQuotaAssignment(patientUid);
+    }
+
+    function patientHasDirectProfessional(patientData) {
+      return [
+        patientData.get("creadoPor", ""),
+        patientData.get("ownerUid", ""),
+        patientData.get("createdByUid", ""),
+        patientData.get("medicoUid", ""),
+        patientData.get("uidMedico", ""),
+        patientData.get("medicoTratanteUid", ""),
+        patientData.get("medicoTratanteUID", ""),
+        patientData.get("medicoTratanteId", ""),
+        patientData.get("idMedico", ""),
+        patientData.get("professionalUid", "")
+      ].hasAny([request.auth.uid]);
+    }
+
+    function patientHasProfessionalInArray(patientData) {
+      return patientData.get("medicosAutorizados", []).hasAny([request.auth.uid])
+        || patientData.get("medicosAutorizadosUid", []).hasAny([request.auth.uid])
+        || patientData.get("profesionalesAutorizados", []).hasAny([request.auth.uid])
+        || patientData.get("profesionalesAutorizadosIds", []).hasAny([request.auth.uid])
+        || patientData.get("medicosAsignados", []).hasAny([request.auth.uid])
+        || patientData.get("equipoClinico", []).hasAny([request.auth.uid])
+        || patientData.get("equipoClinicoIds", []).hasAny([request.auth.uid])
+        || patientData.get("clinicosAutorizados", []).hasAny([request.auth.uid]);
+    }
+
+    function patientPermissionAllows(patientUid, patientData, permissionField) {
+      return patientData.get("permisosMedicos", {})
+          .get(request.auth.uid, {}).get(permissionField, false) == true
+        || (
+          exists(
+            /databases/$(database)/documents/usuarios/$(patientUid)/permisosMedicos/$(request.auth.uid)
+          )
+          && get(
+            /databases/$(database)/documents/usuarios/$(patientUid)/permisosMedicos/$(request.auth.uid)
+          ).data.get(permissionField, false) == true
+        );
+    }
+
+    function professionalBaseAllowsPatient(patientUid, patientData) {
+      return isProfesionalClinico()
+        && isActivePatientRecord(patientData)
+        && professionalPlanAllowsPatient(patientUid);
+    }
+
+    function professionalCanReadPatient(patientUid, patientData) {
+      return professionalBaseAllowsPatient(patientUid, patientData)
+        && (
+          patientHasDirectProfessional(patientData)
+          || patientHasProfessionalInArray(patientData)
+          || patientPermissionAllows(patientUid, patientData, "lectura")
+        );
+    }
+
+    function professionalCanEditPatient(patientUid, patientData) {
+      return professionalBaseAllowsPatient(patientUid, patientData)
+        && (
+          patientHasDirectProfessional(patientData)
+          || patientPermissionAllows(patientUid, patientData, "editarPaciente")
+        );
+    }
+
+    function professionalCanAddPatientNotes(patientUid, patientData) {
+      return professionalBaseAllowsPatient(patientUid, patientData)
+        && (
+          patientHasDirectProfessional(patientData)
+          || patientPermissionAllows(patientUid, patientData, "agregarNotas")
+        );
+    }
+
+    function professionalCanAdminPatient(patientUid, patientData) {
+      return professionalBaseAllowsPatient(patientUid, patientData)
+        && (
+          patientHasDirectProfessional(patientData)
+          || patientPermissionAllows(patientUid, patientData, "administrarPermisos")
+        );
+    }
+
+    function patientProfile(patientUid) {
+      return get(/databases/$(database)/documents/usuarios/$(patientUid)).data;
+    }
+
+    function isPatientNoteCollection(subcollection) {
+      return [
+        "notas",
+        "notasMedicas",
+        "notasRapidas",
+        "notasFlotantes"
+      ].hasAny([subcollection]);
     }
 
     function hasNoAlternateRoleClaims(data) {
@@ -81,7 +209,11 @@ service cloud.firestore {
         "perfilClinicoHabilitado",
         "clinicalProfileEnabled",
         "perfilMedicoVerificado",
-        "medicoVerificado"
+        "medicoVerificado",
+        "modalidadRegistroProfesional",
+        "planCuentaProfesional",
+        "limitePacientes",
+        "pacientesEnCuenta"
       ]);
     }
 
@@ -152,7 +284,57 @@ service cloud.firestore {
         "perfilClinicoHabilitado",
         "clinicalProfileEnabled",
         "perfilMedicoVerificado",
-        "medicoVerificado"
+        "medicoVerificado",
+        "modalidadRegistroProfesional",
+        "planCuentaProfesional",
+        "limitePacientes",
+        "pacientesEnCuenta"
+      ]);
+    }
+
+    function hasNoProfessionalAssignments(data) {
+      return data.get("creadoPor", "") == ""
+        && data.get("ownerUid", "") == ""
+        && data.get("createdByUid", "") == ""
+        && data.get("medicoUid", "") == ""
+        && data.get("uidMedico", "") == ""
+        && data.get("medicoTratanteUid", "") == ""
+        && data.get("medicoTratanteUID", "") == ""
+        && data.get("medicoTratanteId", "") == ""
+        && data.get("idMedico", "") == ""
+        && data.get("professionalUid", "") == ""
+        && data.get("medicosAutorizados", []).size() == 0
+        && data.get("medicosAutorizadosUid", []).size() == 0
+        && data.get("profesionalesAutorizados", []).size() == 0
+        && data.get("profesionalesAutorizadosIds", []).size() == 0
+        && data.get("medicosAsignados", []).size() == 0
+        && data.get("equipoClinico", []).size() == 0
+        && data.get("equipoClinicoIds", []).size() == 0
+        && data.get("clinicosAutorizados", []).size() == 0
+        && !data.keys().hasAny(["permisosMedicos"]);
+    }
+
+    function patientAccessFieldsChanged() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        "creadoPor",
+        "ownerUid",
+        "createdByUid",
+        "medicoUid",
+        "uidMedico",
+        "medicoTratanteUid",
+        "medicoTratanteUID",
+        "medicoTratanteId",
+        "idMedico",
+        "professionalUid",
+        "medicosAutorizados",
+        "medicosAutorizadosUid",
+        "profesionalesAutorizados",
+        "profesionalesAutorizadosIds",
+        "medicosAsignados",
+        "equipoClinico",
+        "equipoClinicoIds",
+        "clinicosAutorizados",
+        "permisosMedicos"
       ]);
     }
 
@@ -172,7 +354,8 @@ service cloud.firestore {
       return isSelf(uid)
         && isPaciente(request.resource.data)
         && hasNoAlternateRoleClaims(request.resource.data)
-        && hasNoAccountLinkingInternalFields(request.resource.data);
+        && hasNoAccountLinkingInternalFields(request.resource.data)
+        && hasNoProfessionalAssignments(request.resource.data);
     }
 
     function validProvisionalPatientCreate(uid) {
@@ -192,65 +375,125 @@ service cloud.firestore {
       return isSelf(uid)
         && !protectedRoleFieldsChanged()
         && !accountLinkingInternalFieldsChanged()
+        && !patientAccessFieldsChanged()
         && !patientClinicalIdentityFieldsChanged();
     }
 
     function validClinicalPatientUpdate(uid) {
       return !isSelf(uid)
-        && isPersonalSalud()
         && isPaciente(resource.data)
         && isPaciente(request.resource.data)
+        && professionalCanEditPatient(uid, resource.data)
         && !protectedRoleFieldsChanged()
-        && !accountLinkingInternalFieldsChanged();
+        && !accountLinkingInternalFieldsChanged()
+        && !patientAccessFieldsChanged();
     }
 
     /*
      * USUARIOS
      */
     match /usuarios/{uid} {
-      // Las cuentas profesionales se crean exclusivamente mediante la callable
-      // que consume un código administrativo. El cliente solo puede crear su
-      // propio perfil de paciente o un expediente provisional bien atribuido.
-      allow create: if validSelfPatientCreate(uid) || validProvisionalPatientCreate(uid);
+      // Las cuentas profesionales y los expedientes provisionales se crean
+      // mediante callables backend. El cliente solo puede autocrear un perfil
+      // paciente sin asignaciones profesionales; las vinculaciones conservan
+      // su flujo backend y las cuentas gratuitas no pueden evadir la cuota.
+      allow create: if accountIsActive(uid) && validSelfPatientCreate(uid);
 
-      // Temporalmente abierto para depuración
-      allow read: if signedIn();
+      // Los perfiles profesionales continúan disponibles a sesiones autenticadas.
+      // Los expedientes de paciente exigen relación clínica y, para el plan
+      // gratuito, un slot server-only activo para ese UID.
+      allow get: if accountIsActive(uid)
+                 && (
+                   isSelf(uid)
+                   || isAdmin()
+                   || (signedIn() && !isPaciente(resource.data))
+                   || professionalCanReadPatient(uid, resource.data)
+                 );
+      allow list: if signedIn()
+                  && (
+                    isAdmin()
+                    || professionalCanReadPatient(uid, resource.data)
+                  );
 
       // Un usuario nunca puede elevar sus propios campos de rol. El flujo
       // administrativo conserva la asignación de rol a terceros ya existente.
-      allow update: if validSelfProfileUpdate(uid)
-                    || validClinicalPatientUpdate(uid)
-                    || (isAdmin() && !isSelf(uid) && !accountLinkingInternalFieldsChanged());
+      allow update: if accountIsActive(uid)
+                    && (validSelfProfileUpdate(uid)
+                        || validClinicalPatientUpdate(uid)
+                        || (isAdmin() && !isSelf(uid) && !accountLinkingInternalFieldsChanged()));
 
-      allow delete: if isAdmin();
+      allow delete: if accountIsActive(uid) && isAdmin();
 
       // Mantiene el comportamiento heredado de las subcolecciones existentes,
       // pero excluye los documentos internos administrados por el backend de Mi nube.
       // La agenda contiene datos privados del profesional. El wildcard heredado
       // no debe convertirla en una colección legible por cualquier usuario autenticado.
       match /agenda/{eventoId} {
-        allow read, write: if isSelf(uid) || isAdmin();
+        allow read: if accountIsActive(uid) && (isSelf(uid) || isAdmin());
+        allow write: if accountIsActive(uid) && (isSelf(uid) || isAdmin());
       }
 
       match /{subcollection}/{subdocument=**} {
-        allow read, write: if signedIn()
-                          && subcollection != "agenda"
-                          && subcollection != "cloudFiles"
-                          && subcollection != "cloudStorageUsage"
-                          && subcollection != "cloudUploadReservations"
-                          && subcollection != "apuntesMedico"
-                          && subcollection != "carpetasApuntes";
+        allow read: if accountIsActive(uid)
+                    && subcollection != "agenda"
+                    && subcollection != "cloudFiles"
+                    && subcollection != "cloudStorageUsage"
+                    && subcollection != "cloudUploadReservations"
+                    && subcollection != "apuntesMedico"
+                    && subcollection != "carpetasApuntes"
+                    && subcollection != "permisosMedicos"
+                    && subcollection != "patientQuotaAssignments"
+                    && subcollection != "patientCreationOperations"
+                    && (
+                      isSelf(uid)
+                      || isAdmin()
+                      || professionalCanReadPatient(uid, patientProfile(uid))
+                    );
+        allow create: if accountIsActive(uid)
+                      && subcollection != "agenda"
+                      && subcollection != "cloudFiles"
+                      && subcollection != "cloudStorageUsage"
+                      && subcollection != "cloudUploadReservations"
+                      && subcollection != "apuntesMedico"
+                      && subcollection != "carpetasApuntes"
+                      && subcollection != "permisosMedicos"
+                      && subcollection != "patientQuotaAssignments"
+                      && subcollection != "patientCreationOperations"
+                      && (
+                        isSelf(uid)
+                        || isAdmin()
+                        || professionalCanEditPatient(uid, patientProfile(uid))
+                        || (
+                          isPatientNoteCollection(subcollection)
+                          && professionalCanAddPatientNotes(uid, patientProfile(uid))
+                        )
+                      );
+        allow update, delete: if accountIsActive(uid)
+                              && subcollection != "agenda"
+                              && subcollection != "cloudFiles"
+                              && subcollection != "cloudStorageUsage"
+                              && subcollection != "cloudUploadReservations"
+                              && subcollection != "apuntesMedico"
+                              && subcollection != "carpetasApuntes"
+                              && subcollection != "permisosMedicos"
+                              && subcollection != "patientQuotaAssignments"
+                              && subcollection != "patientCreationOperations"
+                              && (
+                                isSelf(uid)
+                                || isAdmin()
+                                || professionalCanEditPatient(uid, patientProfile(uid))
+                              );
       }
 
       // Mi nube: el propietario puede consultar su metadata. Todas las
       // mutaciones se realizan exclusivamente con Cloud Functions/Admin SDK.
       match /cloudFiles/{fileId} {
-        allow read: if isSelf(uid);
+        allow read: if accountIsActive(uid) && isSelf(uid);
         allow create, update, delete: if false;
       }
 
       match /cloudStorageUsage/{usageId} {
-        allow read: if isSelf(uid) && usageId == "current";
+        allow read: if accountIsActive(uid) && isSelf(uid) && usageId == "current";
         allow create, update, delete: if false;
       }
 
@@ -262,26 +505,110 @@ service cloud.firestore {
       // Mis apuntes conserva sus colecciones y escritura cliente actuales,
       // ahora limitada al UID propietario en vez del wildcard heredado.
       match /apuntesMedico/{noteId} {
-        allow read: if isSelf(uid) || isAdmin();
-        allow create, update: if isSelf(uid);
-        allow delete: if isSelf(uid) || isAdmin();
+        allow read: if accountIsActive(uid) && (isSelf(uid) || isAdmin());
+        allow create, update: if accountIsActive(uid) && isSelf(uid);
+        allow delete: if accountIsActive(uid) && (isSelf(uid) || isAdmin());
       }
 
       match /carpetasApuntes/{folderId} {
-        allow read: if isSelf(uid) || isAdmin();
-        allow create, update: if isSelf(uid);
-        allow delete: if isSelf(uid) || isAdmin();
+        allow read: if accountIsActive(uid) && (isSelf(uid) || isAdmin());
+        allow create, update: if accountIsActive(uid) && isSelf(uid);
+        allow delete: if accountIsActive(uid) && (isSelf(uid) || isAdmin());
       }
+
+      // Las relaciones profesionales y los slots de cuota son server-only.
+      // Un profesional solo consulta su propio permiso; el paciente, admin o
+      // tratante con administrarPermisos pueden enumerar el equipo clínico.
+      match /permisosMedicos/{professionalUid} {
+        allow get: if accountIsActive(uid)
+                   && (
+                     isSelf(uid)
+                     || isAdmin()
+                     || professionalCanAdminPatient(uid, patientProfile(uid))
+                     || (
+                       professionalUid == request.auth.uid
+                       && resource.data.get("lectura", false) == true
+                       && isProfesionalClinico()
+                       && isActivePatientRecord(patientProfile(uid))
+                       && professionalPlanAllowsPatient(uid)
+                     )
+                   );
+        allow list: if accountIsActive(uid)
+                    && (
+                      isSelf(uid)
+                      || isAdmin()
+                      || professionalCanAdminPatient(uid, patientProfile(uid))
+                      || (
+                        professionalUid == request.auth.uid
+                        && resource.data.get("lectura", false) == true
+                        && isProfesionalClinico()
+                        && isActivePatientRecord(patientProfile(uid))
+                        && professionalPlanAllowsPatient(uid)
+                      )
+                    );
+        allow create, update, delete: if false;
+      }
+
+      match /patientQuotaAssignments/{patientUid} {
+        // El profesional puede enumerar únicamente sus propios IDs asignados
+        // para resolver lecturas concretas. El contenido y todas las
+        // mutaciones siguen administrados exclusivamente por backend.
+        allow get, list: if accountIsActive(uid) && isSelf(uid);
+        allow create, update, delete: if false;
+      }
+
+      // Claves de idempotencia de alta: solo Admin SDK puede leerlas o mutarlas.
+      match /patientCreationOperations/{operationId} {
+        allow read, create, update, delete: if false;
+      }
+    }
+
+    // Una marca de eliminación invalida de inmediato los tokens residuales.
+    // Solo Admin SDK puede crear o consultar estos documentos internos.
+    match /accountDeletionTombstones/{uid} {
+      allow read, create, update, delete: if false;
     }
 
     /*
      * PACIENTES
      */
     match /pacientes/{uid} {
-      allow read, write: if isSelf(uid) || isPersonalSalud();
+      allow read: if accountIsActive(uid)
+                  && (
+                    isSelf(uid)
+                    || isAdmin()
+                    || professionalCanReadPatient(uid, patientProfile(uid))
+                  );
+      allow write: if accountIsActive(uid)
+                   && (
+                     isSelf(uid)
+                     || isAdmin()
+                     || professionalCanEditPatient(uid, patientProfile(uid))
+                   );
 
-      match /{subdocument=**} {
-        allow read, write: if isSelf(uid) || isPersonalSalud();
+      match /{subcollection}/{subdocument=**} {
+        allow read: if accountIsActive(uid)
+                    && (
+                      isSelf(uid)
+                      || isAdmin()
+                      || professionalCanReadPatient(uid, patientProfile(uid))
+                    );
+        allow create: if accountIsActive(uid)
+                      && (
+                        isSelf(uid)
+                        || isAdmin()
+                        || professionalCanEditPatient(uid, patientProfile(uid))
+                        || (
+                          isPatientNoteCollection(subcollection)
+                          && professionalCanAddPatientNotes(uid, patientProfile(uid))
+                        )
+                      );
+        allow update, delete: if accountIsActive(uid)
+                              && (
+                                isSelf(uid)
+                                || isAdmin()
+                                || professionalCanEditPatient(uid, patientProfile(uid))
+                              );
       }
     }
 

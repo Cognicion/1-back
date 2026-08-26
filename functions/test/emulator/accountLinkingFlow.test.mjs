@@ -124,6 +124,10 @@ test("callable real crea y consume código médico→paciente con copia e idempo
   const linkedOrigin = await readPrivileged(`usuarios/${provisionalId}`);
   assert.equal(linkedOrigin.vinculadoA, patient.uid);
   assert.equal(linkedOrigin.vinculacionReservaEstado, "completado");
+  assert.equal(linkedOrigin.creadoPor, "");
+  assert.equal(linkedOrigin.medicoTratanteUid, "");
+  assert.deepEqual(linkedOrigin.medicosAutorizados, []);
+  assert.equal(linkedOrigin.accesoRetiradoTrasVinculacion, true);
 
   const consumedCode = await readPrivileged(`codigosVinculacion/${created.codigo}`);
   assert.equal(consumedCode.usado, true);

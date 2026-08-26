@@ -29,10 +29,12 @@ test("las funciones sensibles validan relación médico-paciente en backend", as
     source("functions/clinicalAnalytics/access.js")
   ]);
   assert.match(handlers, /assertAuthorizedPatientClinician\(request, db, patientId\)/);
-  assert.match(handlers, /patientAllowsProfessionalAccess/);
+  assert.match(handlers, /listAuthorizedPatientSnapshots/);
   assert.match(access, /async function assertAuthorizedPatientClinician/);
   assert.match(access, /if \(!isProfessional\(actor\)\)/);
-  assert.match(access, /patientAllowsProfessionalAccess\(patient, request\.auth\.uid\)/);
+  assert.match(access, /patientAllowsProfessionalAccess\(patient, professionalUid\)/);
+  assert.match(access, /professionalUid:\s*request\.auth\.uid/);
+  assert.match(access, /accountDeletionTombstoneExists/);
   assert.match(access, /permission-denied/);
   assert.match(handlers, /curpReturned:\s*false/);
 });

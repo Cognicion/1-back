@@ -23,6 +23,7 @@ export const PATIENT_AUTHORIZED_ARRAY_FIELDS = [
 export function patientAllowsProfessionalAccess(patient = {}, actorUserId = "") {
   if (!patient || !actorUserId) return false;
   if (patient.rol && patient.rol !== "paciente") return false;
+  if (patient.estado === "vinculado" && patient.vinculadoA) return false;
 
   const ownerMatch = PATIENT_OWNER_FIELDS.some((field) => patient[field] === actorUserId);
   if (ownerMatch) return true;

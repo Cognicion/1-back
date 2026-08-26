@@ -11,9 +11,10 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
+  crearIdOperacionPaciente,
   obtenerUsuario,
   crearPacienteProvisional
-} from "./services/usuarios.js?v=20260816-expedientes-cognicion-v1";
+} from "./services/usuarios.js?v=20260826-cuenta-profesional-gratuita-v1";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { crearTratamiento } from "./services/tratamientos.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
@@ -22,6 +23,8 @@ import { construirNombreCompletoPaciente, normalizarAliasPaciente } from "./util
 
 let uidMedico = "";
 let medicoActualDatos = {};
+let guardadoPacienteEnCurso = false;
+let operacionAltaPacienteId = "";
 const nuevoPacienteDraft = {
   datosPersonales: {},
   diagnosticos: [],
@@ -34,6 +37,22 @@ const nuevoPacienteDraft = {
 window.COGNICION_NUEVO_PACIENTE_DRAFT = nuevoPacienteDraft;
 let moduloClinicoNuevoPacientePromise = null;
 let markupClinicoNuevoPacientePromise = null;
+
+function obtenerOperacionAltaPacienteId() {
+  if (!operacionAltaPacienteId) {
+    operacionAltaPacienteId = crearIdOperacionPaciente("alta_manual");
+  }
+  return operacionAltaPacienteId;
+}
+
+function establecerGuardadoPacienteEnCurso(enCurso) {
+  guardadoPacienteEnCurso = enCurso;
+  const botonGuardar = document.getElementById("guardarPacienteNuevoButton");
+  if (!botonGuardar) return;
+  botonGuardar.disabled = enCurso;
+  botonGuardar.setAttribute("aria-busy", String(enCurso));
+  botonGuardar.textContent = enCurso ? "Guardando paciente…" : "Guardar paciente";
+}
 
 iniciarMonitoreoSesion("Nuevo paciente");
 
@@ -661,13 +680,19 @@ window.guardarPacienteNuevo = async function() {
     alert("Escribe el nombre del paciente");
     return;
   }
+  if (guardadoPacienteEnCurso) return;
 
+  establecerGuardadoPacienteEnCurso(true);
+  let altaCompletada = false;
   try {
     const payloadFirestore = sanitizarPayloadFirestore(paciente);
     console.debug("[NUEVO PACIENTE] tipo de imc:", typeof payloadFirestore.imc);
     console.debug("[NUEVO PACIENTE] imc es nodo DOM:", typeof Node !== "undefined" && payloadFirestore.imc instanceof Node);
     console.debug("[NUEVO PACIENTE] payload validado");
-    const refPaciente = await crearPacienteProvisional(payloadFirestore);
+    const refPaciente = await crearPacienteProvisional(
+      payloadFirestore,
+      obtenerOperacionAltaPacienteId()
+    );
     await guardarClinicaDraftEnPaciente(refPaciente.id);
     const medico = await obtenerUsuario(uidMedico);
 
@@ -688,11 +713,17 @@ window.guardarPacienteNuevo = async function() {
     });
 
     alert("Paciente creado correctamente");
+    altaCompletada = true;
     window.location.href = "medico.html";
 
   } catch(error) {
     console.error("[NUEVO PACIENTE] error al guardar:", error);
-    alert("No fue posible guardar al paciente. Revisa los datos e intenta nuevamente.");
+    const esLimiteCuenta = String(error?.code || "").includes("resource-exhausted");
+    alert(esLimiteCuenta
+      ? (error.message || "Tu cuenta gratuita ya alcanzó el límite de 5 pacientes.")
+      : "No fue posible guardar al paciente. Revisa los datos e intenta nuevamente.");
+  } finally {
+    if (!altaCompletada) establecerGuardadoPacienteEnCurso(false);
   }
 }
 })

@@ -1,9 +1,13 @@
 import { db } from "../firebase.js";
 import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
 import { registerPatientNameParts } from "../modules/patient-transfer/parsing/patientNameDictionaries.js?v=20260814-patient-name-dictionary-v1";
-import { usuarioEsProfesionalTipoMedico } from "../utils/roles.js";
 import {
-    createAuthorizedPatientQueryDescriptors,
+    administrarPermisoPaciente,
+    crearIdOperacionPaciente,
+    crearPacienteProvisionalSeguro,
+    listarIdsPacientesAutorizadosSeguro
+} from "./professionalPatientAccessService.js?v=20260826-cuenta-profesional-gratuita-v1";
+import {
     patientAllowsProfessionalAccess,
     patientListCacheKey
 } from "./patientAccessCore.js";
@@ -13,17 +17,15 @@ import {
     getDoc,
     setDoc,
     updateDoc,
-    deleteDoc,
     collection,
-    collectionGroup,
-    documentId,
     getDocs,
     query,
     where,
-    addDoc,
     serverTimestamp,
     writeBatch
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+export { crearIdOperacionPaciente };
 
 
 const TTL_USUARIO_MS = 2 * 60 * 1000;
@@ -34,38 +36,6 @@ const cacheListasPacientes = new Map();
 const solicitudesListasPacientes = new Map();
 const cachePermisosMedico = new Map();
 const solicitudesPermisosMedico = new Map();
-let colaAsignacionExpedientesCognicion = Promise.resolve();
-
-function obtenerExpedienteCognicion(datos = {}) {
-    return String(
-        datos.expedienteCognicion
-        || datos.datosInstitucionales?.expedienteCognicion
-        || ""
-    ).trim();
-}
-
-function encolarAsignacionExpedienteCognicion(tarea) {
-    const ejecucion = colaAsignacionExpedientesCognicion.then(tarea, tarea);
-    colaAsignacionExpedientesCognicion = ejecucion.catch(() => undefined);
-    return ejecucion;
-}
-
-async function obtenerSiguienteExpedienteCognicion() {
-    const anio = String(new Date().getFullYear()).slice(-2);
-    const usuarios = await getDocs(collection(db, "usuarios"));
-    let consecutivoMayor = 999;
-
-    usuarios.forEach((documentoUsuario) => {
-        const coincidencia = /^C(\d+)-(\d{2})$/.exec(
-            obtenerExpedienteCognicion(documentoUsuario.data())
-        );
-        if (coincidencia?.[2] === anio) {
-            consecutivoMayor = Math.max(consecutivoMayor, Number(coincidencia[1]));
-        }
-    });
-
-    return `C${consecutivoMayor + 1}-${anio}`;
-}
 
 function completarDatosConExpedienteCognicion(datos = {}, expedienteCognicion = "") {
     return {
@@ -76,99 +46,6 @@ function completarDatosConExpedienteCognicion(datos = {}, expedienteCognicion = 
             expedienteCognicion
         }
     };
-}
-
-export async function asegurarExpedienteCognicionPaciente(uidPaciente, datosConocidos = {}) {
-    if (!uidPaciente) return datosConocidos;
-    const expedienteExistente = obtenerExpedienteCognicion(datosConocidos);
-    if (expedienteExistente) return datosConocidos;
-
-    return encolarAsignacionExpedienteCognicion(async () => {
-        const referencia = doc(db, "usuarios", uidPaciente);
-        const documentoActual = await getDoc(referencia);
-        if (!documentoActual.exists()) return datosConocidos;
-
-        const datosActuales = documentoActual.data();
-        const expedienteActual = obtenerExpedienteCognicion(datosActuales);
-        if (expedienteActual) return datosActuales;
-
-        const expedienteCognicion = await obtenerSiguienteExpedienteCognicion();
-        const datosActualizados = completarDatosConExpedienteCognicion(datosActuales, expedienteCognicion);
-        await updateDoc(referencia, {
-            expedienteCognicion,
-            datosInstitucionales: datosActualizados.datosInstitucionales
-        });
-        invalidarCacheUsuario(uidPaciente);
-        console.info("[EXPEDIENTE COGNICION] Folio asignado", { expedienteCognicion });
-        return datosActualizados;
-    });
-}
-
-async function asegurarExpedientesCognicionEnDocumentos(documentos = []) {
-    const pendientes = documentos.filter((documentoPaciente) => (
-        documentoPaciente?.id
-        && documentoPaciente.data()?.rol === "paciente"
-        && !obtenerExpedienteCognicion(documentoPaciente.data())
-    ));
-    if (!pendientes.length) return;
-
-    await encolarAsignacionExpedienteCognicion(async () => {
-        const anio = String(new Date().getFullYear()).slice(-2);
-        const usuarios = await getDocs(collection(db, "usuarios"));
-        const datosActualesPorId = new Map();
-        let consecutivoMayor = 999;
-
-        usuarios.forEach((documentoUsuario) => {
-            const datosUsuario = documentoUsuario.data();
-            datosActualesPorId.set(documentoUsuario.id, datosUsuario);
-            const coincidencia = /^C(\d+)-(\d{2})$/.exec(obtenerExpedienteCognicion(datosUsuario));
-            if (coincidencia?.[2] === anio) {
-                consecutivoMayor = Math.max(consecutivoMayor, Number(coincidencia[1]));
-            }
-        });
-
-        pendientes.sort((a, b) => {
-            const fechaA = String(a.data()?.fechaCreacion || "");
-            const fechaB = String(b.data()?.fechaCreacion || "");
-            return fechaA.localeCompare(fechaB) || a.id.localeCompare(b.id);
-        });
-
-        let lote = writeBatch(db);
-        let operaciones = 0;
-        let expedientesAsignados = 0;
-        const confirmarLote = async () => {
-            if (!operaciones) return;
-            await lote.commit();
-            lote = writeBatch(db);
-            operaciones = 0;
-        };
-
-        for (const documentoPaciente of pendientes) {
-            const datosActuales = datosActualesPorId.get(documentoPaciente.id) || documentoPaciente.data();
-            if (obtenerExpedienteCognicion(datosActuales)) continue;
-            consecutivoMayor += 1;
-            const expedienteCognicion = `C${consecutivoMayor}-${anio}`;
-            const datosCompletos = completarDatosConExpedienteCognicion(datosActuales, expedienteCognicion);
-            lote.update(doc(db, "usuarios", documentoPaciente.id), {
-                expedienteCognicion,
-                datosInstitucionales: datosCompletos.datosInstitucionales
-            });
-            operaciones += 1;
-            expedientesAsignados += 1;
-            invalidarCacheUsuario(documentoPaciente.id);
-            if (operaciones >= 400) await confirmarLote();
-        }
-
-        await confirmarLote();
-        invalidarListasPacientes();
-        if (expedientesAsignados) {
-            console.info("[EXPEDIENTE COGNICION] Folios pendientes completados", {
-                cantidad: expedientesAsignados,
-                ultimoConsecutivo: consecutivoMayor,
-                anio
-            });
-        }
-    });
 }
 
 function leerCacheVigente(cache, clave, ttlMs) {
@@ -239,6 +116,56 @@ function crearResultadoPacientesDesdeDocs(docs) {
     };
 }
 
+function esCuentaProfesionalGratuita(perfil = {}) {
+    return perfil.planCuentaProfesional === "profesional_gratuito"
+        || perfil.modalidadRegistroProfesional === "gratuita";
+}
+
+async function listarPacientesGratuitosPorAsignacion(uidProfesional) {
+    const asignaciones = await getDocs(collection(
+        db,
+        "usuarios",
+        uidProfesional,
+        "patientQuotaAssignments"
+    ));
+    const documentos = await Promise.all(asignaciones.docs
+        .filter((asignacion) => asignacion.data()?.estado === "activo")
+        .map(async (asignacion) => {
+            const [documentoPaciente, permisoProfesional] = await Promise.all([
+                getDoc(doc(db, "usuarios", asignacion.id)),
+                getDoc(doc(
+                    db,
+                    "usuarios",
+                    asignacion.id,
+                    "permisosMedicos",
+                    uidProfesional
+                ))
+            ]);
+            if (!documentoPaciente.exists()) return null;
+            const datosPaciente = documentoPaciente.data();
+            const datosConPermiso = permisoProfesional.exists()
+                ? {
+                    ...datosPaciente,
+                    permisosMedicos: {
+                        ...(datosPaciente.permisosMedicos || {}),
+                        [uidProfesional]: permisoProfesional.data()
+                    }
+                }
+                : datosPaciente;
+            return patientAllowsProfessionalAccess(datosConPermiso, uidProfesional)
+                ? documentoPaciente
+                : null;
+        }));
+    const docs = documentos
+        .filter(Boolean)
+        .sort((a, b) => {
+            const nombreA = obtenerNombrePacienteParaMostrar(a.data());
+            const nombreB = obtenerNombrePacienteParaMostrar(b.data());
+            return nombreA.localeCompare(nombreB, "es", { sensitivity: "base" });
+        });
+    return crearResultadoPacientesDesdeDocs(docs);
+}
+
 export async function listarPacientes(uidMedico = "", opciones = {}){
 
     if (!uidMedico) {
@@ -267,67 +194,25 @@ async function listarPacientesSinCache(uidMedico = ""){
         throw new Error("missing_actor_user_id");
     }
 
-    const usuariosRef = collection(db,"usuarios");
-    const consultas = createAuthorizedPatientQueryDescriptors(uidMedico).map((descriptor) =>
-        query(usuariosRef, where(descriptor.field, descriptor.operator, descriptor.value))
-    );
+    const perfilProfesional = await obtenerUsuario(uidMedico);
+    if (esCuentaProfesionalGratuita(perfilProfesional || {})) {
+        return listarPacientesGratuitosPorAsignacion(uidMedico);
+    }
 
-    const resultados = await Promise.allSettled(
-        consultas.map((consulta) => getDocs(consulta))
-    );
+    const { patientIds = [] } = await listarIdsPacientesAutorizadosSeguro();
+    const resultados = await Promise.allSettled(patientIds
+        .filter((patientUid) => typeof patientUid === "string" && patientUid && !patientUid.includes("/"))
+        .map((patientUid) => getDoc(doc(db, "usuarios", patientUid))));
     const pacientes = new Map();
     let primerError = null;
-
     resultados.forEach((resultado) => {
         if (resultado.status === "rejected") {
             primerError = primerError || resultado.reason;
             return;
         }
-
-        resultado.value.forEach((docPaciente) => {
-            const datos = docPaciente.data();
-            if (patientAllowsProfessionalAccess(datos, uidMedico)) {
-                pacientes.set(docPaciente.id, docPaciente);
-            }
-        });
+        if (resultado.value.exists()) pacientes.set(resultado.value.id, resultado.value);
     });
-
-    if (!pacientes.size && primerError && resultados.every((resultado) => resultado.status === "rejected")) {
-        throw primerError;
-    }
-
-    try {
-        const permisosSnap = await getDocs(query(
-            collectionGroup(db, "permisosMedicos"),
-            where(documentId(), "==", uidMedico),
-            where("lectura", "==", true)
-        ));
-
-        const pacientesPorPermiso = await Promise.all(permisosSnap.docs.map(async (permisoDoc) => {
-            const pacienteRef = permisoDoc.ref.parent.parent;
-            if (!pacienteRef || pacientes.has(pacienteRef.id)) return null;
-            const pacienteSnap = await getDoc(pacienteRef);
-            if (!pacienteSnap.exists()) return null;
-            const datos = pacienteSnap.data();
-            return patientAllowsProfessionalAccess({
-                ...datos,
-                permisosMedicos: {
-                    ...(datos.permisosMedicos || {}),
-                    [uidMedico]: permisoDoc.data()
-                }
-            }, uidMedico) ? pacienteSnap : null;
-        }));
-
-        pacientesPorPermiso
-            .filter(Boolean)
-            .forEach((pacienteSnap) => pacientes.set(pacienteSnap.id, pacienteSnap));
-    } catch (error) {
-        console.warn("No se pudieron consultar permisos medicos agrupados:", error);
-    }
-
-    await asegurarExpedientesCognicionEnDocumentos(Array.from(pacientes.values())).catch((error) => {
-        console.warn("[EXPEDIENTE COGNICION] No se pudieron completar todos los folios pendientes:", error);
-    });
+    if (!pacientes.size && primerError && resultados.length) throw primerError;
 
     const docs = Array.from(pacientes.values()).sort((a,b) => {
         const nombreA = obtenerNombrePacienteParaMostrar(a.data());
@@ -365,7 +250,10 @@ export async function crearUsuario(uid,datos){
 
 }
 
-export async function crearPacienteProvisional(datos){
+export async function crearPacienteProvisional(datos, operationId = ""){
+
+    const stableOperationId = String(operationId || datos?.transferOperationId || "").trim()
+        || crearIdOperacionPaciente();
 
     let payload = {
         ...datos,
@@ -389,12 +277,12 @@ export async function crearPacienteProvisional(datos){
         throw new Error("Valor DOM inválido en payload.imc");
     }
 
-    const refPaciente = await encolarAsignacionExpedienteCognicion(async () => {
-        const expedienteExistente = obtenerExpedienteCognicion(payload);
-        const expedienteCognicion = expedienteExistente || await obtenerSiguienteExpedienteCognicion();
+    const resultado = await crearPacienteProvisionalSeguro(payload, stableOperationId);
+    const expedienteCognicion = String(resultado.expedienteCognicion || "").trim();
+    if (expedienteCognicion) {
         payload = completarDatosConExpedienteCognicion(payload, expedienteCognicion);
-        return addDoc(collection(db,"usuarios"), payload);
-    });
+    }
+    const refPaciente = { id: resultado.id, expedienteCognicion };
     registerPatientNameParts({
         nombres: payload.nombres,
         apellidoPaterno: payload.apellidoPaterno,
@@ -514,40 +402,18 @@ export function permisosPorRol(tipoPermiso) {
     return permisos[tipoPermiso] || permisos.estudiante;
 }
 
-export async function otorgarPermisoMedico(pacienteId, uidMedicoDestino, tipoPermiso, otorgadoPor) {
-    const permisoRef = doc(
-        db,
-        "usuarios",
+export async function otorgarPermisoMedico(pacienteId, profesionalDestino, tipoPermiso, otorgadoPor) {
+    const destino = String(profesionalDestino || "").trim();
+    const destinoEsCorreo = destino.includes("@");
+    await administrarPermisoPaciente({
+        accion: "otorgar",
         pacienteId,
-        "permisosMedicos",
-        uidMedicoDestino
-    );
-
-    await setDoc(permisoRef, {
-        ...permisosPorRol(tipoPermiso),
-        fechaOtorgamiento: new Date().toISOString(),
-        otorgadoPor: otorgadoPor
+        profesionalCorreo: destinoEsCorreo ? destino.toLowerCase() : "",
+        profesionalUid: destinoEsCorreo ? "" : destino,
+        tipoPermiso,
+        otorgadoPor
     });
     invalidarListasPacientes();
-}
-
-export async function buscarMedicoPorCorreo(correo) {
-  const q = query(
-    collection(db, "usuarios"),
-    where("email", "==", correo)
-  );
-
-  const snap = await getDocs(q);
-
-  if (snap.empty) return null;
-
-  const docMedico = snap.docs.find((docUsuario) => usuarioEsProfesionalTipoMedico(docUsuario.data().rol));
-  if (!docMedico) return null;
-
-  return {
-        uid: docMedico.id,
-        ...docMedico.data()
-    };
 }
 
 export async function obtenerPermisoMedico(pacienteId, uidMedico) {
@@ -588,17 +454,11 @@ export async function cambiarRolPermisoMedico(
     nuevoRol,
     modificadoPor
 ) {
-    const permisoRef = doc(
-        db,
-        "usuarios",
+    await administrarPermisoPaciente({
+        accion: "actualizar",
         pacienteId,
-        "permisosMedicos",
-        uidMedico
-    );
-
-    await updateDoc(permisoRef, {
-        ...permisosPorRol(nuevoRol),
-        fechaModificacion: new Date().toISOString(),
+        profesionalUid: uidMedico,
+        tipoPermiso: nuevoRol,
         modificadoPor
     });
     invalidarListasPacientes();
@@ -608,14 +468,10 @@ export async function revocarPermisoMedico(
     pacienteId,
     uidMedico
 ) {
-    const permisoRef = doc(
-        db,
-        "usuarios",
+    await administrarPermisoPaciente({
+        accion: "revocar",
         pacienteId,
-        "permisosMedicos",
-        uidMedico
-    );
-
-    await deleteDoc(permisoRef);
+        profesionalUid: uidMedico
+    });
     invalidarListasPacientes();
 }

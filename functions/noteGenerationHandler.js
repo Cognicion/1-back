@@ -1,4 +1,7 @@
 const crypto = require("crypto");
+const { professionalPlanAllowsPatientAccess } = require("./accountSecurity/professionalPatientQuota");
+const { accountDeletionTombstoneExists } = require("./accountSecurity/accountDeletion");
+const { patientAllowsProfessionalAccess } = require("./accountLinking/validation");
 
 const NOTE_PROMPT_VERSION = "psychiatric_voice_note_es_mx_v3";
 const NOTE_SCHEMA_VERSION = "voice_note_evolution_mental_exam_v1";
@@ -530,36 +533,11 @@ function profileHasInstitutionalFormat(profile = {}, permission = "") {
   return metadataIsActive(metadata[permission]);
 }
 
-function arrayIncludesUid(values, uid = "") {
-  if (!Array.isArray(values)) return false;
-  return values.some((item) => {
-    if (typeof item === "string") return item === uid;
-    if (!item || typeof item !== "object") return false;
-    return [item.uid, item.userId, item.medicoUid, item.id].includes(uid);
-  });
-}
-
 function patientAllowsActorAccess(patient = {}, actorUid = "", actorProfile = {}) {
   if (!actorUid) return false;
   const role = normalizeForAccess(actorProfile.rol || actorProfile.role);
   if (["admin", "administrador", "superadmin", "admin_principal", "administrador_principal"].includes(role) || actorProfile.admin === true || actorProfile.esAdmin === true) return true;
-  const ownerFields = [
-    patient.creadoPor,
-    patient.ownerUid,
-    patient.createdByUid,
-    patient.medicoUid,
-    patient.uidMedico,
-    patient.medicoTratanteUid,
-    patient.medicoTratanteUID,
-    patient.idMedico
-  ].filter(Boolean);
-  if (ownerFields.includes(actorUid)) return true;
-  if (arrayIncludesUid(patient.medicosAutorizados, actorUid)) return true;
-  if (arrayIncludesUid(patient.medicosAutorizadosUid, actorUid)) return true;
-  if (arrayIncludesUid(patient.profesionalesAutorizados, actorUid)) return true;
-  if (arrayIncludesUid(patient.clinicosAutorizados, actorUid)) return true;
-  if (patient.permisosMedicos && patient.permisosMedicos[actorUid]?.lectura === true) return true;
-  return false;
+  return patientAllowsProfessionalAccess(patient, actorUid, {});
 }
 
 async function validateActorAndSubjectAccess({ payload, auth, adminDb, HttpsErrorClass, requestId, logger }) {
@@ -573,13 +551,34 @@ async function validateActorAndSubjectAccess({ payload, auth, adminDb, HttpsErro
   }
   const actorUid = auth.uid;
   const subjectPatientId = payload.patientContext?.patientId || "";
-  const [actorSnap, patientSnap] = await Promise.all([
+  const [actorSnap, patientSnap, actorDeleting, patientDeleting] = await Promise.all([
     adminDb.collection("usuarios").doc(actorUid).get(),
-    adminDb.collection("usuarios").doc(subjectPatientId).get()
+    adminDb.collection("usuarios").doc(subjectPatientId).get(),
+    accountDeletionTombstoneExists({ db: adminDb, uid: actorUid }),
+    accountDeletionTombstoneExists({ db: adminDb, uid: subjectPatientId })
   ]);
   const actorProfile = actorSnap.exists ? (actorSnap.data() || {}) : {};
   const patientData = patientSnap.exists ? (patientSnap.data() || {}) : {};
-  const actorCanAccessPatient = patientSnap.exists && patientAllowsActorAccess(patientData, actorUid, actorProfile);
+  const accountsActive = !actorDeleting && !patientDeleting;
+  const patientIsLinkedOrigin = patientData.estado === "vinculado" && Boolean(patientData.vinculadoA);
+  let relationAllowsPatient = accountsActive && patientSnap.exists
+    && patientAllowsActorAccess(patientData, actorUid, actorProfile);
+  if (accountsActive && patientSnap.exists && !patientIsLinkedOrigin && !relationAllowsPatient) {
+    const permissionSnapshot = await adminDb.doc(
+      `usuarios/${subjectPatientId}/permisosMedicos/${actorUid}`
+    ).get();
+    const permission = permissionSnapshot.exists ? permissionSnapshot.data() || {} : {};
+    relationAllowsPatient = permission.lectura === true
+      || permission.read === true
+      || permission.activo === true;
+  }
+  const actorCanAccessPatient = relationAllowsPatient
+    && await professionalPlanAllowsPatientAccess({
+      db: adminDb,
+      patientUid: subjectPatientId,
+      professionalProfile: actorProfile,
+      professionalUid: actorUid
+    });
   safeLog(logger, actorCanAccessPatient ? "info" : "warn", {
     requestId,
     stage,
@@ -2086,6 +2085,8 @@ module.exports = {
   buildMentalExamComponents,
   buildMentalExamNarrative,
   buildMentalExamSection,
+  patientAllowsActorAccess,
+  validateActorAndSubjectAccess,
   validateMentalExamNarrative,
   validateProviderResult,
   requiredInstitutionalFormatPermission,

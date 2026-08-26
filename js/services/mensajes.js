@@ -1,4 +1,6 @@
 import { db } from "../firebase.js";
+import { listarPacientes } from "./usuarios.js?v=20260826-cuenta-profesional-gratuita-v1";
+import { listarDirectorioProfesionalSeguro } from "./professionalPatientAccessService.js?v=20260826-cuenta-profesional-gratuita-v1";
 
 import {
   addDoc,
@@ -51,9 +53,34 @@ export function idConversacionParaUsuarios(uidA = "", uidB = "") {
 }
 
 export async function listarUsuariosParaMensajes(uidActual = "") {
-  const snap = await getDocs(collection(db, "usuarios"));
-  return snap.docs
-    .map((docUsuario) => ({ id: docUsuario.id, ...docUsuario.data() }))
+  const perfilActual = uidActual ? await getDoc(doc(db, "usuarios", uidActual)) : null;
+  const rolActual = String(perfilActual?.data()?.rol || "").trim().toLowerCase();
+  if (rolActual === "admin") {
+    const snap = await getDocs(collection(db, "usuarios"));
+    return snap.docs
+      .map((docUsuario) => ({ id: docUsuario.id, ...docUsuario.data() }))
+      .filter((usuario) => usuario.id !== uidActual)
+      .sort((a, b) => String(a.nombre || a.email || "").localeCompare(String(b.nombre || b.email || ""), "es", { sensitivity: "base" }));
+  }
+
+  const resultados = new Map();
+  const respuestas = await Promise.allSettled([
+    listarDirectorioProfesionalSeguro(),
+    uidActual ? listarPacientes(uidActual) : Promise.resolve(null)
+  ]);
+  if (respuestas[0].status === "fulfilled") {
+    (respuestas[0].value?.professionals || []).forEach((usuario) => {
+      if (usuario.id !== uidActual) resultados.set(usuario.id, usuario);
+    });
+  }
+  if (respuestas[1].status === "fulfilled" && respuestas[1].value?.docs) {
+    respuestas[1].value.docs.forEach((docUsuario) => {
+      if (docUsuario.id !== uidActual) {
+        resultados.set(docUsuario.id, { id: docUsuario.id, ...docUsuario.data() });
+      }
+    });
+  }
+  return [...resultados.values()]
     .filter((usuario) => usuario.id !== uidActual)
     .sort((a, b) => String(a.nombre || a.email || "").localeCompare(String(b.nombre || b.email || ""), "es", { sensitivity: "base" }));
 }
@@ -73,22 +100,6 @@ export async function buscarUsuariosParaMensajes(texto = "", uidActual = "") {
     if (snapUid.exists()) agregar({ id: snapUid.id, ...snapUid.data() });
   } catch (error) {
     console.warn("No se pudo buscar usuario por UID:", error);
-  }
-
-  if (busqueda.includes("@")) {
-    const emailNormalizado = busqueda.toLowerCase();
-    const consultas = [
-      query(collection(db, "usuarios"), where("email", "==", busqueda)),
-      query(collection(db, "usuarios"), where("email", "==", emailNormalizado)),
-      query(collection(db, "usuarios"), where("correo", "==", busqueda)),
-      query(collection(db, "usuarios"), where("correo", "==", emailNormalizado))
-    ];
-
-    const snaps = await Promise.allSettled(consultas.map((consulta) => getDocs(consulta)));
-    snaps.forEach((resultado) => {
-      if (resultado.status !== "fulfilled") return;
-      resultado.value.docs.forEach((docUsuario) => agregar({ id: docUsuario.id, ...docUsuario.data() }));
-    });
   }
 
   if (!resultados.size) {
@@ -115,31 +126,14 @@ export async function buscarUsuariosParaMensajes(texto = "", uidActual = "") {
 }
 
 export async function listarAdminsParaMensajes(uidActual = "") {
-  const esAdmin = (usuario = {}) => {
-    const rol = String(usuario.rol || "").toLowerCase().trim();
-    return ["admin", "administrador", "superadmin"].includes(rol);
-  };
-
   try {
-    const qAdmins = query(collection(db, "usuarios"), where("rol", "==", "admin"));
-    const snap = await getDocs(qAdmins);
-    const admins = snap.docs
-      .map((docUsuario) => ({ id: docUsuario.id, ...docUsuario.data() }))
-      .filter((usuario) => usuario.id !== uidActual);
+    const directory = await listarDirectorioProfesionalSeguro();
+    const admins = (directory.professionals || [])
+      .filter((usuario) => usuario.rol === "admin" && usuario.id !== uidActual);
 
     if (admins.length) return admins;
   } catch (error) {
     console.warn("No se pudo consultar administradores por rol exacto:", error);
-  }
-
-  try {
-    const snapUsuarios = await getDocs(collection(db, "usuarios"));
-    const admins = snapUsuarios.docs
-      .map((docUsuario) => ({ id: docUsuario.id, ...docUsuario.data() }))
-      .filter((usuario) => usuario.id !== uidActual && esAdmin(usuario));
-    if (admins.length) return admins;
-  } catch (error) {
-    console.warn("No se pudo consultar lista general de usuarios para administradores:", error);
   }
 
   try {

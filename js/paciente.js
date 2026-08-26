@@ -75,16 +75,14 @@ import {
 import {
   obtenerUsuario,
   listarPacientes,
-  asegurarExpedienteCognicionPaciente,
   medicoPuedeVer,
   actualizarUsuario,
   solicitarEliminacionPaciente,
-  buscarMedicoPorCorreo,
   otorgarPermisoMedico,
   listarPermisosMedicos,
   cambiarRolPermisoMedico,
   revocarPermisoMedico
-} from "./services/usuarios.js?v=20260816-expedientes-cognicion-v1";
+} from "./services/usuarios.js?v=20260826-cuenta-profesional-gratuita-v1";
 
 import {
   crearTratamiento,
@@ -110,6 +108,8 @@ import {
   crearCodigoExpedienteParaPaciente,
   vincularExpedienteConCodigoPaciente
 } from "./services/vinculacion.js";
+
+const FOLIO_COGNICION_PENDIENTE = "Folio pendiente de asignación";
 
 function inicializarNavegacionVisualExpediente() {
   const menu = document.querySelector(".sidebar .menu");
@@ -1660,7 +1660,11 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
   const diagnosticos = listaDiagnosticosLaboratorio(datos);
   const tratamientos = listaTratamientosLaboratorio(datos);
   const estudios = listaEstudiosLaboratorio(datos);
-  const expedienteCognicion = valorPaciente(datos, ["expedienteCognicion", "datosInstitucionales.expedienteCognicion"], "Sin expediente");
+  const expedienteCognicion = valorPaciente(
+    datos,
+    ["expedienteCognicion", "datosInstitucionales.expedienteCognicion"],
+    FOLIO_COGNICION_PENDIENTE
+  );
   const folioEncabezado = document.getElementById("expedienteCognicionEncabezado");
   if (folioEncabezado) folioEncabezado.textContent = expedienteCognicion;
   contenedor.innerHTML = `
@@ -1673,7 +1677,7 @@ function renderizarVistaLaboratorioPaciente(datos = datosPacienteActual || {}) {
         </div>
         <div class="lab-paciente-id">
           <span>Expediente Cognición</span>
-          <strong>${escaparHTML(valorPaciente(datos, ["expedienteCognicion", "datosInstitucionales.expedienteCognicion"], "Sin expediente"))}</strong>
+          <strong>${escaparHTML(valorPaciente(datos, ["expedienteCognicion", "datosInstitucionales.expedienteCognicion"], FOLIO_COGNICION_PENDIENTE))}</strong>
         </div>
       </div>
 
@@ -3295,15 +3299,6 @@ async function cargarDatosPaciente() {
     throw new Error("patient_access_denied");
   }
 
-  if (!valorPaciente(datos, ["expedienteCognicion", "datosInstitucionales.expedienteCognicion"], "")) {
-    try {
-      datos = await asegurarExpedienteCognicionPaciente(uidPaciente, datos);
-      datosPacienteActual = datos;
-    } catch (error) {
-      console.warn("[EXPEDIENTE COGNICION] No se pudo asignar el folio pendiente:", error);
-    }
-  }
-
   console.info("patient:vitals-read", {
     ...firebaseRuntimeInfo(),
     targetFingerprint: technicalFingerprint(uidPaciente),
@@ -3321,7 +3316,7 @@ async function cargarDatosPaciente() {
     "expedienteCognicionPaciente",
     datos.expedienteCognicion ||
       datos.datosInstitucionales?.expedienteCognicion ||
-      "Sin expediente"
+      FOLIO_COGNICION_PENDIENTE
   );
 
   const fechaNacimiento = obtenerFechaNacimiento(datos);
@@ -3444,7 +3439,7 @@ window.mostrarResultadosEscalas = async function() {
   document.getElementById("seccionResultadosEscalas").style.display = "block";
   ponerTexto(
     "expedienteCognicionEscalas",
-    valorPaciente(datosPacienteActual || {}, ["expedienteCognicion", "datosInstitucionales.expedienteCognicion"], "Sin expediente")
+    valorPaciente(datosPacienteActual || {}, ["expedienteCognicion", "datosInstitucionales.expedienteCognicion"], FOLIO_COGNICION_PENDIENTE)
   );
   await inicializarEditorEscalasPaciente();
   await cargarResultadosEscalasPaciente();
@@ -4183,25 +4178,28 @@ window.agregarPermisoMedico = async function() {
     return;
   }
 
-  const medico = await buscarMedicoPorCorreo(correo);
-
-  if (!medico) {
-    alert("No se encontr un mdico registrado con ese correo.");
-    return;
+  try {
+    await otorgarPermisoMedico(
+      uidPaciente,
+      correo,
+      rol,
+      auth.currentUser.uid
+    );
+    alert("Permiso otorgado correctamente.");
+    document.getElementById("correoMedicoPermiso").value = "";
+    await cargarPermisosMedicos();
+  } catch (error) {
+    const codigo = String(error?.code || "");
+    if (codigo.includes("not-found")) {
+      alert("No se encontró un profesional registrado con ese correo.");
+      return;
+    }
+    if (codigo.includes("resource-exhausted")) {
+      alert(error.message || "La cuenta profesional gratuita ya alcanzó su límite de 5 pacientes.");
+      return;
+    }
+    alert("No fue posible otorgar el permiso.");
   }
-
-  await otorgarPermisoMedico(
-    uidPaciente,
-    medico.uid,
-    rol,
-    auth.currentUser.uid
-  );
-
-  alert("Permiso otorgado correctamente.");
-
-  document.getElementById("correoMedicoPermiso").value = "";
-
-  await cargarPermisosMedicos();
 };
 
 window.cambiarRolPermiso = async function(uidMedico) {

@@ -1,4 +1,4 @@
-import { listarPacientes } from "./services/usuarios.js?v=20260816-expedientes-cognicion-v1";
+import { listarPacientes } from "./services/usuarios.js?v=20260826-cuenta-profesional-gratuita-v1";
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
@@ -269,7 +269,7 @@ function inicializarImportacionDocxLazy() {
     try {
       if (!traspasoPacientesPromise) {
         // Marcador de cache del importador documental.
-    traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260819-midc-allergy-context-v1");
+    traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260826-cuenta-profesional-gratuita-v1");
       }
       const modulo = await traspasoPacientesPromise;
       modulo.openPatientTransfer();
@@ -298,7 +298,7 @@ function inicializarRevisionDuplicadosLazy() {
   document.getElementById("btnRevisarDuplicadosPacientes")?.addEventListener("click", async () => {
     try {
       if (!revisionDuplicadosPromise) {
-        revisionDuplicadosPromise = import("./modules/patient-duplicates/index.js");
+        revisionDuplicadosPromise = import("./modules/patient-duplicates/index.js?v=20260826-cuenta-profesional-gratuita-v1");
       }
       const modulo = await revisionDuplicadosPromise;
       modulo.openPatientDuplicateReview();

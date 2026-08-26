@@ -100,6 +100,34 @@ test("un usuario autenticado solo puede autocrear un perfil paciente sin claims 
     nombre: "Anónimo",
     rol: "paciente"
   }));
+
+  for (const assignment of [
+    { creadoPor: PROFESSIONALS[0][0] },
+    { ownerUid: PROFESSIONALS[0][0] },
+    { medicoUid: PROFESSIONALS[0][0] },
+    { medicoTratanteUid: PROFESSIONALS[0][0] },
+    { medicoTratanteUID: PROFESSIONALS[0][0] },
+    { medicoTratanteId: PROFESSIONALS[0][0] },
+    { idMedico: PROFESSIONALS[0][0] },
+    { professionalUid: PROFESSIONALS[0][0] },
+    { medicosAutorizados: [PROFESSIONALS[0][0]] },
+    { medicosAutorizadosUid: [PROFESSIONALS[0][0]] },
+    { profesionalesAutorizados: [PROFESSIONALS[0][0]] },
+    { profesionalesAutorizadosIds: [PROFESSIONALS[0][0]] },
+    { medicosAsignados: [PROFESSIONALS[0][0]] },
+    { equipoClinico: [PROFESSIONALS[0][0]] },
+    { equipoClinicoIds: [PROFESSIONALS[0][0]] },
+    { clinicosAutorizados: [PROFESSIONALS[0][0]] }
+  ]) {
+    const uid = `uidSelfAssignment${Object.keys(assignment)[0]}`;
+    await assertFails(setDoc(doc(authenticatedDb(uid), "usuarios", uid), {
+      email: `${uid}@example.test`,
+      nombre: "Paciente",
+      rol: "paciente",
+      tieneCuenta: true,
+      ...assignment
+    }));
+  }
 });
 
 test("la autoedición conserva datos normales pero bloquea toda elevación de rol o administración", async () => {
@@ -126,7 +154,17 @@ test("la autoedición conserva datos normales pero bloquea toda elevación de ro
     { profesion: "medico" },
     { especialidad: "medico" },
     { cedulaProfesional: "FORGED" },
-    { perfilMedicoVerificado: true }
+    { perfilMedicoVerificado: true },
+    { planCuentaProfesional: "profesional_codigo" },
+    { limitePacientes: 999 },
+    { pacientesEnCuenta: 0 },
+    { creadoPor: PROFESSIONALS[0][0] },
+    { medicoTratanteUid: PROFESSIONALS[0][0] },
+    { medicoTratanteUID: PROFESSIONALS[0][0] },
+    { professionalUid: PROFESSIONALS[0][0] },
+    { medicosAutorizados: [PROFESSIONALS[0][0]] },
+    { profesionalesAutorizadosIds: [PROFESSIONALS[0][0]] },
+    { equipoClinicoIds: [PROFESSIONALS[0][0]] }
   ]) {
     await assertFails(updateDoc(profileRef, patch));
   }
@@ -141,12 +179,12 @@ test("la autoedición conserva datos normales pero bloquea toda elevación de ro
   }));
 });
 
-test("cada rol clínico permitido crea pacientes provisionales solo con atribución propia completa", async () => {
+test("los expedientes provisionales son backend-only para todos los roles clínicos", async () => {
   for (const [actorUid] of [...PROFESSIONALS, [UID_ADMIN, "admin"]]) {
     const db = authenticatedDb(actorUid);
     const patientId = `patientCreatedBy_${actorUid}`;
     const patientRef = doc(db, "usuarios", patientId);
-    await assertSucceeds(setDoc(patientRef, {
+    await assertFails(setDoc(patientRef, {
       creadoPor: actorUid,
       createdByUid: actorUid,
       medicoTratanteUid: actorUid,
@@ -156,7 +194,6 @@ test("cada rol clínico permitido crea pacientes provisionales solo con atribuci
       rol: "paciente",
       tieneCuenta: false
     }));
-    await assertSucceeds(updateDoc(patientRef, { observaciones: "Actualización clínica" }));
   }
 });
 
@@ -193,16 +230,28 @@ test("pacientes provisionales con propietario ausente, ajeno o rol privilegiado 
 test("personal clínico no cambia roles de pacientes; admin conserva asignación a terceros pero no a sí mismo", async () => {
   const medicoDb = authenticatedDb(PROFESSIONALS[0][0]);
   const patientRef = doc(medicoDb, "usuarios", "patientRoleTarget");
-  await assertSucceeds(setDoc(patientRef, {
-    creadoPor: PROFESSIONALS[0][0],
-    medicoUid: PROFESSIONALS[0][0],
-    nombre: "Paciente",
-    ownerUid: PROFESSIONALS[0][0],
-    rol: "paciente",
-    tieneCuenta: false
-  }));
+  await environment.withSecurityRulesDisabled(async (context) => setDoc(
+    doc(context.firestore(), "usuarios", "patientRoleTarget"),
+    {
+      creadoPor: PROFESSIONALS[0][0],
+      medicoUid: PROFESSIONALS[0][0],
+      nombre: "Paciente",
+      ownerUid: PROFESSIONALS[0][0],
+      rol: "paciente",
+      tieneCuenta: false
+    }
+  ));
   await assertFails(updateDoc(patientRef, { rol: "medico" }));
   await assertFails(updateDoc(patientRef, { admin: true }));
+  for (const patch of [
+    { ownerUid: PROFESSIONALS[1][0] },
+    { medicoUid: PROFESSIONALS[1][0] },
+    { medicoTratanteUid: PROFESSIONALS[1][0] },
+    { medicosAutorizados: [PROFESSIONALS[0][0], PROFESSIONALS[1][0]] },
+    { profesionalesAutorizados: [PROFESSIONALS[1][0]] }
+  ]) {
+    await assertFails(updateDoc(patientRef, patch));
+  }
 
   const adminDb = authenticatedDb(UID_ADMIN);
   await assertSucceeds(updateDoc(doc(adminDb, "usuarios", UID_OTHER), {
@@ -250,6 +299,41 @@ test("la lectura canónica de perfiles sigue disponible solo para usuarios auten
   await assertFails(getDoc(doc(anonymousDb, "usuarios", UID_ADMIN)));
 });
 
+test("una marca de eliminación invalida de inmediato el token residual en Firestore", async () => {
+  await environment.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), "accountDeletionTombstones", UID_OTHER), {
+      accountType: "paciente",
+      accountUid: UID_OTHER,
+      deletionState: "in_progress"
+    });
+  });
+  const residualDb = authenticatedDb(UID_OTHER);
+
+  await assertFails(getDoc(doc(residualDb, "usuarios", UID_OTHER)));
+  await assertFails(updateDoc(doc(residualDb, "usuarios", UID_OTHER), { nombre: "Recreado" }));
+  await assertFails(setDoc(doc(residualDb, "usuarios", UID_OTHER, "apuntesMedico", "residual"), {
+    contenido: "No permitido"
+  }));
+  await assertFails(getDoc(doc(residualDb, "accountDeletionTombstones", UID_OTHER)));
+
+  const professionalDb = authenticatedDb(PROFESSIONALS[0][0]);
+  await assertFails(getDoc(doc(professionalDb, "usuarios", UID_OTHER)));
+  await assertFails(updateDoc(doc(professionalDb, "usuarios", UID_OTHER), { nombre: "Recreado por tercero" }));
+  await assertFails(setDoc(doc(professionalDb, "usuarios", UID_OTHER, "notasMedicas", "residual"), {
+    contenido: "No permitido"
+  }));
+  await assertFails(setDoc(doc(professionalDb, "pacientes", UID_OTHER, "registrosDiarios", "residual"), {
+    valor: 1
+  }));
+
+  await environment.withSecurityRulesDisabled(async (context) => {
+    await updateDoc(doc(context.firestore(), "accountDeletionTombstones", UID_OTHER), {
+      deletionState: "completed"
+    });
+  });
+  await assertFails(getDoc(doc(residualDb, "usuarios", UID_OTHER)));
+});
+
 test("los códigos profesionales quedan administrados por admin y opacos para otros clientes", async () => {
   const adminDb = authenticatedDb(UID_ADMIN);
   const patientDb = authenticatedDb(UID_OTHER);
@@ -286,6 +370,45 @@ test("los códigos de vinculación son backend-only incluso para admin y persona
     await assertFails(updateDoc(doc(db, path), { usado: true }));
     await assertFails(deleteDoc(doc(db, path)));
   }
+});
+
+test("permisos profesionales y slots de cuota solo se modifican desde backend", async () => {
+  const patientId = "uidQuotaPatient";
+  const professionalUid = PROFESSIONALS[0][0];
+  const permissionPath = `usuarios/${patientId}/permisosMedicos/${professionalUid}`;
+  const quotaPath = `usuarios/${professionalUid}/patientQuotaAssignments/${patientId}`;
+  await environment.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+    await setDoc(doc(db, "usuarios", patientId), { rol: "paciente", tieneCuenta: true });
+    await setDoc(doc(db, permissionPath), { lectura: true, rolPermiso: "tratante" });
+    await setDoc(doc(db, quotaPath), { patientUid: patientId, professionalUid });
+  });
+
+  for (const db of [
+    authenticatedDb(patientId),
+    authenticatedDb(professionalUid),
+    authenticatedDb(UID_ADMIN)
+  ]) {
+    assert.equal((await assertSucceeds(getDoc(doc(db, permissionPath)))).data().lectura, true);
+  }
+  await assertFails(getDoc(doc(authenticatedDb(UID_OTHER), permissionPath)));
+
+  for (const db of [
+    authenticatedDb(patientId),
+    authenticatedDb(UID_OTHER),
+    authenticatedDb(UID_ADMIN)
+  ]) {
+    await assertFails(setDoc(doc(db, permissionPath), { lectura: true }, { merge: true }));
+    await assertFails(deleteDoc(doc(db, permissionPath)));
+    await assertFails(getDoc(doc(db, quotaPath)));
+    await assertFails(setDoc(doc(db, quotaPath), { patientUid: patientId, professionalUid }));
+  }
+
+  const professionalDb = authenticatedDb(professionalUid);
+  assert.equal((await assertSucceeds(getDoc(doc(professionalDb, quotaPath)))).data().patientUid, patientId);
+  await assertFails(setDoc(doc(professionalDb, permissionPath), { lectura: true }, { merge: true }));
+  await assertFails(deleteDoc(doc(professionalDb, permissionPath)));
+  await assertFails(setDoc(doc(professionalDb, quotaPath), { patientUid: patientId, professionalUid }));
 });
 
 test("Mis apuntes permite CRUD al dueño y solamente lectura/borrado al admin", async () => {

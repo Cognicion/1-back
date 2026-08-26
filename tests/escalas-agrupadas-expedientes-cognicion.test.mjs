@@ -17,15 +17,16 @@ test("el historial agrupa aplicaciones y registros previos por escala", () => {
   assert.match(paciente, /Registradas previamente/);
 });
 
-test("las altas normales y por traspaso comparten la asignacion de expediente", () => {
+test("las altas normales y por traspaso reciben el expediente desde el backend", () => {
   assert.doesNotMatch(nuevoPaciente, /function generarExpedienteCognicion/);
-  assert.match(nuevoPaciente, /crearPacienteProvisional\(payloadFirestore\)/);
-  assert.match(traspaso, /crearPacienteProvisional\(buildPatientPayload\(fields, user\)\)/);
+  assert.match(nuevoPaciente, /crearPacienteProvisional\([\s\S]*payloadFirestore,[\s\S]*obtenerOperacionAltaPacienteId\(\)/);
+  assert.match(traspaso, /crearPacienteProvisional\([\s\S]*buildPatientPayload\(fields, user\),[\s\S]*fields\.transferOperationId/);
   assert.match(usuarios, /completarDatosConExpedienteCognicion\(payload, expedienteCognicion\)/);
 });
 
-test("el listado repara en lote los expedientes faltantes", () => {
-  assert.match(usuarios, /asegurarExpedientesCognicionEnDocumentos\(Array\.from\(pacientes\.values\(\)\)\)/);
-  assert.match(usuarios, /if \(operaciones >= 400\) await confirmarLote\(\)/);
-  assert.match(usuarios, /expedienteCognicion: datosCompletos\.datosInstitucionales\.expedienteCognicion|datosInstitucionales: datosCompletos\.datosInstitucionales/);
+test("el cliente no escanea usuarios ni repara folios legados", () => {
+  assert.doesNotMatch(usuarios, /obtenerSiguienteExpedienteCognicion|asegurarExpedienteCognicionPaciente|asegurarExpedientesCognicionEnDocumentos/);
+  assert.doesNotMatch(usuarios, /getDocs\(collection\(db,\s*["']usuarios["']\)\)/);
+  assert.doesNotMatch(paciente, /asegurarExpedienteCognicionPaciente/);
+  assert.match(paciente, /Folio pendiente de asignación/);
 });

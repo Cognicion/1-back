@@ -5,24 +5,62 @@ import { readFile } from "node:fs/promises";
 const usuariosSource = await readFile(new URL("../js/services/usuarios.js", import.meta.url), "utf8");
 const medicoSource = await readFile(new URL("../js/medico.js", import.meta.url), "utf8");
 const medicoHtml = await readFile(new URL("../medico.html", import.meta.url), "utf8");
+const mensajesSource = await readFile(new URL("../js/services/mensajes.js", import.meta.url), "utf8");
+const sofiaSource = await readFile(new URL("../js/services/sofiaClinica.js", import.meta.url), "utf8");
+const pediatriaSource = await readFile(new URL("../js/pediatria/pediatria.js", import.meta.url), "utf8");
+const pacienteSource = await readFile(new URL("../js/paciente.js", import.meta.url), "utf8");
+const professionalPatientAccessServiceSource = await readFile(
+  new URL("../js/services/professionalPatientAccessService.js", import.meta.url),
+  "utf8"
+);
 
-test("una consulta opcional de permisos no cancela la lista principal de pacientes", () => {
+test("los planes legados reciben solo IDs autorizados desde backend", () => {
   const funcion = usuariosSource.match(
     /async function listarPacientesSinCache\(uidMedico = ""\)\{[\s\S]*?\n\}/
   )?.[0] || "";
-  const indiceConsultasPrincipales = funcion.indexOf("const resultados = await Promise.allSettled");
-  const indiceProcesamiento = funcion.indexOf("resultados.forEach");
-  const indiceConsultaPermisos = funcion.indexOf("collectionGroup(db, \"permisosMedicos\")");
-  const bloquePermisos = funcion.slice(funcion.lastIndexOf("try {", indiceConsultaPermisos), indiceConsultaPermisos);
+  assert.match(funcion, /listarIdsPacientesAutorizadosSeguro\(\)/);
+  assert.match(funcion, /getDoc\(doc\(db, "usuarios", patientUid\)\)/);
+  assert.doesNotMatch(funcion, /collectionGroup|documentId|collection\(db,"usuarios"\)/);
+});
 
-  assert.ok(indiceConsultasPrincipales >= 0, "deben mantenerse las consultas autorizadas principales");
-  assert.ok(indiceProcesamiento > indiceConsultasPrincipales, "los resultados principales deben procesarse primero");
-  assert.ok(indiceConsultaPermisos > indiceProcesamiento, "la consulta opcional debe ejecutarse después");
-  assert.match(bloquePermisos, /try \{/, "la consulta opcional debe estar protegida contra fallos síncronos y asíncronos");
-  assert.doesNotMatch(funcion, /const permisosPendientes\s*=\s*getDocs/);
+test("la cuenta gratuita lista únicamente los UID de sus asignaciones server-only", () => {
+  const helper = usuariosSource.match(
+    /async function listarPacientesGratuitosPorAsignacion[\s\S]*?\n\}/
+  )?.[0] || "";
+  const funcion = usuariosSource.match(
+    /async function listarPacientesSinCache\(uidMedico = ""\)\{[\s\S]*?\n\}/
+  )?.[0] || "";
+
+  assert.match(helper, /"patientQuotaAssignments"/);
+  assert.match(helper, /"permisosMedicos",\s*uidProfesional/);
+  assert.match(helper, /\[uidProfesional\]: permisoProfesional\.data\(\)/);
+  assert.match(helper, /patientAllowsProfessionalAccess\(datosConPermiso, uidProfesional\)/);
+  assert.match(funcion, /esCuentaProfesionalGratuita\(perfilProfesional \|\| \{\}\)/);
+  assert.ok(
+    funcion.indexOf("listarPacientesGratuitosPorAsignacion(uidMedico)")
+      < funcion.indexOf("listarIdsPacientesAutorizadosSeguro()"),
+    "el plan gratuito debe salir antes del directorio backend para planes sin límite"
+  );
+});
+
+test("compartir por correo delega la identidad profesional al backend", () => {
+  assert.doesNotMatch(usuariosSource, /export async function buscarMedicoPorCorreo/);
+  assert.doesNotMatch(usuariosSource, /where\("email", "==", correo\)/);
+  assert.doesNotMatch(pacienteSource, /buscarMedicoPorCorreo/);
+  assert.match(pacienteSource, /otorgarPermisoMedico\(\s*uidPaciente,\s*correo,/);
+  assert.match(professionalPatientAccessServiceSource, /profesionalCorreo/);
+});
+
+test("Sofía, Pediatría y Mensajes reutilizan la lista autorizada fuera del rol admin", () => {
+  assert.match(sofiaSource, /rol === "admin"[\s\S]{0,180}listarPacientes\(usuario\?\.uid \|\| ""\)/);
+  assert.match(pediatriaSource, /rol\.includes\("admin"\)[\s\S]{0,180}listarPacientes\(estado\.usuario\?\.uid \|\| ""\)/);
+  assert.match(mensajesSource, /listarDirectorioProfesionalSeguro\(\)/);
+  assert.doesNotMatch(mensajesSource, /rolesVisibles|where\("rol", "==", rol\)/);
+  assert.match(mensajesSource, /uidActual \? listarPacientes\(uidActual\)/);
+  assert.doesNotMatch(mensajesSource, /where\("(?:email|correo)", "==", busqueda\)/);
 });
 
 test("el Panel Médico invalida las versiones defectuosas en todos los navegadores", () => {
-  assert.match(medicoSource, /usuarios\.js\?v=20260816-expedientes-cognicion-v1/);
-  assert.match(medicoHtml, /medico\.js\?v=20260816-expedientes-cognicion-v1/);
+  assert.match(medicoSource, /usuarios\.js\?v=20260826-cuenta-profesional-gratuita-v1/);
+  assert.match(medicoHtml, /medico\.js\?v=20260826-cuenta-profesional-gratuita-v1/);
 });

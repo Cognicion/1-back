@@ -1,21 +1,20 @@
-import { auth, db } from "./firebase.js";
+import { auth } from "./firebase.js";
 
 import {
-  createUserWithEmailAndPassword
+  createUserWithEmailAndPassword,
+  reload,
+  sendEmailVerification,
+  signInWithEmailAndPassword,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-import {
-  doc,
-  setDoc,
-  collection,
-  query,
-  where,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { registrarVisita } from "./services/visitas.js";
 import { vincularCuentaConCodigoMedico } from "./services/vinculacion.js";
+import {
+  descartarCuentaSinPerfil,
+  registrarPerfilPacienteSeguro
+} from "./services/professionalPatientAccessService.js?v=20260826-cuenta-profesional-gratuita-v1";
 import {
   ETIQUETA_ROL_ENFERMERIA_SALUD_MENTAL,
   ROL_ENFERMERIA_SALUD_MENTAL
@@ -23,12 +22,70 @@ import {
 import { abrirLegalModal } from "./legal/legalModal.js";
 import { betaConsent, privacyNotice } from "./legal/legalDocuments.js";
 import { guardarConsentimientosLegales } from "./legal/legalConsentService.js";
-import { registrarProfesionalConCodigo } from "./services/professionalRegistrationService.js";
+import { registrarProfesional } from "./services/professionalRegistrationService.js?v=20260826-cuenta-profesional-gratuita-v1";
 
 const VERSION_AVISO_PRIVACIDAD = "2026-08-01";
 
 const btnCrearCuenta = document.getElementById("btnCrearCuenta");
 let tipoCuentaSeleccionada = "paciente";
+let modalidadProfesionalSeleccionada = "gratuita";
+const ERRORES_DEFINITIVOS_REGISTRO = new Set([
+  "functions/already-exists",
+  "functions/failed-precondition",
+  "functions/invalid-argument",
+  "functions/not-found",
+  "functions/permission-denied",
+  "functions/resource-exhausted"
+]);
+
+async function limpiarAuthDeRegistroFallido(error) {
+  if (!ERRORES_DEFINITIVOS_REGISTRO.has(error?.code)) return;
+  try {
+    await descartarCuentaSinPerfil();
+  } catch (cleanupError) {
+    console.error("No se pudo limpiar la cuenta sin perfil tras el registro fallido:", cleanupError);
+  } finally {
+    try {
+      await signOut(auth);
+    } catch (signOutError) {
+      console.error("No se pudo cerrar la sesión del registro fallido:", signOutError);
+    }
+  }
+}
+
+async function crearOReanudarCuentaAuth(email, password) {
+  if (auth.currentUser?.email?.toLowerCase() === email) {
+    return { user: auth.currentUser };
+  }
+  try {
+    return await createUserWithEmailAndPassword(auth, email, password);
+  } catch (error) {
+    if (error?.code !== "auth/email-already-in-use") throw error;
+    return signInWithEmailAndPassword(auth, email, password);
+  }
+}
+
+function configurarModalidadProfesional() {
+  const campoCodigo = document.getElementById("campoCodigoProfesional");
+  const nota = document.getElementById("notaModalidadProfesional");
+
+  document.querySelectorAll("[data-modalidad-profesional]").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      modalidadProfesionalSeleccionada = boton.dataset.modalidadProfesional || "gratuita";
+      document.querySelectorAll("[data-modalidad-profesional]").forEach((item) => {
+        item.classList.toggle("activo", item === boton);
+      });
+      const usaCodigo = modalidadProfesionalSeleccionada === "codigo_admin";
+      campoCodigo?.classList.toggle("oculto", !usaCodigo);
+      if (nota) {
+        nota.textContent = usaCodigo
+          ? "Usa el código de autorización de un solo uso generado por administración."
+          : "Sin código. Incluye hasta 5 pacientes distintos en tu cuenta profesional.";
+        nota.classList.toggle("nota-plan-gratuito", !usaCodigo);
+      }
+    });
+  });
+}
 
 function configurarTipoCuenta() {
   const titulo = document.getElementById("tituloRegistro");
@@ -59,7 +116,7 @@ function configurarTipoCuenta() {
       }
       if (descripcion) {
         descripcion.textContent = esProfesional
-          ? "Ingresa el codigo de autorizacion generado por un administrador."
+          ? "Crea una cuenta gratuita para hasta 5 pacientes o usa un código de autorización."
           : "Tu medico debe estar registrado para vincular tu expediente.";
       }
     });
@@ -78,8 +135,11 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
       ? ETIQUETA_ROL_ENFERMERIA_SALUD_MENTAL
       : "medico";
 
-  if (!nombre || !email || !password || !codigoAutorizacion) {
-    mensaje.textContent = "Completa nombre, correo, contrasena y codigo de autorizacion.";
+  const usaCodigo = modalidadProfesionalSeleccionada === "codigo_admin";
+  if (!nombre || !email || !password || (usaCodigo && !codigoAutorizacion)) {
+    mensaje.textContent = usaCodigo
+      ? "Completa nombre, correo, contraseña y código de autorización."
+      : "Completa nombre, correo y contraseña.";
     return;
   }
 
@@ -94,17 +154,33 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
   }
 
   mensaje.textContent = `Creando cuenta de ${etiquetaRol}...`;
-  const credencial = auth.currentUser?.email?.toLowerCase() === email
-    ? { user: auth.currentUser }
-    : await createUserWithEmailAndPassword(auth, email, password);
+  const credencial = await crearOReanudarCuentaAuth(email, password);
   const uidProfesional = credencial.user.uid;
-  const registroProfesional = await registrarProfesionalConCodigo({
-    nombre,
-    rol: rolProfesional,
-    codigoAutorizacion,
-    aceptaAviso,
-    aceptaBeta
-  });
+  await reload(credencial.user);
+  if (!credencial.user.emailVerified) {
+    try {
+      await sendEmailVerification(credencial.user);
+    } catch (verificationError) {
+      if (verificationError?.code !== "auth/too-many-requests") throw verificationError;
+    }
+    mensaje.textContent = "Te enviamos un correo de verificación. Ábrelo y después vuelve a pulsar Crear cuenta para terminar el registro.";
+    return;
+  }
+  await credencial.user.getIdToken(true);
+  let registroProfesional;
+  try {
+    registroProfesional = await registrarProfesional({
+      nombre,
+      rol: rolProfesional,
+      modalidadRegistro: modalidadProfesionalSeleccionada,
+      codigoAutorizacion,
+      aceptaAviso,
+      aceptaBeta
+    });
+  } catch (registrationError) {
+    await limpiarAuthDeRegistroFallido(registrationError);
+    throw registrationError;
+  }
 
   console.log("[LEGAL][SIGNUP] Cuenta creada");
   try {
@@ -118,15 +194,19 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
 
   try {
     await registrarEventoAuditoria({
-      accion: `crear_cuenta_${rolProfesional}_codigo_admin`,
+      accion: `crear_cuenta_${rolProfesional}_${usaCodigo ? "codigo_admin" : "gratuita"}`,
       modulo: "Registro",
-      descripcion: `Se creo una cuenta de ${etiquetaRol} con codigo de autorizacion generado por admin.`,
+      descripcion: usaCodigo
+        ? `Se creó una cuenta de ${etiquetaRol} con código de autorización generado por admin.`
+        : `Se creó una cuenta gratuita de ${etiquetaRol} con límite de 5 pacientes.`,
       usuarioUid: uidProfesional,
       usuarioNombre: nombre,
       usuarioRol: rolProfesional,
       exito: true,
       detalles: {
         registroReintentado: registroProfesional.alreadyRegistered === true,
+        modalidadRegistroProfesional: modalidadProfesionalSeleccionada,
+        limitePacientes: usaCodigo ? null : 5,
         versionAvisoPrivacidad: VERSION_AVISO_PRIVACIDAD
       }
     });
@@ -134,11 +214,14 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
     console.error("No se pudo registrar la auditoria:", errorAuditoria);
   }
 
-  mensaje.textContent = `Cuenta de ${etiquetaRol} creada correctamente.`;
+  mensaje.textContent = usaCodigo
+    ? `Cuenta de ${etiquetaRol} creada correctamente.`
+    : `Cuenta gratuita de ${etiquetaRol} creada correctamente. Puedes gestionar hasta 5 pacientes.`;
   window.location.href = "dashboard.html";
 }
 
 configurarTipoCuenta();
+configurarModalidadProfesional();
 
 btnCrearCuenta.addEventListener("click", async () => {
   const nombre = document.getElementById("nombre").value.trim();
@@ -206,67 +289,22 @@ btnCrearCuenta.addEventListener("click", async () => {
   }
 
   try {
-    let uidMedico = "";
-    let datosMedico = {};
-
-    if (!codigoVinculacion) {
-      mensaje.textContent = "Buscando medico tratante...";
-
-      const qMedico = query(
-        collection(db, "usuarios"),
-        where("email", "==", correoMedico),
-        where("rol", "==", "medico")
-      );
-
-      const snapMedico = await getDocs(qMedico);
-
-      if (snapMedico.empty) {
-        mensaje.textContent = "No se encontro un medico registrado con ese correo.";
-        return;
-      }
-
-      const docMedico = snapMedico.docs[0];
-      uidMedico = docMedico.id;
-      datosMedico = docMedico.data();
-    } else {
-      mensaje.textContent = "Se usara el codigo para vincular tu expediente previo.";
-    }
-
     mensaje.textContent = "Creando cuenta...";
-
-    const credencial = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
-
+    const credencial = await crearOReanudarCuentaAuth(email, password);
     const uidPaciente = credencial.user.uid;
-    const fechaActual = new Date().toISOString();
-
-    await setDoc(doc(db, "usuarios", uidPaciente), {
-      nombre,
-      email,
-      rol: "paciente",
-      tieneCuenta: true,
-      estado: "activo",
-      tipoPaciente: "privada",
-      datosInstitucionales: {
-        tipoPaciente: "privada",
-        institucionPaciente: "",
-        servicioInstitucional: "",
-        expediente: "",
-        cama: "",
-        alergias: "",
-        diasEstancia: ""
-      },
-      creadoPor: uidMedico,
-      medicoTratanteUid: uidMedico,
-      medicoTratante: datosMedico.nombre || correoMedico,
-      aceptoAvisoPrivacidad: true,
-      fechaAceptacionAviso: fechaActual,
-      versionAvisoPrivacidad: VERSION_AVISO_PRIVACIDAD,
-      fechaCreacion: fechaActual
-    });
+    let registroPaciente;
+    try {
+      registroPaciente = await registrarPerfilPacienteSeguro({
+        nombre,
+        correoMedico,
+        usaCodigoVinculacion: Boolean(codigoVinculacion),
+        aceptaAviso,
+        aceptaBeta
+      });
+    } catch (registrationError) {
+      await limpiarAuthDeRegistroFallido(registrationError);
+      throw registrationError;
+    }
 
     try {
       await registrarVisita({
@@ -295,19 +333,6 @@ btnCrearCuenta.addEventListener("click", async () => {
         codigoVinculacion,
         uidPaciente
       );
-    } else {
-      await setDoc(
-        doc(db, "usuarios", uidPaciente, "permisosMedicos", uidMedico),
-        {
-          lectura: true,
-          agregarNotas: true,
-          editarPaciente: true,
-          administrarPermisos: true,
-          rolPermiso: "tratante",
-          fechaOtorgamiento: fechaActual,
-          otorgadoPor: uidPaciente
-        }
-      );
     }
 
     try {
@@ -324,8 +349,8 @@ btnCrearCuenta.addEventListener("click", async () => {
         pacienteNombre: nombre,
         exito: true,
         detalles: {
-          medicoTratanteUid: uidMedico || resultadoVinculacion?.medicoUid || "",
-          medicoTratante: datosMedico.nombre || correoMedico || "",
+          medicoTratanteUid: registroPaciente.medicoUid || resultadoVinculacion?.medicoUid || "",
+          medicoTratante: correoMedico || "",
           codigoVinculacion: codigoVinculacion || "",
           expedientePrevioUid: resultadoVinculacion?.expedientePrevioUid || "",
           versionAvisoPrivacidad: VERSION_AVISO_PRIVACIDAD

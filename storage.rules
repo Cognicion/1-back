@@ -2,8 +2,21 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
+    function hasActiveAccount() {
+      return request.auth != null
+        && !firestore.exists(
+          /databases/(default)/documents/accountDeletionTombstones/$(request.auth.uid)
+        );
+    }
+
+    function accountIsActive(uid) {
+      return !firestore.exists(
+        /databases/(default)/documents/accountDeletionTombstones/$(uid)
+      );
+    }
+
     function isCloudOwner(uid) {
-      return request.auth != null && request.auth.uid == uid;
+      return hasActiveAccount() && request.auth.uid == uid;
     }
 
     function isAllowedCloudMime() {
@@ -31,8 +44,9 @@ service firebase.storage {
     }
 
     match /usuarios/{uid}/perfil/foto-perfil {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null
+      allow read: if hasActiveAccount() && accountIsActive(uid);
+      allow write: if hasActiveAccount()
+                   && accountIsActive(uid)
                    && request.auth.uid == uid
                    && request.resource.size > 0
                    && request.resource.size <= 5 * 1024 * 1024

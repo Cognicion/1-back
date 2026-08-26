@@ -22,6 +22,7 @@ import {
   ETIQUETA_ROL_ENFERMERIA_SALUD_MENTAL,
   ROL_ENFERMERIA_SALUD_MENTAL,
   etiquetaRolClinico,
+  usuarioEsPersonalClinico,
   usuarioEsProfesionalTipoMedico
 } from "./utils/roles.js";
 import {
@@ -33,7 +34,7 @@ import {
   listarMensajesConversacion,
   marcarMensajesConversacionVistos,
   obtenerOCrearConversacion
-} from "./services/mensajes.js";
+} from "./services/mensajes.js?v=20260826-cuenta-profesional-gratuita-v1";
 import {
   actualizarEstadoReporteUsuario,
   archivarReporteUsuario,
@@ -122,32 +123,6 @@ const ESTADOS_REPORTE_ADMIN = [
 const COLECCIONES_VISTA_CORROBORACION = [
   "notasMedicas", "notasRapidas", "tratamientos", "estudios", "resultadosEscalas",
   "agenda", "archivos", "imagenes", "documentos", "permisosMedicos", "registrosDiarios"
-];
-
-const SUBCOLECCIONES_USUARIO_PACIENTE = [
-  "notasMedicas",
-  "notasRapidas",
-  "tratamientos",
-  "estudios",
-  "permisosMedicos",
-  "resultadosEscalas",
-  "metasTerapeuticas"
-];
-
-const SUBCOLECCIONES_LEGACY_PACIENTE = [
-  "registrosDiarios"
-];
-
-const DOCUMENTOS_LEGACY_PACIENTE = [
-  ["miSalud", "metas"],
-  ["miSalud", "agenda"]
-];
-
-const SUBCOLECCIONES_USUARIO_MEDICO = [
-  "agenda",
-  "apuntesMedico",
-  "carpetasApuntes",
-  "borradoresMedico"
 ];
 
 iniciarMonitoreoSesion("Panel administracion");
@@ -2838,17 +2813,15 @@ window.eliminarUsuarioAdmin = async function(uidUsuario) {
 
 async function eliminarUsuarioConDatos(uidUsuario, usuario = {}) {
   if (usuario.rol === "paciente") {
-    return await eliminarPacienteConSubcolecciones(uidUsuario);
+    return await eliminarPacienteMedianteBackend(uidUsuario, usuario);
   }
 
   const resumen = {};
 
-  if (usuarioEsProfesionalTipoMedico(usuario.rol) || usuario.rol === "psicologo") {
-    for (const nombreColeccion of SUBCOLECCIONES_USUARIO_MEDICO) {
-      resumen[nombreColeccion] = await eliminarDocumentosColeccion(
-        collection(db, "usuarios", uidUsuario, nombreColeccion)
-      );
-    }
+  if (usuarioEsPersonalClinico(usuario.rol || usuario.role || usuario.tipoRol || "")) {
+    const eliminar = httpsCallable(await obtenerFunctions(), "eliminarProfesionalDefinitivamente");
+    const respuesta = await eliminar({ profesionalUid: uidUsuario });
+    return respuesta?.data || { ok: true };
   }
 
   await deleteDoc(doc(db, "usuarios", uidUsuario));
@@ -3022,7 +2995,7 @@ window.eliminarPacienteAdmin = async function(uidPaciente) {
   if (confirmarTexto !== "ELIMINAR") return;
 
   try {
-    const resumenEliminacion = await eliminarPacienteConSubcolecciones(uidPaciente);
+    const resumenEliminacion = await eliminarPacienteMedianteBackend(uidPaciente, paciente || {});
     await registrarAuditoriaAdmin("eliminar_paciente_admin", "El administrador elimino un paciente.", {
       pacienteUid: uidPaciente,
       pacienteNombre: paciente?.nombre || "",
@@ -3044,36 +3017,35 @@ window.eliminarPacienteAdmin = async function(uidPaciente) {
   }
 };
 
-async function eliminarPacienteConSubcolecciones(uidPaciente) {
-  const resumen = {};
-
-  for (const nombreColeccion of SUBCOLECCIONES_USUARIO_PACIENTE) {
-    resumen[nombreColeccion] = await eliminarDocumentosColeccion(
-      collection(db, "usuarios", uidPaciente, nombreColeccion)
-    );
-  }
-
-  for (const nombreColeccion of SUBCOLECCIONES_LEGACY_PACIENTE) {
-    resumen[`pacientes/${nombreColeccion}`] = await eliminarDocumentosColeccion(
-      collection(db, "pacientes", uidPaciente, nombreColeccion)
-    );
-  }
-
-  for (const ruta of DOCUMENTOS_LEGACY_PACIENTE) {
-    await deleteDoc(doc(db, "pacientes", uidPaciente, ...ruta));
-    resumen[`pacientes/${ruta.join("/")}`] = "eliminado_si_existia";
-  }
-
-  await deleteDoc(doc(db, "pacientes", uidPaciente));
-  await deleteDoc(doc(db, "usuarios", uidPaciente));
-  resumen.usuario = "eliminado";
-  return resumen;
-}
-
-async function eliminarDocumentosColeccion(refColeccion) {
-  const snap = await getDocs(refColeccion);
-  await Promise.all(snap.docs.map((documento) => deleteDoc(documento.ref)));
-  return snap.size;
+async function eliminarPacienteMedianteBackend(uidPaciente, paciente = {}) {
+  const nombrePaciente = paciente.nombre || paciente.nombreCompleto || "Paciente sin nombre";
+  const solicitudRef = doc(collection(db, "reportesUsuarios"));
+  const fechaISO = new Date().toISOString();
+  await setDoc(solicitudRef, {
+    tipo: "solicitud_eliminacion",
+    categoria: "solicitud_eliminacion",
+    recursoTipo: "paciente",
+    recursoId: uidPaciente,
+    pacienteUid: uidPaciente,
+    pacienteNombre: nombrePaciente,
+    usuarioUid: uidPaciente,
+    estado: "nuevo",
+    motivoSolicitud: "Eliminación directa confirmada desde el panel administrativo.",
+    solicitadoPor: adminActual?.uid || "",
+    fechaISO
+  });
+  const eliminar = httpsCallable(
+    await obtenerFunctions(),
+    "eliminarPacienteDefinitivamente",
+    { timeout: TIEMPO_MAXIMO_ELIMINACION_PACIENTE_MS }
+  );
+  const respuesta = await eliminar({
+    pacienteUid: uidPaciente,
+    pacienteNombre: nombrePaciente,
+    solicitudId: solicitudRef.id,
+    motivo: "Eliminación directa confirmada desde administración."
+  });
+  return respuesta?.data || { ok: true };
 }
 
 async function registrarAuditoriaAdmin(accion, descripcion, opciones = {}) {

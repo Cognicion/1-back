@@ -41,6 +41,6 @@ const safeTreatment = globalVariable({
 assert.ok(!JSON.stringify(safeTreatment).includes("Nombre Privado"));
 assert.strictEqual(safeTreatment.observedAt, "2026-01");
 assert.strictEqual(isProfessional({ rol: "medico" }), true);
-assert.strictEqual(patientAllowsProfessionalAccess({ medicoTratanteUid: "doctor-1" }, "doctor-1"), true);
-assert.strictEqual(patientAllowsProfessionalAccess({ medicoTratanteUid: "doctor-1" }, "doctor-2"), false);
+assert.strictEqual(patientAllowsProfessionalAccess({ rol: "paciente", medicoTratanteUid: "doctor-1" }, "doctor-1"), true);
+assert.strictEqual(patientAllowsProfessionalAccess({ rol: "paciente", medicoTratanteUid: "doctor-1" }, "doctor-2"), false);
 console.log("clinicalAnalytics.test.js: ok");

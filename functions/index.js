@@ -3,6 +3,8 @@ const { defineSecret } = require("firebase-functions/params");
 const logger = require("firebase-functions/logger");
 const OpenAI = require("openai");
 const admin = require("firebase-admin");
+const { randomUUID } = require("node:crypto");
+const { FieldValue, Timestamp } = require("firebase-admin/firestore");
 const { runSegmentClinicalConversation } = require("./segmentationHandler");
 const { runGenerateStructuredNoteFromDictation } = require("./noteGenerationHandler");
 const { discoverTextPatterns } = require("./patternDiscoveryHandler");
@@ -30,7 +32,24 @@ const adminDb = admin.firestore();
 const cloudStorageFunctions = require("./cloudStorage/handlers");
 const cloudAdminModerationFunctions = require("./cloudAdminModeration/handlers");
 const accountLinkingFunctions = require("./accountLinking/handlers");
-const { registerProfessionalWithCode } = require("./accountSecurity/professionalRegistration");
+const {
+  registerProfessional,
+  registerProfessionalWithCode
+} = require("./accountSecurity/professionalRegistration");
+const professionalPatientAccessFunctions = require("./accountSecurity/professionalPatientAccess");
+const {
+  listAuthorizedPatientIds,
+  listProfessionalDirectory
+} = require("./accountSecurity/professionalDirectory");
+const { releasePatientSlotsForPatient } = require("./accountSecurity/professionalPatientQuota");
+const {
+  AccountDeletionError,
+  beginAccountDeletionPreflight,
+  cancelAccountDeletionPreflight,
+  markAccountDeletion,
+  promoteAccountDeletionPreflight
+} = require("./accountSecurity/accountDeletion");
+const { isPatient } = require("./accountLinking/validation");
 
 const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
 const TIPOS_COLABORADOR_VALIDOS = new Set(["colaborador", "destacado", "estrella"]);
@@ -43,6 +62,7 @@ const OPCIONES_ELIMINACION_PACIENTE = Object.freeze({
 });
 const CONCURRENCIA_ELIMINACION_PACIENTE = 20;
 const TAMANO_PAGINA_STORAGE_ELIMINACION = 500;
+const PATRON_ID_DOCUMENTO_ELIMINACION = /^[A-Za-z0-9_-]{1,160}$/u;
 const CAMPOS_AUDITORIA_PACIENTE = Object.freeze([
   "pacienteUid",
   "uidPaciente",
@@ -67,6 +87,7 @@ function datosUsuarioEsAdmin(datos = {}) {
 }
 
 function contieneUidPaciente(valor, uidPaciente, clave = "") {
+  if (valor === uidPaciente && normalizarRolAdmin(clave) === "vinculadoa") return true;
   if (valor === uidPaciente && /(paciente|patient|usuario).*(uid|id)|(uid|id).*(paciente|patient|usuario)/i.test(clave)) return true;
   if (Array.isArray(valor)) return valor.some((item) => contieneUidPaciente(item, uidPaciente, clave));
   if (valor && typeof valor === "object") return Object.entries(valor).some(([subClave, subValor]) => contieneUidPaciente(subValor, uidPaciente, subClave));
@@ -82,6 +103,81 @@ function documentoPerteneceAPaciente(ruta, datos, uidPaciente) {
 
 async function eliminarDocumentoYDescendientes(ref) {
   await adminDb.recursiveDelete(ref);
+}
+
+function datosUsuarioEsProfesionalClinico(datos = {}) {
+  if (!datos || typeof datos !== "object" || datosUsuarioEsAdmin(datos) || isPatient(datos)) return false;
+  const roles = Array.isArray(datos.roles)
+    ? datos.roles
+    : Object.entries(datos.roles || {}).filter(([, activo]) => activo).map(([rol]) => rol);
+  const valores = [
+    datos.rol,
+    datos.role,
+    datos.rolUsuario,
+    datos.tipoRol,
+    datos.tipoUsuario,
+    datos.tipoCuenta,
+    datos.tipoProfesional,
+    datos.profesion,
+    datos.profession,
+    datos.especialidad,
+    datos.specialty,
+    ...roles
+  ];
+  const rolesProfesionalesHeredados = new Set([
+    "doctor",
+    "doctora",
+    "psiquiatra",
+    "psiquiatria",
+    "medicinageneral",
+    "medicinainterna",
+    "internista",
+    "pediatra",
+    "pediatria",
+    "paidopsiquiatra",
+    "paidopsiquiatria",
+    "asesorsaludmental"
+  ]);
+  return valores.filter(Boolean).some((valor) => {
+    const rol = normalizarRolAdmin(valor);
+    return rol.includes("medico")
+      || rol.includes("medica")
+      || rol.includes("psicolog")
+      || rol.includes("enfermer")
+      || rolesProfesionalesHeredados.has(rol);
+  });
+}
+
+async function asegurarCuentaCallableActiva(request) {
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
+  }
+  const uid = request.auth.uid;
+  const [profileSnapshot, deletionSnapshot] = await Promise.all([
+    adminDb.doc(`usuarios/${uid}`).get(),
+    adminDb.doc(`accountDeletionTombstones/${uid}`).get()
+  ]);
+  if (deletionSnapshot.exists) {
+    throw new HttpsError("failed-precondition", "La cuenta está en proceso de eliminación.");
+  }
+  if (!profileSnapshot.exists) {
+    throw new HttpsError("permission-denied", "No se encontró un perfil activo para esta cuenta.");
+  }
+  const profile = profileSnapshot.data() || {};
+  const accountState = normalizarRolAdmin(profile.estadoCuenta || profile.estado || profile.status || "activo");
+  if (profile.activo === false
+    || profile.active === false
+    || ["desactivado", "deshabilitado", "suspendido", "eliminado", "disabled", "suspended", "deleted"].includes(accountState)) {
+    throw new HttpsError("failed-precondition", "La cuenta no está activa.");
+  }
+  return profile;
+}
+
+function conCuentaCallableActiva(handler) {
+  return async (request) => {
+    await asegurarCuentaCallableActiva(request);
+    return handler(request);
+  };
 }
 
 function crearLimitadorConcurrencia(maximo = CONCURRENCIA_ELIMINACION_PACIENTE) {
@@ -204,7 +300,74 @@ async function eliminarArchivosPaciente(uidPaciente, resumen) {
     consulta = siguienteConsulta || null;
   }
 
-  resumen.archivosStorage = totalEliminados;
+  resumen.archivosStorage = (resumen.archivosStorage || 0) + totalEliminados;
+}
+
+function validarIdDocumentoEliminacion(valor, etiqueta = "Cuenta") {
+  const id = String(valor || "").trim();
+  if (!PATRON_ID_DOCUMENTO_ELIMINACION.test(id)) {
+    throw new AccountDeletionError("failed-precondition", `${etiqueta} contiene un identificador no válido.`);
+  }
+  return id;
+}
+
+function unirIdsExpedientesVinculados(uidPaciente, idsPersistidos = [], idsDescubiertos = []) {
+  const uidDestino = validarIdDocumentoEliminacion(uidPaciente, "La cuenta de paciente");
+  if (!Array.isArray(idsPersistidos) || !Array.isArray(idsDescubiertos)) {
+    throw new AccountDeletionError(
+      "failed-precondition",
+      "La eliminación contiene una lista de expedientes vinculados no válida."
+    );
+  }
+  return [...new Set([...idsPersistidos, ...idsDescubiertos]
+    .map((id) => validarIdDocumentoEliminacion(id, "Un expediente vinculado"))
+    .filter((id) => id !== uidDestino))];
+}
+
+async function persistirIdsExpedientesVinculados(accountDeletionRef, uidPaciente, idsDescubiertos) {
+  return adminDb.runTransaction(async (transaccion) => {
+    const tombstoneSnapshot = await transaccion.get(accountDeletionRef);
+    const tombstone = tombstoneSnapshot.exists ? tombstoneSnapshot.data() || {} : null;
+    if (!tombstone
+        || tombstone.accountUid !== uidPaciente
+        || tombstone.accountType !== "paciente") {
+      throw new AccountDeletionError(
+        "failed-precondition",
+        "No se pudo confirmar la eliminación del paciente antes de conservar sus expedientes vinculados."
+      );
+    }
+    const linkedOriginUids = unirIdsExpedientesVinculados(
+      uidPaciente,
+      tombstone.linkedOriginUids || [],
+      idsDescubiertos
+    );
+    transaccion.set(accountDeletionRef, {
+      linkedOriginUids,
+      linkedOriginUidsUpdatedAt: FieldValue.serverTimestamp()
+    }, { merge: true });
+    return linkedOriginUids;
+  });
+}
+
+async function marcarExpedientesVinculadosParaEliminacion(uidPaciente, adminUid, accountDeletionRef) {
+  const snapshot = await adminDb.collection("usuarios").where("vinculadoA", "==", uidPaciente).get();
+  const idsDescubiertos = snapshot.docs.map((documentSnapshot) => documentSnapshot.id);
+  const linkedOriginUids = await persistirIdsExpedientesVinculados(
+    accountDeletionRef,
+    uidPaciente,
+    idsDescubiertos
+  );
+  return Promise.all(linkedOriginUids
+    .map(async (linkedOriginUid) => ({
+      id: linkedOriginUid,
+      tombstoneRef: await markAccountDeletion({
+        adminUid,
+        db: adminDb,
+        guardAccountRef: adminDb.doc(`usuarios/${linkedOriginUid}`),
+        type: "expediente_vinculado",
+        uid: linkedOriginUid
+      })
+    })));
 }
 
 async function eliminarCuentaAutenticacionPaciente(uidPaciente, resumen) {
@@ -217,6 +380,76 @@ async function eliminarCuentaAutenticacionPaciente(uidPaciente, resumen) {
   }
 }
 
+async function limpiarReferenciasProfesional(professionalUid, resumen) {
+  const snapshot = await adminDb.collection("usuarios").get();
+  const ejecutarLimitado = crearLimitadorConcurrencia();
+  let perfilesActualizados = 0;
+  let permisosEliminados = 0;
+  await Promise.all(snapshot.docs
+    .filter((documentSnapshot) => documentSnapshot.id !== professionalUid
+      && isPatient(documentSnapshot.data() || {}))
+    .map((documentSnapshot) => ejecutarLimitado(async () => {
+      const patient = documentSnapshot.data() || {};
+      const patch = professionalPatientAccessFunctions.patientAccessRemovalPatch(patient, professionalUid);
+      const permissionRef = documentSnapshot.ref.collection("permisosMedicos").doc(professionalUid);
+      const permissionSnapshot = await permissionRef.get();
+      const operations = [];
+      if (Object.keys(patch).length > 0) {
+        operations.push(documentSnapshot.ref.update(patch));
+        perfilesActualizados += 1;
+      }
+      if (permissionSnapshot.exists) {
+        operations.push(permissionRef.delete());
+        permisosEliminados += 1;
+      }
+      await Promise.all(operations);
+    })));
+  resumen.referenciasProfesionalActualizadas = perfilesActualizados;
+  resumen.permisosProfesionalEliminados = permisosEliminados;
+}
+
+async function asegurarProfesionalSinExpedientesProvisionales(professionalUid) {
+  const patientsSnapshot = await adminDb.collection("usuarios").get();
+  const provisionalPatients = patientsSnapshot.docs.filter((documentSnapshot) => (
+    isPatient(documentSnapshot.data() || {})
+      && documentSnapshot.data()?.tieneCuenta === false
+  ));
+  const related = await Promise.all(provisionalPatients.map(async (documentSnapshot) => {
+    const patient = documentSnapshot.data() || {};
+    const directRelationship = Object.keys(
+      professionalPatientAccessFunctions.patientAccessRemovalPatch(patient, professionalUid)
+    ).length > 0;
+    if (directRelationship) return documentSnapshot.id;
+    const permissionSnapshot = await documentSnapshot.ref.collection("permisosMedicos").doc(professionalUid).get();
+    return permissionSnapshot.exists ? documentSnapshot.id : null;
+  }));
+  const patientIds = related.filter(Boolean);
+  if (patientIds.length > 0) {
+    throw new HttpsError(
+      "failed-precondition",
+      `Reasigna o retira primero ${patientIds.length} expediente(s) provisional(es) vinculados a este profesional.`
+    );
+  }
+}
+
+async function asegurarProfesionalSinVinculacionesActivas(professionalUid) {
+  const snapshot = await adminDb.collection("codigosVinculacion")
+    .where("estadoProceso", "==", "reservado")
+    .get();
+  const active = snapshot.docs.some((documentSnapshot) => {
+    const code = documentSnapshot.data() || {};
+    return code.medicoUid === professionalUid
+      || code.reservadoPorUid === professionalUid
+      || code.emitidoPorUid === professionalUid;
+  });
+  if (active) {
+    throw new HttpsError(
+      "failed-precondition",
+      "Este profesional participa en una vinculación activa. Finalízala o cancélala antes de eliminar la cuenta."
+    );
+  }
+}
+
 function solicitudEliminacionPacienteValida(solicitud, uidPaciente) {
   return Boolean(solicitud)
     && (solicitud.tipo === "solicitud_eliminacion" || solicitud.categoria === "solicitud_eliminacion")
@@ -225,7 +458,7 @@ function solicitudEliminacionPacienteValida(solicitud, uidPaciente) {
 }
 
 async function reclamarSolicitudEliminacionPaciente(solicitudRef, uidPaciente, adminUid) {
-  const ahora = admin.firestore.Timestamp.now();
+  const ahora = Timestamp.now();
   return adminDb.runTransaction(async (transaccion) => {
     const solicitudSnap = await transaccion.get(solicitudRef);
     const solicitud = solicitudSnap.exists ? solicitudSnap.data() : null;
@@ -258,7 +491,13 @@ exports.eliminarPacienteDefinitivamente = onCall(OPCIONES_ELIMINACION_PACIENTE, 
     throw new HttpsError("invalid-argument", "La eliminación debe originarse en una solicitud válida.");
   }
 
-  const adminSnap = await adminDb.doc(`usuarios/${adminUid}`).get();
+  const [adminSnap, adminDeletionSnapshot] = await Promise.all([
+    adminDb.doc(`usuarios/${adminUid}`).get(),
+    adminDb.doc(`accountDeletionTombstones/${adminUid}`).get()
+  ]);
+  if (adminDeletionSnapshot.exists) {
+    throw new HttpsError("failed-precondition", "La cuenta administrativa está en proceso de eliminación.");
+  }
   if (adminUid !== ADMIN_UID && (!adminSnap.exists || !datosUsuarioEsAdmin(adminSnap.data()))) {
     throw new HttpsError("permission-denied", "No tienes permisos administrativos para eliminar pacientes.");
   }
@@ -268,30 +507,56 @@ exports.eliminarPacienteDefinitivamente = onCall(OPCIONES_ELIMINACION_PACIENTE, 
   const solicitudRef = adminDb.doc(`reportesUsuarios/${solicitudId}`);
   const solicitud = await reclamarSolicitudEliminacionPaciente(solicitudRef, uidPaciente, adminUid);
   const inicio = Date.now();
-  let etapa = "leer_paciente";
+  let etapa = "marcar_cuenta_en_eliminacion";
 
   try {
+    const accountDeletionRef = await markAccountDeletion({
+      adminUid,
+      db: adminDb,
+      guardAccountRef: adminDb.doc(`usuarios/${uidPaciente}`),
+      type: "paciente",
+      uid: uidPaciente
+    });
     logger.info("Eliminación definitiva de paciente iniciada.", { etapa: "inicio" });
+    etapa = "leer_paciente";
     const pacienteSnap = await adminDb.doc(`usuarios/${uidPaciente}`).get();
     const paciente = pacienteSnap.exists ? pacienteSnap.data() : {};
     const nombrePaciente = paciente.nombre || paciente.nombreCompleto || solicitud.pacienteNombre || request.data?.pacienteNombre || "Paciente sin nombre";
     const motivo = String(solicitud.motivoSolicitud || request.data?.motivo || "").trim();
     const resumen = { uidPaciente, nombrePaciente };
+    etapa = "marcar_expedientes_vinculados";
+    const expedientesVinculados = await marcarExpedientesVinculadosParaEliminacion(
+      uidPaciente,
+      adminUid,
+      accountDeletionRef
+    );
+    const idsPaciente = [uidPaciente, ...expedientesVinculados.map(({ id }) => id)];
+    resumen.expedientesVinculadosEliminados = expedientesVinculados.length;
+
+    etapa = "cuenta_autenticacion";
+    await eliminarCuentaAutenticacionPaciente(uidPaciente, resumen);
 
     etapa = "raices_paciente";
-    await completarOperacionesEliminacion([
-      eliminarDocumentoYDescendientes(adminDb.doc(`usuarios/${uidPaciente}`)),
-      eliminarDocumentoYDescendientes(adminDb.doc(`pacientes/${uidPaciente}`)),
-      eliminarDocumentoYDescendientes(adminDb.doc(`rehabilitacion_cognitiva/${uidPaciente}`))
-    ]);
+    await completarOperacionesEliminacion(idsPaciente.flatMap((patientId) => [
+      eliminarDocumentoYDescendientes(adminDb.doc(`usuarios/${patientId}`)),
+      eliminarDocumentoYDescendientes(adminDb.doc(`pacientes/${patientId}`)),
+      eliminarDocumentoYDescendientes(adminDb.doc(`rehabilitacion_cognitiva/${patientId}`))
+    ]));
     logger.info("Raíces del paciente eliminadas.", { etapa, duracionMs: Date.now() - inicio });
+
+    etapa = "liberar_cuotas_profesionales";
+    const cuotasLiberadas = await Promise.all(idsPaciente.map((patientId) => (
+      releasePatientSlotsForPatient({ db: adminDb, patientUid: patientId })
+    )));
+    resumen.cuotasProfesionalesLiberadas = cuotasLiberadas
+      .reduce((total, result) => total + result.released, 0);
 
     etapa = "referencias_archivos_auditoria";
     await completarOperacionesEliminacion([
       eliminarDocumentosRelacionadosEnColecciones(uidPaciente, resumen, {
         rutasPreservadas: new Set([solicitudRef.path])
       }),
-      eliminarArchivosPaciente(uidPaciente, resumen),
+      ...idsPaciente.map((patientId) => eliminarArchivosPaciente(patientId, resumen)),
       eliminarAuditoriaPaciente(uidPaciente, resumen)
     ]);
     logger.info("Referencias y archivos del paciente eliminados.", {
@@ -301,9 +566,6 @@ exports.eliminarPacienteDefinitivamente = onCall(OPCIONES_ELIMINACION_PACIENTE, 
       archivosStorage: resumen.archivosStorage || 0,
       auditoriaPaciente: resumen.auditoriaPaciente || 0
     });
-
-    etapa = "cuenta_autenticacion";
-    await eliminarCuentaAutenticacionPaciente(uidPaciente, resumen);
 
     etapa = "auditoria_final";
     const auditoriaRef = adminDb.collection("auditoria").doc();
@@ -320,9 +582,19 @@ exports.eliminarPacienteDefinitivamente = onCall(OPCIONES_ELIMINACION_PACIENTE, 
       pacienteNombre: nombrePaciente,
       exito: true,
       detalles: { motivo, solicitudId, ...resumen },
-      fecha: admin.firestore.FieldValue.serverTimestamp(),
+      fecha: FieldValue.serverTimestamp(),
       fechaTexto: new Date().toISOString()
     });
+    batch.set(accountDeletionRef, {
+      deletionPhase: "completed",
+      deletionState: "completed",
+      deletionCompletedAt: FieldValue.serverTimestamp()
+    }, { merge: true });
+    expedientesVinculados.forEach(({ tombstoneRef }) => batch.set(tombstoneRef, {
+      deletionPhase: "completed",
+      deletionState: "completed",
+      deletionCompletedAt: FieldValue.serverTimestamp()
+    }, { merge: true }));
     await batch.commit();
     logger.info("Eliminación definitiva de paciente completada.", {
       etapa: "completada",
@@ -332,7 +604,7 @@ exports.eliminarPacienteDefinitivamente = onCall(OPCIONES_ELIMINACION_PACIENTE, 
   } catch (error) {
     await solicitudRef.set({
       estado: "error_eliminacion",
-      eliminacionErrorEn: admin.firestore.FieldValue.serverTimestamp(),
+      eliminacionErrorEn: FieldValue.serverTimestamp(),
       eliminacionErrorCodigo: String(error?.code || "internal")
     }, { merge: true }).catch(() => {});
     logger.error("Falló la eliminación definitiva de paciente.", {
@@ -341,12 +613,103 @@ exports.eliminarPacienteDefinitivamente = onCall(OPCIONES_ELIMINACION_PACIENTE, 
       codigo: String(error?.code || "internal")
     });
     if (error instanceof HttpsError) throw error;
+    if (error instanceof AccountDeletionError) throw new HttpsError(error.code, error.message);
     throw new HttpsError("internal", "No se pudo completar la eliminación. La solicitud quedó disponible para reintentar.");
   }
 });
 
+exports.eliminarProfesionalDefinitivamente = onCall(OPCIONES_ELIMINACION_PACIENTE, async (request) => {
+  if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
+  const adminUid = request.auth.uid;
+  const professionalUid = String(request.data?.profesionalUid || "").trim();
+  if (!professionalUid || professionalUid.includes("/") || professionalUid === adminUid || professionalUid === ADMIN_UID) {
+    throw new HttpsError("invalid-argument", "La cuenta profesional indicada no es válida.");
+  }
+  const [adminSnapshot, adminDeletionSnapshot, professionalSnapshot, deletionSnapshot] = await Promise.all([
+    adminDb.doc(`usuarios/${adminUid}`).get(),
+    adminDb.doc(`accountDeletionTombstones/${adminUid}`).get(),
+    adminDb.doc(`usuarios/${professionalUid}`).get(),
+    adminDb.doc(`accountDeletionTombstones/${professionalUid}`).get()
+  ]);
+  if (adminDeletionSnapshot.exists) {
+    throw new HttpsError("failed-precondition", "La cuenta administrativa está en proceso de eliminación.");
+  }
+  if (adminUid !== ADMIN_UID && (!adminSnapshot.exists || !datosUsuarioEsAdmin(adminSnapshot.data()))) {
+    throw new HttpsError("permission-denied", "No tienes permisos administrativos para eliminar profesionales.");
+  }
+  const professional = professionalSnapshot.exists ? professionalSnapshot.data() || {} : null;
+  const resumableDeletion = deletionSnapshot.exists
+    && deletionSnapshot.data()?.accountType === "profesional"
+    && deletionSnapshot.data()?.accountUid === professionalUid;
+  if ((!professional || !datosUsuarioEsProfesionalClinico(professional)) && !resumableDeletion) {
+    throw new HttpsError("failed-precondition", "La cuenta indicada no corresponde a un profesional eliminable.");
+  }
+
+  const resumen = { profesionalUid: professionalUid };
+  const deletionAttemptId = randomUUID();
+  let deletionPreflight;
+  try {
+    deletionPreflight = await beginAccountDeletionPreflight({
+      adminUid,
+      attemptId: deletionAttemptId,
+      db: adminDb,
+      guardAccountRef: adminDb.doc(`usuarios/${professionalUid}`),
+      type: "profesional",
+      uid: professionalUid
+    });
+  } catch (error) {
+    if (error instanceof AccountDeletionError) throw new HttpsError(error.code, error.message);
+    throw error;
+  }
+  const accountDeletionRef = deletionPreflight.reference;
+  if (deletionPreflight.completed) {
+    return { ok: true, alreadyDeleted: true, ...resumen };
+  }
+  try {
+    await Promise.all([
+      asegurarProfesionalSinExpedientesProvisionales(professionalUid),
+      asegurarProfesionalSinVinculacionesActivas(professionalUid)
+    ]);
+    if (deletionPreflight.acquired) {
+      await promoteAccountDeletionPreflight({
+        attemptId: deletionAttemptId,
+        db: adminDb,
+        uid: professionalUid
+      });
+    }
+  } catch (error) {
+    if (deletionPreflight.acquired) {
+      await cancelAccountDeletionPreflight({
+        attemptId: deletionAttemptId,
+        db: adminDb,
+        uid: professionalUid
+      }).catch((rollbackError) => {
+        logger.error("No se pudo liberar la validación de eliminación profesional.", {
+          code: String(rollbackError?.code || "internal")
+        });
+      });
+    }
+    if (error instanceof AccountDeletionError) throw new HttpsError(error.code, error.message);
+    throw error;
+  }
+  await eliminarCuentaAutenticacionPaciente(professionalUid, resumen);
+  await completarOperacionesEliminacion([
+    eliminarDocumentoYDescendientes(adminDb.doc(`usuarios/${professionalUid}`)),
+    eliminarArchivosPaciente(professionalUid, resumen),
+    limpiarReferenciasProfesional(professionalUid, resumen)
+  ]);
+  await accountDeletionRef.set({
+    deletionPhase: "completed",
+    deletionState: "completed",
+    deletionCompletedAt: FieldValue.serverTimestamp()
+  }, { merge: true });
+  logger.info("Cuenta profesional eliminada por administración.", { etapa: "completada" });
+  return { ok: true, ...resumen };
+});
+
 exports.eliminarNotaDesdeSolicitud = onCall(async (request) => {
   if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
+  await asegurarCuentaCallableActiva(request);
   const adminUid = request.auth.uid;
   const solicitudId = String(request.data?.solicitudId || "").trim();
   if (!solicitudId || solicitudId.includes("/")) {
@@ -403,7 +766,7 @@ exports.eliminarNotaDesdeSolicitud = onCall(async (request) => {
       estadoNota: nota.estadoNota || nota.estado || "",
       subcoleccionesEliminadas
     },
-    fecha: admin.firestore.FieldValue.serverTimestamp(),
+    fecha: FieldValue.serverTimestamp(),
     fechaTexto: new Date().toISOString()
   });
   await batch.commit();
@@ -420,6 +783,7 @@ exports.eliminarNotaDesdeSolicitud = onCall(async (request) => {
 
 exports.actualizarReconocimientoColaborador = onCall(async (request) => {
   if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
+  await asegurarCuentaCallableActiva(request);
   const adminUid = request.auth.uid;
   const usuarioId = String(request.data?.usuarioId || "").trim();
   const tipo = request.data?.tipo ? String(request.data.tipo).trim() : null;
@@ -439,7 +803,7 @@ exports.actualizarReconocimientoColaborador = onCall(async (request) => {
   const valorAnterior = { activo: anterior.activo === true, tipo: anterior.activo === true ? anterior.tipo || null : null };
   const activo = Boolean(tipo);
   const valorNuevo = { activo, tipo: activo ? tipo : null };
-  const marcaTiempo = activo ? admin.firestore.FieldValue.serverTimestamp() : null;
+  const marcaTiempo = activo ? FieldValue.serverTimestamp() : null;
   const nuevoColaborador = {
     activo,
     tipo: valorNuevo.tipo,
@@ -457,35 +821,35 @@ exports.actualizarReconocimientoColaborador = onCall(async (request) => {
     valorNuevo,
     realizadoPor: adminUid,
     exito: true,
-    fecha: admin.firestore.FieldValue.serverTimestamp()
+    fecha: FieldValue.serverTimestamp()
   });
   await batch.commit();
   return { ok: true, valorAnterior, valorNuevo };
 });
 
-exports.discoverTextPatterns = onCall({ region: "us-central1", timeoutSeconds: 300, memory: "1GiB" }, async (request) => {
+exports.discoverTextPatterns = onCall({ region: "us-central1", timeoutSeconds: 300, memory: "1GiB" }, conCuentaCallableActiva(async (request) => {
   return discoverTextPatterns({ request, db: adminDb });
-});
+}));
 
-exports.analyzePatientClinicalContext = onCall({ region: "us-central1", timeoutSeconds: 120, memory: "1GiB" }, async (request) => analyzePatientClinicalContext({ request, db: adminDb }));
-exports.listAuthorizedSofiaPatients = onCall({ region: "us-central1", timeoutSeconds: 60 }, async (request) => listAuthorizedSofiaPatients({ request, db: adminDb }));
-exports.searchAuthorizedPatternPatients = onCall({ region: "us-central1", timeoutSeconds: 60 }, async (request) => searchAuthorizedPatternPatients({ request, db: adminDb }));
-exports.getPatientPatternProfile = onCall({ region: "us-central1", timeoutSeconds: 120, memory: "1GiB" }, async (request) => getPatientPatternProfile({ request, db: adminDb }));
-exports.refreshPatientPatternProfile = onCall({ region: "us-central1", timeoutSeconds: 120, memory: "1GiB" }, async (request) => refreshPatientPatternProfileHandler({ request, db: adminDb }));
-exports.reviewPatientPatternResult = onCall({ region: "us-central1", timeoutSeconds: 60 }, async (request) => reviewPatientPatternResult({ request, db: adminDb }));
-exports.getClinicalKnowledgeAdmin = onCall({ region: "us-central1", timeoutSeconds: 60 }, async (request) => getClinicalKnowledgeAdmin({ request, db: adminDb }));
-exports.rebuildClinicalPatternMatricesAdmin = onCall({ region: "us-central1", timeoutSeconds: 540, memory: "1GiB" }, async (request) => rebuildClinicalPatternMatricesAdmin({ request, db: adminDb }));
+exports.analyzePatientClinicalContext = onCall({ region: "us-central1", timeoutSeconds: 120, memory: "1GiB" }, conCuentaCallableActiva(async (request) => analyzePatientClinicalContext({ request, db: adminDb })));
+exports.listAuthorizedSofiaPatients = onCall({ region: "us-central1", timeoutSeconds: 60 }, conCuentaCallableActiva(async (request) => listAuthorizedSofiaPatients({ request, db: adminDb })));
+exports.searchAuthorizedPatternPatients = onCall({ region: "us-central1", timeoutSeconds: 60 }, conCuentaCallableActiva(async (request) => searchAuthorizedPatternPatients({ request, db: adminDb })));
+exports.getPatientPatternProfile = onCall({ region: "us-central1", timeoutSeconds: 120, memory: "1GiB" }, conCuentaCallableActiva(async (request) => getPatientPatternProfile({ request, db: adminDb })));
+exports.refreshPatientPatternProfile = onCall({ region: "us-central1", timeoutSeconds: 120, memory: "1GiB" }, conCuentaCallableActiva(async (request) => refreshPatientPatternProfileHandler({ request, db: adminDb })));
+exports.reviewPatientPatternResult = onCall({ region: "us-central1", timeoutSeconds: 60 }, conCuentaCallableActiva(async (request) => reviewPatientPatternResult({ request, db: adminDb })));
+exports.getClinicalKnowledgeAdmin = onCall({ region: "us-central1", timeoutSeconds: 60 }, conCuentaCallableActiva(async (request) => getClinicalKnowledgeAdmin({ request, db: adminDb })));
+exports.rebuildClinicalPatternMatricesAdmin = onCall({ region: "us-central1", timeoutSeconds: 540, memory: "1GiB" }, conCuentaCallableActiva(async (request) => rebuildClinicalPatternMatricesAdmin({ request, db: adminDb })));
 exports.rebuildClinicalEmbeddingIndexAdmin = onCall({
   region: "us-central1",
   secrets: [OPENAI_API_KEY],
   timeoutSeconds: 540,
   memory: "1GiB"
-}, async (request) => rebuildClinicalEmbeddingIndexAdmin({
+}, conCuentaCallableActiva(async (request) => rebuildClinicalEmbeddingIndexAdmin({
   request,
   db: adminDb,
   apiKey: OPENAI_API_KEY.value(),
   OpenAIClass: OpenAI
-}));
+})));
 exports.clinicalAnalyticsOnRecordWrite = onDocumentWritten({
   region: "us-central1",
   document: "usuarios/{patientId}/{collectionId}/{recordId}",
@@ -531,19 +895,19 @@ exports.chatSofiaUnified = onCall(
     timeoutSeconds: 120,
     memory: "1GiB"
   },
-  async (request) => runUnifiedSofia({
+  conCuentaCallableActiva(async (request) => runUnifiedSofia({
     request,
     db: adminDb,
     apiKey: OPENAI_API_KEY.value(),
     OpenAIClass: OpenAI
-  })
+  }))
 );
 
 exports.chatSofia = onCall(
   {
     secrets: [OPENAI_API_KEY],
   },
-  async (request) => {
+  conCuentaCallableActiva(async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
     }
@@ -594,7 +958,7 @@ Tu objetivo es potenciar el razonamiento del profesional de la salud, no reempla
     return {
       respuesta: response.output_text || "No pude generar respuesta.",
     };
-  }
+  })
 );
 
 const STRUCTURED_NOTE_PROMPT_VERSION = "voice_note_fray_aldo_evolucion_v2_2026-07-18";
@@ -691,7 +1055,7 @@ exports.segmentClinicalConversation = onCall(
     timeoutSeconds: 60,
     memory: "512MiB"
   },
-  async (request) => {
+  conCuentaCallableActiva(async (request) => {
     return runSegmentClinicalConversation({
       data: request.data || {},
       auth: request.auth || null,
@@ -701,7 +1065,7 @@ exports.segmentClinicalConversation = onCall(
       HttpsErrorClass: HttpsError,
       logger: console
     });
-  }
+  })
 );
 
 exports.generateStructuredNoteFromDictation = onCall(
@@ -710,7 +1074,7 @@ exports.generateStructuredNoteFromDictation = onCall(
     timeoutSeconds: 90,
     memory: "512MiB"
   },
-  async (request) => {
+  conCuentaCallableActiva(async (request) => {
     return runGenerateStructuredNoteFromDictation({
       data: request.data || {},
       auth: request.auth || null,
@@ -721,7 +1085,7 @@ exports.generateStructuredNoteFromDictation = onCall(
       logger: console,
       adminDb
     });
-  }
+  })
 );
 
 exports.reserveCloudUpload = cloudStorageFunctions.reserveCloudUpload;
@@ -740,4 +1104,11 @@ exports.cleanupExpiredCloudReservations = cloudStorageFunctions.cleanupExpiredCl
 exports.listAdminCloudFiles = cloudAdminModerationFunctions.listAdminCloudFiles;
 exports.requestAdminCloudFileAccess = cloudAdminModerationFunctions.requestAdminCloudFileAccess;
 exports.manageAccountLinking = accountLinkingFunctions.manageAccountLinking;
+exports.createProvisionalPatient = professionalPatientAccessFunctions.createProvisionalPatient;
+exports.discardUnregisteredAccount = professionalPatientAccessFunctions.discardUnregisteredAccount;
+exports.managePatientPermission = professionalPatientAccessFunctions.managePatientPermission;
+exports.registerPatientProfile = professionalPatientAccessFunctions.registerPatientProfile;
+exports.listAuthorizedPatientIds = listAuthorizedPatientIds;
+exports.listProfessionalDirectory = listProfessionalDirectory;
+exports.registerProfessional = registerProfessional;
 exports.registerProfessionalWithCode = registerProfessionalWithCode;

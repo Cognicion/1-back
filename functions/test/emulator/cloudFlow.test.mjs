@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 
+import admin from "firebase-admin";
 import { assertFails } from "@firebase/rules-unit-testing";
 import {
   doc,
-  getDoc
+  getDoc,
+  setDoc
 } from "firebase/firestore";
 import {
   deleteObject,
@@ -18,10 +20,13 @@ import {
   createRulesTestEnvironment,
   expectFirebaseError,
   pollUntil,
+  PROJECT_ID,
+  STORAGE_BUCKET,
   uniqueRequestId
 } from "./environment.mjs";
 
 let rulesEnvironment;
+let adminApp;
 const clients = new Set();
 
 const encoder = new TextEncoder();
@@ -85,10 +90,15 @@ async function reserveUploadAndConfirm(owner, fixture, parentFolderId = null) {
 
 before(async () => {
   rulesEnvironment = await createRulesTestEnvironment();
+  adminApp = admin.initializeApp({
+    projectId: PROJECT_ID,
+    storageBucket: STORAGE_BUCKET
+  }, `cloud-flow-${process.pid}`);
 });
 
 after(async () => {
   await Promise.allSettled([...clients].map((value) => value.destroy()));
+  await adminApp?.delete();
   await rulesEnvironment?.cleanup();
 });
 
@@ -201,4 +211,112 @@ test("flujo reserva → Storage → confirmación → contador funciona para PDF
     return snapshot.data()?.usedBytes === 0 ? snapshot : null;
   }, { description: "liberación de cuota tras borrado definitivo" });
   assert.equal(usageSnapshot.data().reservedBytes, 0);
+});
+
+test("las callables Mi nube rechazan un token residual tras marcar la cuenta para eliminación", {
+  timeout: 60000
+}, async () => {
+  const owner = await client("deleted-cloud-owner");
+  await rulesEnvironment.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), "accountDeletionTombstones", owner.uid), {
+      accountType: "paciente",
+      accountUid: owner.uid,
+      deletionState: "in_progress"
+    });
+  });
+
+  await expectFirebaseError(
+    owner.call("reserveCloudUpload", {
+      mimeType: "application/pdf",
+      name: "residual.pdf",
+      originalName: "residual.pdf",
+      requestId: uniqueRequestId("residual"),
+      sizeBytes: fixtures[0].bytes.byteLength
+    }),
+    "failed-precondition"
+  );
+  await expectFirebaseError(
+    owner.call("createCloudFolder", {
+      name: "Residual",
+      requestId: uniqueRequestId("residual-folder")
+    }),
+    "failed-precondition"
+  );
+});
+
+test("el preflight profesional bloquea Mi nube sin borrar el perfil", {
+  timeout: 60000
+}, async () => {
+  const owner = await client("preflight-cloud-owner");
+  await Promise.all([
+    admin.firestore(adminApp).doc(`usuarios/${owner.uid}`).set({
+      nombre: "Profesional en validación",
+      rol: "medico"
+    }),
+    admin.firestore(adminApp).doc(`accountDeletionTombstones/${owner.uid}`).set({
+      accountType: "profesional",
+      accountUid: owner.uid,
+      deletionAttemptId: "preflight-cloud-test",
+      deletionPhase: "preflight",
+      deletionState: "in_progress"
+    })
+  ]);
+
+  await expectFirebaseError(
+    owner.call("createCloudFolder", {
+      name: "No debe crearse",
+      requestId: uniqueRequestId("preflight-folder")
+    }),
+    "failed-precondition"
+  );
+  const profile = await admin.firestore(adminApp).doc(`usuarios/${owner.uid}`).get();
+  assert.equal(profile.exists, true);
+  assert.equal(profile.data()?.rol, "medico");
+});
+
+test("un upload ya reservado que finaliza durante preflight se conserva", {
+  timeout: 60000
+}, async () => {
+  const owner = await client("preflight-upload-owner");
+  const reservation = await owner.call("reserveCloudUpload", {
+    mimeType: fixtures[0].mimeType,
+    name: fixtures[0].name,
+    originalName: fixtures[0].name,
+    requestId: uniqueRequestId("preflight-upload"),
+    sizeBytes: fixtures[0].bytes.byteLength
+  });
+  await Promise.all([
+    admin.firestore(adminApp).doc(`usuarios/${owner.uid}`).set({
+      nombre: "Profesional con upload en curso",
+      rol: "medico"
+    }, { merge: true }),
+    admin.firestore(adminApp).doc(`accountDeletionTombstones/${owner.uid}`).set({
+      accountType: "profesional",
+      accountUid: owner.uid,
+      deletionAttemptId: "preflight-upload-test",
+      deletionPhase: "preflight",
+      deletionState: "in_progress"
+    })
+  ]);
+
+  const object = admin.storage(adminApp).bucket(STORAGE_BUCKET).file(reservation.storagePath);
+  await object.save(Buffer.from(fixtures[0].bytes), {
+    metadata: {
+      contentType: reservation.mimeType,
+      metadata: {
+        fileId: reservation.fileId,
+        ownerId: reservation.ownerId,
+        reservationId: reservation.reservationId || reservation.fileId
+      }
+    }
+  });
+  const item = await pollUntil(async () => {
+    const snapshot = await admin.firestore(adminApp)
+      .doc(`usuarios/${owner.uid}/cloudFiles/${reservation.fileId}`)
+      .get();
+    return snapshot.data()?.uploadStatus === "ready" ? snapshot : null;
+  }, { description: "confirmación del upload durante preflight" });
+  assert.equal(item.data()?.quotaAccounted, true);
+  assert.equal((await object.exists())[0], true);
+  await admin.firestore(adminApp).doc(`accountDeletionTombstones/${owner.uid}`).delete();
 });

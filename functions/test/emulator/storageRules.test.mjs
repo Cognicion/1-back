@@ -115,6 +115,39 @@ test("Storage deniega lectura, descarga y enumeración al otro UID y al contexto
   }
 });
 
+test("Storage invalida el token residual cuando la cuenta tiene marca de eliminación", async () => {
+  const existing = await seedReservation();
+  const pending = await seedReservation({ filename: "pendiente.pdf" });
+  const profilePhotoRef = ref(ownerStorage, `usuarios/${UID_OWNER}/perfil/foto-perfil`);
+  await assertSucceeds(uploadBytes(
+    ref(ownerStorage, existing.storagePath),
+    validPdf,
+    uploadMetadata(existing)
+  ));
+  await assertSucceeds(uploadBytes(profilePhotoRef, encoder.encode("profile-image"), {
+    contentType: "image/png"
+  }));
+  await assertSucceeds(getBytes(ref(otherStorage, `usuarios/${UID_OWNER}/perfil/foto-perfil`)));
+  await environment.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), "accountDeletionTombstones", UID_OWNER), {
+      accountType: "paciente",
+      accountUid: UID_OWNER,
+      deletionState: "in_progress"
+    });
+  });
+
+  await assertFails(getBytes(ref(ownerStorage, existing.storagePath)));
+  await assertFails(getMetadata(ref(ownerStorage, existing.storagePath)));
+  await assertFails(listAll(ref(ownerStorage, `mi-nube/${UID_OWNER}/files`)));
+  await assertFails(getBytes(profilePhotoRef));
+  await assertFails(getBytes(ref(otherStorage, `usuarios/${UID_OWNER}/perfil/foto-perfil`)));
+  await assertFails(uploadBytes(
+    ref(ownerStorage, pending.storagePath),
+    validPdf,
+    uploadMetadata(pending)
+  ));
+});
+
 test("otro UID y contexto anónimo no pueden usar una reserva válida del propietario", async () => {
   const reservation = await seedReservation();
   for (const storage of [otherStorage, anonymousStorage]) {
@@ -224,4 +257,3 @@ test("Storage rechaza rutas de otro UID, objetos sin reserva y archivos vacíos"
     uploadMetadata(empty)
   ));
 });
-

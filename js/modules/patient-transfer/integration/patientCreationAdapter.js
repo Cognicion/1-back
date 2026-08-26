@@ -1,4 +1,4 @@
-import { actualizarUsuario, crearPacienteProvisional, obtenerUsuario } from "../../../services/usuarios.js?v=20260816-expedientes-cognicion-v1";
+import { actualizarUsuario, crearPacienteProvisional, obtenerUsuario } from "../../../services/usuarios.js?v=20260826-cuenta-profesional-gratuita-v1";
 import { construirNombreCompletoPaciente, normalizarAliasPaciente } from "../../../utils/nombresPacientes.js?v=20260814-patient-alias-v1";
 import { normalizeRecordNumber } from "../parsing/patientDuplicateMatcher.js";
 import { normalizeImportedAdmissionDate } from "../parsing/patientAdmissionDate.js?v=20260818-admission-date-v1";
@@ -90,7 +90,10 @@ export function buildPatientPayload(fields = {}, user = {}) {
 }
 
 export async function createTransferredPatient(fields, user) {
-  const ref = await crearPacienteProvisional(buildPatientPayload(fields, user));
+  const ref = await crearPacienteProvisional(
+    buildPatientPayload(fields, user),
+    fields.transferOperationId || ""
+  );
   return ref;
 }
 

@@ -3,6 +3,7 @@ import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
 import { normalizarTextoFrecuencia } from "../utils/frecuencias.js";
 import { CATALOGO_FARMACOLOGICO_OFICIAL } from "../data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
 import { evaluarMedicamentosPaciente } from "./motorClinicoMedicamentos.js?v=20260811-pharmacology-files-consolidated-v1";
+import { listarPacientes } from "./usuarios.js?v=20260826-cuenta-profesional-gratuita-v1";
 import { collection, doc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const CAMPOS_FECHA = ["fechaAplicacion", "fecha", "createdAt", "updatedAt", "fechaNota", "fechaCreacion", "fechaInicio", "fechaSuspension"];
@@ -32,8 +33,10 @@ export function calcularEdad(fechaNacimiento) {
 }
 
 export async function cargarPacientesSofia(usuario, perfilUsuario = {}) {
-  const snap = await getDocs(collection(db, "usuarios"));
   const rol = normalizarTexto(perfilUsuario.rol || "");
+  const snap = rol === "admin"
+    ? await getDocs(collection(db, "usuarios"))
+    : await listarPacientes(usuario?.uid || "");
   const pacientes = [];
   snap.forEach((docSnap) => {
     const datos = docSnap.data() || {};

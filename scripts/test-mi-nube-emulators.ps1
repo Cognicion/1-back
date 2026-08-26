@@ -166,7 +166,9 @@ try {
             "functions/test/emulator/cloudQuota.test.mjs",
             "functions/test/emulator/cloudAdminModerationFlow.test.mjs",
             "functions/test/emulator/professionalRegistrationFlow.test.mjs",
-            "functions/test/emulator/accountLinkingFlow.test.mjs"
+            "functions/test/emulator/freeProfessionalPatientLimitFlow.test.mjs",
+            "functions/test/emulator/accountLinkingFlow.test.mjs",
+            "functions/test/emulator/accountDeletionFlow.test.mjs"
         )
     }
 }

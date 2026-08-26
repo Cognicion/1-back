@@ -1,15 +1,29 @@
 const { HttpsError } = require("firebase-functions/v2/https");
-const { assertAdmin, assertAuthorizedPatientClinician, normalized } = require("./access");
+const {
+  assertAdmin,
+  assertAuthorizedPatientClinician,
+  isProfessional,
+  listAuthorizedPatientSnapshots,
+  normalized
+} = require("./access");
 const { buildPatientClinicalContext } = require("./contextBuilder");
 const { extractClinicalVariables } = require("./variableExtractor");
 const { analyzePatientTimeline } = require("./timelineAnalyzer");
 const { detectPatientPatterns, buildObservationalRelationships } = require("./patternAnalyzer");
 const { calculateEmpiricalProbability } = require("./probabilityEngine");
-const { persistClinicalAnalysis, readClinicalKnowledge } = require("./persistence");
+const {
+  persistClinicalAnalysis,
+  readClinicalKnowledge,
+  removePatientClinicalAnalysisArtifacts
+} = require("./persistence");
 const { analyticsPatientId } = require("./deidentification");
 const { buildPatientFeatureProfile } = require("./patientFeatureProfile");
 const { buildPatternMatrices } = require("./matrixEngine");
-const { persistPatientFeatureProfile, persistPatternMatrices } = require("./matrixPersistence");
+const {
+  persistPatientFeatureProfile,
+  persistPatternMatrices,
+  removePatientFeatureProfile
+} = require("./matrixPersistence");
 const {
   indexClinicalRecordEmbeddings,
   removeClinicalRecordEmbeddings,
@@ -20,8 +34,12 @@ const {
   getOrBuildPatientPatternProfile,
   refreshPatientPatternProfile
 } = require("./patientPatternProfileService");
-const { markPatientPatternProfileState } = require("./patientPatternProfilePersistence");
+const {
+  markPatientPatternProfileState,
+  removePatientPatternProfile
+} = require("./patientPatternProfilePersistence");
 const { AFFECTED_PATTERNS_BY_COLLECTION, PATTERN_CATALOG } = require("./patientPatternConfig");
+const { accountDeletionTombstonePath } = require("../accountSecurity/accountDeletion");
 const {
   CLINICAL_ANALYTICS_SCHEMA_VERSION,
   CLINICAL_PATTERN_MATRIX_CONFIG,
@@ -32,6 +50,51 @@ function patientLabel(patient = {}) { return patient.nombre || patient.nombreCom
 
 function isPatientProfile(profile = {}) {
   return [profile.rol, profile.role, profile.tipoUsuario, profile.perfil].some((value) => normalized(value) === "paciente") || profile.esPaciente === true;
+}
+
+async function readCurrentClinicalPatientState({ db, patientId }) {
+  const [patientSnapshot, deletionSnapshot] = await Promise.all([
+    db.doc(`usuarios/${patientId}`).get(),
+    db.doc(accountDeletionTombstonePath(patientId)).get()
+  ]);
+  const patient = patientSnapshot.exists ? patientSnapshot.data() || {} : null;
+  const linkedPatientOrigin = normalized(patient?.estado) === "vinculado" && Boolean(String(patient?.vinculadoA || "").trim());
+  return {
+    active: patientSnapshot.exists && !deletionSnapshot.exists && !linkedPatientOrigin,
+    patient,
+    linkedPatientOrigin,
+    patientMissing: !patientSnapshot.exists,
+    tombstoneExists: deletionSnapshot.exists
+  };
+}
+
+async function removePatientClinicalArtifacts({ db, patientId }) {
+  const [analysis, embeddings, featureProfile, patternProfile] = await Promise.all([
+    removePatientClinicalAnalysisArtifacts({ db, patientId }),
+    removePatientEmbeddings({ db, patientId }),
+    removePatientFeatureProfile({ db, patientId }),
+    removePatientPatternProfile({ db, patientId })
+  ]);
+  return { analysis, embeddings, featureProfile, patternProfile };
+}
+
+async function activeClinicalPatientOrCleanup({ db, patientId }) {
+  const state = await readCurrentClinicalPatientState({ db, patientId });
+  if (state.active) return state;
+  return {
+    ...state,
+    cleanupResult: {
+      skipped: true,
+      cleanupOnly: true,
+      reason: state.tombstoneExists
+        ? "account_deletion"
+        : (state.patientMissing ? "patient_missing" : "linked_patient_origin"),
+      linkedPatientOrigin: state.linkedPatientOrigin,
+      patientMissing: state.patientMissing,
+      tombstoneExists: state.tombstoneExists,
+      cleanup: await removePatientClinicalArtifacts({ db, patientId })
+    }
+  };
 }
 
 async function analyzePatientClinicalContext({ request, db }) {
@@ -68,10 +131,18 @@ async function listAuthorizedSofiaPatients({ request, db }) {
   if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Autenticación requerida.");
   const actorSnap = await db.doc(`usuarios/${request.auth.uid}`).get();
   const actor = actorSnap.exists ? actorSnap.data() || {} : {};
-  const { isProfessional, patientAllowsProfessionalAccess } = require("./access");
   if (!isProfessional(actor)) throw new HttpsError("permission-denied", "Acceso restringido a personal clínico autorizado.");
-  const snap = await db.collection("usuarios").where("rol", "==", "paciente").get();
-  return { patients: snap.docs.filter((doc) => patientAllowsProfessionalAccess(doc.data() || {}, request.auth.uid)).map((doc) => ({ id: doc.id, label: patientLabel(doc.data() || {}) })) };
+  const patients = await listAuthorizedPatientSnapshots({
+    db,
+    professionalProfile: actor,
+    professionalUid: request.auth.uid
+  });
+  return {
+    patients: patients.map((doc) => ({
+      id: doc.id,
+      label: patientLabel(doc.data() || {})
+    }))
+  };
 }
 
 async function getClinicalKnowledgeAdmin({ request, db }) {
@@ -163,24 +234,41 @@ async function processClinicalAnalyticsWrite({ event, db, apiKey, OpenAIClass, s
     return { skipped: true, reason: "unsupported_source" };
   }
   const after = event.data?.after;
-  const patientSnap = await db.doc(`usuarios/${patientId}`).get();
-  if (!patientSnap.exists || !isPatientProfile(patientSnap.data() || {})) {
-    return { skipped: true, patientMissing: !patientSnap.exists, nonPatientProfile: patientSnap.exists };
-  }
+  let patientState = await activeClinicalPatientOrCleanup({ db, patientId });
+  if (!patientState.active) return patientState.cleanupResult;
+  if (!isPatientProfile(patientState.patient)) return { skipped: true, nonPatientProfile: true };
   const affectedPatternKeys = AFFECTED_PATTERNS_BY_COLLECTION[collectionId] || Object.keys(PATTERN_CATALOG);
+
+  patientState = await activeClinicalPatientOrCleanup({ db, patientId });
+  if (!patientState.active) return patientState.cleanupResult;
   await markPatientPatternProfileState({ db, patientId, state: "outdated", affectedPatternKeys });
-  const context = await buildPatientClinicalContext({ db, patientId, patient: patientSnap.data() || {} });
+
+  patientState = await activeClinicalPatientOrCleanup({ db, patientId });
+  if (!patientState.active) return patientState.cleanupResult;
+  const context = await buildPatientClinicalContext({ db, patientId, patient: patientState.patient });
+
+  patientState = await activeClinicalPatientOrCleanup({ db, patientId });
+  if (!patientState.active) return patientState.cleanupResult;
   const patientPatternResult = await refreshPatientPatternProfile({
     db,
     patientId,
-    patient: patientSnap.data() || {},
+    patient: patientState.patient,
     context,
     affectedPatternKeys
   });
+
+  patientState = await activeClinicalPatientOrCleanup({ db, patientId });
+  if (!patientState.active) return patientState.cleanupResult;
   const variables = patientPatternResult.analysis.variables;
   const timeline = patientPatternResult.analysis.timeline;
   const profile = buildPatientFeatureProfile({ variables, timeline, context });
+
+  patientState = await activeClinicalPatientOrCleanup({ db, patientId });
+  if (!patientState.active) return patientState.cleanupResult;
   const persistence = await persistPatientFeatureProfile({ db, patientId, profile });
+
+  patientState = await activeClinicalPatientOrCleanup({ db, patientId });
+  if (!patientState.active) return patientState.cleanupResult;
   if (!after?.exists) {
     const removal = await removeClinicalRecordEmbeddings({
       db,
@@ -188,6 +276,8 @@ async function processClinicalAnalyticsWrite({ event, db, apiKey, OpenAIClass, s
       sourceCollection: collectionId,
       sourceRecordId: embeddingRecordId
     });
+    patientState = await activeClinicalPatientOrCleanup({ db, patientId });
+    if (!patientState.active) return patientState.cleanupResult;
     return {
       deleted: true,
       embeddingRemoved: removal.removed,
@@ -197,13 +287,15 @@ async function processClinicalAnalyticsWrite({ event, db, apiKey, OpenAIClass, s
     };
   }
   let embedding;
+  patientState = await activeClinicalPatientOrCleanup({ db, patientId });
+  if (!patientState.active) return patientState.cleanupResult;
   try {
     embedding = await indexClinicalRecordEmbeddings({
       db,
       apiKey,
       OpenAIClass,
       patientId,
-      patient: patientSnap.data() || {},
+      patient: patientState.patient,
       sourceCollection: collectionId,
       sourceRecordId: embeddingRecordId,
       record: after.data() || {}
@@ -211,6 +303,8 @@ async function processClinicalAnalyticsWrite({ event, db, apiKey, OpenAIClass, s
   } catch (error) {
     embedding = { indexed: false, failed: true, code: String(error?.code || error?.name || "unknown").slice(0, 80) };
   }
+  patientState = await activeClinicalPatientOrCleanup({ db, patientId });
+  if (!patientState.active) return patientState.cleanupResult;
   return {
     persisted: persistence.updated,
     duplicate: persistence.duplicate,
@@ -233,21 +327,46 @@ async function processClinicalPatientWrite({ event, db, apiKey, OpenAIClass }) {
   const patientId = event.params?.patientId;
   if (!patientId) return { skipped: true };
   const after = event.data?.after;
-  if (!after?.exists) return removePatientEmbeddings({ db, patientId });
-  const patient = after.data() || {};
+  if (!after?.exists) return removePatientClinicalArtifacts({ db, patientId });
+
+  let patientState = await activeClinicalPatientOrCleanup({ db, patientId });
+  if (!patientState.active) return patientState.cleanupResult;
+  let patient = patientState.patient;
   if (!isPatientProfile(patient)) return { skipped: true, reason: "non_patient_profile" };
   let patientPatternProfileUpdated = false;
+  let patternStateMarked = false;
+
+  patientState = await activeClinicalPatientOrCleanup({ db, patientId });
+  if (!patientState.active) return patientState.cleanupResult;
   try {
     await markPatientPatternProfileState({ db, patientId, state: "outdated", affectedPatternKeys: Object.keys(PATTERN_CATALOG) });
-    const result = await refreshPatientPatternProfile({ db, patientId, patient, affectedPatternKeys: Object.keys(PATTERN_CATALOG) });
-    patientPatternProfileUpdated = result.persistence.persisted === true;
+    patternStateMarked = true;
   } catch (error) {
     console.error("[SOFIA Patient Patterns] Falló la actualización del perfil protegido", {
       code: String(error?.code || error?.name || "unknown").slice(0, 80)
     });
   }
+
+  if (patternStateMarked) {
+    patientState = await activeClinicalPatientOrCleanup({ db, patientId });
+    if (!patientState.active) return patientState.cleanupResult;
+    patient = patientState.patient;
+    try {
+      const result = await refreshPatientPatternProfile({ db, patientId, patient, affectedPatternKeys: Object.keys(PATTERN_CATALOG) });
+      patientPatternProfileUpdated = result.persistence.persisted === true;
+    } catch (error) {
+      console.error("[SOFIA Patient Patterns] Falló la actualización del perfil protegido", {
+        code: String(error?.code || error?.name || "unknown").slice(0, 80)
+      });
+    }
+  }
+
+  patientState = await activeClinicalPatientOrCleanup({ db, patientId });
+  if (!patientState.active) return patientState.cleanupResult;
+  patient = patientState.patient;
+  let embedding;
   try {
-    const embedding = await indexClinicalRecordEmbeddings({
+    embedding = await indexClinicalRecordEmbeddings({
       db,
       apiKey,
       OpenAIClass,
@@ -257,27 +376,34 @@ async function processClinicalPatientWrite({ event, db, apiKey, OpenAIClass }) {
       sourceRecordId: "profile",
       record: patient
     });
-    return {
-      indexed: embedding.indexed === true,
-      duplicate: embedding.duplicate === true,
-      skipped: embedding.skipped === true,
-      fragmentCount: Number(embedding.fragmentCount) || 0,
-      patientPatternProfileUpdated
-    };
   } catch (error) {
     console.error("[SOFIA Embeddings] Falló la actualización del perfil clínico", {
       code: String(error?.code || error?.name || "unknown").slice(0, 80)
     });
-    return { indexed: false, failed: true };
+    embedding = { indexed: false, failed: true };
   }
+
+  patientState = await activeClinicalPatientOrCleanup({ db, patientId });
+  if (!patientState.active) return patientState.cleanupResult;
+  return {
+    indexed: embedding.indexed === true,
+    duplicate: embedding.duplicate === true,
+    skipped: embedding.skipped === true,
+    failed: embedding.failed === true,
+    fragmentCount: Number(embedding.fragmentCount) || 0,
+    patientPatternProfileUpdated
+  };
 }
 
 module.exports = {
+  activeClinicalPatientOrCleanup,
   analyzePatientClinicalContext,
   listAuthorizedSofiaPatients,
   getClinicalKnowledgeAdmin,
   processClinicalAnalyticsWrite,
   processClinicalPatientWrite,
+  readCurrentClinicalPatientState,
   rebuildClinicalEmbeddingIndexAdmin,
-  rebuildClinicalPatternMatricesAdmin
+  rebuildClinicalPatternMatricesAdmin,
+  removePatientClinicalArtifacts
 };

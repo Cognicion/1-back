@@ -76,6 +76,26 @@ async function persistPatientFeatureProfile({ db, patientId, profile, markMatrix
   return { analyticsPatientId: analyticsId, featureCount: payload.features?.length || 0, updated, duplicate: !updated };
 }
 
+async function removePatientFeatureProfile({ db, patientId, markMatrixStale = true }) {
+  const analyticsId = analyticsPatientId(patientId);
+  const ref = db.collection(ANALYTICS_COLLECTIONS.patientProfiles).doc(analyticsId);
+  const removed = await db.runTransaction(async (transaction) => {
+    const existing = await transaction.get(ref);
+    if (!existing.exists) return false;
+    transaction.delete(ref);
+    if (markMatrixStale) transaction.set(db.collection(ANALYTICS_COLLECTIONS.matrixStatus).doc("current"), {
+      stale: true,
+      staleReason: "patient_profile_removed",
+      dirtyProfiles: FieldValue.increment(1),
+      lastProfileRemovedAt: new Date().toISOString(),
+      matrixEngineVersion: CLINICAL_MATRIX_ENGINE_VERSION,
+      schemaVersion: CLINICAL_ANALYTICS_SCHEMA_VERSION
+    }, { merge: true });
+    return true;
+  });
+  return { analyticsPatientId: analyticsId, removed };
+}
+
 async function readPatientFeatureProfiles({ db }) {
   const snapshot = await db.collection(ANALYTICS_COLLECTIONS.patientProfiles)
     .limit(CLINICAL_PATTERN_MATRIX_CONFIG.maxPatients + 1)
@@ -229,5 +249,6 @@ module.exports = {
   persistPatternMatrices,
   readClinicalMatrices,
   readPatientFeatureProfiles,
+  removePatientFeatureProfile,
   sortAssociationsForDisplay
 };
