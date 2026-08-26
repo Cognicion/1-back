@@ -204,8 +204,10 @@ function inicializarInterfaz() {
   editor?.addEventListener("input", () => {
     marcarCambios();
     renderizarMarcadoresApunte();
+    actualizarIndicadorPaginasHoja();
     if (!document.getElementById("panelBuscarReemplazar")?.hidden) actualizarResultadosBusqueda({ reiniciar: true });
   });
+  editor?.addEventListener("scroll", actualizarIndicadorPaginasHoja, { passive: true });
   editor?.addEventListener("blur", normalizarEditorVacio);
   editor?.addEventListener("beforeinput", convertirAtajoListaAntesDeInsertar);
   editor?.addEventListener("beforeinput", prepararModoResaltadoAntesDeInsertar);
@@ -2139,8 +2141,20 @@ function actualizarVistaHoja() {
   hoja.style.setProperty("--apunte-tamano-fuente", `${valoresVista.tamanioFuente}px`);
   actualizarTamanosFuentePersonalizados(valoresVista.escalaVisual);
   restaurarAnclaZoomHoja();
+  actualizarIndicadorPaginasHoja();
   posicionarPanelMarcadoresApunte();
   programarRenderizadoIndicadoresMarcadores();
+}
+
+function actualizarIndicadorPaginasHoja() {
+  const editor = obtenerEditor();
+  const indicador = document.getElementById("indicadorPaginaHoja");
+  if (!editor || !indicador) return;
+  const altoPagina = Math.max(1, editor.clientHeight);
+  const total = Math.max(1, Math.ceil(editor.scrollHeight / altoPagina));
+  const actual = Math.min(total, Math.max(1, Math.floor(editor.scrollTop / altoPagina) + 1));
+  indicador.value = `Página ${actual} de ${total}`;
+  indicador.textContent = indicador.value;
 }
 
 function actualizarTamanosFuentePersonalizados(escala) {

@@ -145,5 +145,6 @@
 // deployment marker: 2026-08-26-apuntes-atajo-punto-renglon-v33 (+0.001)
 // deployment marker: 2026-08-26-apuntes-tamano-conserva-seleccion-v34 (+0.001)
 // deployment marker: 2026-08-26-apuntes-scroll-unico-v35 (+0.001)
-export const APP_VERSION = "2.156";
+// deployment marker: 2026-08-26-apuntes-paginas-diferenciadas-v36 (+0.001)
+export const APP_VERSION = "2.157";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

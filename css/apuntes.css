@@ -2367,7 +2367,17 @@ body.pagina-apuntes > main.apuntes-shell {
   border: 0;
   border-radius: 11px;
   color: var(--apunte-texto, var(--apuntes-texto));
-  background: transparent;
+  background-color: transparent;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--hoja-alto, 736px) - 5px),
+    color-mix(in srgb, var(--apuntes-borde-fuerte) 68%, transparent) calc(var(--hoja-alto, 736px) - 5px),
+    color-mix(in srgb, var(--apuntes-borde-fuerte) 68%, transparent) calc(var(--hoja-alto, 736px) - 3px),
+    color-mix(in srgb, var(--apuntes-superficie-hover) 82%, transparent) calc(var(--hoja-alto, 736px) - 3px),
+    color-mix(in srgb, var(--apuntes-superficie-hover) 82%, transparent) var(--hoja-alto, 736px)
+  );
+  background-attachment: local;
   font-size: var(--apunte-tamano-fuente, 14px);
   line-height: 1.52;
   white-space: pre-wrap;
@@ -2380,6 +2390,23 @@ body.pagina-apuntes > main.apuntes-shell {
   width: 0;
   height: 0;
   display: none;
+}
+
+.indicador-pagina-hoja {
+  position: absolute;
+  z-index: 6;
+  right: 10px;
+  bottom: 8px;
+  padding: 3px 7px;
+  border: 1px solid color-mix(in srgb, var(--apuntes-borde-fuerte) 62%, transparent);
+  border-radius: 999px;
+  color: var(--apunte-texto, var(--apuntes-texto));
+  background: color-mix(in srgb, var(--apunte-fondo, var(--apuntes-superficie-suave)) 84%, transparent);
+  backdrop-filter: blur(5px);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.2;
+  pointer-events: none;
 }
 
 .editor-contenido::selection,

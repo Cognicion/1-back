@@ -232,8 +232,8 @@ test("el HTML ofrece carpetas, formato accesible y accesos globales integrados",
   assert.match(html, /<body class="bloqueado pagina-apuntes">/);
   assert.match(html, /theme-preload\.js\?v=2\.115-navbar-unica-v2/);
   assert.match(html, /reportes\.js\?v=20260820-apuntes-navbar-v1/);
-  assert.match(html, /apuntes\.css\?v=20260826-apuntes-scroll-unico-v35/);
-  assert.match(html, /apuntes\.js\?v=20260826-apuntes-scroll-unico-v35/);
+  assert.match(html, /apuntes\.css\?v=20260826-apuntes-paginas-diferenciadas-v36/);
+  assert.match(html, /apuntes\.js\?v=20260826-apuntes-paginas-diferenciadas-v36/);
   assert.match(html, /id="formatoCursiva"[^>]*data-editor-command="italic"/);
   assert.match(html, /id="formatoSubrayado"[^>]*data-editor-command="underline"/);
   assert.match(html, /id="abrirInsertarApunte"[^>]*aria-controls="menuInsertarApunte"/);
@@ -687,6 +687,7 @@ test("la versión visible se incrementa para el cambio funcional", () => {
   assert.match(version, /2026-08-26-apuntes-atajo-punto-renglon-v33/);
   assert.match(version, /2026-08-26-apuntes-tamano-conserva-seleccion-v34/);
   assert.match(version, /2026-08-26-apuntes-scroll-unico-v35/);
+  assert.match(version, /2026-08-26-apuntes-paginas-diferenciadas-v36/);
   assert.match(version, /2026-08-22-apuntes-subcarpetas-hotfix-v1/);
   assert.match(version, /2026-08-22-apuntes-insertar-controles-v1/);
   assert.match(version, /2026-08-22-apuntes-contexto-fondo-retraible-v1/);
@@ -747,4 +748,13 @@ test("el documento muestra una sola barra de desplazamiento", () => {
   assert.match(css, /\.editor-contenido\s*\{[^}]*overflow:\s*auto;[^}]*scrollbar-width:\s*none;[^}]*-ms-overflow-style:\s*none;/);
   assert.match(css, /\.editor-contenido::\-webkit-scrollbar\s*\{[^}]*width:\s*0;[^}]*height:\s*0;[^}]*display:\s*none;/);
   assert.match(css, /\.lienzo-apunte\s*\{[^}]*overflow:\s*auto/);
+});
+
+test("las páginas se distinguen al recorrer un apunte largo", () => {
+  assert.match(html, /id="indicadorPaginaHoja"[^>]*>Página 1 de 1<\/output>/);
+  assert.match(css, /\.editor-contenido\s*\{[^}]*background-image:\s*repeating-linear-gradient\(/);
+  assert.match(css, /background-attachment:\s*local/);
+  assert.match(css, /\.indicador-pagina-hoja\s*\{[^}]*position:\s*absolute[^}]*pointer-events:\s*none/);
+  assert.match(controlador, /function actualizarIndicadorPaginasHoja\(\)[\s\S]*Math\.ceil\(editor\.scrollHeight \/ altoPagina\)[\s\S]*Página \$\{actual\} de \$\{total\}/);
+  assert.match(controlador, /addEventListener\("scroll", actualizarIndicadorPaginasHoja, \{ passive: true \}\)/);
 });
