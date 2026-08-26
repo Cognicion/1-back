@@ -130,5 +130,6 @@
 // deployment marker: 2026-08-25-apuntes-seleccion-lista-color-dividido-v21 (+0.001)
 // deployment marker: 2026-08-25-apuntes-menu-tamano-persistente-v22 (+0.001)
 // deployment marker: 2026-08-25-apuntes-buscar-reemplazar-fuentes-v23 (+0.001)
-export const APP_VERSION = "2.141";
+// deployment marker: 2026-08-25-biblioteca-catalogos-cie10-g-v1 (+0.001)
+export const APP_VERSION = "2.142";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

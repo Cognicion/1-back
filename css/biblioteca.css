@@ -206,6 +206,18 @@ button:hover {
 
 .oculto { display: none !important; }
 
+.biblioteca-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .cyp-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
@@ -856,6 +868,55 @@ html[data-theme="light"] .aviso-clinico-biblioteca {
   margin-bottom: 8px;
 }
 
+.reglas-farmacologicas {
+  display: grid;
+  gap: 12px;
+}
+
+.regla-farmacologica {
+  padding: 14px;
+  border: 1px solid rgba(126, 182, 138, .2);
+  border-radius: 12px;
+  background: rgba(8, 13, 23, .42);
+}
+
+.regla-farmacologica h4,
+.regla-farmacologica h5 {
+  margin: 0;
+  color: var(--celtic-300);
+}
+
+.regla-farmacologica__datos {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.regla-farmacologica__datos > div {
+  display: grid;
+  grid-template-columns: minmax(150px, .35fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.regla-farmacologica__datos dt {
+  font-weight: 800;
+}
+
+.regla-farmacologica__datos dd {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.regla-farmacologica__lista + .regla-farmacologica__lista {
+  margin-top: 12px;
+}
+
+.regla-farmacologica__lista p,
+.regla-farmacologica__lista ul,
+.regla-farmacologica__cobertura {
+  margin: 7px 0 0;
+}
+
 .grupo-criterios__intro {
   margin: 0 0 8px;
   line-height: 1.5;
@@ -993,6 +1054,24 @@ html[data-theme="light"] .grupo-criterios {
   color: var(--library-text);
 }
 
+html[data-theme="light"] .regla-farmacologica {
+  border-color: var(--library-border);
+  background: var(--library-surface);
+  color: var(--library-text);
+}
+
+html[data-theme="light"] .regla-farmacologica h4,
+html[data-theme="light"] .regla-farmacologica h5,
+html[data-theme="light"] .regla-farmacologica__datos dt {
+  color: var(--library-primary);
+}
+
+html[data-theme="light"] .regla-farmacologica__datos dd,
+html[data-theme="light"] .regla-farmacologica__lista,
+html[data-theme="light"] .regla-farmacologica__cobertura {
+  color: var(--library-text-secondary);
+}
+
 html[data-theme="light"] .grupo-criterios h5 {
   color: #285c3b;
 }
@@ -1056,5 +1135,316 @@ html[data-theme="light"] .sistemas-diagnosticos-controles {
   html[data-theme="light"] .sistemas-diagnosticos-controles {
     display: grid;
     grid-template-columns: 1fr;
+  }
+}
+
+/* Navegación por catálogo y por capítulo CIE-10. */
+.filtro-categoria-biblioteca {
+  width: 100%;
+  border: 1px solid rgba(126, 182, 138, .28);
+  border-radius: 16px;
+  background: rgba(5, 7, 6, .78);
+  color: var(--ivory-50);
+  padding: 13px 16px;
+  font-weight: 700;
+}
+
+.filtro-categoria-biblioteca:focus {
+  outline: none;
+  border-color: rgba(82, 152, 102, .65);
+  box-shadow: 0 0 0 4px rgba(82, 152, 102, .1);
+}
+
+.navegacion-diagnosticos {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.encabezado-navegacion-diagnosticos,
+.encabezado-lista-diagnosticos,
+.estado-vacio-biblioteca {
+  padding: 20px;
+  border: 1px solid rgba(126, 182, 138, .22);
+  border-radius: 18px;
+  background: rgba(15, 18, 25, .9);
+}
+
+.encabezado-navegacion-diagnosticos h2,
+.encabezado-lista-diagnosticos h2,
+.estado-vacio-biblioteca h3 {
+  margin: 0;
+}
+
+.encabezado-navegacion-diagnosticos p:last-child,
+.encabezado-lista-diagnosticos p:last-child,
+.estado-vacio-biblioteca p {
+  margin: 8px 0 0;
+  color: #aab4c3;
+  line-height: 1.5;
+}
+
+.sobretitulo-biblioteca {
+  margin: 0 0 7px;
+  color: var(--celtic-300);
+  font-size: .76rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.catalogos-diagnosticos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 14px;
+}
+
+.catalogo-diagnostico-card,
+.letra-cie10-card {
+  border: 1px solid rgba(126, 182, 138, .24);
+  background: rgba(14, 20, 17, .9);
+  color: var(--white-950);
+  box-shadow: none;
+  text-align: left;
+}
+
+.catalogo-diagnostico-card {
+  display: grid;
+  align-content: start;
+  gap: 9px;
+  min-height: 180px;
+  padding: 20px;
+}
+
+.catalogo-diagnostico-card:hover,
+.letra-cie10-card:hover {
+  border-color: rgba(126, 182, 138, .58);
+  background: rgba(25, 38, 30, .96);
+}
+
+.catalogo-diagnostico-card__nombre {
+  color: var(--celtic-300);
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+
+.catalogo-diagnostico-card__descripcion {
+  color: #c4cec8;
+  line-height: 1.5;
+}
+
+.catalogo-diagnostico-card__cantidad {
+  align-self: end;
+  margin-top: auto;
+  color: #aab4c3;
+  font-size: .82rem;
+  font-weight: 800;
+}
+
+.letras-cie10-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr));
+  gap: 12px;
+}
+
+.letra-cie10-card {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 14px;
+  min-height: 158px;
+  padding: 16px;
+}
+
+.letra-cie10-card__letra {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border: 1px solid rgba(126, 182, 138, .38);
+  border-radius: 16px;
+  background: rgba(82, 152, 102, .16);
+  color: var(--celtic-300);
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+.letra-cie10-card__contenido {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  min-width: 0;
+}
+
+.letra-cie10-card__rango,
+.letra-cie10-card__resumen {
+  color: #aab4c3;
+  font-size: .78rem;
+  font-weight: 800;
+}
+
+.letra-cie10-card__titulo {
+  color: var(--white-950);
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.estado-cobertura {
+  display: inline-flex;
+  margin-top: auto;
+  padding: 5px 8px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: .68rem;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.estado-cobertura--completa {
+  border-color: rgba(105, 211, 139, .34);
+  background: rgba(58, 142, 85, .2);
+  color: #a9edbd;
+}
+
+.estado-cobertura--revision {
+  border-color: rgba(115, 174, 227, .34);
+  background: rgba(61, 116, 170, .2);
+  color: #b7daf7;
+}
+
+.estado-cobertura--parcial {
+  border-color: rgba(224, 179, 86, .34);
+  background: rgba(160, 112, 31, .2);
+  color: #f3d493;
+}
+
+.estado-cobertura--pendiente {
+  border-color: rgba(190, 196, 188, .22);
+  background: rgba(190, 196, 188, .08);
+  color: #b7c0bb;
+}
+
+.boton-regreso-biblioteca {
+  margin-bottom: 14px;
+  border: 1px solid rgba(126, 182, 138, .28);
+  background: rgba(14, 20, 17, .88);
+  color: var(--celtic-300);
+  box-shadow: none;
+}
+
+.acciones-ruta-biblioteca {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.acciones-ruta-biblioteca .boton-regreso-biblioteca {
+  margin-bottom: 14px;
+}
+
+.encabezado-lista-diagnosticos {
+  margin-bottom: 2px;
+}
+
+html[data-theme="light"] .filtro-categoria-biblioteca {
+  border-color: var(--library-border-strong);
+  background: var(--library-surface);
+  color: var(--library-text);
+  box-shadow: none;
+}
+
+html[data-theme="light"] .encabezado-navegacion-diagnosticos,
+html[data-theme="light"] .encabezado-lista-diagnosticos,
+html[data-theme="light"] .estado-vacio-biblioteca,
+html[data-theme="light"] .catalogo-diagnostico-card,
+html[data-theme="light"] .letra-cie10-card {
+  border-color: var(--library-border);
+  background: var(--library-surface);
+  color: var(--library-text);
+  box-shadow: 0 4px 14px rgba(31, 44, 35, .06);
+}
+
+html[data-theme="light"] .catalogo-diagnostico-card:hover,
+html[data-theme="light"] .letra-cie10-card:hover {
+  border-color: var(--library-border-strong);
+  background: var(--library-surface-hover);
+}
+
+html[data-theme="light"] .catalogo-diagnostico-card__nombre,
+html[data-theme="light"] .sobretitulo-biblioteca,
+html[data-theme="light"] .letra-cie10-card__letra {
+  color: var(--library-primary);
+}
+
+html[data-theme="light"] .catalogo-diagnostico-card__descripcion,
+html[data-theme="light"] .catalogo-diagnostico-card__cantidad,
+html[data-theme="light"] .letra-cie10-card__rango,
+html[data-theme="light"] .letra-cie10-card__resumen,
+html[data-theme="light"] .encabezado-navegacion-diagnosticos p:last-child,
+html[data-theme="light"] .encabezado-lista-diagnosticos p:last-child,
+html[data-theme="light"] .estado-vacio-biblioteca p {
+  color: var(--library-text-secondary);
+}
+
+html[data-theme="light"] .letra-cie10-card__letra {
+  border-color: var(--library-border-strong);
+  background: var(--library-primary-soft);
+}
+
+html[data-theme="light"] .letra-cie10-card__titulo {
+  color: var(--library-text);
+}
+
+html[data-theme="light"] .estado-cobertura--completa {
+  border-color: #a8d2b3;
+  background: #e2f2e6;
+  color: #25613a;
+}
+
+html[data-theme="light"] .estado-cobertura--revision {
+  border-color: #b7cee3;
+  background: #e7f0f8;
+  color: #315e82;
+}
+
+html[data-theme="light"] .estado-cobertura--parcial {
+  border-color: #e0c98f;
+  background: #faf2d9;
+  color: #725315;
+}
+
+html[data-theme="light"] .estado-cobertura--pendiente {
+  border-color: var(--library-border);
+  background: var(--library-surface-soft);
+  color: var(--library-text-muted);
+}
+
+html[data-theme="light"] .boton-regreso-biblioteca {
+  border-color: var(--library-border-strong);
+  background: var(--library-surface);
+  color: var(--library-primary);
+  box-shadow: none;
+}
+
+@media (max-width: 640px) {
+  .regla-farmacologica__datos > div {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+
+  .catalogo-diagnostico-card {
+    min-height: 0;
+  }
+
+  .letra-cie10-card {
+    grid-template-columns: 48px minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .letra-cie10-card__letra {
+    width: 48px;
+    height: 48px;
+    border-radius: 13px;
+    font-size: 1.45rem;
   }
 }

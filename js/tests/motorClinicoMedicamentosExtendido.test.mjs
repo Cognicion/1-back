@@ -55,7 +55,7 @@ const diagnosticos = resolverDiagnosticosClinicos(["Paciente con demencia y adul
 assert.ok(diagnosticos.categorias.includes("demencia"));
 assert.ok(diagnosticos.categorias.includes("adulto_mayor"));
 
-assert.equal(CIE10.length, 3183, "Debe usarse el catálogo CIE-10 consolidado.");
+assert.equal(CIE10.length, 3561, "Debe usarse el catálogo CIE-10 consolidado.");
 assert.ok(CIE10.some((dx) => dx.codigo === "E11"));
 assert.ok(CIE10.some((dx) => dx.codigo === "I10"));
 assert.ok(CIE10.some((dx) => dx.codigo === "L20"));

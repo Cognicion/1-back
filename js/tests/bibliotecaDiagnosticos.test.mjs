@@ -31,8 +31,8 @@ const SECCIONES_CIE10 = [
 test("el catálogo consolidado es la fuente única de CIE-10, CIE-11 y DSM-5-TR", () => {
   assert.deepEqual(SISTEMAS_DIAGNOSTICOS, ["cie10", "cie11", "dsm5"]);
   assert.equal(METADATOS_CATALOGO_DIAGNOSTICOS.fuenteUnica, true);
-  assert.equal(CATALOGO_DIAGNOSTICOS.length, 3202);
-  assert.equal(CIE10.length, 3183);
+  assert.equal(CATALOGO_DIAGNOSTICOS.length, 3580);
+  assert.equal(CIE10.length, 3561);
   assert.equal(CIE11.length, 28);
   assert.equal(DSM5.length, 12);
 });
@@ -56,12 +56,12 @@ test("X84 conserva el contrato canónico de causa externa", () => {
   assert.equal(x84?.farmacologia, null, "no debe inventar farmacología para un código de causa externa");
 });
 
-test("A, B, C, D, E y F están completos y conservan propiedades clínicas y farmacológicas", () => {
+test("A-G conservan conteos y contratos clínicos y farmacológicos", () => {
   assert.deepEqual(
-    Object.fromEntries(["A", "B", "C", "D", "E", "F"].map((letra) => [letra, CIE10.filter((diagnostico) => diagnostico.codigo.startsWith(letra)).length])),
-    { A: 465, B: 459, C: 539, D: 527, E: 412, F: 467 }
+    Object.fromEntries(["A", "B", "C", "D", "E", "F", "G"].map((letra) => [letra, CIE10.filter((diagnostico) => diagnostico.codigo.startsWith(letra)).length])),
+    { A: 465, B: 459, C: 539, D: 527, E: 412, F: 467, G: 394 }
   );
-  const entidades = CATALOGO_DIAGNOSTICOS.filter((diagnostico) => /^[ABCDEF]/.test(diagnostico.sistemas?.cie10?.codigo || ""));
+  const entidades = CATALOGO_DIAGNOSTICOS.filter((diagnostico) => /^[A-G]/.test(diagnostico.sistemas?.cie10?.codigo || ""));
   assert.ok(entidades.every((diagnostico) => SECCIONES_CIE10.every((titulo) => diagnostico.sistemas.cie10.criterios.some((grupo) => grupo.titulo === titulo))));
   assert.ok(entidades.every((diagnostico) => diagnostico.propiedadesPorFuente?.cie10 && diagnostico.farmacologia));
 });
