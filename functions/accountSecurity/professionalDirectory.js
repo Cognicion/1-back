@@ -87,16 +87,15 @@ function createProfessionalDirectoryService({ db }) {
 
   async function listAuthorizedPatientIds(auth) {
     const { actor, actorUid } = await activeActor(auth);
-    let snapshots = [];
-    if (isAdmin(actor, auth)) {
-      snapshots = (await db.collection("usuarios").where("rol", "==", "paciente").get()).docs;
-    } else if (isProfessional(actor)) {
-      snapshots = await listAuthorizedPatientSnapshots({
-        db,
-        professionalProfile: actor,
-        professionalUid: actorUid
-      });
-    }
+    // Este endpoint alimenta el Panel Médico: un claim administrativo no debe
+    // convertirlo en un directorio global. La administración usa sus flujos
+    // propios; aquí cada paciente debe tener una relación clínica verificable.
+    if (!isAdmin(actor, auth) && !isProfessional(actor)) return { patientIds: [] };
+    const snapshots = await listAuthorizedPatientSnapshots({
+      db,
+      professionalProfile: actor,
+      professionalUid: actorUid
+    });
     return {
       patientIds: [...new Set(snapshots.map((snapshot) => snapshot.id))].sort()
     };

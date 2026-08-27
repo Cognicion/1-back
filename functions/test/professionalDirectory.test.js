@@ -119,3 +119,50 @@ test("el directorio de pacientes devuelve solo IDs relacionados a un plan legado
 
   assert.deepEqual(result, { patientIds: ["paciente-compartido", "paciente-directo"] });
 });
+
+test("un privilegio administrativo no amplía los pacientes del Panel Médico", async () => {
+  const db = new FakeDb({
+    "usuarios/actor": { admin: true, rol: "medico", tieneCuenta: true },
+    "usuarios/paciente-directo": { medicoUid: "actor", rol: "paciente" },
+    "usuarios/paciente-ajeno": { medicoUid: "otro", rol: "paciente" }
+  });
+  const service = createProfessionalDirectoryService({ db });
+
+  const result = await service.listAuthorizedPatientIds({
+    uid: "actor",
+    token: { admin: true }
+  });
+
+  assert.deepEqual(result, { patientIds: ["paciente-directo"] });
+});
+
+test("una cuenta administrativa solo enumera sus pacientes relacionados en el Panel Médico", async () => {
+  const db = new FakeDb({
+    "usuarios/actor": { rol: "admin", tieneCuenta: true },
+    "usuarios/paciente-directo": { medicoUid: "actor", rol: "paciente" },
+    "usuarios/paciente-ajeno": { medicoUid: "otro", rol: "paciente" }
+  });
+  const service = createProfessionalDirectoryService({ db });
+
+  const result = await service.listAuthorizedPatientIds({
+    uid: "actor",
+    token: { admin: true }
+  });
+
+  assert.deepEqual(result, { patientIds: ["paciente-directo"] });
+});
+
+test("una cuenta administrativa sin relaciones no enumera pacientes en el Panel Médico", async () => {
+  const db = new FakeDb({
+    "usuarios/actor": { rol: "admin", tieneCuenta: true },
+    "usuarios/paciente-ajeno": { medicoUid: "otro", rol: "paciente" }
+  });
+  const service = createProfessionalDirectoryService({ db });
+
+  const result = await service.listAuthorizedPatientIds({
+    uid: "actor",
+    token: { admin: true }
+  });
+
+  assert.deepEqual(result, { patientIds: [] });
+});
