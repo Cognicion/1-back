@@ -108,6 +108,9 @@ function Set-EmulatorEnvironment {
     $env:FIREBASE_STORAGE_EMULATOR_HOST = "127.0.0.1:9199"
     $env:FIREBASE_AUTH_EMULATOR_HOST = "127.0.0.1:9099"
     $env:COGNICION_FUNCTIONS_EMULATOR_HOST = "127.0.0.1:5001"
+    # En Windows, la primera carga del conjunto completo de Functions puede
+    # superar el límite predeterminado de descubrimiento sin ser un fallo real.
+    $env:FUNCTIONS_DISCOVERY_TIMEOUT = "30000"
 
     # Evita que las Functions clínicas cargadas por el emulador intenten leer
     # un secreto real. Los tests no invocan ninguna ruta de IA.
