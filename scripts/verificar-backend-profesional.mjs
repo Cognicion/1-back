@@ -140,9 +140,12 @@ export function evaluateFunctionInventory(inventory = [], requiredIds = required
     if (String(entry.state || "").toUpperCase() !== "ACTIVE") {
       issues.push({ functionId: id, issue: "not-active" });
     }
-    const updateMs = Date.parse(String(entry.updateTime || ""));
-    if (!Number.isFinite(updateMs) || updateMs < minimumUpdateMs) {
-      issues.push({ functionId: id, issue: "stale" });
+    const updateTime = String(entry.updateTime || "").trim();
+    if (updateTime) {
+      const updateMs = Date.parse(updateTime);
+      if (!Number.isFinite(updateMs) || updateMs < minimumUpdateMs) {
+        issues.push({ functionId: id, issue: "stale" });
+      }
     }
   }
 

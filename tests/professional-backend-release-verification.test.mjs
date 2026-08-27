@@ -46,6 +46,12 @@ test("el inventario listo no produce bloqueos", () => {
   assert.deepEqual(evaluateFunctionInventory(inventory, required), []);
 });
 
+test("el inventario de Firebase puede omitir updateTime sin marcar una Function activa como antigua", () => {
+  const entry = activeFunction("listAuthorizedPatientIds");
+  delete entry.updateTime;
+  assert.deepEqual(evaluateFunctionInventory([entry], [entry.id]), []);
+});
+
 test("el inventario detecta Functions faltantes, antiguas o en destino incorrecto", () => {
   const required = ["missing", "stale", "wrongProject", "wrongRegion", "inactive"];
   const inventory = [
