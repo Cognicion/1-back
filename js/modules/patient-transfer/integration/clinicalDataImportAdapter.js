@@ -1,5 +1,5 @@
 import { db } from "../../../firebase.js";
-import { actualizarUsuario, obtenerUsuario } from "../../../services/usuarios.js?v=20260826-cuenta-profesional-gratuita-v1";
+import { actualizarUsuario, obtenerUsuario } from "../../../services/usuarios.js?v=20260827-panel-pacientes-fallback-v1";
 import { crearTratamiento, listarTratamientos } from "../../../services/tratamientos.js";
 import { crearEstudio, listarEstudios } from "../../../services/estudios.js";
 import { normalizarTextoBusquedaPaciente } from "../../../utils/nombresPacientes.js";

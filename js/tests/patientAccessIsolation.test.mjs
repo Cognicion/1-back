@@ -2,8 +2,11 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
   createAuthorizedPatientQueryDescriptors,
+  isMissingAuthorizedPatientDirectoryError,
+  normalizeAuthorizedPatientIds,
   patientAllowsProfessionalAccess,
-  patientListCacheKey
+  patientListCacheKey,
+  resolveAuthorizedPatientDirectory
 } from "../services/patientAccessCore.js";
 
 const medicoA = "medicoA";
@@ -54,10 +57,124 @@ const descriptors = createAuthorizedPatientQueryDescriptors(medicoA);
 assert.ok(descriptors.length >= 6, "se generan consultas autorizadas por relaciones conocidas");
 assert.ok(descriptors.every((descriptor) => descriptor.value === medicoA), "todas las consultas usan actorUserId");
 assert.equal(createAuthorizedPatientQueryDescriptors("").length, 0, "no se generan consultas sin actor");
+assert.equal(
+  isMissingAuthorizedPatientDirectoryError({ code: "functions/not-found" }),
+  true,
+  "la ausencia de la callable habilita la ruta de compatibilidad"
+);
+assert.equal(
+  isMissingAuthorizedPatientDirectoryError({ code: "functions/permission-denied" }),
+  false,
+  "un rechazo de permisos nunca activa el fallback"
+);
+assert.equal(
+  isMissingAuthorizedPatientDirectoryError({ code: "functions/internal" }),
+  false,
+  "un error interno tampoco se disfraza como ausencia de despliegue"
+);
+assert.equal(
+  isMissingAuthorizedPatientDirectoryError({ code: "not-found" }),
+  false,
+  "solo el código namespaced del SDK habilita la compatibilidad"
+);
+assert.deepEqual(
+  normalizeAuthorizedPatientIds([" paciente-a ", "paciente-a", "", "ruta/invalida", null]),
+  ["paciente-a"],
+  "los IDs se normalizan, deduplican y restringen a documentos raíz"
+);
+
+let primaryCalls = 0;
+let compatibilityCalls = 0;
+const primaryDirectory = await resolveAuthorizedPatientDirectory({
+  loadPrimary: async () => {
+    primaryCalls += 1;
+    return { patientIds: ["paciente-a", "paciente-a", "ruta/invalida"] };
+  },
+  loadCompatibility: async () => {
+    compatibilityCalls += 1;
+    return { patientIds: ["no-debe-usarse"] };
+  }
+});
+assert.deepEqual(primaryDirectory, {
+  mode: "ids",
+  patientIds: ["paciente-a"],
+  source: "primary"
+});
+assert.equal(primaryCalls, 1, "el directorio primario se consulta una vez");
+assert.equal(compatibilityCalls, 0, "un primario sano no consulta compatibilidad");
+
+const missingProfessionalDirectoryError = Object.assign(
+  new Error("not deployed"),
+  { code: "functions/not-found" }
+);
+await assert.rejects(
+  resolveAuthorizedPatientDirectory({
+    loadPrimary: async () => { throw missingProfessionalDirectoryError; },
+    loadCompatibility: async () => {
+      compatibilityCalls += 1;
+      return { patientIds: ["paciente-incompleto"] };
+    }
+  }),
+  (error) => error === missingProfessionalDirectoryError,
+  "un profesional no recibe un directorio legado que pueda omitir pacientes compartidos"
+);
+assert.equal(compatibilityCalls, 0, "el 404 profesional exige desplegar el directorio completo");
+
+const adminDirectory = await resolveAuthorizedPatientDirectory({
+  administrator: true,
+  loadPrimary: async () => {
+    throw Object.assign(new Error("not deployed"), { code: "functions/not-found" });
+  },
+  loadCompatibility: async () => {
+    compatibilityCalls += 1;
+    return { patientIds: ["no-debe-usarse"] };
+  }
+});
+assert.deepEqual(adminDirectory, {
+  mode: "admin-query",
+  patientIds: [],
+  source: "admin-compatibility"
+});
+assert.equal(compatibilityCalls, 0, "admin no depende de una callable clínica parcial");
+
+for (const code of ["functions/permission-denied", "functions/internal", "functions/unavailable", "not-found"]) {
+  const expectedError = Object.assign(new Error(code), { code });
+  await assert.rejects(
+    resolveAuthorizedPatientDirectory({
+      loadPrimary: async () => { throw expectedError; },
+      loadCompatibility: async () => {
+        compatibilityCalls += 1;
+        return { patientIds: [] };
+      }
+    }),
+    (error) => error === expectedError,
+    `${code} debe propagarse sin fallback`
+  );
+}
+assert.equal(compatibilityCalls, 0, "ningún error ejecuta un directorio profesional incompleto");
 
 const usuariosService = readFileSync(new URL("../services/usuarios.js", import.meta.url), "utf8");
 assert.doesNotMatch(usuariosService, /uidMedico\s*\|\|\s*["']__todos__["']/, "no existe cache global de pacientes");
-assert.doesNotMatch(usuariosService, /where\("rol","==","paciente"\)\s*\);\s*return await getDocs\(q\)/, "no existe fallback de todos los pacientes");
+assert.match(
+  usuariosService,
+  /administradorConConsultaDirecta = String\(perfilProfesional\?\.rol \|\| ""\)[\s\S]{0,500}administrator: administradorConConsultaDirecta/,
+  "la consulta directa solo se habilita para el rol admin que reconocen las reglas"
+);
+assert.match(
+  usuariosService,
+  /function listarPacientesAdministradorCompatibilidad[\s\S]{0,220}where\("rol", "==", "paciente"\)/,
+  "el listado global de compatibilidad queda aislado en la ruta admin"
+);
+assert.match(
+  usuariosService,
+  /resolveAuthorizedPatientDirectory\([\s\S]{0,240}loadPrimary: listarIdsPacientesAutorizadosSeguro/,
+  "el servicio conecta el directorio completo mediante el selector probado"
+);
+assert.doesNotMatch(
+  usuariosService,
+  /listAuthorizedSofiaPatients|listarIdsPacientesAutorizadosCompatibilidadSeguro/,
+  "el panel no usa un directorio clínico legado con cobertura parcial"
+);
 const patientCards = readFileSync(new URL("../pacientes.js", import.meta.url), "utf8");
 assert.match(patientCards, /datos\.estado === "vinculado" && datos\.vinculadoA/, "las tarjetas omiten el expediente de origen vinculado");
 

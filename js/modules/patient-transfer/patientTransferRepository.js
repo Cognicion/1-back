@@ -3,15 +3,15 @@ import { obtenerStorage } from "../../services/firebaseAppService.js";
 import { registrarEventoAuditoria, resumenError } from "../../services/auditoria.js";
 import { obtenerNombrePacienteParaMostrar } from "../../utils/nombresPacientes.js?v=20260814-patient-alias-v1";
 import { DOCX_IMPORT_CONFIG } from "../importacionDocx/docxImportConfig.js?v=20260818-admission-date-v1";
-import { createTransferredPatient, mergeTransferredPatientFields } from "./integration/patientCreationAdapter.js?v=20260826-cuenta-profesional-gratuita-v1";
+import { createTransferredPatient, mergeTransferredPatientFields } from "./integration/patientCreationAdapter.js?v=20260827-panel-pacientes-fallback-v1";
 import { buildImportedNotePayload, createTransferredNote, importedNoteHasClinicalContent, importedNoteId } from "./integration/noteCreationAdapter.js?v=20260813-notes-canonical-text-v1";
-import { createImportedDiagnoses, createImportedIndications, createImportedStudies, createImportedTreatments } from "./integration/clinicalDataImportAdapter.js?v=20260826-cuenta-profesional-gratuita-v1";
+import { createImportedDiagnoses, createImportedIndications, createImportedStudies, createImportedTreatments } from "./integration/clinicalDataImportAdapter.js?v=20260827-panel-pacientes-fallback-v1";
 import { reconcileImportedTreatmentTimeline } from "./integration/treatmentTimelineReconciler.js?v=20260818-treatment-timeline-v1";
 import { runVitalSignsAndDiagnosesIndependently } from "./domainPersistenceIsolation.js?v=v161-imported-diagnoses-isolation-v1";
 import { vitalSignsToNotePayload } from "./parsing/vitalSignsParser.js?v=20260808-imported-vitals-v1";
 import { construirActualizacionSignosVitalesDesdeNota } from "../../services/signosVitalesNotas.js?v=v161-imported-diagnoses-isolation-v1";
 import { claveDiagnosticoPaciente } from "../../services/diagnosticosPaciente.js?v=v160-imported-diagnoses-v1";
-import { listarPacientes } from "../../services/usuarios.js?v=20260826-cuenta-profesional-gratuita-v1";
+import { listarPacientes } from "../../services/usuarios.js?v=20260827-panel-pacientes-fallback-v1";
 import { withPatientTransferTimeout } from "./patientTransferTimeout.js";
 import { findPossiblePatientMatches, normalizeRecordNumber } from "./parsing/patientDuplicateMatcher.js?v=20260813-duplicate-existing-identity-v1";
 import {

@@ -476,6 +476,14 @@ test("paciente propio y admin conservan sus permisos aun sin slot profesional", 
   }));
 
   await assertSucceeds(getDoc(doc(adminDb, "usuarios", PATIENT_WITHOUT_SLOT)));
+  const adminPatients = await assertSucceeds(getDocs(query(
+    collection(adminDb, "usuarios"),
+    where("rol", "==", "paciente")
+  )));
+  assert.ok(
+    adminPatients.docs.some((snapshot) => snapshot.id === PATIENT_WITHOUT_SLOT),
+    "el fallback admin puede enumerar la colección paciente sin abrirla a profesionales"
+  );
   await assertSucceeds(updateDoc(doc(adminDb, "usuarios", PATIENT_WITHOUT_SLOT), {
     observacionesAdmin: "Revisión"
   }));

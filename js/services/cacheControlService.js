@@ -1,4 +1,4 @@
-export const APP_VERSION = "20260826-cuenta-profesional-gratuita-v1";
+export const APP_VERSION = "20260827-panel-pacientes-fallback-v1";
 export const FIRESTORE_DEVICE_PREF_KEY = "cognicion.dispositivoPersonal";
 
 const STATIC_CACHE = `cognicion-static-${APP_VERSION}`;

@@ -1,4 +1,4 @@
-import { actualizarUsuario, crearPacienteProvisional, obtenerUsuario } from "../../../services/usuarios.js?v=20260826-cuenta-profesional-gratuita-v1";
+import { actualizarUsuario, crearPacienteProvisional, obtenerUsuario } from "../../../services/usuarios.js?v=20260827-panel-pacientes-fallback-v1";
 import { construirNombreCompletoPaciente, normalizarAliasPaciente } from "../../../utils/nombresPacientes.js?v=20260814-patient-alias-v1";
 import { normalizeRecordNumber } from "../parsing/patientDuplicateMatcher.js";
 import { normalizeImportedAdmissionDate } from "../parsing/patientAdmissionDate.js?v=20260818-admission-date-v1";

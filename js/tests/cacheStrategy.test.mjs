@@ -10,7 +10,7 @@ function read(relativePath) {
 }
 
 const serviceWorker = read("service-worker.js");
-assert.match(serviceWorker, /const CACHE_VERSION = "20260826-cuenta-profesional-gratuita-v1"/);
+assert.match(serviceWorker, /const CACHE_VERSION = "20260827-panel-pacientes-fallback-v1"/);
 assert.match(serviceWorker, /cognicion-static-\$\{CACHE_VERSION\}/);
 assert.match(serviceWorker, /cognicion-runtime-\$\{CACHE_VERSION\}/);
 assert.match(serviceWorker, /esFirebaseODatoPrivado/);
@@ -35,7 +35,7 @@ assert.match(firebaseBridge, /authPersistenceReady/);
 assert.match(firebaseBridge, /firestoreCacheMode/);
 
 const cacheService = read("js/services/cacheControlService.js");
-assert.match(cacheService, /APP_VERSION = "20260826-cuenta-profesional-gratuita-v1"/);
+assert.match(cacheService, /APP_VERSION = "20260827-panel-pacientes-fallback-v1"/);
 assert.match(cacheService, /navigator\.serviceWorker\.register\("\.\/service-worker\.js"/);
 assert.match(cacheService, /limpiarCachesEstaticosCognicion/);
 assert.match(cacheService, /limpiarDatosClinicosLocalesCognicion/);

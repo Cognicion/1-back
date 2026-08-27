@@ -55,3 +55,40 @@ export function patientListCacheKey(actorUserId = "") {
   }
   return `authorized-patients:${actorUserId}`;
 }
+
+export function isMissingAuthorizedPatientDirectoryError(error = {}) {
+  const code = String(error?.code || "").trim().toLowerCase();
+  return code === "functions/not-found";
+}
+
+export function normalizeAuthorizedPatientIds(patientIds = []) {
+  if (!Array.isArray(patientIds)) return [];
+  return [...new Set(patientIds
+    .filter((patientId) => typeof patientId === "string")
+    .map((patientId) => patientId.trim())
+    .filter((patientId) => patientId && !patientId.includes("/")))];
+}
+
+export async function resolveAuthorizedPatientDirectory({
+  administrator = false,
+  loadPrimary
+} = {}) {
+  if (typeof loadPrimary !== "function") {
+    throw new TypeError("loadPrimary must be a function");
+  }
+
+  try {
+    const result = await loadPrimary();
+    return {
+      mode: "ids",
+      patientIds: normalizeAuthorizedPatientIds(result?.patientIds),
+      source: "primary"
+    };
+  } catch (error) {
+    if (!isMissingAuthorizedPatientDirectoryError(error)) throw error;
+    if (administrator) {
+      return { mode: "admin-query", patientIds: [], source: "admin-compatibility" };
+    }
+    throw error;
+  }
+}

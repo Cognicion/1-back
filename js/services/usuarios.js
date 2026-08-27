@@ -1,15 +1,17 @@
 import { db } from "../firebase.js";
 import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
+import { isAdministrator } from "../utils/roles.js?v=20260719-admin-universal-modules";
 import { registerPatientNameParts } from "../modules/patient-transfer/parsing/patientNameDictionaries.js?v=20260814-patient-name-dictionary-v1";
 import {
     administrarPermisoPaciente,
     crearIdOperacionPaciente,
     crearPacienteProvisionalSeguro,
     listarIdsPacientesAutorizadosSeguro
-} from "./professionalPatientAccessService.js?v=20260826-cuenta-profesional-gratuita-v1";
+} from "./professionalPatientAccessService.js?v=20260827-panel-pacientes-fallback-v1";
 import {
     patientAllowsProfessionalAccess,
-    patientListCacheKey
+    patientListCacheKey,
+    resolveAuthorizedPatientDirectory
 } from "./patientAccessCore.js";
 
 import {
@@ -166,6 +168,40 @@ async function listarPacientesGratuitosPorAsignacion(uidProfesional) {
     return crearResultadoPacientesDesdeDocs(docs);
 }
 
+function ordenarDocumentosPacientes(documentos = []) {
+    return [...documentos].sort((a, b) => {
+        const nombreA = obtenerNombrePacienteParaMostrar(a.data());
+        const nombreB = obtenerNombrePacienteParaMostrar(b.data());
+        return nombreA.localeCompare(nombreB, "es", { sensitivity: "base" });
+    });
+}
+
+async function listarPacientesAdministradorCompatibilidad() {
+    const usuariosRef = collection(db, "usuarios");
+    const snapshot = await getDocs(query(
+        usuariosRef,
+        where("rol", "==", "paciente")
+    ));
+    return crearResultadoPacientesDesdeDocs(ordenarDocumentosPacientes(snapshot.docs));
+}
+
+async function listarPacientesPorIds(patientIds = []) {
+    const resultados = await Promise.allSettled(patientIds
+        .filter((patientUid) => typeof patientUid === "string" && patientUid && !patientUid.includes("/"))
+        .map((patientUid) => getDoc(doc(db, "usuarios", patientUid))));
+    const pacientes = new Map();
+    let primerError = null;
+    resultados.forEach((resultado) => {
+        if (resultado.status === "rejected") {
+            primerError = primerError || resultado.reason;
+            return;
+        }
+        if (resultado.value.exists()) pacientes.set(resultado.value.id, resultado.value);
+    });
+    if (!pacientes.size && primerError && resultados.length) throw primerError;
+    return crearResultadoPacientesDesdeDocs(ordenarDocumentosPacientes(pacientes.values()));
+}
+
 export async function listarPacientes(uidMedico = "", opciones = {}){
 
     if (!uidMedico) {
@@ -195,32 +231,25 @@ async function listarPacientesSinCache(uidMedico = ""){
     }
 
     const perfilProfesional = await obtenerUsuario(uidMedico);
-    if (esCuentaProfesionalGratuita(perfilProfesional || {})) {
+    const administrador = isAdministrator(perfilProfesional || {});
+    const administradorConConsultaDirecta = String(perfilProfesional?.rol || "").trim().toLowerCase() === "admin";
+    if (!administrador && esCuentaProfesionalGratuita(perfilProfesional || {})) {
         return listarPacientesGratuitosPorAsignacion(uidMedico);
     }
 
-    const { patientIds = [] } = await listarIdsPacientesAutorizadosSeguro();
-    const resultados = await Promise.allSettled(patientIds
-        .filter((patientUid) => typeof patientUid === "string" && patientUid && !patientUid.includes("/"))
-        .map((patientUid) => getDoc(doc(db, "usuarios", patientUid))));
-    const pacientes = new Map();
-    let primerError = null;
-    resultados.forEach((resultado) => {
-        if (resultado.status === "rejected") {
-            primerError = primerError || resultado.reason;
-            return;
-        }
-        if (resultado.value.exists()) pacientes.set(resultado.value.id, resultado.value);
+    const directorio = await resolveAuthorizedPatientDirectory({
+        administrator: administradorConConsultaDirecta,
+        loadPrimary: listarIdsPacientesAutorizadosSeguro
     });
-    if (!pacientes.size && primerError && resultados.length) throw primerError;
-
-    const docs = Array.from(pacientes.values()).sort((a,b) => {
-        const nombreA = obtenerNombrePacienteParaMostrar(a.data());
-        const nombreB = obtenerNombrePacienteParaMostrar(b.data());
-        return nombreA.localeCompare(nombreB, "es", { sensitivity: "base" });
-    });
-
-    return crearResultadoPacientesDesdeDocs(docs);
+    if (directorio.source !== "primary") {
+        console.warn(
+            "[PATIENT_LIST] listAuthorizedPatientIds no esta disponible; se usa la consulta administrativa de compatibilidad."
+        );
+    }
+    if (directorio.mode === "admin-query") {
+        return listarPacientesAdministradorCompatibilidad();
+    }
+    return listarPacientesPorIds(directorio.patientIds);
 
 }
 

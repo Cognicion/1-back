@@ -1,4 +1,4 @@
-import { listarPacientes } from "./services/usuarios.js?v=20260826-cuenta-profesional-gratuita-v1";
+import { listarPacientes } from "./services/usuarios.js?v=20260827-panel-pacientes-fallback-v1";
 import { getAuthenticatedUserOnce, getUserProfileOnce } from "./services/authContextService.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./services/apariencia.js";
@@ -269,7 +269,7 @@ function inicializarImportacionDocxLazy() {
     try {
       if (!traspasoPacientesPromise) {
         // Marcador de cache del importador documental.
-    traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260826-cuenta-profesional-gratuita-v1");
+    traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260827-panel-pacientes-fallback-v1");
       }
       const modulo = await traspasoPacientesPromise;
       modulo.openPatientTransfer();
@@ -298,7 +298,7 @@ function inicializarRevisionDuplicadosLazy() {
   document.getElementById("btnRevisarDuplicadosPacientes")?.addEventListener("click", async () => {
     try {
       if (!revisionDuplicadosPromise) {
-        revisionDuplicadosPromise = import("./modules/patient-duplicates/index.js?v=20260826-cuenta-profesional-gratuita-v1");
+        revisionDuplicadosPromise = import("./modules/patient-duplicates/index.js?v=20260827-panel-pacientes-fallback-v1");
       }
       const modulo = await revisionDuplicadosPromise;
       modulo.openPatientDuplicateReview();
@@ -1026,7 +1026,9 @@ async function cargarPacientes(uidMedico, opciones = {}) {
     if (versionSolicitud !== versionSolicitudPacientes) return;
     console.error("No se pudo cargar la lista de pacientes:", error);
     if (lista) {
-      lista.innerHTML = "No se pudo cargar la lista de pacientes. Usa Actualizar para intentar de nuevo.";
+      lista.innerHTML = error?.code === "functions/not-found"
+        ? "El directorio autorizado de pacientes no está disponible en este despliegue. Actualiza el sistema y vuelve a intentarlo."
+        : "No se pudo cargar la lista de pacientes. Usa Actualizar para intentar de nuevo.";
     }
     throw error;
   }

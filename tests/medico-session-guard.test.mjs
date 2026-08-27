@@ -51,7 +51,7 @@ test("el panel reintenta la lectura del perfil sin usar caché", () => {
 });
 
 test("medico.html invalida la versión anterior del script", () => {
-  assert.match(medicoHtml, /js\/medico\.js\?v=20260826-cuenta-profesional-gratuita-v1/);
+  assert.match(medicoHtml, /js\/medico\.js\?v=20260827-panel-pacientes-fallback-v1/);
   assert.doesNotMatch(medicoHtml, /js\/medico\.js\?v=(?:1\.866|20260811-session-guard-v1|20260811-medical-panel-recovery-v1)/);
 });
 
@@ -66,7 +66,12 @@ test("la carga inicial aísla los errores de carpetas y pacientes", () => {
   assert.doesNotMatch(cargaInicial, /Promise\.all/);
   assert.match(
     medicoSource,
-    /services\/usuarios\.js\?v=20260826-cuenta-profesional-gratuita-v1/,
+    /services\/usuarios\.js\?v=20260827-panel-pacientes-fallback-v1/,
     "el servicio de pacientes también debe invalidar su caché anterior"
   );
+});
+
+test("el panel distingue un directorio backend no desplegado", () => {
+  assert.match(medicoSource, /error\?\.code === "functions\/not-found"/);
+  assert.match(medicoSource, /directorio autorizado de pacientes no está disponible/);
 });

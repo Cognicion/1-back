@@ -18,9 +18,36 @@ test("los planes legados reciben solo IDs autorizados desde backend", () => {
   const funcion = usuariosSource.match(
     /async function listarPacientesSinCache\(uidMedico = ""\)\{[\s\S]*?\n\}/
   )?.[0] || "";
-  assert.match(funcion, /listarIdsPacientesAutorizadosSeguro\(\)/);
-  assert.match(funcion, /getDoc\(doc\(db, "usuarios", patientUid\)\)/);
+  const lectorIds = usuariosSource.match(
+    /async function listarPacientesPorIds[\s\S]*?\n\}/
+  )?.[0] || "";
+  assert.match(funcion, /loadPrimary: listarIdsPacientesAutorizadosSeguro/);
+  assert.match(funcion, /listarPacientesPorIds\(directorio\.patientIds\)/);
+  assert.match(lectorIds, /getDoc\(doc\(db, "usuarios", patientUid\)\)/);
   assert.doesNotMatch(funcion, /collectionGroup|documentId|collection\(db,"usuarios"\)/);
+});
+
+test("solo admin se recupera cuando el directorio callable aun no esta desplegado", () => {
+  const funcion = usuariosSource.match(
+    /async function listarPacientesSinCache\(uidMedico = ""\)\{[\s\S]*?\n\}/
+  )?.[0] || "";
+  const fallbackAdmin = usuariosSource.match(
+    /async function listarPacientesAdministradorCompatibilidad[\s\S]*?\n\}/
+  )?.[0] || "";
+
+  assert.match(funcion, /await resolveAuthorizedPatientDirectory\(\{/);
+  assert.match(funcion, /administradorConConsultaDirecta = String\(perfilProfesional\?\.rol \|\| ""\)/);
+  assert.match(funcion, /administrator: administradorConConsultaDirecta/);
+  assert.match(funcion, /loadPrimary: listarIdsPacientesAutorizadosSeguro/);
+  assert.match(funcion, /return listarPacientesAdministradorCompatibilidad\(\)/);
+  assert.match(funcion, /return listarPacientesPorIds\(directorio\.patientIds\)/);
+  assert.match(fallbackAdmin, /where\("rol", "==", "paciente"\)/);
+  assert.doesNotMatch(usuariosSource, /listAuthorizedSofiaPatients|listarIdsPacientesAutorizadosCompatibilidadSeguro/);
+  assert.ok(
+    funcion.indexOf("listarPacientesGratuitosPorAsignacion(uidMedico)")
+      < funcion.indexOf("resolveAuthorizedPatientDirectory({"),
+    "la cuenta gratuita conserva su ruta de cuota y no puede eludirla con el fallback"
+  );
 });
 
 test("la cuenta gratuita lista únicamente los UID de sus asignaciones server-only", () => {
@@ -35,10 +62,10 @@ test("la cuenta gratuita lista únicamente los UID de sus asignaciones server-on
   assert.match(helper, /"permisosMedicos",\s*uidProfesional/);
   assert.match(helper, /\[uidProfesional\]: permisoProfesional\.data\(\)/);
   assert.match(helper, /patientAllowsProfessionalAccess\(datosConPermiso, uidProfesional\)/);
-  assert.match(funcion, /esCuentaProfesionalGratuita\(perfilProfesional \|\| \{\}\)/);
+  assert.match(funcion, /!administrador && esCuentaProfesionalGratuita\(perfilProfesional \|\| \{\}\)/);
   assert.ok(
     funcion.indexOf("listarPacientesGratuitosPorAsignacion(uidMedico)")
-      < funcion.indexOf("listarIdsPacientesAutorizadosSeguro()"),
+      < funcion.indexOf("resolveAuthorizedPatientDirectory({"),
     "el plan gratuito debe salir antes del directorio backend para planes sin límite"
   );
 });
@@ -61,6 +88,6 @@ test("Sofía, Pediatría y Mensajes reutilizan la lista autorizada fuera del rol
 });
 
 test("el Panel Médico invalida las versiones defectuosas en todos los navegadores", () => {
-  assert.match(medicoSource, /usuarios\.js\?v=20260826-cuenta-profesional-gratuita-v1/);
-  assert.match(medicoHtml, /medico\.js\?v=20260826-cuenta-profesional-gratuita-v1/);
+  assert.match(medicoSource, /usuarios\.js\?v=20260827-panel-pacientes-fallback-v1/);
+  assert.match(medicoHtml, /medico\.js\?v=20260827-panel-pacientes-fallback-v1/);
 });

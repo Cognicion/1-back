@@ -9,11 +9,13 @@ const panel = read("js/medico.js");
 const repository = read("js/modules/patient-transfer/patientTransferRepository.js");
 const patientCreationAdapter = read("js/modules/patient-transfer/integration/patientCreationAdapter.js");
 const clinicalDataAdapter = read("js/modules/patient-transfer/integration/clinicalDataImportAdapter.js");
+const duplicateReview = read("js/modules/patient-duplicates/index.js");
 
-  assert.match(panel, /from "\.\/services\/usuarios\.js\?v=20260826-cuenta-profesional-gratuita-v1";/, "el Panel usa la instancia publicada de usuarios.js");
-  assert.match(repository, /from "(?:\.\.\/){2}services\/usuarios\.js\?v=20260826-cuenta-profesional-gratuita-v1";/, "el repositorio comparte la versión publicada de usuarios.js");
-  assert.match(patientCreationAdapter, /from "(?:\.\.\/){3}services\/usuarios\.js\?v=20260826-cuenta-profesional-gratuita-v1";/, "la creación comparte la misma instancia publicada");
-  assert.match(clinicalDataAdapter, /from "(?:\.\.\/){3}services\/usuarios\.js\?v=20260826-cuenta-profesional-gratuita-v1";/, "la importación clínica comparte la misma instancia publicada");
+  assert.match(panel, /from "\.\/services\/usuarios\.js\?v=20260827-panel-pacientes-fallback-v1";/, "el Panel usa la instancia publicada de usuarios.js");
+  assert.match(repository, /from "(?:\.\.\/){2}services\/usuarios\.js\?v=20260827-panel-pacientes-fallback-v1";/, "el repositorio comparte la versión publicada de usuarios.js");
+  assert.match(patientCreationAdapter, /from "(?:\.\.\/){3}services\/usuarios\.js\?v=20260827-panel-pacientes-fallback-v1";/, "la creación comparte la misma instancia publicada");
+  assert.match(clinicalDataAdapter, /from "(?:\.\.\/){3}services\/usuarios\.js\?v=20260827-panel-pacientes-fallback-v1";/, "la importación clínica comparte la misma instancia publicada");
+  assert.match(duplicateReview, /from "(?:\.\.\/){2}services\/usuarios\.js\?v=20260827-panel-pacientes-fallback-v1";/, "la revisión de duplicados comparte la misma instancia publicada");
 
 assert.match(panel, /cognicion:patient-transfer-completed/, "el Panel escucha el traspaso completado");
 assert.match(panel, /cargarPacientes\(uidMedicoActual, \{ forzar: true \}\)/, "el listener fuerza el refresco");
