@@ -609,7 +609,7 @@ export function detectDiagnosisCandidates({ sections = {}, fullText = "", source
         add(parsedCandidates);
         return;
       }
-      if (names.length > 1) {
+      if (codes.length && names.length > 1) {
         hasStructuredDiagnosisTable = true;
         let codeOffset = 0;
         names.forEach((name, index) => {

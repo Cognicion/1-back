@@ -1,4 +1,4 @@
-import { detectDiagnosisCandidates, parseDiagnosisCandidates } from "../parsers/diagnosisParser.js?v=20260828-diagnosis-versus-v1";
+import { detectDiagnosisCandidates, parseDiagnosisCandidates } from "../parsers/diagnosisParser.js?v=20260828-diagnosis-versus-v2";
 import { validateDiagnosis } from "../validators/diagnosisValidator.js";
 import { EntityFactory } from "../engine/EntityFactory.js";
 

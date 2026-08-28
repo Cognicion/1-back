@@ -23,5 +23,5 @@ test("el Panel Médico no renderiza las cuatro tarjetas de resumen", () => {
 
 test("medico.html fuerza la carga de los recursos actualizados", () => {
   assert.match(html, /css\/medico\.css\?v=2\.121/);
-  assert.match(html, /js\/medico\.js\?v=20260828-diagnosis-versus-v1/);
+  assert.match(html, /js\/medico\.js\?v=20260828-diagnosis-versus-v2/);
 });

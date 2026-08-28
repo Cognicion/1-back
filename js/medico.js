@@ -269,7 +269,7 @@ function inicializarImportacionDocxLazy() {
     try {
       if (!traspasoPacientesPromise) {
         // Marcador de cache del importador documental.
-    traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260828-diagnosis-versus-v1");
+    traspasoPacientesPromise = import("./modules/patient-transfer/index.js?v=20260828-diagnosis-versus-v2");
       }
       const modulo = await traspasoPacientesPromise;
       modulo.openPatientTransfer();

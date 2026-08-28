@@ -7,7 +7,7 @@ import { normalizeDocxBlocks, normalizedBlocksToText } from "./docx/docxBlockNor
 import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js?v=20260818-admission-date-v1";
 import { resolvePatientIdentity } from "./parsing/patientIdentityResolver.js";
 import { parseClinicalSections } from "./parsing/clinicalSectionParser.js?v=20260814-note-sections-runtime-v1";
-import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js?v=20260828-diagnosis-versus-v1";
+import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js?v=20260828-diagnosis-versus-v2";
 import { detectMultipleClinicalNotes, expandSegmentedDocumentsForPersistence, mergeClinicalSegments, segmentClinicalNotes, splitClinicalSegment } from "./parsing/clinicalNoteSegmenter.js?v=20260818-diagnoses-studies-v1";
 import { extractVitalSignsCandidates } from "./parsing/vitalSignsParser.js";
 import { parseNoteMetadata } from "./parsing/noteMetadataParser.js";

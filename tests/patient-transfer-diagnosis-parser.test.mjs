@@ -171,6 +171,25 @@ assert.deepEqual(multiDiagnosisCell.slice(0, 3).map((item) => item.statusSuggest
 assert.equal(multiDiagnosisCell[0].code, "F43.1");
 assert.ok(multiDiagnosisCell.slice(1).every((item) => item.diagnosisName.length < 80), "las entradas sin código siguen separadas y revisables");
 
+const narrativeTableWithoutDiagnosticEvidence = detectDiagnosisCandidates({
+  documentId: "narrative-table-without-diagnostic-evidence",
+  sections: { diagnosticos: "" },
+  sourceBlocks: [{
+    type: "table",
+    rows: [[
+      [
+        "Síntomas depresivos como anhedonia y tristeza de forma crónica, con intentos suicidas y conductas agresivas.",
+        "Por lo anterior acudió a Hospital Psiquiátrico Infantil Juan N.",
+        "Ante el mal apego y seguimiento médico la patología tendió a la cronicidad.",
+        "A la edad de 16 años, se diagnosticó."
+      ].join("\n"),
+      ""
+    ]],
+    source: { tableIndex: 6, blockIndex: 12 }
+  }]
+});
+assert.deepEqual(narrativeTableWithoutDiagnosticEvidence, [], "una tabla narrativa sin códigos no se transforma en diagnósticos");
+
 const versusVariants = parseDiagnosisBlock({
   text: "F43.1 Trastorno por estr\u00e9s postraum\u00e1tico vs. F60.3 Trastorno de la personalidad emocionalmente inestable\nTrastorno bipolar versus Trastorno depresivo recurrente",
   section: "diagnosticos",
