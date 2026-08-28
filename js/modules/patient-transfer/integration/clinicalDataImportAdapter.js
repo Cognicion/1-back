@@ -4,7 +4,7 @@ import { crearTratamiento, listarTratamientos } from "../../../services/tratamie
 import { crearEstudio, listarEstudios } from "../../../services/estudios.js";
 import { normalizarTextoBusquedaPaciente } from "../../../utils/nombresPacientes.js";
 import { isSuspendedTreatmentAction } from "./treatmentTimelineReconciler.js?v=20260818-treatment-timeline-v1";
-import { buildImportedStudyPayload, studyImportKey } from "./importedStudyContract.js?v=20260818-diagnoses-studies-v1";
+import { buildImportedStudyPayload, studyIdentityKeys, studyImportKey } from "./importedStudyContract.js?v=20260828-study-dedup-v1";
 import {
   construirActualizacionHistorialDiagnosticos,
   fusionarDiagnosticosImportados
@@ -283,26 +283,29 @@ export async function createImportedStudies(patientId, candidates = [], context 
 
   const before = await listarEstudios(patientId);
   console.info("patient-transfer:studies-history-before-real", { total: before.length });
-  const seen = new Set(before.map((study) => study.importCandidateKey).filter(Boolean));
+  const seen = new Set(before.flatMap((study) => studyIdentityKeys(study, context)));
   const created = [];
   const existing = [];
   console.info("patient-transfer:studies-write-start", { selected: selected.length, hasTarget: Boolean(patientId) });
 
   for (const candidate of selected) {
     const key = studyImportKey(candidate, context);
-    if (seen.has(key)) {
+    const candidateKeys = studyIdentityKeys(candidate, context);
+    if (candidateKeys.some((candidateKey) => seen.has(candidateKey))) {
       existing.push({ candidateId: candidate.id, key });
       continue;
     }
     const payload = buildImportedStudyPayload(candidate, context);
     const ref = await crearEstudio(patientId, payload);
-    seen.add(key);
+    studyIdentityKeys(payload, context).forEach((candidateKey) => seen.add(candidateKey));
     created.push({ id: ref.id, ...payload });
   }
 
   const after = await listarEstudios(patientId);
-  const observed = new Set(after.map((study) => study.importCandidateKey).filter(Boolean));
-  const expectedFound = selected.every((candidate) => observed.has(studyImportKey(candidate, context)));
+  const observed = new Set(after.flatMap((study) => studyIdentityKeys(study, context)));
+  const expectedFound = selected.every((candidate) => (
+    studyIdentityKeys(candidate, context).some((candidateKey) => observed.has(candidateKey))
+  ));
   console.info("patient-transfer:studies-history-after-real", {
     total: after.length,
     inserted: created.length,

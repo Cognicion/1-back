@@ -202,6 +202,8 @@ const STRUCTURAL_ROW_PREFIX = /^\s*(?:(?:[\-\u2013\u2014\u2022\u00b7\u25aa\u25e6
 const NON_DIAGNOSIS_ENTITY_START = /^(?:actualmente|bajo\s+tratamiento|en\s+tratamiento|tratamiento|medicaci[oó]n|medicamentos?|farmacoterapia|esquema|seguimiento|control|manejo|consulta|hospitalizaci[oó]n|internamiento|ingreso|egreso|cirug[ií]a|valoraci[oó]n|atenci[oó]n|mejor[ií]a|estabilidad|evoluci[oó]n|respuesta|adherencia|riesgo|sintomatolog[ií]a|cuadro|condici[oó]n|consumo|uso)\b/i;
 const DIAGNOSTIC_ENTITY_START = /^(?:trastorno|episodio|s[ií]ndrome|enfermedad|esquizofrenia|psicosis|depresi[oó]n|ansiedad|distimia|discapacidad|dependencia|intoxicaci[oó]n|lesi[oó]n|obesidad|diabetes|hipertensi[oó]n|soporte\s+familiar|c[oó]nyuge|historia\s+personal)\b/i;
 
+const DIFFERENTIAL_DIAGNOSIS_SEPARATOR = /\s+(?:vs\.?|versus)\s+/gi;
+
 function diagnosisRowForClassification(text = "") {
   return String(text || "")
     .replace(/\u00a0/g, " ")
@@ -235,6 +237,33 @@ function isTreatmentOnlyClinicalText(text = "") {
   if (!TREATMENT_CONTEXT.test(source) || !MEDICATION_DOSE.test(source)) return false;
   const narrativeEntity = extractNarrativeDiagnosisEntity(source);
   return !((narrativeEntity && isPlausibleNarrativeDiagnosisEntity(narrativeEntity, source)) || resolveCatalogPrefix(source) || startsWithDiagnosticName(source));
+}
+
+function isPlausibleDifferentialBranch(value = "") {
+  const codes = splitDiagnosticCodes(value);
+  const name = normalizeDiagnosis(value, codes);
+  if (name.length < 3) return false;
+  if (codes.length || resolveCatalogPrefix(name)) return true;
+  const normalized = normalizeClinicalComparisonText(name);
+  if (DIAGNOSTIC_ENTITY_START.test(normalized)) return true;
+  return /^[A-ZÁÉÍÓÚÑ]{2,12}(?:\s+[\p{L}-]+){0,3}$/u.test(name);
+}
+
+function splitDifferentialDiagnosisRow(row = {}) {
+  const source = String(row.text || "").replace(/\s+/g, " ").trim();
+  DIFFERENTIAL_DIAGNOSIS_SEPARATOR.lastIndex = 0;
+  if (!DIFFERENTIAL_DIAGNOSIS_SEPARATOR.test(source)) return [row];
+  DIFFERENTIAL_DIAGNOSIS_SEPARATOR.lastIndex = 0;
+  const alternatives = source.split(DIFFERENTIAL_DIAGNOSIS_SEPARATOR).map((value) => value.trim()).filter(Boolean);
+  DIFFERENTIAL_DIAGNOSIS_SEPARATOR.lastIndex = 0;
+  if (alternatives.length < 2 || !alternatives.every(isPlausibleDifferentialBranch)) return [row];
+  return alternatives.map((text, differentialIndex) => ({
+    ...row,
+    text,
+    rawText: row.rawText || source,
+    forcedStatus: "Probable",
+    differentialIndex
+  }));
 }
 
 function logNarrativeBoundary({ documentId, noteId, text, reason }) {
@@ -271,7 +300,7 @@ function tokenizeDiagnosisBlock(text = "") {
 function structuralDiagnosisRows(text = "") {
   const source = isolateBlock(text);
   const rows = [];
-  source.split(/\r?\n|;|\||(?<=[.!?])\s+/).forEach((rawRow) => {
+  source.split(/\r?\n|;|\||(?<!vs\.)(?<=[.!?])\s+/i).forEach((rawRow) => {
     let cursor = 0;
     let match;
     STATUS_TOKEN.lastIndex = 0;
@@ -295,7 +324,7 @@ function structuralDiagnosisRows(text = "") {
     const after = rawRow.slice(cursor).trim();
     if (after) rows.push({ text: after, statusAfter: "" });
   });
-  return rows;
+  return rows.flatMap(splitDifferentialDiagnosisRow);
 }
 
 function statusValue(text = "") {
@@ -424,8 +453,9 @@ export function parseDiagnosisCandidates({ text = "", section = "diagnosticos", 
 
   rows.forEach((row, rowIndex) => {
     const rowText = row.text.trim();
+    const evidenceText = row.rawText || rowText;
     const classificationText = diagnosisRowForClassification(rowText);
-    const rowStatus = statusValue(row.statusAfter);
+    const rowStatus = row.forcedStatus || statusValue(row.statusAfter);
     if (row.statusOnly) {
       const previous = pendingNames.at(-1);
       if (previous) previous.status = statusValue(row.statusOnly) || previous.status;
@@ -477,8 +507,8 @@ export function parseDiagnosisCandidates({ text = "", section = "diagnosticos", 
     }
     const location = { ...sourceLocation, rowIndex };
     if (codes.length === 1 && name.length >= 3) {
-      const status = rowStatus || diagnosisStatus(rowText);
-      const candidate = createDiagnosisCandidate({ name, code: codes[0], rawText: rowText, section, documentId, noteId, sourceLocation: location, status, detectionRule: "state-machine-code-adjacent" });
+      const status = rowStatus || diagnosisStatus(evidenceText);
+      const candidate = createDiagnosisCandidate({ name, code: codes[0], rawText: evidenceText, section, documentId, noteId, sourceLocation: location, status, detectionRule: row.forcedStatus ? "state-machine-differential-code-adjacent" : "state-machine-code-adjacent" });
       finish(candidate);
       clinicalImportLogger.info("diagnosisParser:code", JSON.stringify({ documentId, noteId, rowIndex, assigned: true }));
       state = "READING_CODES";
@@ -499,7 +529,7 @@ export function parseDiagnosisCandidates({ text = "", section = "diagnosticos", 
       }
       const pending = pendingNames.shift();
       if (pending) {
-        const candidate = createDiagnosisCandidate({ name: pending.name, code: codes[0], rawText: `${pending.rawText} | ${rowText}`, section, documentId, noteId, sourceLocation: { ...sourceLocation, rowIndex: pending.rowIndex }, status: pending.status, detectionRule: "state-machine-column-pair" });
+        const candidate = createDiagnosisCandidate({ name: pending.name, code: codes[0], rawText: `${pending.rawText} | ${evidenceText}`, section, documentId, noteId, sourceLocation: { ...sourceLocation, rowIndex: pending.rowIndex }, status: pending.status, detectionRule: pending.detectionRule === "state-machine-differential-name" ? "state-machine-differential-column-pair" : "state-machine-column-pair" });
         finish(candidate);
         clinicalImportLogger.info("diagnosisParser:code", JSON.stringify({ documentId, noteId, rowIndex, assigned: true }));
       } else discardedCount += 1;
@@ -507,13 +537,13 @@ export function parseDiagnosisCandidates({ text = "", section = "diagnosticos", 
       return;
     }
     if (codes.length > 1) {
-      if (name.length >= 3) finish(createDiagnosisCandidate({ name, rawText: rowText, section, documentId, noteId, sourceLocation: location, status: rowStatus || diagnosisStatus(rowText), requiresReview: true, detectionRule: "state-machine-unpaired-codes" }));
+      if (name.length >= 3) finish(createDiagnosisCandidate({ name, rawText: evidenceText, section, documentId, noteId, sourceLocation: location, status: rowStatus || diagnosisStatus(evidenceText), requiresReview: true, detectionRule: row.forcedStatus ? "state-machine-differential-unpaired-codes" : "state-machine-unpaired-codes" }));
       else discardedCount += 1;
       state = "READING_CODES";
       return;
     }
     if ((explicit || section === "diagnosticos") && name.length >= 3) {
-      pendingNames.push({ name, rawText: rowText, rowIndex, status: rowStatus || diagnosisStatus(rowText), detectionRule: narrativeEntity ? "state-machine-narrative-entity" : "state-machine-name-without-code" });
+      pendingNames.push({ name, rawText: evidenceText, rowIndex, status: rowStatus || diagnosisStatus(evidenceText), detectionRule: row.forcedStatus ? "state-machine-differential-name" : (narrativeEntity ? "state-machine-narrative-entity" : "state-machine-name-without-code") });
       clinicalImportLogger.info("diagnosisParser:status", JSON.stringify({ documentId, noteId, rowIndex, status: rowStatus || "pending" }));
       state = rowStatus ? "READING_STATUS" : "READING_DIAGNOSIS";
     } else discardedCount += 1;
@@ -548,24 +578,25 @@ export function detectDiagnosisCandidates({ sections = {}, fullText = "", source
       const location = { tableIndex: block.source?.tableIndex, blockIndex: block.source?.blockIndex, rowIndex };
       if (names.length === 1 && codes.length) {
         hasStructuredDiagnosisTable = true;
-        const [candidate] = parseDiagnosisCandidates({
-          text: `${names[0]} | ${codes[0]}`,
+        const isDifferential = splitDifferentialDiagnosisRow({ text: names[0] }).length > 1;
+        const parsedCandidates = parseDiagnosisCandidates({
+          text: `${names[0]} | ${(isDifferential ? codes : [codes[0]]).join(" | ")}`,
           section: "diagnosticos",
           documentId,
           noteId,
           sourceLocation: location,
           explicit: true
         });
-        if (candidate) {
-          candidate.codes = [...new Set(codes)];
+        parsedCandidates.forEach((candidate) => {
+          if (!isDifferential) candidate.codes = [...new Set(codes)];
           candidate.metadata.codeEvidence = candidate.codes.map((code) => ({
             code,
             blockIndex: location.blockIndex ?? null,
             paragraphIndex: rowIndex,
             rawText: codeColumn || rowText
           }));
-          add([candidate]);
-        }
+        });
+        add(parsedCandidates);
         return;
       }
       if (codes.length && names.length === codes.length) {

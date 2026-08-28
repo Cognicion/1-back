@@ -1,5 +1,5 @@
 import { MEDICAMENTOS_MAESTROS, medicamentoPorTexto } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
-import { adaptDiagnosisBlock, adaptDiagnosisCandidates } from "../../clinical-document-engine/adapters/diagnosisAdapter.js?v=20260818-clinical-extraction-v1";
+import { adaptDiagnosisBlock, adaptDiagnosisCandidates } from "../../clinical-document-engine/adapters/diagnosisAdapter.js?v=20260828-diagnosis-versus-v1";
 import { adaptMedicationBlock, adaptMedicationCandidates } from "../../clinical-document-engine/adapters/medicationAdapter.js?v=20260819-midc-allergy-context-v1";
 
 function normalizeText(value = "") {

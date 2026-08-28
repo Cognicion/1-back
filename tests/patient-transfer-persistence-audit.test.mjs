@@ -44,5 +44,8 @@ assert.match(repository, /persistence-audit:document-skipped/);
 assert.match(repository, /skipReason: item\.reason/);
 assert.match(repository, /isDocumentEligibleForPersistence/);
 assert.match(controller, /No se creó ningún paciente ni ninguna nota\. Revise la resolución de duplicados\./);
+assert.match(controller, /const failedResult = results\.find\(\(item\) => item\.status === "failed" && item\.error\)/);
+assert.match(controller, /const noPersistenceResult = !failedResult/);
+assert.match(controller, /if \(failedResult\?\.error\) showPatientTransferError\(failedResult\.error\)/);
 
 console.log("patient-transfer-persistence-audit.test.mjs OK");

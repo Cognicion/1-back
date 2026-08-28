@@ -110,6 +110,55 @@ assert.equal(narrativeVariants[1].status, "Antecedente");
 assert.equal(narrativeVariants[2].diagnosisName, "TEPT complejo");
 assert.equal(narrativeVariants[2].status, "A descartar");
 
+const versusDifferential = parseDiagnosisBlock({
+  text: "PROBABLE Trastorno por estr\u00e9s postraum\u00e1tico complejo vs Trastorno de la personalidad emocionalmente inestable A DESCARTAR",
+  section: "diagnosticos",
+  explicit: true,
+  documentId: "versus-differential"
+});
+assert.deepEqual(versusDifferential.map((item) => item.diagnosisName), [
+  "Trastorno por estr\u00e9s postraum\u00e1tico complejo",
+  "Trastorno de la personalidad emocionalmente inestable"
+]);
+assert.deepEqual(versusDifferential.map((item) => item.status), ["Probable", "Probable"]);
+assert.ok(versusDifferential.every((item) => /\bvs\b/i.test(item.rawText)), "cada alternativa conserva la fuente diferencial completa");
+
+const versusDifferentialFromTable = detectDiagnosisCandidates({
+  documentId: "versus-differential-table",
+  sections: { diagnosticos: "" },
+  sourceBlocks: [{
+    type: "table",
+    rows: [[
+      "PROBABLE Trastorno por estr\u00e9s postraum\u00e1tico complejo vs Trastorno de la personalidad emocionalmente inestable A DESCARTAR",
+      "F43.1"
+    ]],
+    source: { tableIndex: 4, blockIndex: 9 }
+  }]
+});
+assert.equal(versusDifferentialFromTable.length, 2);
+assert.deepEqual(versusDifferentialFromTable.map((item) => item.code), ["F43.1", null]);
+assert.deepEqual(versusDifferentialFromTable.map((item) => item.statusSuggestion), ["Probable", "Probable"]);
+
+const versusVariants = parseDiagnosisBlock({
+  text: "F43.1 Trastorno por estr\u00e9s postraum\u00e1tico vs. F60.3 Trastorno de la personalidad emocionalmente inestable\nTrastorno bipolar versus Trastorno depresivo recurrente",
+  section: "diagnosticos",
+  explicit: true,
+  documentId: "versus-variants"
+});
+assert.equal(versusVariants.length, 4);
+assert.deepEqual(versusVariants.slice(0, 2).map((item) => item.code), ["F43.1", "F60.3"]);
+assert.ok(versusVariants.every((item) => item.status === "Probable"));
+
+const narrativeComparisonIsNotDifferential = parseDiagnosisBlock({
+  text: "Se compar\u00f3 respuesta cl\u00ednica vs. control ambulatorio",
+  section: "diagnosticos",
+  explicit: true,
+  documentId: "versus-narrative-negative"
+});
+assert.equal(narrativeComparisonIsNotDifferential.length, 1);
+assert.equal(narrativeComparisonIsNotDifferential[0].diagnosisName, "Se compar\u00f3 respuesta cl\u00ednica vs. control ambulatorio");
+assert.equal(narrativeComparisonIsNotDifferential[0].status, "Confirmado", "una comparaci\u00f3n narrativa no se transforma en diferencial probable");
+
 const codedNarrative = parseDiagnosisBlock({
   text: "Trastorno depresivo recurrente, episodio actual grave F33.2",
   section: "diagnosticos",

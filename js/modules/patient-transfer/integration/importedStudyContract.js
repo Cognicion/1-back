@@ -18,15 +18,50 @@ function stableHash(value = "") {
   return (hash >>> 0).toString(36);
 }
 
+function firstStudyValue(candidate = {}, keys = []) {
+  for (const key of keys) {
+    const value = candidate?.[key];
+    if (value !== undefined && value !== null && String(value).trim() !== "") return value;
+  }
+  return "";
+}
+
+export function studyClinicalIdentity(candidate = {}, context = {}) {
+  const date = normalizeImportedStudyDate(
+    firstStudyValue(candidate, ["date", "fecha"]) || context.date
+  );
+  if (!date) return "";
+
+  return [
+    date,
+    normalizeKeyPart(firstStudyValue(candidate, ["name", "nombre"]) || "Estudio diagnóstico"),
+    normalizeKeyPart(firstStudyValue(candidate, ["type", "tipo"]) || "Otro"),
+    normalizeKeyPart(firstStudyValue(candidate, ["result", "resultado", "value", "valor"])),
+    normalizeKeyPart(firstStudyValue(candidate, ["observations", "observaciones"]))
+  ].join("|");
+}
+
 export function studyImportKey(candidate = {}, context = {}) {
-  const identity = [
+  const clinicalIdentity = studyClinicalIdentity(candidate, context);
+  const identity = clinicalIdentity || [
     context.sourceFileHash,
     context.sourceDocumentIndex ?? "",
+    context.sourceNoteId || context.noteId || "",
     candidate.sourceIndex ?? "",
-    normalizeKeyPart(candidate.name),
-    normalizeImportedStudyDate(candidate.date || context.date)
+    normalizeKeyPart(firstStudyValue(candidate, ["name", "nombre"]) || "Estudio diagnóstico"),
+    normalizeKeyPart(firstStudyValue(candidate, ["type", "tipo"]) || "Otro"),
+    normalizeKeyPart(firstStudyValue(candidate, ["result", "resultado", "value", "valor"])),
+    normalizeKeyPart(firstStudyValue(candidate, ["observations", "observaciones"])),
+    normalizeKeyPart(firstStudyValue(candidate, ["link", "enlace"]))
   ].map((value) => String(value ?? "").trim()).filter((value) => value !== "").join("|");
   return `patient-transfer-study-${stableHash(identity)}`;
+}
+
+export function studyIdentityKeys(candidate = {}, context = {}) {
+  return [...new Set([
+    String(candidate.importCandidateKey || "").trim(),
+    studyImportKey(candidate, context)
+  ].filter(Boolean))];
 }
 
 export function buildImportedStudyPayload(candidate = {}, context = {}) {

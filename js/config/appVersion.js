@@ -148,5 +148,7 @@
 // deployment marker: 2026-08-26-apuntes-paginas-diferenciadas-v36 (+0.001)
 // deployment marker: 2026-08-26-cuenta-profesional-gratuita-v1 (+0.001)
 // deployment marker: 2026-08-27-panel-pacientes-fallback-v1 (+0.001)
-export const APP_VERSION = "2.159";
+// deployment marker: 2026-08-28-study-dedup-v1 (+0.001)
+// deployment marker: 2026-08-28-diagnosis-versus-v1 (+0.001)
+export const APP_VERSION = "2.161";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

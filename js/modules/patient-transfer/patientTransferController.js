@@ -7,7 +7,7 @@ import { normalizeDocxBlocks, normalizedBlocksToText } from "./docx/docxBlockNor
 import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js?v=20260818-admission-date-v1";
 import { resolvePatientIdentity } from "./parsing/patientIdentityResolver.js";
 import { parseClinicalSections } from "./parsing/clinicalSectionParser.js?v=20260814-note-sections-runtime-v1";
-import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js?v=20260819-midc-allergy-context-v1";
+import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js?v=20260828-diagnosis-versus-v1";
 import { detectMultipleClinicalNotes, expandSegmentedDocumentsForPersistence, mergeClinicalSegments, segmentClinicalNotes, splitClinicalSegment } from "./parsing/clinicalNoteSegmenter.js?v=20260818-diagnoses-studies-v1";
 import { extractVitalSignsCandidates } from "./parsing/vitalSignsParser.js";
 import { parseNoteMetadata } from "./parsing/noteMetadataParser.js";
@@ -19,7 +19,7 @@ import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter
 import { lockTransferGroupsToTargetPatient, normalizePatientTransferLaunchContext } from "./patientTransferLaunchContext.js?v=20260820-patient-notes-import-v1";
 import { adaptTreatmentPlan } from "../clinical-document-engine/adapters/treatmentPlanAdapter.js?v=20260819-midc-allergy-context-v1";
 import { resolveMedicationCandidatesAgainstCatalog } from "../clinical-document-engine/resolvers/medicationCatalogResolver.js?v=20260819-midc-allergy-context-v1";
-import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260827-panel-pacientes-fallback-v1";
+import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260828-study-dedup-v1";
 import {
   DUPLICATE_DETECTION_STATUS,
   DUPLICATE_RESOLUTION,
@@ -886,7 +886,8 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
       });
     });
     setPatientTransferResults(results);
-    const noPersistenceResult = results.length > 0 && results.every((item) =>
+    const failedResult = results.find((item) => item.status === "failed" && item.error);
+    const noPersistenceResult = !failedResult && results.length > 0 && results.every((item) =>
       !item.patientCreated && !item.patientId && Number(item.notesCreated || 0) === 0
     );
     const hasFailures = noPersistenceResult || results.some((item) => item.status === "failed" || item.status === "partially_completed");
@@ -905,12 +906,16 @@ async function saveReviewedTransfer({ reuseReviewedGroups = false } = {}) {
       sourceDocumentPath: firstResult.documents?.find((item) => item.storagePath)?.storagePath || "",
       lastCompletedStage: finalStatus
     });
+    const failureMessage = failedResult?.error || "Traspaso no completado.";
     setPatientTransferMessage(
-      noPersistenceResult
-        ? "No se creó ningún paciente ni ninguna nota. Revise la resolución de duplicados."
-        : hasFailures ? "Traspaso no completado." : hasWarnings ? "Traspaso completado con advertencias." : "Traspaso completado.",
+      failedResult
+        ? failureMessage
+        : noPersistenceResult
+          ? "No se creó ningún paciente ni ninguna nota. Revise la resolución de duplicados."
+          : hasFailures ? "Traspaso no completado." : hasWarnings ? "Traspaso completado con advertencias." : "Traspaso completado.",
       hasFailures ? 85 : 100
     );
+    if (failedResult?.error) showPatientTransferError(failedResult.error);
     console.info("[patient-transfer] render-result:start", { results: results.length });
     renderTransferResults(noPersistenceResult
       ? results.map((item) => ({

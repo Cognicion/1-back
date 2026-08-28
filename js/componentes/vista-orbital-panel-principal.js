@@ -23,7 +23,7 @@ const ICONOS_MINIMALISTAS_POR_RUTA = new Map([
   ["laboratorio-modelado-molecular.html", "◇"]
 ]);
 const MODULOS_PRINCIPALES_POR_RUTA = new Map([
-  ["medico.html", "js/medico.js?v=20260827-panel-pacientes-fallback-v1"],
+  ["medico.html", "js/medico.js?v=20260828-diagnosis-versus-v1"],
   ["mi-salud.html", "js/mi-salud.js?v=20260731-admin-access"],
   ["sofia.html", "js/sofia.js?v=20260826-cuenta-profesional-gratuita-v1"],
   ["rehabilitacion-cognitiva.html", "js/rehabilitacion-cognitiva.js?v=20260814-evc-plan-v1"],

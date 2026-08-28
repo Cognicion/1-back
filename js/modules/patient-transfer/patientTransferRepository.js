@@ -5,7 +5,7 @@ import { obtenerNombrePacienteParaMostrar } from "../../utils/nombresPacientes.j
 import { DOCX_IMPORT_CONFIG } from "../importacionDocx/docxImportConfig.js?v=20260818-admission-date-v1";
 import { createTransferredPatient, mergeTransferredPatientFields } from "./integration/patientCreationAdapter.js?v=20260827-panel-pacientes-fallback-v1";
 import { buildImportedNotePayload, createTransferredNote, importedNoteHasClinicalContent, importedNoteId } from "./integration/noteCreationAdapter.js?v=20260813-notes-canonical-text-v1";
-import { createImportedDiagnoses, createImportedIndications, createImportedStudies, createImportedTreatments } from "./integration/clinicalDataImportAdapter.js?v=20260827-panel-pacientes-fallback-v1";
+import { createImportedDiagnoses, createImportedIndications, createImportedStudies, createImportedTreatments } from "./integration/clinicalDataImportAdapter.js?v=20260828-study-dedup-v1";
 import { reconcileImportedTreatmentTimeline } from "./integration/treatmentTimelineReconciler.js?v=20260818-treatment-timeline-v1";
 import { runVitalSignsAndDiagnosesIndependently } from "./domainPersistenceIsolation.js?v=v161-imported-diagnoses-isolation-v1";
 import { vitalSignsToNotePayload } from "./parsing/vitalSignsParser.js?v=20260808-imported-vitals-v1";

@@ -10,6 +10,8 @@ import {
 import { parseClinicalSections } from "../js/modules/patient-transfer/parsing/clinicalSectionParser.js";
 import {
   buildImportedStudyPayload,
+  studyClinicalIdentity,
+  studyIdentityKeys,
   studyImportKey
 } from "../js/modules/patient-transfer/integration/importedStudyContract.js";
 
@@ -90,15 +92,65 @@ test("normaliza fecha clínica y construye el mismo contrato que Estudios del ex
   assert.equal(payload.origenImportacionDocx, true);
 });
 
-test("la identidad es idempotente para el mismo segmento y cambia con otra fecha", () => {
-  const candidate = { id: "temporary-study-1", sourceIndex: 0, name: "Electrocardiograma", date: "2026-08-17" };
+test("la identidad clínica une el mismo estudio repetido en notas distintas", () => {
+  const candidate = {
+    id: "temporary-study-1",
+    sourceIndex: 0,
+    name: "Electrocardiograma",
+    type: "Gabinete",
+    date: "2026-08-17",
+    result: "Ritmo sinusal, FC 72",
+    observations: "Sin datos agudos"
+  };
   const context = { sourceFileHash: "fixture-hash", sourceDocumentIndex: 1 };
   assert.equal(
     studyImportKey(candidate, context),
-    studyImportKey({ ...candidate, id: "another-temporary-id" }, { ...context })
+    studyImportKey(
+      { ...candidate, id: "another-temporary-id", sourceIndex: 4 },
+      { sourceFileHash: "another-file", sourceDocumentIndex: 9, sourceNoteId: "another-note" }
+    )
   );
   assert.notEqual(studyImportKey(candidate, context), studyImportKey({ ...candidate, date: "2026-08-18" }, context));
-  assert.notEqual(studyImportKey(candidate, context), studyImportKey({ ...candidate, sourceIndex: 1 }, context));
+  assert.notEqual(studyImportKey(candidate, context), studyImportKey({ ...candidate, result: "Ritmo sinusal, FC 80" }, context));
+});
+
+test("la identidad acepta el contrato del candidato y el contrato canónico persistido", () => {
+  const candidate = {
+    name: "Biometría hemática",
+    type: "Laboratorio",
+    date: "17/08/2026",
+    result: "Hemoglobina dentro de rango",
+    observations: "Control",
+    link: "https://example.test/study"
+  };
+  const stored = {
+    nombre: "BIOMETRIA HEMATICA",
+    tipo: "laboratorio",
+    fecha: "2026-08-17",
+    resultado: "Hemoglobina   dentro de rango",
+    observaciones: "control",
+    enlace: "https://example.test/another-copy",
+    importCandidateKey: "legacy-source-scoped-key"
+  };
+  assert.equal(studyClinicalIdentity(candidate), studyClinicalIdentity(stored));
+  assert.equal(studyImportKey(candidate), studyImportKey(stored));
+  assert.deepEqual(
+    studyIdentityKeys(stored),
+    ["legacy-source-scoped-key", studyImportKey(candidate)]
+  );
+});
+
+test("sin fecha clínica no fusiona automáticamente estudios de notas distintas", () => {
+  const candidate = {
+    sourceIndex: 0,
+    name: "Electrocardiograma",
+    type: "Gabinete",
+    result: "Ritmo sinusal"
+  };
+  assert.notEqual(
+    studyImportKey(candidate, { sourceFileHash: "file-a", sourceNoteId: "note-a" }),
+    studyImportKey(candidate, { sourceFileHash: "file-a", sourceNoteId: "note-b" })
+  );
 });
 
 test("patient-transfer usa colección, escritor y lector canónicos del target", () => {
@@ -114,6 +166,8 @@ test("patient-transfer usa colección, escritor y lector canónicos del target",
   assert.match(adapter, /crearEstudio, listarEstudios/);
   assert.match(adapter, /await crearEstudio\(patientId, payload\)/);
   assert.match(adapter, /const after = await listarEstudios\(patientId\)/);
+  assert.match(adapter, /before\.flatMap\(\(study\) => studyIdentityKeys\(study, context\)\)/);
+  assert.match(adapter, /candidateKeys\.some\(\(candidateKey\) => seen\.has\(candidateKey\)\)/);
   assert.match(repository, /createImportedStudies\(patientId, documentStudies, clinicalContext\)/);
   const documentLoop = repository.slice(repository.indexOf("for (let documentIndex"));
   assert.ok(documentLoop.indexOf('stage = "creating_studies"') < documentLoop.indexOf('stage = "creating_note"'));
