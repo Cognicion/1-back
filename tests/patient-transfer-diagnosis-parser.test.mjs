@@ -139,6 +139,38 @@ assert.equal(versusDifferentialFromTable.length, 2);
 assert.deepEqual(versusDifferentialFromTable.map((item) => item.code), ["F43.1", null]);
 assert.deepEqual(versusDifferentialFromTable.map((item) => item.statusSuggestion), ["Probable", "Probable"]);
 
+const multiDiagnosisCell = detectDiagnosisCandidates({
+  documentId: "multi-diagnosis-cell",
+  sections: { diagnosticos: "" },
+  sourceBlocks: [{
+    type: "table",
+    rows: [[
+      [
+        "PROBABLE Trastorno por estrés postraumático complejo vs Trastorno de la personalidad emocionalmente inestable A DESCARTAR",
+        "PROBABLE Discapacidad intelectual leve",
+        "Distimia",
+        "Dependencia a la nicotina",
+        "Historia personal de lesiones autoinfligidas",
+        "Síndrome de ovario poliquístico"
+      ].join("\n"),
+      "F43.1"
+    ]],
+    source: { tableIndex: 5, blockIndex: 10 }
+  }]
+});
+assert.deepEqual(multiDiagnosisCell.map((item) => item.diagnosisName), [
+  "Trastorno por estrés postraumático complejo",
+  "Trastorno de la personalidad emocionalmente inestable",
+  "Discapacidad intelectual leve",
+  "Distimia",
+  "Dependencia a la nicotina",
+  "Historia personal de lesiones autoinfligidas",
+  "Síndrome de ovario poliquístico"
+]);
+assert.deepEqual(multiDiagnosisCell.slice(0, 3).map((item) => item.statusSuggestion), ["Probable", "Probable", "Probable"]);
+assert.equal(multiDiagnosisCell[0].code, "F43.1");
+assert.ok(multiDiagnosisCell.slice(1).every((item) => item.diagnosisName.length < 80), "las entradas sin código siguen separadas y revisables");
+
 const versusVariants = parseDiagnosisBlock({
   text: "F43.1 Trastorno por estr\u00e9s postraum\u00e1tico vs. F60.3 Trastorno de la personalidad emocionalmente inestable\nTrastorno bipolar versus Trastorno depresivo recurrente",
   section: "diagnosticos",

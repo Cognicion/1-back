@@ -80,7 +80,8 @@ export function splitDiagnosticCodes(text = "") {
 // Algunos DOCX conservan varias entradas dentro de una misma celda de tabla.
 // Primero se respetan sus párrafos/saltos reales y solo después se usa una
 // recuperación estructural conservadora para celdas que Word entregó planas.
-const DIAGNOSIS_ENTRY_START = /(?:Trast(?:orn|om)o\b|Episodio\b|Distimia|Esquizofrenia\b|Lesi[oó]n\b|Historia\s+personal\b|Soporte\s+familiar\b|C[oó]nyuge\s+o\s+pareja\b|Obesidad\b|Tabaco\b|Alcohol\b|Intoxicaci[oó]n\b|Discapacidad\b|Retraso\b|S[ií]ndrome\b|Problemas?\s+relacionad[oa]s?\b|Dependencia\b|Abuso\b|Consumo\b|Ideaci[oó]n\b|Intento\b|Reacci[oó]n\b)/gu;
+const DIAGNOSIS_ENTRY_START = /(?:(?:[Pp][Rr][Oo][Bb][Aa][Bb][Ll][Ee]|[Aa]\s+[Dd][Ee][Ss][Cc][Aa][Rr][Tt][Aa][Rr]|[Aa][Nn][Tt][Ee][Cc][Ee][Dd][Ee][Nn][Tt][Ee]|[Cc][Oo][Nn][Ff][Ii][Rr][Mm][Aa][Dd][Oo]|[Ss][Ee]\s+[Aa][Gg][Rr][Ee][Gg][Aa]|[Ss][Ee]\s+[Dd][Ee][Ss][Cc][Aa][Rr][Tt][Aa])\s+)?(?:Trast(?:orn|om)o\b|Episodio\b|Distimia|Esquizofrenia\b|Lesi[oó]n\b|Historia\s+personal\b|Soporte\s+familiar\b|C[oó]nyuge\s+o\s+pareja\b|Obesidad\b|Tabaco\b|Alcohol\b|Intoxicaci[oó]n\b|Discapacidad\b|Retraso\b|S[ií]ndrome\b|Problemas?\s+relacionad[oa]s?\b|Dependencia\b|Abuso\b|Consumo\b|Ideaci[oó]n\b|Intento\b|Reacci[oó]n\b)/gu;
+const TRAILING_DIFFERENTIAL_SEPARATOR = /\s+(?:vs\.?|versus)\s*$/i;
 
 function cleanDiagnosisTableLine(value = "") {
   return String(value || "")
@@ -122,10 +123,19 @@ function splitDiagnosisNameColumn(text = "", codesOrCount = 0) {
     ...matchedStarts
   ])].sort((a, b) => a - b);
   DIAGNOSIS_ENTRY_START.lastIndex = 0;
-  if (expectedCount > 0 && starts.length === expectedCount) {
-    return starts
+  if (starts.length > 1) {
+    const entries = starts
       .map((start, index) => source.slice(start, starts[index + 1] ?? source.length).trim())
       .filter(Boolean);
+    const mergedDifferentials = [];
+    entries.forEach((entry) => {
+      if (TRAILING_DIFFERENTIAL_SEPARATOR.test(mergedDifferentials.at(-1) || "")) {
+        mergedDifferentials[mergedDifferentials.length - 1] = `${mergedDifferentials.at(-1)} ${entry}`.trim();
+      } else {
+        mergedDifferentials.push(entry);
+      }
+    });
+    return mergedDifferentials;
   }
   return [source];
 }
@@ -599,11 +609,17 @@ export function detectDiagnosisCandidates({ sections = {}, fullText = "", source
         add(parsedCandidates);
         return;
       }
-      if (codes.length && names.length === codes.length) {
+      if (names.length > 1) {
         hasStructuredDiagnosisTable = true;
+        let codeOffset = 0;
         names.forEach((name, index) => {
+          const differentialCount = splitDifferentialDiagnosisRow({ text: name }).length;
+          const nameCodes = differentialCount > 1
+            ? codes.slice(codeOffset, codeOffset + differentialCount)
+            : codes.slice(codeOffset, codeOffset + 1);
+          codeOffset += nameCodes.length;
           add(parseDiagnosisCandidates({
-            text: `${name} | ${codes[index]}`,
+            text: nameCodes.length ? `${name} | ${nameCodes.join(" | ")}` : name,
             section: "diagnosticos",
             documentId,
             noteId,
