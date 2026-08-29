@@ -12,9 +12,9 @@ test("sofia.html carga y expone el panel ECG", async () => {
   assert.match(html, /id="electrocardiogramaSofiaSection"/);
   assert.match(html, /id="ecgSofia"/);
   assert.match(html, /Interpretación de electrocardiograma/);
-  assert.match(html, /sofia\.js\?v=20260826-cuenta-profesional-gratuita-v1/);
-  assert.match(html, /sofia\.css\?v=20260828-sofia-layout-v1/);
-  assert.match(appVersion, /APP_VERSION\s*=\s*"2\.165"/);
+  assert.match(html, /sofia\.js\?v=20260828-sofia-patient-search-report-layout-v1/);
+  assert.match(html, /sofia\.css\?v=20260828-sofia-report-layout-v1/);
+  assert.match(appVersion, /APP_VERSION\s*=\s*"2\.166"/);
 });
 
 test("SOFÍA comparte el resultado ECG con panel y chat sin escribir datos clínicos", async () => {

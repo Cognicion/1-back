@@ -6,9 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SOFIA Clinica | Cognicion Labs</title>
   <link rel="icon" href="assets/favicon-cognicion.png" />
-  <link rel="stylesheet" href="css/sofia.css?v=20260828-sofia-layout-v1" />
+  <link rel="stylesheet" href="css/sofia.css?v=20260828-sofia-report-layout-v1" />
   <link rel="stylesheet" href="./css/sofia-mascota.css" />
-  <link rel="stylesheet" href="./css/clinical-analysis.css?v=20260828-sofia-layout-v1" />
+  <link rel="stylesheet" href="./css/clinical-analysis.css?v=20260828-sofia-report-layout-v1" />
   <link rel="stylesheet" href="./css/patient-pattern-detector.css?v=20260821-patient-pattern-profile-v1" />
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
 <script type="module" src="js/services/themeBootstrap.js"></script>
@@ -33,10 +33,23 @@
       <p class="subtitle">SOFIA integra expediente, notas, escalas, tratamientos y estudios para organizar informacion clinica. No modifica el expediente y toda sugerencia requiere juicio profesional.</p>
       <div id="estadoAcceso" class="status">Verificando acceso...</div>
       <div class="control-row">
-        <label for="selectorPacienteSofia">Paciente</label>
-        <select id="selectorPacienteSofia">
-          <option value="">Cargando pacientes...</option>
-        </select>
+        <div class="sofia-patient-picker">
+          <label for="buscarPacienteSofia">Paciente</label>
+          <input
+            id="buscarPacienteSofia"
+            class="sofia-patient-search"
+            type="search"
+            placeholder="Cargando pacientes..."
+            autocomplete="off"
+            disabled
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded="false"
+            aria-controls="resultadosPacientesSofia"
+          />
+          <input id="selectorPacienteSofia" type="hidden" value="" />
+          <div id="resultadosPacientesSofia" class="sofia-patient-results" role="listbox" hidden></div>
+        </div>
         <button id="recargarSofia" type="button">Actualizar modelo</button>
       </div>
     </section>
@@ -123,7 +136,7 @@
     </section>
   </main>
 
-  <script type="module" src="js/sofia.js?v=20260826-cuenta-profesional-gratuita-v1"></script>
+  <script type="module" src="js/sofia.js?v=20260828-sofia-patient-search-report-layout-v1"></script>
   <script type="module" src="./js/sofia-mascota-loader.js"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>

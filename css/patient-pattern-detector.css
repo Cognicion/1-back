@@ -279,3 +279,46 @@ body.tema-claro :is(.patient-pattern-page, .clinical-analysis-panel) {
   .patient-pattern-dashboard *,
   .patient-pattern-search * { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
 }
+
+/* Vista de informe continuo dentro de SOFÍA: conserva la misma información sin tarjetas anidadas. */
+#clinicalAnalysisSofia .patient-pattern-dashboard { gap: 0; font-size: .88rem; }
+#clinicalAnalysisSofia .pattern-profile-header,
+#clinicalAnalysisSofia .pattern-dashboard-section,
+#clinicalAnalysisSofia .pattern-summary,
+#clinicalAnalysisSofia .pattern-clinical-notice,
+#clinicalAnalysisSofia .pattern-card,
+#clinicalAnalysisSofia .instrument-card,
+#clinicalAnalysisSofia .pattern-evidence,
+#clinicalAnalysisSofia .pattern-observation-list li,
+#clinicalAnalysisSofia .bss-item,
+#clinicalAnalysisSofia .semantic-variable > dl div {
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+#clinicalAnalysisSofia .pattern-profile-header,
+#clinicalAnalysisSofia .pattern-dashboard-section,
+#clinicalAnalysisSofia .pattern-summary,
+#clinicalAnalysisSofia .pattern-clinical-notice { border: 0; border-top: 1px solid var(--sofia-border, rgba(96, 165, 250, .22)); padding: 14px 0; }
+#clinicalAnalysisSofia .pattern-summary { gap: 0; border-bottom: 1px solid var(--sofia-border, rgba(96, 165, 250, .22)); }
+#clinicalAnalysisSofia .pattern-summary span { padding: 7px 10px; border-left: 1px solid var(--sofia-border, rgba(96, 165, 250, .22)); background: transparent; font-size: .75rem; }
+#clinicalAnalysisSofia .pattern-summary span:first-child { border-left: 0; }
+#clinicalAnalysisSofia .pattern-summary strong { font-size: 1rem; }
+#clinicalAnalysisSofia .pattern-card-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+#clinicalAnalysisSofia .pattern-card { padding: 12px 0 12px 10px; border: 0; border-bottom: 1px solid color-mix(in srgb, var(--sofia-muted, #b8d6c1) 18%, transparent); border-left: 2px solid var(--sofia-muted, #b8d6c1); }
+#clinicalAnalysisSofia .pattern-card.tone-present { border-left-color: var(--sofia-good, #34d399); }
+#clinicalAnalysisSofia .pattern-card.tone-contradictory,
+#clinicalAnalysisSofia .pattern-card.tone-possible { border-left-color: var(--sofia-warn, #facc15); }
+#clinicalAnalysisSofia .pattern-card__metrics,
+#clinicalAnalysisSofia .instrument-summary,
+#clinicalAnalysisSofia .pattern-evidence dl,
+#clinicalAnalysisSofia .bss-parameters { gap: 0; margin: 9px 0; border-top: 1px solid color-mix(in srgb, var(--sofia-muted, #b8d6c1) 16%, transparent); }
+#clinicalAnalysisSofia .pattern-card__metrics div,
+#clinicalAnalysisSofia .instrument-summary div,
+#clinicalAnalysisSofia .pattern-evidence dl div,
+#clinicalAnalysisSofia .bss-parameters div { padding: 6px 8px; border-radius: 0; background: transparent; border-left: 1px solid color-mix(in srgb, var(--sofia-muted, #b8d6c1) 16%, transparent); }
+#clinicalAnalysisSofia .instrument-card { margin-top: 10px; padding: 10px 0 10px 10px; border: 0; border-left: 2px solid #8b5cf6; }
+#clinicalAnalysisSofia .pattern-evidence { margin: 8px 0; padding: 8px 0 8px 10px; border: 0; border-left: 1px solid color-mix(in srgb, var(--sofia-muted, #b8d6c1) 28%, transparent); }
+#clinicalAnalysisSofia .pattern-observation-list { gap: 0; }
+#clinicalAnalysisSofia .pattern-observation-list li { padding: 7px 0; border-bottom: 1px solid color-mix(in srgb, var(--sofia-muted, #b8d6c1) 14%, transparent); }
+#clinicalAnalysisSofia .semantic-variable > dl div { padding: 7px 0; border-bottom: 1px solid color-mix(in srgb, var(--sofia-muted, #b8d6c1) 14%, transparent); }

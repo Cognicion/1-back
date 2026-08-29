@@ -32,6 +32,8 @@ const formSofia = document.getElementById("formSofia");
 const mensajeSofia = document.getElementById("mensajeSofia");
 const botonEnviar = formSofia?.querySelector("button");
 const selectorPaciente = document.getElementById("selectorPacienteSofia");
+const buscarPacienteSofia = document.getElementById("buscarPacienteSofia");
+const resultadosPacientesSofia = document.getElementById("resultadosPacientesSofia");
 const recargarSofia = document.getElementById("recargarSofia");
 const buscarTimeline = document.getElementById("buscarTimelineSofia");
 const notaCritica = document.getElementById("notaCriticaSofia");
@@ -49,6 +51,7 @@ let panelContextActual = {};
 let notaCriticaActual = [];
 let contextoPatronPendiente = null;
 let ultimaClaveContextoPatron = "";
+let indicePacienteActivo = -1;
 
 function agregarMensaje(texto, tipo, claseExtra = "") {
   const div = document.createElement("div");
@@ -88,10 +91,7 @@ async function aplicarContextoPatronSofia(context = {}) {
   if (key === ultimaClaveContextoPatron) return;
   ultimaClaveContextoPatron = key;
   contextoPatronPendiente = null;
-  if (selectorPaciente.value !== patientId) {
-    selectorPaciente.value = patientId;
-    await cargarPacienteSeleccionado(patientId);
-  }
+  if (selectorPaciente.value !== patientId) await seleccionarPacienteSofia(patientId);
   const suggestion = sugerenciaPatron(patternId);
   if (mensajeSofia) {
     mensajeSofia.value = suggestion;
@@ -115,6 +115,7 @@ function bloquearAcceso(mensaje) {
   estadoAcceso.textContent = mensaje;
   if (formSofia) formSofia.style.display = "none";
   if (selectorPaciente) selectorPaciente.disabled = true;
+  if (buscarPacienteSofia) buscarPacienteSofia.disabled = true;
   if (recargarSofia) recargarSofia.disabled = true;
 }
 
@@ -164,19 +165,129 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 async function cargarSelectorPacientes() {
-  selectorPaciente.innerHTML = `<option value="">Cargando pacientes...</option>`;
+  if (buscarPacienteSofia) {
+    buscarPacienteSofia.disabled = true;
+    buscarPacienteSofia.placeholder = "Cargando pacientes...";
+  }
   pacientesSofia = await listAuthorizedSofiaPatients();
   if (!pacientesSofia.length) {
-    selectorPaciente.innerHTML = `<option value="">Sin pacientes disponibles</option>`;
+    if (buscarPacienteSofia) buscarPacienteSofia.placeholder = "Sin pacientes disponibles";
     renderEstadoVacio("No hay pacientes disponibles para SOFIA con los permisos actuales.");
     return;
   }
-  selectorPaciente.innerHTML = `<option value="">Selecciona un paciente</option>` + pacientesSofia.map((p) => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.label || "Paciente")}</option>`).join("");
+  if (buscarPacienteSofia) {
+    buscarPacienteSofia.disabled = false;
+    buscarPacienteSofia.placeholder = "Escribe el nombre del paciente";
+  }
   if (contextoPatronPendiente) await aplicarContextoPatronSofia(contextoPatronPendiente);
 }
 
-selectorPaciente?.addEventListener("change", () => {
-  if (selectorPaciente.value) cargarPacienteSeleccionado(selectorPaciente.value);
+function normalizarBusquedaPaciente(value = "") {
+  return String(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("es-MX")
+    .trim();
+}
+
+function cerrarResultadosPacientes() {
+  indicePacienteActivo = -1;
+  if (resultadosPacientesSofia) {
+    resultadosPacientesSofia.hidden = true;
+    resultadosPacientesSofia.replaceChildren();
+  }
+  buscarPacienteSofia?.setAttribute("aria-expanded", "false");
+}
+
+function actualizarPacienteActivo() {
+  const options = [...(resultadosPacientesSofia?.querySelectorAll("[role='option']") || [])];
+  options.forEach((option, index) => {
+    const active = index === indicePacienteActivo;
+    option.classList.toggle("is-active", active);
+    option.setAttribute("aria-selected", String(active));
+  });
+}
+
+function coincidenciasPacientes(query = "") {
+  const termino = normalizarBusquedaPaciente(query);
+  if (!termino) return [];
+  return pacientesSofia.filter((patient) => normalizarBusquedaPaciente(patient.label).includes(termino));
+}
+
+function renderResultadosPacientes(query = "") {
+  if (!resultadosPacientesSofia) return [];
+  const coincidencias = coincidenciasPacientes(query);
+  resultadosPacientesSofia.replaceChildren();
+  indicePacienteActivo = -1;
+
+  if (!normalizarBusquedaPaciente(query)) {
+    cerrarResultadosPacientes();
+    return coincidencias;
+  }
+
+  if (!coincidencias.length) {
+    const empty = document.createElement("p");
+    empty.className = "sofia-patient-results__empty";
+    empty.textContent = "No hay coincidencias entre tus pacientes autorizados.";
+    resultadosPacientesSofia.append(empty);
+  } else {
+    coincidencias.forEach((patient) => {
+      const option = document.createElement("button");
+      option.type = "button";
+      option.className = "sofia-patient-results__option";
+      option.setAttribute("role", "option");
+      option.setAttribute("aria-selected", "false");
+      option.textContent = patient.label || "Paciente";
+      option.addEventListener("click", () => { void seleccionarPacienteSofia(patient.id); });
+      resultadosPacientesSofia.append(option);
+    });
+  }
+
+  resultadosPacientesSofia.hidden = false;
+  buscarPacienteSofia?.setAttribute("aria-expanded", "true");
+  return coincidencias;
+}
+
+async function seleccionarPacienteSofia(patientId) {
+  const patient = pacientesSofia.find((candidate) => candidate.id === patientId);
+  if (!patient || !selectorPaciente) return;
+  selectorPaciente.value = patient.id;
+  if (buscarPacienteSofia) buscarPacienteSofia.value = patient.label || "Paciente";
+  cerrarResultadosPacientes();
+  await cargarPacienteSeleccionado(patient.id);
+}
+
+buscarPacienteSofia?.addEventListener("input", () => {
+  if (selectorPaciente) selectorPaciente.value = "";
+  renderResultadosPacientes(buscarPacienteSofia.value);
+});
+
+buscarPacienteSofia?.addEventListener("keydown", (event) => {
+  const coincidencias = coincidenciasPacientes(buscarPacienteSofia.value);
+  if (event.key === "Escape") {
+    cerrarResultadosPacientes();
+    return;
+  }
+  if (!coincidencias.length || !["ArrowDown", "ArrowUp", "Enter"].includes(event.key)) return;
+
+  if (event.key === "Enter") {
+    const patient = coincidencias[indicePacienteActivo] || (coincidencias.length === 1 ? coincidencias[0] : null);
+    if (patient) {
+      event.preventDefault();
+      void seleccionarPacienteSofia(patient.id);
+    }
+    return;
+  }
+
+  event.preventDefault();
+  indicePacienteActivo = event.key === "ArrowDown"
+    ? Math.min(indicePacienteActivo + 1, coincidencias.length - 1)
+    : Math.max(indicePacienteActivo - 1, 0);
+  actualizarPacienteActivo();
+});
+
+document.addEventListener("pointerdown", (event) => {
+  if (!event.target.closest(".sofia-patient-picker")) cerrarResultadosPacientes();
 });
 
 recargarSofia?.addEventListener("click", () => {
