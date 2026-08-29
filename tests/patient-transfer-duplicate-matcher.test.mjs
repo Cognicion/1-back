@@ -154,4 +154,76 @@ const differentlyFormattedRecord = findPossiblePatientMatches({
 assert.equal(differentlyFormattedRecord.length, 1);
 assert.equal(differentlyFormattedRecord[0].duplicateEligible, true);
 
+const repeatedSurnameArtifact = findPossiblePatientMatches({
+  nombreCompleto: "MARIA ELENA RIVERA RIVERA SOTO",
+  nombres: "MARIA ELENA RIVERA",
+  apellidoPaterno: "RIVERA",
+  apellidoMaterno: "SOTO",
+  expediente: "246810",
+  fechaNacimiento: "01/02/2000",
+  edad: "26"
+}, [{
+  id: "patient-existing-repeated-surname",
+  nombreCompleto: "MARIA ELENA RIVERA SOTO",
+  nombres: "MARIA ELENA",
+  apellidoPaterno: "RIVERA",
+  apellidoMaterno: "SOTO",
+  expediente: "246810",
+  fechaNacimiento: "2000-02-01",
+  edad: 26
+}]);
+assert.equal(repeatedSurnameArtifact.length, 1);
+assert.equal(repeatedSurnameArtifact[0].patientId, "patient-existing-repeated-surname");
+assert.equal(repeatedSurnameArtifact[0].duplicateEligible, true);
+assert.ok(repeatedSurnameArtifact[0].qualifyingMatchesCount >= 3);
+assert.ok(repeatedSurnameArtifact[0].matchedFields.some((field) => field.label === "Nombre completo"));
+
+const unrelatedExtraNameToken = findPossiblePatientMatches({
+  nombreCompleto: "MARIA ELENA LUCIA RIVERA SOTO",
+  nombres: "MARIA ELENA LUCIA",
+  apellidoPaterno: "RIVERA",
+  apellidoMaterno: "SOTO",
+  expediente: "246810",
+  fechaNacimiento: "01/02/2000"
+}, [{
+  id: "patient-existing-unrelated-extra-token",
+  nombreCompleto: "MARIA ELENA RIVERA SOTO",
+  nombres: "MARIA ELENA",
+  apellidoPaterno: "RIVERA",
+  apellidoMaterno: "SOTO",
+  expediente: "246810",
+  fechaNacimiento: "2000-02-01"
+}]);
+assert.deepEqual(unrelatedExtraNameToken, []);
+
+const surnameRepeatedTwice = findPossiblePatientMatches({
+  nombreCompleto: "MARIA ELENA RIVERA RIVERA RIVERA SOTO",
+  nombres: "MARIA ELENA RIVERA RIVERA",
+  apellidoPaterno: "RIVERA",
+  apellidoMaterno: "SOTO",
+  expediente: "246810",
+  fechaNacimiento: "01/02/2000"
+}, [{
+  id: "patient-existing-two-extra-surnames",
+  nombreCompleto: "MARIA ELENA RIVERA SOTO",
+  nombres: "MARIA ELENA",
+  apellidoPaterno: "RIVERA",
+  apellidoMaterno: "SOTO",
+  expediente: "246810",
+  fechaNacimiento: "2000-02-01"
+}]);
+assert.deepEqual(surnameRepeatedTwice, []);
+
+const repeatedSurnameWithoutThirdFactor = findPossiblePatientMatches({
+  nombreCompleto: "MARIA ELENA RIVERA RIVERA",
+  nombres: "MARIA ELENA RIVERA",
+  apellidoPaterno: "RIVERA"
+}, [{
+  id: "patient-existing-repeated-surname-only-two-factors",
+  nombreCompleto: "MARIA ELENA RIVERA",
+  nombres: "MARIA ELENA",
+  apellidoPaterno: "RIVERA"
+}]);
+assert.deepEqual(repeatedSurnameWithoutThirdFactor, []);
+
 console.log("patient-transfer-duplicate-matcher: ok");

@@ -89,5 +89,5 @@ test("Sofía, Pediatría y Mensajes reutilizan la lista autorizada fuera del rol
 
 test("el Panel Médico invalida las versiones defectuosas en todos los navegadores", () => {
   assert.match(medicoSource, /usuarios\.js\?v=20260827-panel-pacientes-fallback-v1/);
-  assert.match(medicoHtml, /medico\.js\?v=20260828-diagnosis-versus-v2/);
+  assert.match(medicoHtml, /medico\.js\?v=20260828-duplicate-repeated-surname-v1/);
 });

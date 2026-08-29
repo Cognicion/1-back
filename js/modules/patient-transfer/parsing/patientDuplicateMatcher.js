@@ -72,6 +72,75 @@ function same(a, b, normalizer) {
   return Boolean(left && right && left === right);
 }
 
+function normalizedNameTokens(value = "") {
+  const normalized = normalizePatientName(value);
+  return normalized ? normalized.split(" ") : [];
+}
+
+function tokenArraysEqual(left = [], right = []) {
+  return left.length === right.length && left.every((token, index) => token === right[index]);
+}
+
+function phraseStartsAt(tokens = [], phrase = [], startIndex = 0) {
+  return phrase.length > 0
+    && phrase.every((token, phraseIndex) => tokens[startIndex + phraseIndex] === token);
+}
+
+function countTokenPhrase(tokens = [], phrase = []) {
+  if (!phrase.length || tokens.length < phrase.length) return 0;
+  let count = 0;
+  for (let index = 0; index <= tokens.length - phrase.length; index += 1) {
+    if (phraseStartsAt(tokens, phrase, index)) {
+      count += 1;
+      index += phrase.length - 1;
+    }
+  }
+  return count;
+}
+
+function sameFullNameWithOneRepeatedSurname(left = "", right = "", sharedSurnames = []) {
+  const leftTokens = normalizedNameTokens(left);
+  const rightTokens = normalizedNameTokens(right);
+  if (!leftTokens.length || !rightTokens.length || leftTokens.length === rightTokens.length) return false;
+  const [longer, shorter] = leftTokens.length > rightTokens.length
+    ? [leftTokens, rightTokens]
+    : [rightTokens, leftTokens];
+
+  return sharedSurnames.some((surname) => {
+    const surnameTokens = normalizedNameTokens(surname);
+    if (!surnameTokens.length || longer.length !== shorter.length + surnameTokens.length) return false;
+    if (countTokenPhrase(shorter, surnameTokens) < 1) return false;
+
+    for (let index = 0; index <= longer.length - surnameTokens.length; index += 1) {
+      if (!phraseStartsAt(longer, surnameTokens, index)) continue;
+      const withoutRepeatedSurname = [
+        ...longer.slice(0, index),
+        ...longer.slice(index + surnameTokens.length)
+      ];
+      if (tokenArraysEqual(withoutRepeatedSurname, shorter)) return true;
+    }
+    return false;
+  });
+}
+
+function sameGivenNamesWithTrailingSurnameLeak(left = "", right = "", sharedSurnames = []) {
+  if (same(left, right, normalizePatientName)) return true;
+  const leftTokens = normalizedNameTokens(left);
+  const rightTokens = normalizedNameTokens(right);
+  if (!leftTokens.length || !rightTokens.length || leftTokens.length === rightTokens.length) return false;
+  const [longer, shorter] = leftTokens.length > rightTokens.length
+    ? [leftTokens, rightTokens]
+    : [rightTokens, leftTokens];
+
+  return sharedSurnames.some((surname) => {
+    const surnameTokens = normalizedNameTokens(surname);
+    if (!surnameTokens.length || longer.length !== shorter.length + surnameTokens.length) return false;
+    const trailingStart = longer.length - surnameTokens.length;
+    return phraseStartsAt(longer, surnameTokens, trailingStart)
+      && tokenArraysEqual(longer.slice(0, trailingStart), shorter);
+  });
+}
+
 function addMatch(list, label, candidateValue, existingValue, score) {
   list.push({ label, candidateValue: String(candidateValue || ""), existingValue: String(existingValue || ""), score });
 }
@@ -121,16 +190,35 @@ export function findPossiblePatientMatches(candidate = {}, existingPatients = []
     let score = 0;
     const curpSame = same(candidateFields.curp, current.curp, normalizeCurp);
     const recordSame = same(candidateFields.record, current.record, normalizeRecordNumber);
-    const nameSame = same(candidateFields.name, current.name, normalizePatientName);
+    const exactNameSame = same(candidateFields.name, current.name, normalizePatientName);
     const birthSame = same(candidateFields.birth, current.birth, normalizeBirthDate);
-    if (nameSame && !current.paterno && containsWholeNamePart(current.name, candidateFields.paterno)) {
+    if (exactNameSame && !current.paterno && containsWholeNamePart(current.name, candidateFields.paterno)) {
       current.paterno = candidateFields.paterno;
     }
-    if (nameSame && !current.materno && containsWholeNamePart(current.name, candidateFields.materno)) {
+    if (exactNameSame && !current.materno && containsWholeNamePart(current.name, candidateFields.materno)) {
       current.materno = candidateFields.materno;
     }
     const paternoSame = same(candidateFields.paterno, current.paterno, normalizePatientName);
     const maternoSame = same(candidateFields.materno, current.materno, normalizePatientName);
+    const sharedSurnames = [
+      paternoSame ? candidateFields.paterno : "",
+      maternoSame ? candidateFields.materno : ""
+    ].filter(Boolean);
+    const repeatedSurnameNameSame = sameFullNameWithOneRepeatedSurname(
+      candidateFields.name,
+      current.name,
+      sharedSurnames
+    );
+    const bothHaveStructuredGivenNames = Boolean(candidateFields.nombres && current.nombres);
+    const structuredGivenNamesSame = sameGivenNamesWithTrailingSurnameLeak(
+      candidateFields.nombres,
+      current.nombres,
+      sharedSurnames
+    );
+    const nameSame = Boolean(
+      exactNameSame
+      || (repeatedSurnameNameSame && (!bothHaveStructuredGivenNames || structuredGivenNamesSame))
+    );
     const institutionSame = same(candidateFields.institution, current.institution, normalizePatientName);
     const qualifyingMatches = new Set();
 

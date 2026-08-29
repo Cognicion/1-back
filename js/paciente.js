@@ -44,7 +44,11 @@ import {
 } from "./utils/roles.js";
 import { calcularEdadPediatrica } from "./pediatria/edad.js";
 import { calcularIMC as calcularIMCCentral } from "./utils/imc.js";
-import { construirTratamientoEIndicaciones } from "./utils/tratamientoIndicaciones.js";
+import {
+  construirTratamientoEIndicaciones,
+  formatearResumenDiarioTratamiento,
+  obtenerDosisDiariaTratamiento
+} from "./utils/tratamientoIndicaciones.js?v=20260828-treatment-daily-dose-summary-v1";
 import { buildGrowthAssessment } from "./services/growth/growthCalculationService.js";
 import {
   calcularIMC as calcularIMCPediatrico,
@@ -901,41 +905,67 @@ function listaDiagnosticosLaboratorio(datos = datosPacienteActual || {}) {
   return diagnosticos.length ? diagnosticos : ["Sin diagnstico registrado"];
 }
 
+function nombreMedicamentoResumenTratamiento(tratamiento = {}) {
+  const referencias = [
+    tratamiento.catalogMedicationId,
+    tratamiento.medicationId,
+    tratamiento.medicamentoId,
+    tratamiento.genericName,
+    tratamiento.nombreMedicamento,
+    tratamiento.medicamento,
+    tratamiento.nombre
+  ].filter(Boolean);
+  for (const referencia of referencias) {
+    const medicamentoCatalogo = medicamentoPorTexto(referencia);
+    if (medicamentoCatalogo?.nombre) return medicamentoCatalogo.nombre;
+  }
+  const nombre = String(
+    tratamiento.genericName
+    || tratamiento.nombreMedicamento
+    || tratamiento.medicamento
+    || tratamiento.nombre
+    || ""
+  ).trim().replace(/[.\s]+$/, "");
+  return nombre ? `${nombre.charAt(0).toUpperCase()}${nombre.slice(1)}` : "";
+}
+
 function listaTratamientosLaboratorio(datos = datosPacienteActual || {}) {
   void asegurarIndicacionResumenPaciente();
 
-  const medicamentosDesdeCache = tratamientosCache
-    .filter(esTratamientoVigente)
-    .map((tratamiento) => formatearIndicacionTratamientoConCambio(tratamiento, true))
-    .filter(Boolean);
+  const tratamientosDesdeCache = tratamientosCache.filter(esTratamientoVigente);
   const tratamientosPersistidos = datos.datosClinicosResumen?.tratamientosActivos;
-  const medicamentosActivos = medicamentosDesdeCache.length
-    ? medicamentosDesdeCache
-    : Array.isArray(tratamientosPersistidos) && tratamientosPersistidos.length
-      ? tratamientosPersistidos
-        .map((tratamiento) => formatearIndicacionTratamientoConCambio(tratamiento, true))
-        .filter(Boolean)
-      : datos.tratamiento || datos.tratamientoActual || datos.datosClinicosResumen?.tratamientoActivo || "";
-  const indicacionesEstructuradas = indicacionesPacienteCache[0]?.indicaciones
-    || datos.indicacionesEstructuradas
-    || datos.indicacionesActuales
-    || datos.datosClinicosResumen?.indicaciones
-    || null;
+  const tratamientosDesdeResumen = Array.isArray(tratamientosPersistidos)
+    ? tratamientosPersistidos.filter(esTratamientoVigente)
+    : [];
+  const dosisPersistidas = Array.isArray(datos.datosClinicosResumen?.medicamentosDosisDia)
+    ? datos.datosClinicosResumen.medicamentosDosisDia.filter((tratamiento) => tratamiento && typeof tratamiento === "object")
+    : [];
+  const tratamientosEstructurados = tratamientosDesdeCache.length
+    ? tratamientosDesdeCache
+    : tratamientosDesdeResumen.length
+      ? tratamientosDesdeResumen
+      : dosisPersistidas;
+  const resumenDiario = [...new Set(tratamientosEstructurados
+    .map((tratamiento) => formatearResumenDiarioTratamiento(
+      tratamiento,
+      nombreMedicamentoResumenTratamiento(tratamiento)
+    ))
+    .filter(Boolean))];
+  if (resumenDiario.length) return resumenDiario;
+
   const tratamientoTextoLegado = datos.tratamiento
     || datos.tratamientoActual
     || datos.datosClinicosResumen?.tratamientoActivo
     || "";
   const composicion = construirTratamientoEIndicaciones({
-    medicamentosActivos,
-    indicacionesEstructuradas,
-    tratamientoTextoLegado
+    medicamentosActivos: tratamientoTextoLegado
   });
 
-  console.debug("[RESUMEN] indicaciones origen:", composicion.origen);
-  console.debug("[RESUMEN] indicaciones antes:", medicamentosActivos.length);
-  console.debug("[RESUMEN] indicaciones después:", composicion.contenidoResumen.length);
-  return composicion.contenidoResumen.length
-    ? composicion.contenidoResumen
+  console.debug("[RESUMEN] tratamientos origen:", composicion.origen);
+  console.debug("[RESUMEN] tratamientos estructurados:", tratamientosEstructurados.length);
+  console.debug("[RESUMEN] tratamientos mostrados:", composicion.medicamentos.length);
+  return composicion.medicamentos.length
+    ? composicion.medicamentos
     : ["Sin tratamiento activo registrado"];
 }
 
@@ -1081,7 +1111,10 @@ function listaTimelineLaboratorio(datos = datosPacienteActual || {}) {
 }
 
 function renderizarListaLab(items) {
-  return items.map((item) => `<li>${escaparHTML(String(item))}</li>`).join("");
+  return (Array.isArray(items) ? items : [])
+    .filter((item) => item !== null && item !== undefined && !/^(?:null|undefined)$/i.test(String(item).trim()))
+    .map((item) => `<li>${escaparHTML(String(item))}</li>`)
+    .join("");
 }
 
 const OPCIONES_SELECT_PACIENTE = {
@@ -1214,7 +1247,7 @@ function renderizarGaugeVital(clave, datos = {}) {
   `;
 }
 
-const VERSION_RESUMEN_EXPEDIENTE = "1.41";
+const VERSION_RESUMEN_EXPEDIENTE = "1.42";
 const CAMPOS_RESUMEN_PACIENTE = Object.freeze({
   identificacion: [
     ["alias", "Alias", "text", ["alias", "datosInstitucionales.alias"]],
@@ -7934,7 +7967,7 @@ async function cargarTratamientosPaciente() {
 function renderizarTratamiento(t) {
   const tratamiento = normalizarTratamientoFrecuenciaPaciente(t);
   const indicacion = formatearIndicacionTratamiento(tratamiento, false);
-  const dosisTotalDia = tratamiento.dosisTotalDia || calcularDosisTotalDiaTratamiento(tratamiento).texto || "";
+  const dosisTotalDia = obtenerDosisDiariaTratamiento(tratamiento);
   const indicador = indicadorSeguridadTratamiento(tratamiento);
   const alertaHTML = indicador.estado !== "sin_alertas"
     ? `<button type="button" class="med-alerta-badge med-alerta-${escaparHTML(indicador.clase)}" title="${escaparHTML(indicador.etiqueta)}" data-ver-interacciones>? ${escaparHTML(indicador.etiqueta)}</button>`

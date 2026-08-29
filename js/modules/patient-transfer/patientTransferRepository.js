@@ -13,7 +13,7 @@ import { construirActualizacionSignosVitalesDesdeNota } from "../../services/sig
 import { claveDiagnosticoPaciente } from "../../services/diagnosticosPaciente.js?v=v160-imported-diagnoses-v1";
 import { listarPacientes } from "../../services/usuarios.js?v=20260827-panel-pacientes-fallback-v1";
 import { withPatientTransferTimeout } from "./patientTransferTimeout.js";
-import { findPossiblePatientMatches, normalizeRecordNumber } from "./parsing/patientDuplicateMatcher.js?v=20260813-duplicate-existing-identity-v1";
+import { findPossiblePatientMatches, normalizeRecordNumber } from "./parsing/patientDuplicateMatcher.js?v=20260828-duplicate-repeated-surname-v1";
 import {
   DUPLICATE_RESOLUTION,
   isDocumentEligibleForPersistence,

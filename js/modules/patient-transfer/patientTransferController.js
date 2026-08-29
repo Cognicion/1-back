@@ -19,7 +19,7 @@ import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter
 import { lockTransferGroupsToTargetPatient, normalizePatientTransferLaunchContext } from "./patientTransferLaunchContext.js?v=20260820-patient-notes-import-v1";
 import { adaptTreatmentPlan } from "../clinical-document-engine/adapters/treatmentPlanAdapter.js?v=20260819-midc-allergy-context-v1";
 import { resolveMedicationCandidatesAgainstCatalog } from "../clinical-document-engine/resolvers/medicationCatalogResolver.js?v=20260819-midc-allergy-context-v1";
-import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260828-study-dedup-v1";
+import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260828-duplicate-repeated-surname-v1";
 import {
   DUPLICATE_DETECTION_STATUS,
   DUPLICATE_RESOLUTION,
