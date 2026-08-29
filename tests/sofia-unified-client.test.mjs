@@ -46,4 +46,23 @@ test("solo usa el chat anterior cuando la función unificada no está desplegada
   assert.deepEqual(calls, ["chatSofiaUnified", "chatSofia"]);
   assert.equal(result.legacyFallback, true);
   assert.equal(result.clinicalWritesPerformed, false);
+  assert.equal(result.limitedMode, true);
+});
+
+test("no sustituye silenciosamente el contexto clínico por el chat legado", async () => {
+  const calls = [];
+  const client = createSofiaUnifiedClient({
+    functionsFactory: async () => ({}),
+    callableFactory: (_functions, name) => async () => {
+      calls.push(name);
+      const error = new Error("not found");
+      error.code = "functions/not-found";
+      throw error;
+    }
+  });
+  await assert.rejects(
+    () => client.ask({ message: "Resume el expediente", patientId: "patient-1" }),
+    (error) => error.code === "functions/unavailable" && /contexto clínico autorizado/i.test(error.userMessage)
+  );
+  assert.deepEqual(calls, ["chatSofiaUnified"]);
 });

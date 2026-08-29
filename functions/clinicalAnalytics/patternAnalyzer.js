@@ -5,7 +5,8 @@ const {
 
 function positiveEvents(timeline = []) {
   return timeline
-    .filter((event) => event?.variableId && event.value !== false && event.value !== "negated")
+    .filter((event) => event?.variableId && event.value !== false && event.value !== null && event.value !== "negated")
+    .filter((event) => !["NEGATED", "POSSIBLE", "FAMILY", "UNKNOWN"].includes(event?.provenance?.assertionContext))
     .filter((event) => Number.isFinite(Date.parse(event.observedAt)))
     .sort((a, b) => Date.parse(a.observedAt) - Date.parse(b.observedAt));
 }

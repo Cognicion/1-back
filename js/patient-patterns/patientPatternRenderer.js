@@ -334,7 +334,15 @@ export function renderPatientPatternProfile(container, response = {}, options = 
 
 export function renderPatientPatternError(container, error) {
   if (!container) return;
-  container.innerHTML = `<p class="pattern-error">No se pudo cargar el perfil de patrones: ${escapeHtml(error?.message || "acceso denegado o error temporal")}</p>`;
+  const code = String(error?.code || "").toLowerCase();
+  const message = code.includes("permission-denied")
+    ? "No tienes autorización para consultar este expediente."
+    : code.includes("unauthenticated")
+      ? "Tu sesión ya no está activa. Inicia sesión nuevamente."
+      : code.includes("unavailable")
+        ? "El servicio de análisis no está disponible temporalmente."
+        : "No se pudo cargar el perfil de patrones. Intenta nuevamente más tarde.";
+  container.innerHTML = `<p class="pattern-error">${escapeHtml(message)}</p>`;
 }
 
 export { ANALYSIS_STATE_LABELS, STATUS_PRESENTATION, clinicalStatusFromSpanish, escapeHtml, formatDate };

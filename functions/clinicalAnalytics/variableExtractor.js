@@ -51,6 +51,17 @@ const TERM_RULES = Object.freeze({
 });
 
 const NEGATION = /\b(niega|negó|nego|sin|no|niega presencia de|descarta)\b/i;
+const ASSERTION_CONTEXT = Object.freeze({
+  PRESENT: "PRESENT",
+  NEGATED: "NEGATED",
+  HISTORICAL: "HISTORICAL",
+  POSSIBLE: "POSSIBLE",
+  FAMILY: "FAMILY",
+  UNKNOWN: "UNKNOWN"
+});
+const HISTORICAL_CONTEXT = /\b(antecedente|antecedentes|previo|previos|histori[ac]o|hace\s+\d+|en\s+20\d{2})\b/i;
+const POSSIBLE_CONTEXT = /\b(posible|sospecha|a descartar|descartar|probable|se investiga)\b/i;
+const FAMILY_CONTEXT = /\b(madre|padre|herman[oa]?|hijo|hija|familiar(?:es)?|pareja)\b/i;
 
 function inferAge(patient = {}) {
   if (Number.isFinite(Number(patient.edad))) return Number(patient.edad);
@@ -78,7 +89,7 @@ function evidenceExcerpt(text, matchIndex = 0, matchLength = 0) {
 
 function createVariable(variableId, value, observedAt, source, confidence = 0.7, displayValue = value) {
   const definition = VARIABLE_CATALOG[variableId];
-  if (!definition || value === null || value === undefined || value === "") return null;
+  if (!definition || ((value === null || value === undefined || value === "") && source?.allowUnknown !== true)) return null;
   return {
     variableId,
     ...definition,
@@ -97,12 +108,28 @@ function createVariable(variableId, value, observedAt, source, confidence = 0.7,
       sourceDocumentId: source.sourceDocumentId || null,
       excerpt: source.excerpt || null,
       polarity: source.polarity || null,
+      assertionContext: source.assertionContext || ASSERTION_CONTEXT.PRESENT,
       ruleApplied: source.ruleApplied || null,
       observedAt: observedAt || null,
       extractedAt: new Date().toISOString(),
       extractorVersion: CLINICAL_EXTRACTOR_VERSION
     }
   };
+}
+
+function clauseAtMatch(text = "", index = 0) {
+  const value = String(text || "");
+  const boundary = Math.max(value.lastIndexOf(".", index), value.lastIndexOf(";", index), value.lastIndexOf("\n", index));
+  return value.slice(Math.max(0, boundary + 1), Math.min(value.length, index + 180));
+}
+
+function classifyAssertionContext(text, matchIndex = 0) {
+  const clause = clauseAtMatch(text, matchIndex);
+  if (FAMILY_CONTEXT.test(clause)) return ASSERTION_CONTEXT.FAMILY;
+  if (NEGATION.test(clause)) return ASSERTION_CONTEXT.NEGATED;
+  if (POSSIBLE_CONTEXT.test(clause)) return ASSERTION_CONTEXT.POSSIBLE;
+  if (HISTORICAL_CONTEXT.test(clause)) return ASSERTION_CONTEXT.HISTORICAL;
+  return ASSERTION_CONTEXT.PRESENT;
 }
 
 function extractClinicalVariables(context) {
@@ -139,15 +166,18 @@ function extractClinicalVariables(context) {
       Object.entries(TERM_RULES).forEach(([variableId, rule]) => {
         if (!rule.test(value)) return;
         const match = value.match(rule);
-        const clauseBeforeMatch = match ? value.slice(0, match.index).split(/[.;,]/).pop() : "";
-        const negated = NEGATION.test(clauseBeforeMatch);
-        variables.push(createVariable(variableId, !negated, observedAt, {
+        const assertionContext = classifyAssertionContext(value, match?.index || 0);
+        const negated = assertionContext === ASSERTION_CONTEXT.NEGATED;
+        const uncertain = [ASSERTION_CONTEXT.POSSIBLE, ASSERTION_CONTEXT.FAMILY, ASSERTION_CONTEXT.UNKNOWN].includes(assertionContext);
+        variables.push(createVariable(variableId, uncertain ? null : !negated, observedAt, {
           ...sourceBase,
           sourceField,
           excerpt: evidenceExcerpt(value, match?.index || 0, match?.[0]?.length || 0),
-          polarity: negated ? "negative" : "positive",
-          ruleApplied: `term_rule:${variableId}:v1`
-        }, negated ? 0.88 : 0.72, negated ? "negated" : "observed"));
+          polarity: negated ? "negative" : (uncertain ? "uncertain" : "positive"),
+          assertionContext,
+          allowUnknown: uncertain,
+          ruleApplied: `term_rule:${variableId}:context-v2`
+        }, negated ? 0.88 : (uncertain ? 0.55 : 0.72), negated ? "negated" : assertionContext.toLowerCase()));
       });
     });
   });
@@ -156,10 +186,12 @@ function extractClinicalVariables(context) {
 
 module.exports = {
   NEGATION,
+  ASSERTION_CONTEXT,
   TERM_RULES,
   VARIABLE_CATALOG,
   createVariable,
   evidenceExcerpt,
+  classifyAssertionContext,
   extractClinicalVariables,
   inferAge,
   textFields

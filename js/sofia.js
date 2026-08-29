@@ -152,14 +152,14 @@ onAuthStateChanged(auth, async (user) => {
     }
     perfilActual = snapUsuario.data();
     const rol = String(perfilActual.rol || "").toLowerCase();
-    if (rol !== "admin" && !usuarioEsPersonalClinico(rol)) {
-      bloquearAcceso("Acceso restringido. SOFIA v2 esta disponible para admin y personal clinico autorizado.");
+    if (!usuarioEsPersonalClinico(rol)) {
+      bloquearAcceso("Acceso restringido. SOFÍA con expediente está disponible únicamente para personal clínico autorizado.");
       return;
     }
     estadoAcceso.textContent = "Acceso concedido. SOFIA v2 trabaja en modo explicable y no modifica el expediente.";
     await cargarSelectorPacientes();
   } catch (error) {
-    console.error(error);
+    console.debug("[SOFÍA][AUTH_ERROR]", { code: String(error?.code || error?.name || "unknown").slice(0, 120) });
     bloquearAcceso("No se pudo verificar el acceso. Intenta iniciar sesion nuevamente.");
   }
 });
@@ -315,6 +315,10 @@ limpiarCritica?.addEventListener("click", () => {
 });
 
 async function cargarPacienteSeleccionado(idPaciente) {
+  if (!pacientesSofia.some((patient) => patient.id === idPaciente)) {
+    console.debug("[SOFÍA][SOURCE]", { panel: "patient-selection", source: "REJECTED_UNAUTHORIZED_SELECTION" });
+    throw new Error("SOFIA_PATIENT_NOT_AUTHORIZED");
+  }
   sofiaUnifiedClient.selectPatient(idPaciente);
   emitSofiaState("analyzing", "patient-selection");
   setLoadingPanels("Construyendo paciente digital...");
@@ -326,6 +330,7 @@ async function cargarPacienteSeleccionado(idPaciente) {
       cargarExpedientePacienteSofia(idPaciente)
     ]);
     renderClinicalAnalysis(analysisContainer, analysisResult);
+    tracePanelSource("structured-analysis", "BACKEND_CANONICAL");
     expedienteActual = expediente;
     timelineActual = construirLineaTiempo(expedienteActual);
     const digital = construirPacienteDigital(expedienteActual);
@@ -345,18 +350,28 @@ async function cargarPacienteSeleccionado(idPaciente) {
       electrocardiogram
     });
     renderPacienteDigital(digital);
+    tracePanelSource("patient-digital", "LOCAL_DETERMINISTIC");
     renderTimeline(timelineActual);
+    tracePanelSource("timeline", "LOCAL_DETERMINISTIC");
     renderMapa(construirMapaRelaciones(expedienteActual));
+    tracePanelSource("relationships", "LOCAL_DETERMINISTIC");
     renderNarrativa(narrativa);
+    tracePanelSource("narrative", "LOCAL_DETERMINISTIC");
     renderRazonamiento(razonamiento);
+    tracePanelSource("clinical-reasoning", "LOCAL_DETERMINISTIC");
     renderStack("alertasSofia", alertas);
-    renderStack("prediccionSofia", digital.riesgos.map((r) => ({ titulo: r.titulo, nivel: r.nivel, detalle: `Factores: ${(r.factores || []).join(", ")}`, accion: `Variables faltantes: ${(r.faltantes || []).join(", ")}` })));
+    tracePanelSource("alerts", "LOCAL_DETERMINISTIC");
+    renderStack("prediccionSofia", digital.riesgos.map((r) => ({ titulo: r.titulo, nivel: r.nivel, detalle: `Marcadores: ${(r.factores || []).join(", ")}`, accion: `Datos por verificar: ${(r.faltantes || []).join(", ")}` })));
+    tracePanelSource("clinical-signals", "LOCAL_DETERMINISTIC");
     renderStack("labsSofia", monitorizacion.map((r) => ({ titulo: r.estudio, nivel: r.prioridad, detalle: r.motivo, accion: `${r.periodicidad}. ${r.relacion}` })));
+    tracePanelSource("monitoring", "LOCAL_DETERMINISTIC");
     renderFarmaco(expedienteActual);
+    tracePanelSource("pharmacology", "LOCAL_DETERMINISTIC");
     renderEcgInterpretation(document.getElementById("ecgSofia"), electrocardiogram);
+    tracePanelSource("electrocardiogram", "LOCAL_DETERMINISTIC");
     emitSofiaState("completed", "patient-selection", { duration: 1600, fallbackState: "idle" });
   } catch (error) {
-    console.error(error);
+    console.debug("[SOFÍA][LOAD_ERROR]", { code: String(error?.code || error?.name || "unknown").slice(0, 120) });
     panelContextActual = {};
     renderClinicalAnalysisError(analysisContainer, error);
     emitSofiaState("error", "patient-selection", { duration: 2200, fallbackState: "idle" });
@@ -495,7 +510,7 @@ function construirContextoHerramientasPagina({ digital, narrativa, razonamiento,
       level: riesgo.nivel || null,
       factors: (riesgo.factores || []).slice(0, 12),
       missingVariables: (riesgo.faltantes || []).slice(0, 12),
-      method: "local_rules"
+      method: "local_deterministic_clinical_signals"
     })),
     narrative: narrativa || "",
     clinical_reasoning: (razonamiento || []).slice(0, 12).map((item) => ({
@@ -564,6 +579,10 @@ function renderEstadoVacio(texto) {
   setLoadingPanels(texto);
 }
 
+function tracePanelSource(panel, source) {
+  console.debug("[SOFÍA][SOURCE]", { panel, source });
+}
+
 formSofia?.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (enviandoMensaje) return;
@@ -601,17 +620,26 @@ formSofia?.addEventListener("submit", async (e) => {
     mensajePensando.textContent = respuesta;
     agregarTrazasHerramientas(mensajePensando, resultado);
   } catch (error) {
-    console.error(error);
+    console.debug("[SOFÍA][CHAT_ERROR]", { code: String(error?.code || error?.name || "unknown").slice(0, 120) });
     chatFailed = true;
     emitSofiaState("error", "chat-submit", { duration: 2200, fallbackState: "idle" });
     mensajePensando.className = "msg sofia mensaje-error";
-    mensajePensando.textContent = "SOFIA tuvo un problema para responder. Intenta de nuevo en unos segundos.";
+    mensajePensando.textContent = mensajeErrorSofia(error);
   } finally {
     if (!chatFailed) emitSofiaState("idle", "chat-finished");
     desactivarCarga();
     chatBox.scrollTop = chatBox.scrollHeight;
   }
 });
+
+function mensajeErrorSofia(error) {
+  const code = String(error?.code || "").toLowerCase();
+  if (code.includes("resource-exhausted")) return "Has alcanzado temporalmente el límite de uso de SOFÍA. Intenta nuevamente más tarde.";
+  if (code.includes("permission-denied")) return "No tienes autorización para usar SOFÍA con este expediente.";
+  if (code.includes("unauthenticated")) return "Tu sesión ya no está activa. Inicia sesión nuevamente.";
+  if (code.includes("unavailable") || error?.message === "SOFIA_UNIFIED_CONTEXT_UNAVAILABLE") return error?.userMessage || "SOFÍA no puede acceder al contexto clínico autorizado en este momento. Intenta nuevamente más tarde.";
+  return "SOFÍA tuvo un problema para responder. Intenta de nuevo en unos segundos.";
+}
 
 function metric(label, value) { return `<div class="metric-card"><small>${escapeHtml(label)}</small><strong>${escapeHtml(value)}</strong></div>`; }
 function lista(titulo, items = []) { return `<div class="reason-block"><b>${escapeHtml(titulo)}</b><ul>${items.map((i) => `<li>${escapeHtml(i)}</li>`).join("") || "<li>Sin datos</li>"}</ul></div>`; }

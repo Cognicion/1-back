@@ -18,7 +18,14 @@ const {
   processClinicalAnalyticsWrite,
   processClinicalPatientWrite
 } = require("./clinicalAnalytics/handlers");
-const { runUnifiedSofia } = require("./sofiaOrchestrator/orchestrator");
+const {
+  runUnifiedSofia,
+  acquireSofiaRateLimit,
+  releaseSofiaRateLimit,
+  recordSofiaTelemetry,
+  createSofiaRequestId
+} = require("./sofiaOrchestrator/orchestrator");
+const { assertAuthorizedSofiaActor } = require("./sofiaOrchestrator/contextService");
 const {
   getPatientPatternProfile,
   refreshPatientPatternProfileHandler,
@@ -918,11 +925,16 @@ exports.chatSofia = onCall(
       throw new HttpsError("invalid-argument", "Mensaje inválido.");
     }
 
-    const client = new OpenAI({
-      apiKey: OPENAI_API_KEY.value(),
-    });
-
-    const response = await client.responses.create({
+    await assertAuthorizedSofiaActor(request, adminDb);
+    const requestId = createSofiaRequestId();
+    const startedAt = Date.now();
+    await acquireSofiaRateLimit({ db: adminDb, uid: request.auth.uid, requestId, now: startedAt });
+    let response;
+    try {
+      const client = new OpenAI({
+        apiKey: OPENAI_API_KEY.value(),
+      });
+      response = await client.responses.create({
   model: "gpt-5.5",
   instructions: `
 Eres SOFÍA (Sistema de Orientación, Formación e Inteligencia Asistida), el motor de inteligencia artificial de Cognición.
@@ -953,7 +965,40 @@ Actualmente todavía no tienes acceso a expedientes clínicos, memoria conversac
 Tu objetivo es potenciar el razonamiento del profesional de la salud, no reemplazarlo.
 `,
   input: mensaje,
+  store: false
 });
+    } catch (error) {
+      await recordSofiaTelemetry({
+        db: adminDb,
+        requestId,
+        uid: request.auth.uid,
+        model: "gpt-5.5",
+        startedAt,
+        error,
+        mode: "legacy"
+      });
+      throw error;
+    } finally {
+      await releaseSofiaRateLimit({ db: adminDb, uid: request.auth.uid, requestId });
+    }
+
+    await recordSofiaTelemetry({
+      db: adminDb,
+      requestId,
+      uid: request.auth.uid,
+      model: "gpt-5.5",
+      startedAt,
+      result: {
+        usage: {
+          inputTokens: response?.usage?.input_tokens ?? null,
+          outputTokens: response?.usage?.output_tokens ?? null,
+          totalTokens: response?.usage?.total_tokens ?? null
+        },
+        totalToolCalls: 0,
+        rounds: 0
+      },
+      mode: "legacy"
+    });
 
     return {
       respuesta: response.output_text || "No pude generar respuesta.",

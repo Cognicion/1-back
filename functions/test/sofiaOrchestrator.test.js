@@ -7,8 +7,11 @@ const {
   normalizeMessage,
   runToolLoop,
   runUnifiedSofia,
-  sanitizeHistory
+  sanitizeHistory,
+  acquireSofiaRateLimit,
+  releaseSofiaRateLimit
 } = require("../sofiaOrchestrator/orchestrator");
+const { SOFIA_RELEASE_CONFIG } = require("../sofiaOrchestrator/config");
 const { buildAuthorizedSofiaContext, sanitizePageState } = require("../sofiaOrchestrator/contextService");
 
 function createContext() {
@@ -72,6 +75,7 @@ function createFakeDb({ actor, patient }) {
     };
   }
   return {
+    _stored: stored,
     doc(path) { return reference(path); },
     collection(path) { return collection(path); },
     batch() {
@@ -80,6 +84,12 @@ function createFakeDb({ actor, patient }) {
         set(ref, value, options) { operations.push(() => ref.set(value, options)); },
         async commit() { for (const operation of operations) await operation(); }
       };
+    },
+    async runTransaction(callback) {
+      return callback({
+        get(ref) { return ref.get(); },
+        set(ref, value, options) { return ref.set(value, options); }
+      });
     },
   };
 }
@@ -235,24 +245,119 @@ async function run() {
     constructor(options) {
       assert.strictEqual(options.apiKey, "test-key");
       this.responses = {
-        async create() {
-          return { output_text: "Respuesta unificada.", output: [{ type: "message", role: "assistant" }] };
+        async create(payload) {
+          assert.strictEqual(payload.store, false);
+          return {
+            output_text: "Respuesta unificada.",
+            output: [{ type: "message", role: "assistant" }],
+            usage: { input_tokens: 120, output_tokens: 24, total_tokens: 144 }
+          };
         }
       };
     }
   }
+  const unifiedDb = createFakeDb({ actor: { rol: "medico" }, patient: { rol: "paciente", medicoTratanteUid: "doctor-1", edad: 34 } });
   const unified = await runUnifiedSofia({
     request: {
       auth: { uid: "doctor-1", token: {} },
       data: { mensaje: "Resume el expediente.", patientId: "patient-1", history: [] }
     },
-    db: createFakeDb({ actor: { rol: "medico" }, patient: { rol: "paciente", medicoTratanteUid: "doctor-1", edad: 34 } }),
+    db: unifiedDb,
     apiKey: "test-key",
     OpenAIClass: FakeOpenAI
   });
   assert.strictEqual(unified.respuesta, "Respuesta unificada.");
   assert.strictEqual(unified.mode, "patient");
   assert.strictEqual(unified.clinicalWritesPerformed, false);
+  const telemetryEntries = [...unifiedDb._stored.entries()].filter(([path]) => path.startsWith("sofiaTelemetry/"));
+  assert.strictEqual(telemetryEntries.length, 1);
+  const telemetry = telemetryEntries[0][1];
+  assert.strictEqual(telemetry.inputTokens, 120);
+  assert.strictEqual(telemetry.outputTokens, 24);
+  assert.strictEqual(telemetry.totalTokens, 144);
+  assert.strictEqual(telemetry.success, true);
+  assert.strictEqual(telemetry.mode, "patient");
+  assert.ok(telemetry.pseudonymousUserId);
+  assert.ok(!JSON.stringify(telemetry).includes("doctor-1"));
+  for (const forbiddenField of ["patientId", "name", "email", "message", "mensaje", "prompt", "response", "respuesta", "history", "note", "nota"]) {
+    assert.strictEqual(Object.hasOwn(telemetry, forbiddenField), false);
+  }
+
+  assert.deepStrictEqual(SOFIA_RELEASE_CONFIG.limits, {
+    windowMs: 5 * 60 * 1000,
+    requestsPerWindow: 12,
+    burstWindowMs: 30 * 1000,
+    burstRequests: 3,
+    maxConcurrentRequests: 2,
+    leaseMs: 130 * 1000
+  });
+
+  const rateDb = createFakeDb({ actor: { rol: "medico" }, patient: { rol: "paciente", medicoTratanteUid: "doctor-1" } });
+  await acquireSofiaRateLimit({ db: rateDb, uid: "doctor-1", requestId: "request-1", now: 1_000 });
+  await acquireSofiaRateLimit({ db: rateDb, uid: "doctor-1", requestId: "request-2", now: 1_100 });
+  await assert.rejects(
+    () => acquireSofiaRateLimit({ db: rateDb, uid: "doctor-1", requestId: "request-3", now: 1_200 }),
+    (error) => error.code === "resource-exhausted"
+  );
+  await releaseSofiaRateLimit({ db: rateDb, uid: "doctor-1", requestId: "request-1" });
+  await acquireSofiaRateLimit({ db: rateDb, uid: "doctor-1", requestId: "request-3", now: 1_300 });
+
+  const burstDb = createFakeDb({ actor: {}, patient: {} });
+  for (let index = 0; index < 3; index += 1) {
+    const requestId = `burst-${index}`;
+    await acquireSofiaRateLimit({ db: burstDb, uid: "doctor-1", requestId, now: 10_000 + index });
+    await releaseSofiaRateLimit({ db: burstDb, uid: "doctor-1", requestId });
+  }
+  await assert.rejects(
+    () => acquireSofiaRateLimit({ db: burstDb, uid: "doctor-1", requestId: "burst-3", now: 10_003 }),
+    (error) => error.code === "resource-exhausted"
+  );
+  await acquireSofiaRateLimit({ db: burstDb, uid: "doctor-1", requestId: "burst-reset", now: 40_001 });
+
+  const windowDb = createFakeDb({ actor: {}, patient: {} });
+  const windowStart = 1_000_000;
+  for (let index = 0; index < 12; index += 1) {
+    const requestId = `window-${index}`;
+    const now = windowStart + Math.floor(index / 3) * 31_000 + (index % 3);
+    await acquireSofiaRateLimit({ db: windowDb, uid: "doctor-1", requestId, now });
+    await releaseSofiaRateLimit({ db: windowDb, uid: "doctor-1", requestId });
+  }
+  await assert.rejects(
+    () => acquireSofiaRateLimit({ db: windowDb, uid: "doctor-1", requestId: "window-13", now: windowStart + 93_003 }),
+    (error) => error.code === "resource-exhausted"
+  );
+  await acquireSofiaRateLimit({ db: windowDb, uid: "doctor-1", requestId: "window-reset", now: windowStart + 300_001 });
+
+  const leaseDb = createFakeDb({ actor: {}, patient: {} });
+  await acquireSofiaRateLimit({ db: leaseDb, uid: "doctor-1", requestId: "lease-1", now: 100_000 });
+  await acquireSofiaRateLimit({ db: leaseDb, uid: "doctor-1", requestId: "lease-2", now: 100_001 });
+  await acquireSofiaRateLimit({ db: leaseDb, uid: "doctor-1", requestId: "lease-after-expiration", now: 230_002 });
+
+  class FailingOpenAI {
+    constructor() {
+      throw Object.assign(new Error("simulated_openai_failure"), { code: "unavailable" });
+    }
+  }
+  const failureDb = createFakeDb({ actor: { rol: "medico" }, patient: { rol: "paciente", medicoTratanteUid: "doctor-1" } });
+  await assert.rejects(
+    () => runUnifiedSofia({
+      request: {
+        auth: { uid: "doctor-1", token: {} },
+        data: { mensaje: "Prueba controlada.", patientId: "patient-1", history: [] }
+      },
+      db: failureDb,
+      apiKey: "test-key",
+      OpenAIClass: FailingOpenAI
+    }),
+    (error) => error.code === "unavailable"
+  );
+  const failedUsage = [...failureDb._stored.entries()].find(([path]) => path.startsWith("sofiaUsageLimits/"))?.[1];
+  assert.deepStrictEqual(failedUsage.activeRequests, {});
+  const failedTelemetry = [...failureDb._stored.entries()].find(([path]) => path.startsWith("sofiaTelemetry/"))?.[1];
+  assert.strictEqual(failedTelemetry.success, false);
+  assert.strictEqual(failedTelemetry.errorCode, "unavailable");
+  assert.ok(!JSON.stringify(failedTelemetry).includes("Prueba controlada"));
+  await acquireSofiaRateLimit({ db: failureDb, uid: "doctor-1", requestId: "after-failure", now: Date.now() + 1 });
 
   assert.strictEqual(normalizeMessage(" hola "), "hola");
   assert.deepStrictEqual(sanitizeHistory([{ role: "system", content: "ignorar" }, { role: "user", content: "Nombre privado está estable" }], ["Nombre privado"]), [{ role: "user", content: "[paciente actual] está estable" }]);

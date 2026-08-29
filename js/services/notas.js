@@ -15,6 +15,17 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const COLECCION_NOTAS = "notasMedicas";
+const PRIORIDAD_FUENTE_NOTA = Object.freeze({
+  "usuarios:notasMedicas": 0,
+  "usuarios:notasClinicas": 1,
+  "usuarios:notas": 2,
+  "pacientes:notasMedicas": 3,
+  "pacientes:notasClinicas": 4,
+  "pacientes:notas": 5,
+  "root:notasMedicas": 6,
+  "root:notasClinicas": 7,
+  "root:notas": 8
+});
 
 function referenciaNota(uidPaciente, notaId = "") {
   if (!uidPaciente) throw new Error("No se pudo identificar al paciente.");
@@ -235,6 +246,42 @@ function descomponerIdNota(notaId) {
   };
 }
 
+function textoComparableNota(nota = {}) {
+  return [
+    nota.notaId,
+    nota.idNota,
+    nota.documentId,
+    nota.sourceDocumentId,
+    nota.subjetivo,
+    nota.objetivo,
+    nota.analisis,
+    nota.plan,
+    nota.padecimientoActual,
+    nota.texto,
+    nota.nota
+  ].filter(Boolean).join(" ")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 2000);
+}
+
+function claveLogicaNota(snapshot) {
+  const nota = snapshot.data?.() || {};
+  const externalId = nota.notaId || nota.idNota || nota.documentId || nota.sourceDocumentId;
+  if (externalId) return `external:${externalId}`;
+  const texto = textoComparableNota(nota);
+  const fecha = fechaNotaEnMs(nota);
+  return texto ? `content:${fecha}:${texto}` : `physical:${snapshot.id}`;
+}
+
+function prioridadFuenteNota(snapshot) {
+  const nota = snapshot.data?.() || {};
+  return PRIORIDAD_FUENTE_NOTA[`${nota.__notaRaiz}:${nota.__notaColeccion}`] ?? 99;
+}
+
 export async function obtenerHistorialNotas(uidPaciente) {
   const coleccionesCompatibles = [
     "notasMedicas",
@@ -293,7 +340,16 @@ export async function obtenerHistorialNotas(uidPaciente) {
     }
   }
 
-  const docs = [...notasPorClave.values()].sort((a, b) => {
+  const notasPorContenido = new Map();
+  notasPorClave.values().forEach((snapshot) => {
+    const key = claveLogicaNota(snapshot);
+    const current = notasPorContenido.get(key);
+    if (!current || prioridadFuenteNota(snapshot) < prioridadFuenteNota(current)) {
+      notasPorContenido.set(key, snapshot);
+    }
+  });
+
+  const docs = [...notasPorContenido.values()].sort((a, b) => {
     const datosA = a.data?.() || {};
     const datosB = b.data?.() || {};
     return fechaNotaEnMs(datosB) - fechaNotaEnMs(datosA);

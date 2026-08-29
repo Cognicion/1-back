@@ -1,6 +1,9 @@
 const { CLINICAL_RECORD_COLLECTIONS } = require("./config");
 
 const COLLECTIONS = CLINICAL_RECORD_COLLECTIONS;
+const NOTE_COLLECTIONS = new Set(["notasMedicas", "notas", "notasClinicas"]);
+const NOTE_SOURCE_PRIORITY = Object.freeze({ usuarios: 0, pacientes: 1 });
+const NOTE_COLLECTION_PRIORITY = Object.freeze({ notasMedicas: 0, notasClinicas: 1, notas: 2 });
 
 function valueToIso(value) {
   if (value === null || value === undefined || value === "") return null;
@@ -26,11 +29,49 @@ async function readCollection(db, patientId, collectionName) {
   ])).flat();
   const unique = new Map();
   records.forEach((record) => unique.set(`${record._sourceRoot}:${record.id}`, record));
-  return [...unique.values()].sort((a, b) => String(valueToIso(b.updatedAt || b.fecha || b.createdAt) || "").localeCompare(String(valueToIso(a.updatedAt || a.fecha || a.createdAt) || "")));
+  const uniqueRecords = [...unique.values()];
+  const deduplicated = NOTE_COLLECTIONS.has(collectionName)
+    ? deduplicateClinicalNotes(uniqueRecords)
+    : uniqueRecords;
+  return deduplicated.sort((a, b) => String(valueToIso(b.updatedAt || b.fecha || b.createdAt) || "").localeCompare(String(valueToIso(a.updatedAt || a.fecha || a.createdAt) || "")));
+}
+
+function noteContentKey(record = {}) {
+  const externalId = record.notaId || record.idNota || record.documentId || record.sourceDocumentId;
+  if (externalId) return `external:${externalId}`;
+  const content = [record.subjetivo, record.objetivo, record.analisis, record.plan, record.padecimientoActual, record.texto, record.nota]
+    .filter(Boolean)
+    .join(" ")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 2000);
+  const date = valueToIso(record.fechaNota || record.fecha || record.createdAt || record.updatedAt) || "";
+  return content ? `content:${date}:${content}` : `physical:${record._sourceRoot}:${record.id}`;
+}
+
+function deduplicateClinicalNotes(records = []) {
+  const unique = new Map();
+  records.forEach((record) => {
+    const key = noteContentKey(record);
+    const current = unique.get(key);
+    const currentPriority = `${String(NOTE_COLLECTION_PRIORITY[current?._recordType] ?? 99).padStart(2, "0")}:${String(NOTE_SOURCE_PRIORITY[current?._sourceRoot] ?? 99).padStart(2, "0")}`;
+    const nextPriority = `${String(NOTE_COLLECTION_PRIORITY[record._recordType] ?? 99).padStart(2, "0")}:${String(NOTE_SOURCE_PRIORITY[record._sourceRoot] ?? 99).padStart(2, "0")}`;
+    if (!current || nextPriority < currentPriority) unique.set(key, record);
+  });
+  return [...unique.values()];
 }
 
 async function buildPatientClinicalContext({ db, patientId, patient }) {
   const records = Object.fromEntries(await Promise.all(COLLECTIONS.map(async (collectionName) => [collectionName, await readCollection(db, patientId, collectionName)])));
+  const noteRecords = Object.values(records).flat().filter((record) => NOTE_COLLECTIONS.has(record._recordType));
+  const retainedNoteIds = new Set(deduplicateClinicalNotes(noteRecords).map((record) => `${record._sourceRoot}:${record._recordType}:${record.id}`));
+  Object.keys(records).forEach((collectionName) => {
+    if (!NOTE_COLLECTIONS.has(collectionName)) return;
+    records[collectionName] = records[collectionName].filter((record) => retainedNoteIds.has(`${record._sourceRoot}:${record._recordType}:${record.id}`));
+  });
   return {
     patientId,
     patient: { ...patient, _recordType: "patientProfile" },
@@ -40,4 +81,4 @@ async function buildPatientClinicalContext({ db, patientId, patient }) {
   };
 }
 
-module.exports = { buildPatientClinicalContext, valueToIso, COLLECTIONS, readCollection, readCollectionAtRoot };
+module.exports = { buildPatientClinicalContext, valueToIso, COLLECTIONS, readCollection, readCollectionAtRoot, deduplicateClinicalNotes, noteContentKey };

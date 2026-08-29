@@ -3,7 +3,12 @@ const { extractClinicalVariables } = require("../clinicalAnalytics/variableExtra
 const { buildPatientPatternProfile } = require("../clinicalAnalytics/patientPatternProfileBuilder");
 const { buildBssObservation } = require("../clinicalAnalytics/suicideIdeationBeckInferenceService");
 const { normalizeClinicalTime } = require("../clinicalAnalytics/patientTemporalNormalizer");
-const { confirmedBssInstrument, getPatientPatternProfile } = require("../clinicalAnalytics/patientPatternHandlers");
+const {
+  confirmedBssInstrument,
+  getPatientPatternProfile,
+  reviewPatientPatternResult,
+  searchAuthorizedPatternPatients
+} = require("../clinicalAnalytics/patientPatternHandlers");
 const { assertAuthorizedPatientClinician } = require("../clinicalAnalytics/access");
 
 function bssItems(count = 19) {
@@ -104,6 +109,15 @@ const undatedContext = {
 const undatedProfile = buildPatientPatternProfile({ patientId: "patient-protected", context: undatedContext, variables: [] });
 assert.strictEqual(undatedProfile.sourceDocuments[0].sourceDate, null, "Una fecha ausente no debe convertirse en 1970");
 
+const emptyProfile = buildPatientPatternProfile({
+  patientId: "patient-without-data",
+  context: { patientId: "patient-without-data", patient: {}, records: {} },
+  variables: []
+});
+assert.strictEqual(emptyProfile.patternObservations.length, 0);
+assert.ok(emptyProfile.patterns.every((pattern) => pattern.status === "insufficient_data"));
+assert.ok(emptyProfile.patterns.every((pattern) => pattern.currentState?.value === null));
+
 const nextContext = {
   patientId: "patient-protected",
   patient: { edad: 32 },
@@ -123,6 +137,28 @@ assert.ok(nextPattern.observations.some((item) => item.status === "present"), "L
 assert.ok(nextPattern.observations.some((item) => item.status === "absent"), "La negación debe generar una observación negativa");
 assert.strictEqual(nextPattern.currentState.value, false);
 assert.ok(nextPattern.evidence.every((item) => item.ruleApplied), "Toda evidencia debe conservar la regla aplicada");
+
+const contextualRecords = [
+  ["note-historical", "Antecedente de intento suicida en 2024.", "historical"],
+  ["note-family", "Madre falleció por suicidio.", "insufficient_data"],
+  ["note-possible", "Se debe descartar ideación suicida.", "possible"]
+];
+contextualRecords.forEach(([id, texto, expectedStatus]) => {
+  const context = {
+    patientId: "patient-protected",
+    patient: {},
+    records: { notasMedicas: [{ id, _recordType: "notasMedicas", fecha: "2026-08-21", texto }] }
+  };
+  const profile = buildPatientPatternProfile({ patientId: "patient-protected", context, variables: extractClinicalVariables(context) });
+  const pattern = profile.patterns.find((item) => item.key === "suicidal_ideation");
+  if (id === "note-historical") {
+    const attempt = profile.clinicalVariables.find((item) => item.variableId === "suicide_attempt");
+    assert.strictEqual(attempt.provenance.assertionContext, "HISTORICAL", "El antecedente conserva su contexto temporal");
+  } else {
+    assert.strictEqual(pattern.status, expectedStatus, "El contexto no debe convertirse en presencia actual");
+  }
+  assert.ok(profile.evidence.every((item) => item.assertionContext), "La evidencia conserva contexto de aserción");
+});
 
 const deletedSourceProfile = buildPatientPatternProfile({
   patientId: "patient-protected",
@@ -179,7 +215,152 @@ async function verifyStrictClinicianAccess() {
   );
 }
 
-Promise.all([verifyBackendDenial(), verifyStrictClinicianAccess()])
+function createReviewDb({ authorized = true } = {}) {
+  const writes = new Map();
+  const originalObservation = {
+    id: "observation-1",
+    patternKey: "suicidal_ideation",
+    status: "present",
+    value: true,
+    confidence: 0.91,
+    evidenceIds: ["evidence-1"]
+  };
+  const values = new Map([
+    ["usuarios/doctor-authorized", { rol: "medico" }],
+    ["usuarios/patient-protected", { rol: "paciente", medicoTratanteUid: authorized ? "doctor-authorized" : "doctor-other" }],
+    ["usuarios/patient-protected/clinicalPatternProfiles/current/observations/observation-1", originalObservation]
+  ]);
+  function reference(path) {
+    return {
+      path,
+      async get() {
+        const value = values.get(path);
+        return { exists: Boolean(value), data: () => value || {} };
+      },
+      async set(value) {
+        writes.set(path, value);
+      },
+      collection(name) {
+        return collection(`${path}/${name}`);
+      }
+    };
+  }
+  function collection(path) {
+    return {
+      doc(id) {
+        return reference(`${path}/${id}`);
+      }
+    };
+  }
+  return {
+    writes,
+    doc(path) {
+      return reference(path);
+    },
+    collection(path) {
+      return collection(path);
+    }
+  };
+}
+
+async function verifySeparatedReview() {
+  const db = createReviewDb();
+  const result = await reviewPatientPatternResult({
+    request: {
+      auth: { uid: "doctor-authorized", token: {} },
+      data: {
+        patientId: "patient-protected",
+        targetType: "pattern_observation",
+        targetId: "observation-1",
+        action: "correct",
+        clinicianValue: false,
+        status: "absent"
+      }
+    },
+    db
+  });
+  assert.strictEqual(result.reviewStoredSeparately, true);
+  assert.strictEqual(db.writes.size, 1, "La revisión no debe modificar el perfil computado");
+  const [reviewPath, review] = [...db.writes.entries()][0];
+  assert.match(reviewPath, /^usuarios\/patient-protected\/clinicalPatternReviews\/review-/);
+  assert.strictEqual(review.action, "correct");
+  assert.strictEqual(review.status, "absent");
+  assert.strictEqual(review.clinicianValue, false);
+  assert.strictEqual(review.changedBy, "doctor-authorized");
+  assert.ok(Date.parse(review.changedAt));
+  assert.deepStrictEqual(review.originalInference, {
+    id: "observation-1",
+    patternKey: "suicidal_ideation",
+    status: "present",
+    value: true,
+    confidence: 0.91,
+    evidenceIds: ["evidence-1"]
+  });
+
+  const deniedDb = createReviewDb({ authorized: false });
+  await assert.rejects(
+    () => reviewPatientPatternResult({
+      request: {
+        auth: { uid: "doctor-authorized", token: {} },
+        data: {
+          patientId: "patient-protected",
+          targetType: "pattern_observation",
+          targetId: "observation-1",
+          action: "confirm"
+        }
+      },
+      db: deniedDb
+    }),
+    (error) => error.code === "permission-denied"
+  );
+  assert.strictEqual(deniedDb.writes.size, 0);
+}
+
+function createSearchDb({ actorRole = "medico" } = {}) {
+  const patients = [
+    { id: "patient-authorized", data: () => ({ rol: "paciente", nombreCompleto: "Paciente Autorizado", curp: "CURP-NO-EXPONER", medicoTratanteUid: "doctor-authorized" }) },
+    { id: "patient-other", data: () => ({ rol: "paciente", nombreCompleto: "Paciente Ajeno", curp: "CURP-AJENO", medicoTratanteUid: "doctor-other" }) }
+  ];
+  return {
+    doc(path) {
+      return {
+        async get() {
+          if (path === "usuarios/doctor-authorized") return { exists: true, data: () => ({ rol: actorRole }) };
+          const patient = patients.find((item) => path === `usuarios/${item.id}`);
+          return patient ? { exists: true, data: patient.data } : { exists: false, data: () => ({}) };
+        }
+      };
+    },
+    collection(path) {
+      assert.strictEqual(path, "usuarios");
+      return {
+        where(field, operator, value) {
+          assert.deepStrictEqual([field, operator, value], ["rol", "==", "paciente"]);
+          return { async get() { return { docs: patients }; } };
+        }
+      };
+    }
+  };
+}
+
+async function verifyAuthorizedSearch() {
+  const result = await searchAuthorizedPatternPatients({
+    request: { auth: { uid: "doctor-authorized", token: {} }, data: { query: "autoriz" } },
+    db: createSearchDb()
+  });
+  assert.strictEqual(result.curpReturned, false);
+  assert.deepStrictEqual(result.patients.map((patient) => patient.id), ["patient-authorized"]);
+  assert.ok(!JSON.stringify(result).includes("CURP-NO-EXPONER"));
+  await assert.rejects(
+    () => searchAuthorizedPatternPatients({
+      request: { auth: { uid: "doctor-authorized", token: {} }, data: { query: "" } },
+      db: createSearchDb({ actorRole: "paciente" })
+    }),
+    (error) => error.code === "permission-denied"
+  );
+}
+
+Promise.all([verifyBackendDenial(), verifyStrictClinicianAccess(), verifySeparatedReview(), verifyAuthorizedSearch()])
   .then(() => console.log("patientPatternProfile.test.js: ok"))
   .catch((error) => {
     console.error(error);

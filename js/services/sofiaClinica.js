@@ -1,4 +1,5 @@
 import { db } from "../firebase.js";
+import { obtenerHistorialNotas } from "./notas.js";
 import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
 import { normalizarTextoFrecuencia } from "../utils/frecuencias.js";
 import { CATALOGO_FARMACOLOGICO_OFICIAL } from "../data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
@@ -64,7 +65,7 @@ export async function cargarExpedientePacienteSofia(idPaciente) {
     escalasUsuario,
     escalasPaciente
   ] = await Promise.all([
-    leerSubcoleccionUsuario(idPaciente, "tratamientos"), leerSubcoleccionUsuario(idPaciente, "notas"), leerSubcoleccionUsuario(idPaciente, "notasRapidas"),
+    leerSubcoleccionUsuario(idPaciente, "tratamientos"), leerNotasClinicasSofia(idPaciente), leerSubcoleccionUsuario(idPaciente, "notasRapidas"),
     leerSubcoleccionUsuario(idPaciente, "estudios"), leerSubcoleccionPaciente(idPaciente, "estudios"),
     leerSubcoleccionUsuario(idPaciente, "laboratorios"), leerSubcoleccionPaciente(idPaciente, "laboratorios"),
     leerSubcoleccionUsuario(idPaciente, "escalasAplicadas"), leerSubcoleccionPaciente(idPaciente, "escalasAplicadas")
@@ -212,8 +213,8 @@ export function generarRazonamientoClinico(expediente) {
       evidencia: ["Diagnosticos estructurados", "Notas clinicas", "Tratamientos y escalas disponibles"]
     });
   });
-  if (texto.includes("suicid") || texto.includes("autoles") || texto.includes("muerte")) {
-    hipotesis.push({ titulo: "Riesgo suicida a vigilar", tipo: "Riesgo clinico", confianza: "media-alta", aFavor: ["Terminos de riesgo detectados en notas"], enContra: ["Requiere entrevista de riesgo estructurada"], evidencia: ["Texto de notas", "Factores protectores y antecedentes"] });
+  if (contarMarcadoresPresentes(texto, ["suicid", "autoles", "muerte"]) > 0) {
+    hipotesis.push({ titulo: "Señales de ideación/autolesión a revisar", tipo: "Señal clínica detectada por reglas", confianza: "media-alta", aFavor: ["Marcadores textuales presentes en notas"], enContra: ["Requiere entrevista de riesgo estructurada; una señal no es una estimación de riesgo"], evidencia: ["Texto de notas", "Factores protectores y antecedentes"] });
   }
   if (!hipotesis.length) hipotesis.push({ titulo: "Integracion insuficiente", tipo: "Necesita mas datos", confianza: "baja", aFavor: ["Expediente con poca informacion clinica analizable"], enContra: ["No hay sintomas, escalas o diagnosticos suficientes"], evidencia: ["Cobertura de expediente"] });
   return hipotesis;
@@ -249,12 +250,12 @@ export function estimarRiesgosClinicos(expediente) {
   const texto = normalizarTexto(recolectarTextoClinico(expediente));
   const tratamientos = expediente?.tratamientos || [];
   const riesgos = [];
-  const riesgoSuicida = puntuar(texto, ["suicid", "autoles", "morir", "muerte", "sobredosis", "cort", "colgar", "arrojar"]);
-  if (riesgoSuicida >= 2) riesgos.push({ titulo: "Riesgo suicida", nivel: riesgoSuicida >= 4 ? "alto" : "moderado", factores: ["Marcadores de suicidio/autolesion en notas", "Requiere entrevista de riesgo estructurada"], faltantes: ["Plan", "Acceso a medios", "Intentos previos", "Factores protectores"] });
-  if (puntuar(texto, ["abandono", "suspend", "dejo", "no toma", "mala adherencia"]) > 0) riesgos.push({ titulo: "Riesgo de abandono/adherencia", nivel: "moderado", factores: ["Suspension o baja adherencia documentada"], faltantes: ["Motivo de suspension", "Efectos adversos", "Apoyo familiar"] });
-  if (puntuar(texto, ["hospital", "urgencia", "ingreso", "reingreso", "cama"]) > 1) riesgos.push({ titulo: "Riesgo de rehospitalizacion", nivel: "moderado", factores: ["Hospitalizaciones o atencion institucional documentada"], faltantes: ["Fecha de alta", "Plan de continuidad", "Red de apoyo"] });
-  if (tratamientos.some((t) => /olanzapina|quetiapina|risperidona|clozapina/i.test(t.medicamento || ""))) riesgos.push({ titulo: "Riesgo metabolico por antipsicotico", nivel: "moderado", factores: ["Antipsicotico activo"], faltantes: ["Peso", "IMC", "Glucosa/HbA1c", "Lipidos"] });
-  if (!riesgos.length) riesgos.push({ titulo: "Sin riesgos altos detectados por reglas", nivel: "bajo", factores: ["No se identificaron marcadores suficientes"], faltantes: ["La ausencia de datos no equivale a ausencia de riesgo"] });
+  const riesgoSuicida = contarMarcadoresPresentes(texto, ["suicid", "autoles", "morir", "muerte", "sobredosis", "cort", "colgar", "arrojar"]);
+  if (riesgoSuicida >= 2) riesgos.push({ titulo: "Señales de suicidio/autolesión", nivel: riesgoSuicida >= 4 ? "alto" : "moderado", factores: ["Marcadores presentes en notas", "Requiere entrevista de riesgo estructurada"], faltantes: ["Plan", "Acceso a medios", "Intentos previos", "Factores protectores"] });
+  if (contarMarcadoresPresentes(texto, ["abandono", "suspend", "dejo", "no toma", "mala adherencia"]) > 0) riesgos.push({ titulo: "Señales de abandono/adherencia", nivel: "moderado", factores: ["Suspensión o baja adherencia presente en texto"], faltantes: ["Motivo de suspensión", "Efectos adversos", "Apoyo familiar"] });
+  if (contarMarcadoresPresentes(texto, ["hospital", "urgencia", "ingreso", "reingreso", "cama"]) > 1) riesgos.push({ titulo: "Eventos de atención institucional", nivel: "moderado", factores: ["Hospitalizaciones o atención institucional presentes en texto"], faltantes: ["Fecha de alta", "Plan de continuidad", "Red de apoyo"] });
+  if (tratamientos.some((t) => /olanzapina|quetiapina|risperidona|clozapina/i.test(t.medicamento || ""))) riesgos.push({ titulo: "Factor metabólico a vigilar por antipsicótico", nivel: "moderado", factores: ["Antipsicótico activo"], faltantes: ["Peso", "IMC", "Glucosa/HbA1c", "Lípidos"] });
+  if (!riesgos.length) riesgos.push({ titulo: "Sin señales suficientes detectadas por reglas", nivel: "bajo", factores: ["No se identificaron marcadores contextuales suficientes"], faltantes: ["La ausencia de datos no equivale a ausencia de un hallazgo"] });
   return riesgos;
 }
 
@@ -321,6 +322,10 @@ function pacienteVinculadoConUsuario(datos, uid) {
 }
 
 async function leerSubcoleccionUsuario(idPaciente, nombre) { return leerColeccionConId(collection(db, "usuarios", idPaciente, nombre)); }
+async function leerNotasClinicasSofia(idPaciente) {
+  const historial = await obtenerHistorialNotas(idPaciente);
+  return historial.docs.map((nota) => ({ id: nota.id, ...(nota.data?.() || {}) }));
+}
 async function leerSubcoleccionPaciente(idPaciente, nombre) {
   try { return await leerColeccionConId(collection(db, "pacientes", idPaciente, nombre)); } catch { return []; }
 }
@@ -373,6 +378,30 @@ function nombrePaciente(paciente = {}) {
   return obtenerNombrePacienteParaMostrar(paciente) || "Paciente sin nombre";
 }
 function normalizarTexto(texto) { return String(texto || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
+const CONTEXTO_NEGADO = /\b(niega|nego|negó|sin|no presenta|no refiere|descarta)\b/i;
+const CONTEXTO_ANTECEDENTE = /\b(antecedente|antecedentes|previo|previos|hace\s+\d+|en\s+20\d{2}|histori[ac]o)\b/i;
+const CONTEXTO_POSIBLE = /\b(posible|sospecha|a descartar|descartar|probable|refiere familiar|se investiga)\b/i;
+const CONTEXTO_FAMILIAR = /\b(madre|padre|herman[oa]?|hijo|hija|familiar(?:es)?|pareja)\b/i;
+
+export function clasificarAsercionClinicaLocal(textoOriginal, marcador) {
+  const texto = String(textoOriginal || "");
+  const regex = marcador instanceof RegExp ? marcador : new RegExp(String(marcador || ""), "i");
+  const match = texto.match(regex);
+  if (!match || match.index === undefined) return "UNKNOWN";
+  const inicio = Math.max(0, Math.max(texto.lastIndexOf(".", match.index), texto.lastIndexOf(";", match.index), texto.lastIndexOf("\n", match.index)) + 1);
+  const clausula = texto.slice(inicio, Math.min(texto.length, match.index + 180));
+  if (CONTEXTO_FAMILIAR.test(clausula)) return "FAMILIAR";
+  if (CONTEXTO_NEGADO.test(clausula)) return "NEGADO";
+  if (CONTEXTO_POSIBLE.test(clausula)) return "POSIBLE";
+  if (CONTEXTO_ANTECEDENTE.test(clausula)) return "ANTECEDENTE";
+  return "PRESENTE";
+}
+
+function contarMarcadoresPresentes(texto, marcadores = []) {
+  return marcadores.reduce((total, marcador) => (
+    clasificarAsercionClinicaLocal(texto, marcador) === "PRESENTE" ? total + 1 : total
+  ), 0);
+}
 function resumenCorto(texto, max = 180) {
   const limpio = String(texto || "").replace(/\s+/g, " ").trim();
   if (!limpio) return "Sin detalle";
@@ -424,7 +453,7 @@ function recolectarTextoClinico(expediente) {
 function detectarSintomasClinicos(textoOriginal) {
   const texto = normalizarTexto(textoOriginal);
   const reglas = [["animo depresivo", /triste|hipotim|llanto|depres/], ["anhedonia", /anhedon|no disfruta|ya no disfruta|sin interes/], ["ansiedad", /ansiedad|preocupacion|inquietud|panico|angustia/], ["insomnio", /insomnio|no duerme|despierta|suen[oñ]/], ["psicosis o alteraciones sensoperceptivas", /alucin|delirio|voces|persecut/], ["sintomas maniformes", /euforia|verborrea|grandios|fuga de ideas|disminucion de sueno/], ["consumo de sustancias", /alcohol|cannabis|cocaina|cristal|metanfetamina|opioide|benzodiacepina/], ["riesgo suicida/autolesivo", /suicid|autoles|cortarse|sobredosis|morir/]];
-  return reglas.filter(([, regex]) => regex.test(texto)).map(([nombre]) => nombre);
+  return reglas.filter(([, regex]) => clasificarAsercionClinicaLocal(texto, regex) === "PRESENTE").map(([nombre]) => nombre);
 }
 function detectarFactoresProtectores(textoOriginal) {
   const texto = normalizarTexto(textoOriginal);
@@ -437,7 +466,10 @@ function detectarFactoresProtectores(textoOriginal) {
 }
 function detectarConsumo(textoOriginal) {
   const texto = normalizarTexto(textoOriginal);
-  return ["alcohol", "cannabis", "cocaina", "metanfetamina", "opioides", "benzodiacepinas"].filter((s) => texto.includes(s.replace("opioides", "opioide")) || texto.includes(s));
+  return ["alcohol", "cannabis", "cocaina", "metanfetamina", "opioides", "benzodiacepinas"].filter((s) => {
+    const marcador = s === "opioides" ? "opioide" : s;
+    return clasificarAsercionClinicaLocal(texto, marcador) === "PRESENTE";
+  });
 }
 function calcularCobertura(expediente) {
   const faltantes = extraerDatosFaltantes(expediente);
@@ -457,4 +489,3 @@ function extraerDatosFaltantes(expediente) {
   if (!paciente.alergias) faltantes.push("Alergias");
   return faltantes;
 }
-function puntuar(texto, claves) { return claves.reduce((acc, clave) => acc + (texto.includes(clave) ? 1 : 0), 0); }

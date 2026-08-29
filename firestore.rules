@@ -433,9 +433,21 @@ service cloud.firestore {
         allow write: if accountIsActive(uid) && (isSelf(uid) || isAdmin());
       }
 
+      // Perfiles derivados y revisiones clínicas: solo Cloud Functions/Admin SDK.
+      // El resultado computado no puede ser alterado por el navegador.
+      match /clinicalPatternProfiles/{document=**} {
+        allow read, create, update, delete: if false;
+      }
+
+      match /clinicalPatternReviews/{reviewId} {
+        allow read, create, update, delete: if false;
+      }
+
       match /{subcollection}/{subdocument=**} {
         allow read: if accountIsActive(uid)
                     && subcollection != "agenda"
+                    && subcollection != "clinicalPatternProfiles"
+                    && subcollection != "clinicalPatternReviews"
                     && subcollection != "cloudFiles"
                     && subcollection != "cloudStorageUsage"
                     && subcollection != "cloudUploadReservations"
@@ -451,6 +463,8 @@ service cloud.firestore {
                     );
         allow create: if accountIsActive(uid)
                       && subcollection != "agenda"
+                      && subcollection != "clinicalPatternProfiles"
+                      && subcollection != "clinicalPatternReviews"
                       && subcollection != "cloudFiles"
                       && subcollection != "cloudStorageUsage"
                       && subcollection != "cloudUploadReservations"
@@ -470,6 +484,8 @@ service cloud.firestore {
                       );
         allow update, delete: if accountIsActive(uid)
                               && subcollection != "agenda"
+                              && subcollection != "clinicalPatternProfiles"
+                              && subcollection != "clinicalPatternReviews"
                               && subcollection != "cloudFiles"
                               && subcollection != "cloudStorageUsage"
                               && subcollection != "cloudUploadReservations"
@@ -588,12 +604,16 @@ service cloud.firestore {
 
       match /{subcollection}/{subdocument=**} {
         allow read: if accountIsActive(uid)
+                    && subcollection != "clinicalPatternProfiles"
+                    && subcollection != "clinicalPatternReviews"
                     && (
                       isSelf(uid)
                       || isAdmin()
                       || professionalCanReadPatient(uid, patientProfile(uid))
                     );
         allow create: if accountIsActive(uid)
+                      && subcollection != "clinicalPatternProfiles"
+                      && subcollection != "clinicalPatternReviews"
                       && (
                         isSelf(uid)
                         || isAdmin()
@@ -604,6 +624,8 @@ service cloud.firestore {
                         )
                       );
         allow update, delete: if accountIsActive(uid)
+                              && subcollection != "clinicalPatternProfiles"
+                              && subcollection != "clinicalPatternReviews"
                               && (
                                 isSelf(uid)
                                 || isAdmin()

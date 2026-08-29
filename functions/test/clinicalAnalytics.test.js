@@ -5,6 +5,7 @@ const { analyzePatientTimeline } = require("../clinicalAnalytics/timelineAnalyze
 const { detectPatientPatterns, buildObservationalRelationships } = require("../clinicalAnalytics/patternAnalyzer");
 const { analyticsPatientId, globalVariable, stripIdentifiers } = require("../clinicalAnalytics/deidentification");
 const { patientAllowsProfessionalAccess, isProfessional } = require("../clinicalAnalytics/access");
+const { deduplicateClinicalNotes } = require("../clinicalAnalytics/contextBuilder");
 
 const probability = calculateEmpiricalProbability({ numerator: 25, denominator: 100 });
 assert.strictEqual(probability.probability, 0.25);
@@ -43,4 +44,10 @@ assert.strictEqual(safeTreatment.observedAt, "2026-01");
 assert.strictEqual(isProfessional({ rol: "medico" }), true);
 assert.strictEqual(patientAllowsProfessionalAccess({ rol: "paciente", medicoTratanteUid: "doctor-1" }, "doctor-1"), true);
 assert.strictEqual(patientAllowsProfessionalAccess({ rol: "paciente", medicoTratanteUid: "doctor-1" }, "doctor-2"), false);
+const notes = deduplicateClinicalNotes([
+  { id: "legacy-note", _recordType: "notas", _sourceRoot: "usuarios", fecha: "2026-08-20", texto: "Seguimiento clínico sin cambios." },
+  { id: "canonical-note", _recordType: "notasMedicas", _sourceRoot: "usuarios", fecha: "2026-08-20", texto: "Seguimiento clínico sin cambios." }
+]);
+assert.strictEqual(notes.length, 1, "La misma nota no debe alimentar dos veces la analítica");
+assert.strictEqual(notes[0].id, "canonical-note", "notasMedicas tiene prioridad sobre la fuente legacy");
 console.log("clinicalAnalytics.test.js: ok");

@@ -3,7 +3,8 @@ const { analyticsPatientId } = require("../clinicalAnalytics/deidentification");
 const {
   SOFIA_ORCHESTRATOR_LIMITS,
   SOFIA_ORCHESTRATOR_VERSION,
-  SOFIA_UNIFIED_MODEL
+  SOFIA_UNIFIED_MODEL,
+  SOFIA_RELEASE_CONFIG
 } = require("./config");
 const { buildAuthorizedSofiaContext, cleanText, redactKnownIdentifiers } = require("./contextService");
 const { createSofiaToolRegistry } = require("./toolRegistry");
@@ -72,6 +73,7 @@ async function runToolLoop({ client, model, message, history, registry, identity
   const input = [...sanitizeHistory(history, identityTerms), { role: "user", content: redactKnownIdentifiers(message, identityTerms) }];
   let totalToolCalls = 0;
   let response = null;
+  let usage = { inputTokens: null, outputTokens: null, totalTokens: null };
 
   for (let round = 0; round < SOFIA_ORCHESTRATOR_LIMITS.maxToolRounds; round += 1) {
     response = await client.responses.create({
@@ -84,6 +86,7 @@ async function runToolLoop({ client, model, message, history, registry, identity
       max_output_tokens: 2200,
       store: false
     });
+    usage = mergeUsage(usage, response?.usage);
 
     const output = Array.isArray(response.output) ? response.output : [];
     const calls = output.filter((item) => item.type === "function_call");
@@ -92,7 +95,8 @@ async function runToolLoop({ client, model, message, history, registry, identity
         response,
         text: String(response.output_text || "").trim(),
         rounds: round + 1,
-        totalToolCalls
+        totalToolCalls,
+        usage
       };
     }
 
@@ -120,23 +124,131 @@ async function runToolLoop({ client, model, message, history, registry, identity
     response,
     text: String(response?.output_text || "No fue posible completar el análisis dentro del límite de herramientas.").trim(),
     rounds: SOFIA_ORCHESTRATOR_LIMITS.maxToolRounds,
-    totalToolCalls
+    totalToolCalls,
+    usage
   };
+}
+
+function numericUsage(value) {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : null;
+}
+
+function mergeUsage(current = {}, rawUsage = {}) {
+  const input = numericUsage(rawUsage?.input_tokens ?? rawUsage?.inputTokens);
+  const output = numericUsage(rawUsage?.output_tokens ?? rawUsage?.outputTokens);
+  const total = numericUsage(rawUsage?.total_tokens ?? rawUsage?.totalTokens);
+  const nextInput = input === null ? current.inputTokens : (current.inputTokens || 0) + input;
+  const nextOutput = output === null ? current.outputTokens : (current.outputTokens || 0) + output;
+  return {
+    inputTokens: nextInput,
+    outputTokens: nextOutput,
+    totalTokens: total === null
+      ? ((nextInput === null && nextOutput === null) ? current.totalTokens : (nextInput || 0) + (nextOutput || 0))
+      : (current.totalTokens || 0) + total
+  };
+}
+
+function sofiaUsageRef(db, uid) {
+  return db.collection("sofiaUsageLimits").doc(analyticsPatientId(`sofia:${uid}`));
+}
+
+function createSofiaRequestId() {
+  return `sofia-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+async function acquireSofiaRateLimit({ db, uid, requestId, now = Date.now() }) {
+  const limits = SOFIA_RELEASE_CONFIG.limits;
+  const ref = sofiaUsageRef(db, uid);
+  await db.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    const current = snapshot.exists ? snapshot.data() || {} : {};
+    const windowStartedAt = Number(current.windowStartedAt) || now;
+    const burstStartedAt = Number(current.burstStartedAt) || now;
+    const resetWindow = now - windowStartedAt >= limits.windowMs;
+    const resetBurst = now - burstStartedAt >= limits.burstWindowMs;
+    const activeRequests = Object.fromEntries(Object.entries(current.activeRequests || {}).filter(([, expiresAt]) => Number(expiresAt) > now));
+    const requestCount = resetWindow ? 0 : Number(current.requestCount || 0);
+    const burstCount = resetBurst ? 0 : Number(current.burstCount || 0);
+    if (requestCount >= limits.requestsPerWindow || burstCount >= limits.burstRequests || Object.keys(activeRequests).length >= limits.maxConcurrentRequests) {
+      throw new HttpsError("resource-exhausted", "Has alcanzado temporalmente el límite de uso de SOFÍA. Intenta nuevamente más tarde.");
+    }
+    transaction.set(ref, {
+      windowStartedAt: resetWindow ? now : windowStartedAt,
+      requestCount: requestCount + 1,
+      burstStartedAt: resetBurst ? now : burstStartedAt,
+      burstCount: burstCount + 1,
+      activeRequests: {
+        ...activeRequests,
+        [requestId]: now + limits.leaseMs
+      },
+      updatedAt: new Date(now).toISOString()
+    }, { merge: true });
+  });
+}
+
+async function releaseSofiaRateLimit({ db, uid, requestId }) {
+  const ref = sofiaUsageRef(db, uid);
+  await db.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    if (!snapshot.exists) return;
+    const activeRequests = { ...(snapshot.data()?.activeRequests || {}) };
+    delete activeRequests[requestId];
+    transaction.set(ref, { activeRequests, updatedAt: new Date().toISOString() }, { merge: true });
+  });
+}
+
+async function recordSofiaTelemetry({ db, requestId, uid, model, startedAt, result = null, error = null, fallbackUsed = false, mode = "unknown" }) {
+  const usage = result?.usage || {};
+  const record = {
+    requestId,
+    pseudonymousUserId: analyticsPatientId(`sofia:${uid}`),
+    model: model || null,
+    timestamp: new Date(startedAt).toISOString(),
+    durationMs: Math.max(0, Date.now() - startedAt),
+    inputTokens: usage.inputTokens ?? null,
+    outputTokens: usage.outputTokens ?? null,
+    totalTokens: usage.totalTokens ?? null,
+    toolCalls: result?.totalToolCalls ?? 0,
+    toolRounds: result?.rounds ?? 0,
+    success: !error,
+    errorCode: error?.code || null,
+    fallbackUsed: fallbackUsed === true,
+    mode
+  };
+  try {
+    await db.collection("sofiaTelemetry").doc(requestId).set(record);
+  } catch (telemetryError) {
+    console.warn("[SOFÍA][TELEMETRY] write_failed", { code: String(telemetryError?.code || telemetryError?.name || "unknown") });
+  }
 }
 
 async function runUnifiedSofia({ request, db, apiKey, OpenAIClass }) {
   const message = normalizeMessage(request.data?.mensaje);
   const context = await buildAuthorizedSofiaContext({ request, db });
-  const registry = createSofiaToolRegistry(context);
-  const client = new OpenAIClass({ apiKey });
-  const result = await runToolLoop({
-    client,
-    model: SOFIA_UNIFIED_MODEL,
-    message,
-    history: request.data?.history,
-    registry,
-    identityTerms: context.identityTerms
-  });
+  const requestId = createSofiaRequestId();
+  const startedAt = Date.now();
+  await acquireSofiaRateLimit({ db, uid: request.auth.uid, requestId, now: startedAt });
+  let registry;
+  let result;
+  try {
+    registry = createSofiaToolRegistry(context);
+    const client = new OpenAIClass({ apiKey });
+    result = await runToolLoop({
+      client,
+      model: SOFIA_UNIFIED_MODEL,
+      message,
+      history: request.data?.history,
+      registry,
+      identityTerms: context.identityTerms
+    });
+  } catch (error) {
+    await recordSofiaTelemetry({ db, requestId, uid: request.auth.uid, model: SOFIA_UNIFIED_MODEL, startedAt, error, mode: context.mode });
+    throw error;
+  } finally {
+    await releaseSofiaRateLimit({ db, uid: request.auth.uid, requestId });
+  }
+  await recordSofiaTelemetry({ db, requestId, uid: request.auth.uid, model: SOFIA_UNIFIED_MODEL, startedAt, result, mode: context.mode });
   const trace = registry.getTrace();
 
   console.info("[SOFÍA Unified] Solicitud completada", {
@@ -174,5 +286,10 @@ module.exports = {
   parseToolArguments,
   runToolLoop,
   runUnifiedSofia,
-  sanitizeHistory
+  sanitizeHistory,
+  mergeUsage,
+  acquireSofiaRateLimit,
+  releaseSofiaRateLimit,
+  recordSofiaTelemetry,
+  createSofiaRequestId
 };

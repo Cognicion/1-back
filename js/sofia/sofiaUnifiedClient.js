@@ -78,6 +78,12 @@ export function createSofiaUnifiedClient({
       return { ...result, legacyFallback: false };
     } catch (error) {
       if (!shouldUseLegacyFallback(error)) throw error;
+      if (activePatientId) {
+        const limitedError = new Error("SOFIA_UNIFIED_CONTEXT_UNAVAILABLE");
+        limitedError.code = "functions/unavailable";
+        limitedError.userMessage = "SOFÍA no puede acceder al contexto clínico autorizado en este momento. Intenta nuevamente más tarde.";
+        throw limitedError;
+      }
       console.warn("[SOFÍA Unified] Orquestador no disponible; se usa el chat anterior.", { code: error?.code || "unknown" });
       const legacyCallable = await getCallable("chatSofia");
       const legacyResult = unwrapCallableResult(await legacyCallable({ mensaje: normalizedMessage }));
@@ -89,7 +95,9 @@ export function createSofiaUnifiedClient({
         toolsUsed: [],
         actions: [],
         clinicalWritesPerformed: false,
-        legacyFallback: true
+        legacyFallback: true,
+        limitedMode: true,
+        fallbackNotice: "SOFÍA está funcionando temporalmente en modo limitado y no tiene acceso al contexto clínico del paciente."
       };
     }
   }

@@ -132,6 +132,7 @@ function buildPatternEvidence(patientId, variable = {}) {
     excerpt,
     temporalRelation: temporal.clinicalTimeWindow === "historical" ? "historical" : (temporal.clinicalTimeWindow === "current" ? "current" : "recent"),
     polarity: variable.value === false ? "negative" : provenance.polarity || "positive",
+    assertionContext: provenance.assertionContext || null,
     confidence: Number(variable.confidence) || 0,
     ruleApplied: provenance.ruleApplied || "structured_field_extraction",
     extractorVersion: provenance.extractorVersion || CLINICAL_EXTRACTOR_VERSION,
@@ -140,6 +141,7 @@ function buildPatternEvidence(patientId, variable = {}) {
 }
 
 function observationStatus(evidence = {}) {
+  if (["FAMILY", "UNKNOWN"].includes(evidence.assertionContext)) return "insufficient_data";
   if (evidence.polarity === "negative") return "absent";
   if (evidence.polarity === "uncertain") return "possible";
   if (evidence.clinicalTimeWindow === "historical") return "historical";
@@ -322,6 +324,7 @@ function compactClinicalVariable(variable, index) {
       sourceRecordId: variable.provenance?.sourceRecordId || null,
       sourceRoot: variable.provenance?.sourceRoot || null,
       sourceDocumentId: variable.provenance?.sourceDocumentId || null,
+      assertionContext: variable.provenance?.assertionContext || null,
       observedAt: variable.observedAt,
       extractedAt: variable.provenance?.extractedAt || null,
       extractorVersion: variable.provenance?.extractorVersion || CLINICAL_EXTRACTOR_VERSION

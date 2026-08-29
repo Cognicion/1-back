@@ -1,4 +1,5 @@
 const { HttpsError } = require("firebase-functions/v2/https");
+const crypto = require("crypto");
 const {
   assertAuthorizedPatientClinician,
   isProfessional,
@@ -6,7 +7,7 @@ const {
 } = require("./access");
 const { inferAge } = require("./variableExtractor");
 const { getOrBuildPatientPatternProfile } = require("./patientPatternProfileService");
-const { markPatientPatternProfileState, profileRef } = require("./patientPatternProfilePersistence");
+const { profileRef } = require("./patientPatternProfilePersistence");
 const { BSS_CONFIG, PATTERN_STATUSES } = require("./patientPatternConfig");
 
 function normalized(value = "") {
@@ -184,65 +185,50 @@ async function reviewPatientPatternResult({ request, db }) {
   }
   const changedAt = new Date().toISOString();
   const rootRef = profileRef(db, patientId);
+  const collectionName = targetType === "pattern_observation" ? "observations" : "instruments";
+  const targetRef = rootRef.collection(collectionName).doc(targetId);
+  const snapshot = await targetRef.get();
+  if (!snapshot.exists) throw new HttpsError("not-found", "Resultado computado no encontrado.");
+  const original = snapshot.data() || {};
+  let clinicianValue = request.data?.clinicianValue ?? null;
+  let status = String(request.data?.status || original.status || "");
+  let itemNumber = null;
 
-  if (targetType === "pattern_observation") {
-    const ref = rootRef.collection("observations").doc(targetId);
-    await db.runTransaction(async (transaction) => {
-      const snapshot = await transaction.get(ref);
-      if (!snapshot.exists) throw new HttpsError("not-found", "Observación no encontrada.");
-      const original = snapshot.data() || {};
-      const clinicianValue = request.data?.clinicianValue;
-      const status = String(request.data?.status || original.status);
-      if (action === "correct" && (!validCorrectionValue(clinicianValue) || !PATTERN_STATUSES.includes(status))) {
-        throw new HttpsError("invalid-argument", "La corrección clínica no es válida.");
-      }
-      transaction.set(ref, {
-        originalInference: original.originalInference || {
-          value: original.value,
-          normalizedValue: original.normalizedValue,
-          status: original.status,
-          confidence: original.confidence
-        },
-        ...(action === "correct" ? {
-          value: clinicianValue,
-          normalizedValue: typeof clinicianValue === "boolean" ? (clinicianValue ? 1 : 0) : (typeof clinicianValue === "number" ? clinicianValue : null),
-          status
-        } : {}),
-        clinicianReviewed: true,
-        reviewStatus: action === "correct" ? "corrected" : "confirmed",
-        changedBy: request.auth.uid,
-        changedAt
-      }, { merge: true });
-    });
-  } else if (targetType === "bss_instrument") {
-    const ref = rootRef.collection("instruments").doc(targetId);
-    await db.runTransaction(async (transaction) => {
-      const snapshot = await transaction.get(ref);
-      if (!snapshot.exists) throw new HttpsError("not-found", "Resultado BSS no encontrado.");
-      const instrument = snapshot.data() || {};
-      transaction.set(ref, confirmedBssInstrument(instrument, request.auth.uid, changedAt), { merge: true });
-    });
-  } else {
-    const itemNumber = Number(request.data?.itemNumber);
-    const clinicianValue = Number(request.data?.clinicianValue);
-    if (!Number.isInteger(itemNumber) || itemNumber < 1 || itemNumber > BSS_CONFIG.itemCount
-      || (action === "correct" && (!Number.isInteger(clinicianValue) || clinicianValue < 0 || clinicianValue > 2))) {
+  if (targetType === "pattern_observation" && action === "correct" && (!validCorrectionValue(clinicianValue) || !PATTERN_STATUSES.includes(status))) {
+    throw new HttpsError("invalid-argument", "La corrección clínica no es válida.");
+  }
+  if (targetType === "bss_item") {
+    itemNumber = Number(request.data?.itemNumber);
+    const originalItem = (original.itemResults || []).find((item) => Number(item.itemNumber) === itemNumber);
+    if (!Number.isInteger(itemNumber) || itemNumber < 1 || itemNumber > BSS_CONFIG.itemCount || !originalItem
+      || (action === "correct" && (!Number.isInteger(Number(clinicianValue)) || Number(clinicianValue) < 0 || Number(clinicianValue) > 2))) {
       throw new HttpsError("invalid-argument", "El reactivo o su valor no es válido.");
     }
-    const ref = rootRef.collection("instruments").doc(targetId);
-    await db.runTransaction(async (transaction) => {
-      const snapshot = await transaction.get(ref);
-      if (!snapshot.exists) throw new HttpsError("not-found", "Resultado BSS no encontrado.");
-      const instrument = snapshot.data() || {};
-      const currentItem = (instrument.itemResults || []).find((item) => Number(item.itemNumber) === itemNumber);
-      if (!currentItem) throw new HttpsError("not-found", "Reactivo BSS no encontrado.");
-      const value = action === "correct" ? clinicianValue : Number(currentItem.value);
-      transaction.set(ref, correctedBssInstrument(instrument, itemNumber, value, request.auth.uid, changedAt, action), { merge: true });
-    });
+    clinicianValue = action === "correct" ? Number(clinicianValue) : originalItem.value;
   }
 
-  await markPatientPatternProfileState({ db, patientId, state: "outdated", affectedPatternKeys: ["suicidal_ideation"] });
-  return { ok: true, targetType, targetId, action, changedAt };
+  const originalInference = targetType === "bss_item"
+    ? (original.itemResults || []).find((item) => Number(item.itemNumber) === itemNumber)
+    : original;
+  const reviewId = `review-${crypto.createHash("sha256").update([patientId, targetType, targetId, request.auth.uid, changedAt].join("|")).digest("hex").slice(0, 28)}`;
+  await db.collection(`usuarios/${patientId}/clinicalPatternReviews`).doc(reviewId).set({
+    reviewId,
+    patientId,
+    targetType,
+    targetId,
+    itemNumber,
+    action,
+    status: targetType === "pattern_observation" ? status : null,
+    originalInference,
+    clinicianValue: action === "correct" ? clinicianValue : null,
+    changedBy: request.auth.uid,
+    changedAt,
+    reviewStatus: action === "correct" ? "corrected" : "confirmed",
+    sourceProfilePath: `clinicalPatternProfiles/current/${collectionName}/${targetId}`,
+    storageScope: "human_review_separate_from_computed_profile"
+  });
+
+  return { ok: true, targetType, targetId, action, changedAt, reviewStoredSeparately: true };
 }
 
 module.exports = {

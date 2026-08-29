@@ -10,6 +10,7 @@ const { readClinicalMatrices } = require("../clinicalAnalytics/matrixPersistence
 const { readClinicalEmbeddingKnowledge } = require("../clinicalAnalytics/embeddingPersistence");
 const {
   SOFIA_ORCHESTRATOR_LIMITS,
+  SOFIA_RELEASE_CONFIG,
   SOFIA_PAGE_ANALYSIS_SECTIONS,
   SOFIA_PAGE_SECTIONS
 } = require("./config");
@@ -91,6 +92,9 @@ function patientIdentityTerms(patient = {}) {
 }
 
 async function assertAuthorizedSofiaActor(request, db) {
+  if (!SOFIA_RELEASE_CONFIG.enabled) {
+    throw new HttpsError("failed-precondition", "SOFÍA no está disponible temporalmente.");
+  }
   if (!request.auth?.uid) {
     throw new HttpsError("unauthenticated", "Autenticación requerida.");
   }
@@ -253,6 +257,7 @@ async function buildAuthorizedSofiaContext({ request, db }) {
 }
 
 module.exports = {
+  assertAuthorizedSofiaActor,
   buildAnalysis,
   buildAuthorizedSofiaContext,
   cleanText,

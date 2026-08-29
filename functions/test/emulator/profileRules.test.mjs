@@ -434,3 +434,49 @@ test("Mis apuntes permite CRUD al dueño y solamente lectura/borrado al admin", 
   await assertSucceeds(deleteDoc(doc(adminDb, notePath)));
   await assertSucceeds(deleteDoc(doc(adminDb, folderPath)));
 });
+
+test("clinicalPatternProfiles y revisiones humanas son backend-only", async () => {
+  const patientId = "uidPatternProtected";
+  const profilePath = `usuarios/${patientId}/clinicalPatternProfiles/current`;
+  const reviewPath = `usuarios/${patientId}/clinicalPatternReviews/review-1`;
+  await environment.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+    await setDoc(doc(db, "usuarios", patientId), { rol: "paciente", tieneCuenta: true, medicoUid: PROFESSIONALS[0][0] });
+    await setDoc(doc(db, profilePath), { analysisState: "current", storageScope: "protected_patient_record" });
+    await setDoc(doc(db, reviewPath), { reviewStatus: "confirmed" });
+  });
+
+  for (const db of [
+    authenticatedDb(patientId),
+    authenticatedDb(PROFESSIONALS[0][0]),
+    authenticatedDb(UID_ADMIN),
+    anonymousDb
+  ]) {
+    await assertFails(getDoc(doc(db, profilePath)));
+    await assertFails(setDoc(doc(db, profilePath), { analysisState: "forged" }, { merge: true }));
+    await assertFails(getDoc(doc(db, reviewPath)));
+    await assertFails(setDoc(doc(db, reviewPath), { reviewStatus: "forged" }, { merge: true }));
+  }
+});
+
+test("límites y telemetría de SOFÍA son backend-only", async () => {
+  const usagePath = "sofiaUsageLimits/pseudonymous-user";
+  const telemetryPath = "sofiaTelemetry/request-test";
+  await environment.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+    await setDoc(doc(db, usagePath), { requestCount: 1, activeRequests: {} });
+    await setDoc(doc(db, telemetryPath), { requestId: "request-test", success: true });
+  });
+
+  for (const db of [
+    anonymousDb,
+    authenticatedDb(UID_PATIENT),
+    authenticatedDb(PROFESSIONALS[0][0]),
+    authenticatedDb(UID_ADMIN)
+  ]) {
+    await assertFails(getDoc(doc(db, usagePath)));
+    await assertFails(setDoc(doc(db, usagePath), { requestCount: 0 }, { merge: true }));
+    await assertFails(getDoc(doc(db, telemetryPath)));
+    await assertFails(setDoc(doc(db, telemetryPath), { success: false }, { merge: true }));
+  }
+});
