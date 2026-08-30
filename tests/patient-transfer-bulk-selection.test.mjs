@@ -32,7 +32,11 @@ const groups = [{
           { id: "dx-1", diagnosisName: "Diagnóstico 1", code: "F33.2", codes: ["F33.2"] },
           { id: "dx-2", diagnosisName: "Diagnóstico 2", code: "F43.1", codes: ["F43.1"], include: true, selectedForImport: true }
         ],
-        treatmentCandidates: [{ ...medication }, { id: "tx-review", medicationName: "Sin resolver", requiresCatalogReview: true }],
+        treatmentCandidates: [
+          { ...medication },
+          { id: "tx-review", medicationName: "Sin resolver", requiresCatalogReview: true },
+          { id: "tx-catalog-review", medicationName: "Omeprazol", catalogMedicationId: "omeprazol", requiresCatalogReview: true }
+        ],
         treatmentPlanCandidates: [
           { id: "ind-1", instructionType: "diet", text: "Normal", include: true, selectedForImport: true },
           { id: "ind-2", instructionType: "monitoring", text: "Vigilancia estrecha" },
@@ -57,6 +61,7 @@ const groups = [{
 assert.equal(isTransferCandidateSelectable({ id: "active" }, "diagnosis"), true);
 assert.equal(isTransferCandidateSelectable({ id: "invalid", invalidated: true }, "diagnosis"), false);
 assert.equal(isTransferCandidateSelectable({ id: "review", requiresCatalogReview: true }, "treatment"), false);
+assert.equal(isTransferCandidateSelectable({ id: "catalog-review", catalogMedicationId: "omeprazol", requiresCatalogReview: true }, "treatment"), true, "una discrepancia revisable no excluye un medicamento ya vinculado al catálogo");
 
 const partial = getBulkSelectionState(groups[0].documents[0].noteSegments[0].diagnosisCandidates, "diagnosis");
 assert.equal(partial.checked, false);
@@ -88,13 +93,14 @@ const treatmentsSelected = applyBulkCandidateSelection(groups, {
   candidateType: "treatment",
   selected: true
 });
-assert.equal(treatmentsSelected.affectedCount, 1, "no selecciona tratamientos que requieren resolución de catálogo");
-assert.equal(treatmentsSelected.candidateCount, 2);
+assert.equal(treatmentsSelected.affectedCount, 2, "selecciona tratamientos vinculados al catálogo y conserva fuera los no resueltos");
+assert.equal(treatmentsSelected.candidateCount, 3);
 const selectedMedication = treatmentsSelected.groups[0].documents[0].noteSegments[0].treatmentCandidates[0];
 assert.equal(selectedMedication.include, true);
 assert.equal(selectedMedication.catalogMedicationId, "olanzapina", "conserva la identidad del catálogo");
 assert.deepEqual(selectedMedication.schedule, [{ time: "22:00", quantity: 1, unit: "tableta" }], "conserva horarios y dosis estructurados");
 assert.equal(treatmentsSelected.groups[0].documents[0].noteSegments[0].treatmentCandidates[1].include, undefined);
+assert.equal(treatmentsSelected.groups[0].documents[0].noteSegments[0].treatmentCandidates[2].include, true, "incluye Omeprazol cuando la identidad canónica ya está resuelta");
 
 const indicationsSelected = applyBulkCandidateSelection(groups, {
   documentId: "document-1",

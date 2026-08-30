@@ -37,21 +37,21 @@ for (const file of expectedFiles) {
 
 const medico = read("js/medico.js");
 assert.match(medico, /btnImportarDocxPaciente/, "medico.js registra el unico boton de importacion DOCX");
-  assert.match(medico, /import\("\.\/modules\/patient-transfer\/index\.js\?v=20260830-study-diagnosis-medication-dedup-v1"\)/, "el módulo activo se carga con lazy loading y versión explícita");
+  assert.match(medico, /import\("\.\/modules\/patient-transfer\/index\.js\?v=20260830-medication-presentation-bulk-selection-v1"\)/, "el módulo activo se carga con lazy loading y versión explícita");
 assert.doesNotMatch(medico, /modules\/importacionDocx\/docxImportController/, "medico.js no abre el importador local simplificado");
 
 const html = read("medico.html");
 assert.match(html, /id="btnImportarDocxPaciente"/, "medico.html conserva el boton unico de importacion");
 assert.doesNotMatch(html, /btnTraspasarPacientes/, "medico.html no conserva un segundo boton de traspaso");
 assert.match(html, /patient-transfer\.css/, "medico.html carga estilos del modulo");
-  assert.match(html, /js\/medico\.js\?v=20260830-study-diagnosis-medication-dedup-v1/, "medico.html solicita la versión vigente del panel");
+  assert.match(html, /js\/medico\.js\?v=20260830-medication-presentation-bulk-selection-v1/, "medico.html solicita la versión vigente del panel");
 
 const noteHtml = read("nota.html");
 const noteModule = read("js/nota.js");
 assert.match(noteHtml, /id="btnImportarNotasExternas"/, "Notas ofrece importar documentos externos desde el expediente");
 assert.match(noteHtml, /patient-transfer\.css\?v=20260811-medication-presentation-concentration-ui-v1/, "Notas carga los estilos del importador existente");
-assert.match(noteHtml, /js\/nota\.js\?v=20260830-study-diagnosis-medication-dedup-v1/, "Notas solicita el módulo con el marcador vigente");
-assert.match(noteModule, /patient-transfer\/index\.js\?v=20260830-study-diagnosis-medication-dedup-v1/, "Notas carga el importador documental bajo demanda");
+assert.match(noteHtml, /js\/nota\.js\?v=20260830-medication-presentation-bulk-selection-v1/, "Notas solicita el módulo con el marcador vigente");
+assert.match(noteModule, /patient-transfer\/index\.js\?v=20260830-medication-presentation-bulk-selection-v1/, "Notas carga el importador documental bajo demanda");
 assert.match(noteModule, /targetPatient:\s*\{[\s\S]{0,160}id: patientId/, "Notas fija el expediente abierto como destino");
 assert.match(noteModule, /cognicion:patient-transfer-completed/, "Notas refresca el historial después de importar");
 
@@ -90,7 +90,7 @@ assert.match(controller, /const reviewedGroups = analyzedGroups;/, "el guardado 
 assert.match(controller, /expandSegmentedGroupsForSave/, "la persistencia crea una nota por segmento confirmado");
 assert.match(controller, /setFileMultipleNotesMode/, "la revisión actualiza el modo por archivo en el estado central");
 assert.match(controller, /multipleNotesMode/, "el controlador envía el modo explícito al segmentador");
-  assert.match(transferIndex, /patientTransferController\.js\?v=20260830-study-diagnosis-medication-dedup-v1/, "el índice fuerza la carga del controlador publicado");
+  assert.match(transferIndex, /patientTransferController\.js\?v=20260830-medication-presentation-bulk-selection-v1/, "el índice fuerza la carga del controlador publicado");
 assert.match(controller, /patientFieldParser\.js\?v=20260818-admission-date-v1/, "el controlador fuerza la carga del parser de paciente publicado");
 assert.match(fieldParser, /patientNameParser\.js\?v=20260814-patient-name-dictionary-v1/, "el parser de campos fuerza la carga del parser de nombres publicado");
 assert.match(patientNameParser, /patientNameDictionaries\.js\?v=20260814-patient-name-dictionary-v1/, "el parser de nombres carga el diccionario publicado");
@@ -112,21 +112,21 @@ assert.match(sectionParser, /clinicalBoundaryEngine\.js\?v=20260814-note-section
 assert.match(sectionParser, /subjectiveSectionParser\.js\?v=20260814-note-sections-runtime-v1/, "el parser clínico carga Subjetivo con la misma versión");
 assert.match(subjectiveParser, /clinicalSectionConfig\.js\?v=20260814-note-sections-runtime-v1/, "Subjetivo comparte la configuración vigente");
 assert.match(subjectiveParser, /clinicalBoundaryEngine\.js\?v=20260814-note-sections-runtime-v1/, "Subjetivo comparte el motor de límites vigente");
-assert.match(controller, /clinicalCandidateParser\.js\?v=20260830-study-diagnosis-medication-dedup-v1/, "el controlador carga los candidatos clínicos corregidos");
+assert.match(controller, /clinicalCandidateParser\.js\?v=20260830-medication-presentation-bulk-selection-v1/, "el controlador carga los candidatos clínicos corregidos");
 assert.match(clinicalCandidateParser, /diagnosisAdapter\.js\?v=20260830-study-diagnosis-medication-dedup-v1/, "los candidatos clínicos cargan el adaptador diagnóstico vigente");
 assert.match(diagnosisAdapter, /diagnosisParser\.js\?v=20260830-study-diagnosis-medication-dedup-v1/, "el adaptador carga el parser diferencial vigente");
-assert.match(controller, /treatmentPlanAdapter\.js\?v=20260830-study-diagnosis-medication-dedup-v1/, "el controlador carga el adaptador farmacológico corregido");
+assert.match(controller, /treatmentPlanAdapter\.js\?v=20260830-medication-presentation-bulk-selection-v1/, "el controlador carga el adaptador farmacológico corregido");
 assert.match(controller, /medicationCatalogResolver\.js\?v=20260819-midc-allergy-context-v1/, "el controlador carga el resolver farmacológico vigente");
-assert.match(clinicalCandidateParser, /medicationAdapter\.js\?v=20260830-study-diagnosis-medication-dedup-v1/, "los candidatos clínicos usan el adaptador farmacológico vigente");
-assert.match(treatmentPlanAdapter, /treatmentPlanParser\.js\?v=20260830-study-diagnosis-medication-dedup-v1/, "el adaptador carga el parser de Plan vigente");
-assert.match(treatmentPlanAdapter, /medicationAdapter\.js\?v=20260830-study-diagnosis-medication-dedup-v1/, "el adaptador de Plan comparte el adaptador farmacológico vigente");
+assert.match(clinicalCandidateParser, /medicationAdapter\.js\?v=20260830-medication-presentation-bulk-selection-v1/, "los candidatos clínicos usan el adaptador farmacológico vigente");
+assert.match(treatmentPlanAdapter, /treatmentPlanParser\.js\?v=20260830-medication-presentation-bulk-selection-v1/, "el adaptador carga el parser de Plan vigente");
+assert.match(treatmentPlanAdapter, /medicationAdapter\.js\?v=20260830-medication-presentation-bulk-selection-v1/, "el adaptador de Plan comparte el adaptador farmacológico vigente");
 assert.match(treatmentPlanAdapter, /medicationCatalogResolver\.js\?v=20260819-midc-allergy-context-v1/, "el adaptador de Plan comparte el resolver vigente");
-assert.match(treatmentPlanParser, /medicationNormalizer\.js\?v=20260818-clinical-extraction-v1/, "el parser de Plan usa límites farmacológicos vigentes");
-assert.match(treatmentPlanParser, /medicationParser\.js\?v=20260830-study-diagnosis-medication-dedup-v1/, "el parser de Plan usa el parser farmacológico vigente");
-assert.match(medicationAdapter, /medicationParser\.js\?v=20260830-study-diagnosis-medication-dedup-v1/, "el adaptador usa el parser farmacológico vigente");
+assert.match(treatmentPlanParser, /medicationNormalizer\.js\?v=20260830-medication-presentation-bulk-selection-v1/, "el parser de Plan usa límites farmacológicos vigentes");
+assert.match(treatmentPlanParser, /medicationParser\.js\?v=20260830-medication-presentation-bulk-selection-v1/, "el parser de Plan usa el parser farmacológico vigente");
+assert.match(medicationAdapter, /medicationParser\.js\?v=20260830-medication-presentation-bulk-selection-v1/, "el adaptador usa el parser farmacológico vigente");
 assert.match(medicationAdapter, /medicationCatalogResolver\.js\?v=20260819-midc-allergy-context-v1/, "el adaptador usa el resolver farmacológico vigente");
-assert.match(medicationParser, /medicationNormalizer\.js\?v=20260818-clinical-extraction-v1/, "el parser usa el normalizador farmacológico corregido");
-assert.match(controller, /patientTransferView\.js\?v=20260820-patient-notes-import-v1/, "el controlador fuerza la carga de la vista actualizada");
+assert.match(medicationParser, /medicationNormalizer\.js\?v=20260830-medication-presentation-bulk-selection-v1/, "el parser usa el normalizador farmacológico corregido");
+assert.match(controller, /patientTransferView\.js\?v=20260830-medication-presentation-bulk-selection-v1/, "el controlador fuerza la carga de la vista actualizada");
 assert.match(controller, /lockTransferGroupsToTargetPatient/, "el controlador conserva el destino fijo antes de persistir");
 assert.match(controller, /resetAndOpen\(launchContext\)/, "importar otros archivos conserva el expediente de destino");
 assert.match(launchContext, /skipPatientFieldMerge: true/, "el contexto del expediente protege los datos generales existentes");

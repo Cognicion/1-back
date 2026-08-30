@@ -1,6 +1,6 @@
 import { MEDICAMENTOS_MAESTROS, medicamentoPorTexto } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
 import { adaptDiagnosisBlock, adaptDiagnosisCandidates } from "../../clinical-document-engine/adapters/diagnosisAdapter.js?v=20260830-study-diagnosis-medication-dedup-v1";
-import { adaptMedicationBlock, adaptMedicationCandidates } from "../../clinical-document-engine/adapters/medicationAdapter.js?v=20260830-study-diagnosis-medication-dedup-v1";
+import { adaptMedicationBlock, adaptMedicationCandidates } from "../../clinical-document-engine/adapters/medicationAdapter.js?v=20260830-medication-presentation-bulk-selection-v1";
 
 function normalizeText(value = "") {
   return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
@@ -306,7 +306,12 @@ export function parseMedicationStrength(text = "") {
 
 function presentationFromText(text = "") {
   const value = normalizeText(text);
-  return PRESENTATIONS.find((item) => new RegExp(`\\b${escapeRegex(item)}\\b`, "i").test(value)) || "";
+  const matches = PRESENTATIONS.map((item, order) => {
+    const match = new RegExp(`\\b${escapeRegex(item)}\\b`, "i").exec(value);
+    return match ? { item, index: match.index, order } : null;
+  }).filter(Boolean);
+  matches.sort((left, right) => left.index - right.index || left.order - right.order);
+  return matches[0]?.item || "";
 }
 
 function normalizeTime(value = "") {

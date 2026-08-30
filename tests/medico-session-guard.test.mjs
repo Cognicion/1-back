@@ -51,7 +51,7 @@ test("el panel reintenta la lectura del perfil sin usar caché", () => {
 });
 
 test("medico.html invalida la versión anterior del script", () => {
-  assert.match(medicoHtml, /js\/medico\.js\?v=20260830-study-diagnosis-medication-dedup-v1/);
+  assert.match(medicoHtml, /js\/medico\.js\?v=20260830-medication-presentation-bulk-selection-v1/);
   assert.doesNotMatch(medicoHtml, /js\/medico\.js\?v=(?:1\.866|20260811-session-guard-v1|20260811-medical-panel-recovery-v1)/);
 });
 

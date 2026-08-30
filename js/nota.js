@@ -4422,7 +4422,7 @@ async function abrirImportadorNotasExternas() {
   }
   try {
     if (!importadorNotasExternasPromise) {
-      importadorNotasExternasPromise = import("./modules/patient-transfer/index.js?v=20260830-study-diagnosis-medication-dedup-v1");
+      importadorNotasExternasPromise = import("./modules/patient-transfer/index.js?v=20260830-medication-presentation-bulk-selection-v1");
     }
     const module = await importadorNotasExternasPromise;
     module.openPatientTransfer({

@@ -1,6 +1,6 @@
 import { FIELD_RULES, NOTE_TYPE_RULES } from "../../importacionDocx/docxImportConfig.js?v=20260818-admission-date-v1";
 import { construirNombreCompletoPaciente } from "../../../utils/nombresPacientes.js?v=20260814-patient-alias-v1";
-import { parseMedicationSchedules } from "../parsing/clinicalCandidateParser.js?v=20260818-clinical-extraction-v1";
+import { parseMedicationSchedules } from "../parsing/clinicalCandidateParser.js?v=20260830-medication-presentation-bulk-selection-v1";
 import { buildPatientMatchExplanation, normalizeRecordNumber } from "../parsing/patientDuplicateMatcher.js";
 import {
   DUPLICATE_RESOLUTION,
@@ -613,7 +613,13 @@ export function isTransferCandidateSelectable(candidate = {}, candidateType = ""
   if (!candidate || candidate.omitted || candidate.invalidated || candidate.isImportable === false || candidate.importable === false || candidate.discardedByUser) {
     return false;
   }
-  return candidateType !== "treatment" || !candidate.requiresCatalogReview;
+  // Una discrepancia de presentación debe revisarse, pero no invalida un
+  // medicamento que ya quedó vinculado a una identidad canónica del catálogo.
+  // Los medicamentos sin identidad canónica continúan fuera de la selección
+  // masiva hasta que el profesional los vincule o descarte.
+  return candidateType !== "treatment"
+    || !candidate.requiresCatalogReview
+    || Boolean(candidate.catalogMedicationId);
 }
 
 export function getBulkSelectionState(candidates = [], candidateType = "", noteOmitted = false) {

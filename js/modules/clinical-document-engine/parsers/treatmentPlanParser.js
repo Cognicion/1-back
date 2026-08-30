@@ -4,8 +4,8 @@ import { ClinicalCandidate } from "../core/ClinicalCandidate.js";
 import { ClinicalEvidence } from "../core/ClinicalEvidence.js";
 import { evaluateConfidence, requiresReviewForConfidence } from "../confidence/confidenceEngine.js";
 import { normalizeClinicalComparisonText } from "../normalizers/textNormalizer.js";
-import { parseMedicationStrength, splitMedicationItems } from "../normalizers/medicationNormalizer.js?v=20260818-clinical-extraction-v1";
-import { consolidateMedicationCandidates, parseMedicationCandidates } from "./medicationParser.js?v=20260830-study-diagnosis-medication-dedup-v1";
+import { parseMedicationStrength, splitMedicationItems } from "../normalizers/medicationNormalizer.js?v=20260830-medication-presentation-bulk-selection-v1";
+import { consolidateMedicationCandidates, parseMedicationCandidates } from "./medicationParser.js?v=20260830-medication-presentation-bulk-selection-v1";
 import { clinicalImportLogger } from "../utils/logger.js";
 import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
 

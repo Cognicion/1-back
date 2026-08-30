@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { parseMedicationSchedules } from "../js/modules/patient-transfer/parsing/clinicalCandidateParser.js";
 import { consolidateMedicationCandidates, parseMedicationCandidates } from "../js/modules/clinical-document-engine/parsers/medicationParser.js";
+import { resolveMedicationAgainstCatalog } from "../js/modules/clinical-document-engine/resolvers/medicationCatalogResolver.js";
 
 const risperidona = parseMedicationSchedules("Risperidona tabletas 2 mg vía oral dos veces al día 1/2 tableta a las 08:00 y 1 tableta a las 22:00");
 assert.deepEqual(risperidona.map(({ time, quantity, administrationUnit }) => ({ time, quantity, administrationUnit })), [
@@ -49,6 +50,16 @@ assert.deepEqual(unitlessAdministrationResult.map((candidate) => candidate.sched
   [{ time: "08:00", quantity: 1, unit: "capsulas" }],
   [{ time: "21:00", quantity: 0.5, unit: "tableta" }]
 ]);
+
+const omeprazolCapsule = parseMedicationCandidates({
+  text: "Suspender omeprazol cápsulas de 20 mg vía oral una vez al día. Tomar 1 cápsula a las 15:00 h; no confundir con tabletas de otros medicamentos.",
+  section: "medicamentos"
+})[0];
+assert.equal(omeprazolCapsule.presentation, "capsulas", "la presentación más cercana al medicamento en la fuente prevalece sobre otra forma mencionada después");
+const resolvedOmeprazolCapsule = resolveMedicationAgainstCatalog(omeprazolCapsule);
+assert.equal(resolvedOmeprazolCapsule.catalogMedicationId, "omeprazol");
+assert.equal(resolvedOmeprazolCapsule.catalogPresentationMatch, true, "Omeprazol cápsulas de 20 mg coincide con su presentación canónica");
+assert.equal(resolvedOmeprazolCapsule.requiresCatalogReview, false);
 
 const repeatedCandidateWithParserConflict = consolidateMedicationCandidates([
   {

@@ -3,8 +3,13 @@ export function normalizeMedicationName(value = "") { return normalizeClinicalCo
 export const MEDICATION_PRESENTATIONS = Object.freeze(["tabletas", "tableta", "comprimidos", "comprimido", "cápsulas", "capsulas", "cápsula", "capsula", "jarabe", "solución", "solucion", "suspensión", "suspension", "polvo", "ámpulas", "ampulas", "ámpula", "ampula", "ampollas", "ampolla", "vial", "gotas", "crema", "ungüento", "unguento", "spray", "parche", "supositorio"]);
 export function normalizeMedicationPresentation(value = "") {
   const text = normalizeClinicalComparisonText(value);
-  const match = MEDICATION_PRESENTATIONS.find((item) => new RegExp(`\\b${normalizeClinicalComparisonText(item).replace(/[.*+?^${}()|[\\]\\]/g, "\\\\$&")}\\b`, "i").test(text));
-  return match ? normalizeClinicalComparisonText(match) : "";
+  const matches = MEDICATION_PRESENTATIONS.map((item, order) => {
+    const normalized = normalizeClinicalComparisonText(item);
+    const match = new RegExp(`\\b${normalized.replace(/[.*+?^${}()|[\\]\\]/g, "\\\\$&")}\\b`, "i").exec(text);
+    return match ? { normalized, index: match.index, order } : null;
+  }).filter(Boolean);
+  matches.sort((left, right) => left.index - right.index || left.order - right.order);
+  return matches[0]?.normalized || "";
 }
 export function normalizeMedicationRoute(value = "") {
   const route = normalizeClinicalComparisonText(value);

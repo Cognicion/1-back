@@ -155,5 +155,6 @@
 // deployment marker: 2026-08-28-sofia-layout-v1 (+0.001)
 // deployment marker: 2026-08-28-sofia-report-layout-v1 (+0.001)
 // deployment marker: 2026-08-30-study-diagnosis-medication-dedup-v1 (+0.001)
-export const APP_VERSION = "2.167";
+// deployment marker: 2026-08-30-medication-presentation-bulk-selection-v1 (+0.001)
+export const APP_VERSION = "2.168";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

@@ -640,7 +640,7 @@ test("el editor flotante invalida formato solo cuando cambia el contenido", () =
   assert.match(persistencia, /runTransaction/);
   assert.match(persistencia, /validarRevisionApunte/);
   assert.match(persistencia, /transaccion\.delete\(referencia\)/);
-  assert.match(nota, /nota\.js\?v=20260830-study-diagnosis-medication-dedup-v1/);
+  assert.match(nota, /nota\.js\?v=20260830-medication-presentation-bulk-selection-v1/);
   assert.match(paciente, /paciente\.js\?v=20260826-cuenta-profesional-gratuita-v1/);
 });
 
