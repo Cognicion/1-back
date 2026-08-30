@@ -123,4 +123,17 @@ assert.deepEqual(ismeraiByName.Yasmin.schedule.map((item) => item.time), ["22:00
 assert.deepEqual(ismeraiByName.Lactobacilos.schedule.map((item) => item.time), ["08:00", "15:00"]);
 assert.ok(ismeraiTreatments.every((item) => item.rawMedicationText && !item.rawMedicationText.includes("COMENTARIO")), "cada candidato conserva únicamente su texto fuente");
 
+const repeatedPrescriptionAcrossSections = detectTreatmentCandidates({
+  documentId: "repeated-prescription-across-sections",
+  date: "2026-08-28",
+  sections: {
+    tratamiento: "Fluoxetina tabletas de 20 mg. Tomar vía oral una vez al día. 1 tableta a las 08:00 h.",
+    medicamentos: "Fluoxetina tabletas de 20 mg. Tomar vía oral una vez al día. 1 tableta a las 08:00 h."
+  }
+});
+assert.equal(repeatedPrescriptionAcrossSections.length, 1, "la misma prescripción repetida por secciones superpuestas se consolida una sola vez");
+assert.equal(repeatedPrescriptionAcrossSections[0].medicationName, "Fluoxetina");
+assert.equal(repeatedPrescriptionAcrossSections[0].presentation, "tabletas");
+assert.deepEqual(repeatedPrescriptionAcrossSections[0].schedule.map((item) => item.time), ["08:00"]);
+
 console.log("patient-transfer-clinical-candidates.test.mjs OK");

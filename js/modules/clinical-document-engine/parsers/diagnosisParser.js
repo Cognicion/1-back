@@ -180,6 +180,24 @@ function isolateBlock(text = "") {
 
 const STATUS_TOKEN = /\b(?:SE\s+AGREGA|SE\s+DESCARTA|A\s+DESCARTAR|PROBABLE|ANTECEDENTE|EN\s+REMISI[ÓO]N|REMISI[ÓO]N|CONFIRMADO)\b/gi;
 const EXCLUDED_DIAGNOSIS_TEXT = /^(?:riesgo\s+suicida|riesgo\s+de\s+ca[ií]da|conducta\s+autolesiva|vigilancia|dieta|alergias?|medicamentos?|signos\s+vitales?|resultados?\s+de\s+estudios?|comentario(?:\s+cl[ií]nico)?|an[aá]lisis|pron[oó]stico|destino)$/i;
+const DIAGNOSTIC_STUDY_FINDING = /\b(?:electrocardiograma|ecg|ekg|electroencefalograma|eeg|holter|tomograf[ií]a|resonancia\s+magn[eé]tica|radiograf[ií]a|rayos?\s+x|ultrasonido|ecograf[ií]a)\b/i;
+
+function isStudyResultSection(section = "") {
+  return /(?:resultado|estudio|laboratorio|gabinete|imagenolog)/i.test(
+    normalizeClinicalComparisonText(section)
+  );
+}
+
+function isDiagnosticStudyFinding(value = "") {
+  return DIAGNOSTIC_STUDY_FINDING.test(normalizeClinicalComparisonText(value));
+}
+
+function hasDiagnosisTableHeader(block = {}) {
+  const cells = (block.rows || []).flatMap((row) => Array.isArray(row) ? row : [row])
+    .map((cell) => normalizeClinicalComparisonText(cell));
+  return cells.some((cell) => /\bdiagnostic/.test(cell))
+    && cells.some((cell) => /\b(?:cie|icd|dsm)\b/.test(cell));
+}
 
 function isNarrativeClinicalText(text = "") {
   const value = String(text || "").replace(/\s+/g, " ").trim();
@@ -211,6 +229,15 @@ const MEDICATION_DOSE = /\b\d+(?:[.,]\d+)?\s*(?:mcg|ug|mg|g|ml|ui)(?:\s*\/\s*(?:
 const STRUCTURAL_ROW_PREFIX = /^\s*(?:(?:[\-\u2013\u2014\u2022\u00b7\u25aa\u25e6\uf0b7*]+|\(?\d{1,3}\)?[.)-]+|[a-z][.)-]+|[ivxlcdm]+[.)-]+)\s*)+/i;
 const NON_DIAGNOSIS_ENTITY_START = /^(?:actualmente|bajo\s+tratamiento|en\s+tratamiento|tratamiento|medicaci[oó]n|medicamentos?|farmacoterapia|esquema|seguimiento|control|manejo|consulta|hospitalizaci[oó]n|internamiento|ingreso|egreso|cirug[ií]a|valoraci[oó]n|atenci[oó]n|mejor[ií]a|estabilidad|evoluci[oó]n|respuesta|adherencia|riesgo|sintomatolog[ií]a|cuadro|condici[oó]n|consumo|uso)\b/i;
 const DIAGNOSTIC_ENTITY_START = /^(?:trastorno|episodio|s[ií]ndrome|enfermedad|esquizofrenia|psicosis|depresi[oó]n|ansiedad|distimia|discapacidad|dependencia|intoxicaci[oó]n|lesi[oó]n|obesidad|diabetes|hipertensi[oó]n|soporte\s+familiar|c[oó]nyuge|historia\s+personal)\b/i;
+
+function isPlausibleDiagnosisTableName(value = "") {
+  const source = diagnosisRowForClassification(value)
+    .replace(/^(?:probable|a\s+descartar|antecedente|confirmado|se\s+agrega|se\s+descarta)\s+/i, "")
+    .trim();
+  if (!source || isDiagnosticStudyFinding(source)) return false;
+  const normalized = normalizeClinicalComparisonText(source);
+  return Boolean(resolveCatalogPrefix(source)) || DIAGNOSTIC_ENTITY_START.test(normalized);
+}
 
 const DIFFERENTIAL_DIAGNOSIS_SEPARATOR = /\s+(?:vs\.?|versus)\s+/gi;
 
@@ -476,6 +503,11 @@ export function parseDiagnosisCandidates({ text = "", section = "diagnosticos", 
       return;
     }
     if (!classificationText) return;
+    if (isStudyResultSection(section) || isDiagnosticStudyFinding(classificationText)) {
+      discardedCount += 1;
+      state = candidates.length ? "FINALIZE_DIAGNOSIS" : "WAITING_DIAGNOSIS";
+      return;
+    }
     const codes = splitDiagnosticCodes(classificationText);
     if (!codes.length && isTreatmentOnlyClinicalText(classificationText)) {
       discardedCount += 1;
@@ -580,12 +612,15 @@ export function detectDiagnosisCandidates({ sections = {}, fullText = "", source
     else if (sourcePriority(item) > sourcePriority(detected[index])) detected[index] = item;
   });
   sourceBlocks.filter((block) => block.type === "table").forEach((block) => {
+    const tableHasDiagnosisHeader = hasDiagnosisTableHeader(block);
     (block.rows || []).forEach((row, rowIndex) => {
       const rowText = row.join(" | ");
       const codeColumn = row.length > 1 ? String(row[1] || "") : "";
       const codes = splitDiagnosticCodes(codeColumn || rowText);
       const names = splitDiagnosisNameColumn(row[0] || "", codes);
       const location = { tableIndex: block.source?.tableIndex, blockIndex: block.source?.blockIndex, rowIndex };
+      const hasTableDiagnosisEvidence = tableHasDiagnosisHeader || names.some(isPlausibleDiagnosisTableName);
+      if (!hasTableDiagnosisEvidence || isDiagnosticStudyFinding(rowText)) return;
       if (names.length === 1 && codes.length) {
         hasStructuredDiagnosisTable = true;
         const isDifferential = splitDifferentialDiagnosisRow({ text: names[0] }).length > 1;
@@ -635,6 +670,7 @@ export function detectDiagnosisCandidates({ sections = {}, fullText = "", source
   const entries = Object.entries(sections).filter(([, value]) => String(value || "").trim()).map(([section, value]) => ({ section, text: value }));
   if (!entries.length && String(fullText || "").trim()) entries.push({ section: "texto_completo", text: fullText });
   entries.forEach(({ section, text }) => {
+    if (isStudyResultSection(section)) return;
     if (section === "diagnosticos" && hasStructuredDiagnosisTable) return;
     add(parseDiagnosisCandidates({ text, section, documentId, noteId, explicit: section === "diagnosticos" }));
     if (["diagnosticos", "analisis", "plan", "tratamiento", "medicamentos", "pronostico", "destino", "resultados", "estudios"].includes(section)) return;

@@ -94,6 +94,157 @@ export function medicationCandidateCompleteness(candidate = {}) {
   return fields.filter((value) => value !== null && value !== undefined && value !== "").length;
 }
 
+function comparableRegimenValue(value = "") {
+  return normalizeClinicalComparisonText(value).replace(/\s+/g, " ").trim();
+}
+
+function candidateMedicationIdentity(candidate = {}) {
+  return comparableRegimenValue(candidate.normalizedMedicationName || candidate.medicationName || candidate.genericName);
+}
+
+function candidateActionIdentity(candidate = {}) {
+  return comparableRegimenValue(candidate.action || candidate.status || candidate.statusSuggestion || "Continúa") || "continua";
+}
+
+function candidateEvidenceText(candidate = {}) {
+  return comparableRegimenValue(
+    candidate.metadata?.rawMedicationText
+    || candidate.rawMedicationText
+    || candidate.sourceText
+    || candidate.evidence?.[0]?.rawText
+    || ""
+  );
+}
+
+function candidateMedicationDetailEvidence(candidate = {}) {
+  const evidence = candidateEvidenceText(candidate);
+  const medication = candidateMedicationIdentity(candidate);
+  const index = medication ? evidence.indexOf(medication) : -1;
+  return index >= 0 ? evidence.slice(index, index + 96) : evidence;
+}
+
+function candidateFrequencyIdentity(candidate = {}) {
+  return comparableRegimenValue(candidate.frequency || normalizeMedicationFrequency(candidate.frequencyRaw || "").key);
+}
+
+function candidateScheduleIdentity(candidate = {}) {
+  const schedule = Array.isArray(candidate.schedule) ? candidate.schedule : [];
+  return schedule
+    .map((item) => [
+      comparableRegimenValue(item.time || ""),
+      comparableRegimenValue(item.quantity ?? ""),
+      comparableRegimenValue(item.unit || item.administrationUnit || "")
+    ].join("|"))
+    .sort()
+    .join(";");
+}
+
+function candidateRegimen(candidate = {}) {
+  return {
+    presentation: comparableRegimenValue(candidate.presentation || ""),
+    strength: comparableRegimenValue(candidate.strength ?? candidate.strengthValue ?? candidate.dose ?? ""),
+    strengthUnit: comparableRegimenValue(candidate.strengthUnit || candidate.doseUnit || ""),
+    strengthPerValue: comparableRegimenValue(candidate.strengthPerValue ?? ""),
+    strengthPerUnit: comparableRegimenValue(candidate.strengthPerUnit || ""),
+    route: comparableRegimenValue(candidate.route || ""),
+    frequency: candidateFrequencyIdentity(candidate),
+    schedule: candidateScheduleIdentity(candidate)
+  };
+}
+
+function regimensConflict(left = {}, right = {}) {
+  const leftRegimen = candidateRegimen(left);
+  const rightRegimen = candidateRegimen(right);
+  return Object.keys(leftRegimen).some((key) =>
+    leftRegimen[key] && rightRegimen[key] && leftRegimen[key] !== rightRegimen[key]
+  );
+}
+
+function evidenceIsSamePrescription(left = {}, right = {}) {
+  const leftEvidence = candidateEvidenceText(left);
+  const rightEvidence = candidateEvidenceText(right);
+  if (!leftEvidence || !rightEvidence) return false;
+  if (leftEvidence === rightEvidence) return true;
+  const shortest = leftEvidence.length <= rightEvidence.length ? leftEvidence : rightEvidence;
+  const longest = leftEvidence.length <= rightEvidence.length ? rightEvidence : leftEvidence;
+  return shortest.length >= candidateMedicationIdentity(left).length + 6 && longest.includes(shortest);
+}
+
+function sourceSectionPriority(candidate = {}) {
+  const section = comparableRegimenValue(candidate.metadata?.sourceSection || candidate.sourceSection || "");
+  if (section === "medicamentos") return 3;
+  if (section === "tratamiento") return 2;
+  if (section === "plan") return 1;
+  return 0;
+}
+
+function candidateEvidenceSupport(candidate = {}) {
+  const detail = candidateMedicationDetailEvidence(candidate);
+  const presentation = comparableRegimenValue(candidate.presentation || "");
+  const route = comparableRegimenValue(candidate.route || "");
+  let score = 0;
+  if (presentation && detail.includes(presentation)) score += 4;
+  if (route && new RegExp(`\\b${route}\\b`, "i").test(detail)) score += 2;
+  if (candidateFrequencyIdentity(candidate) && detail) score += 1;
+  return score;
+}
+
+function preferredMedicationCandidate(left = {}, right = {}) {
+  const leftRank = candidateEvidenceSupport(left) * 10 + medicationCandidateCompleteness(left) + sourceSectionPriority(left);
+  const rightRank = candidateEvidenceSupport(right) * 10 + medicationCandidateCompleteness(right) + sourceSectionPriority(right);
+  if (leftRank !== rightRank) return leftRank > rightRank ? left : right;
+  return candidateEvidenceText(left).length >= candidateEvidenceText(right).length ? left : right;
+}
+
+function mergeDuplicateMedicationCandidates(left = {}, right = {}) {
+  const preferred = preferredMedicationCandidate(left, right);
+  const fallback = preferred === left ? right : left;
+  const merged = {
+    ...fallback,
+    ...preferred,
+    metadata: {
+      ...(fallback.metadata || {}),
+      ...(preferred.metadata || {}),
+      collapsedMedicationCandidateCount: Number(fallback.metadata?.collapsedMedicationCandidateCount || 1)
+        + Number(preferred.metadata?.collapsedMedicationCandidateCount || 1)
+    },
+    requiresReview: Boolean(preferred.requiresReview || fallback.requiresReview || regimensConflict(left, right))
+  };
+  ["presentation", "strength", "strengthValue", "strengthUnit", "strengthPerValue", "strengthPerUnit", "route", "frequency", "frequencyRaw", "administrationQuantity", "administrationUnit", "dose", "doseUnit"].forEach((field) => {
+    if (merged[field] === null || merged[field] === undefined || merged[field] === "") {
+      merged[field] = fallback[field];
+    }
+  });
+  if (!Array.isArray(merged.schedule) || !merged.schedule.length) merged.schedule = fallback.schedule || [];
+  return merged;
+}
+
+/**
+ * Colapsa la misma prescripción detectada más de una vez por secciones
+ * superpuestas o por un OCR que repite el inciso. Mantiene regímenes distintos
+ * cuando hay evidencia independiente de una presentación, concentración, vía,
+ * frecuencia u horario diferente.
+ */
+export function consolidateMedicationCandidates(candidates = []) {
+  const consolidated = [];
+  (candidates || []).forEach((candidate) => {
+    const medication = candidateMedicationIdentity(candidate);
+    const action = candidateActionIdentity(candidate);
+    if (!medication) {
+      consolidated.push(candidate);
+      return;
+    }
+    const duplicateIndex = consolidated.findIndex((existing) =>
+      candidateMedicationIdentity(existing) === medication
+      && candidateActionIdentity(existing) === action
+      && (evidenceIsSamePrescription(existing, candidate) || !regimensConflict(existing, candidate))
+    );
+    if (duplicateIndex < 0) consolidated.push(candidate);
+    else consolidated[duplicateIndex] = mergeDuplicateMedicationCandidates(consolidated[duplicateIndex], candidate);
+  });
+  return consolidated;
+}
+
 function administrationFromText(text = "", schedule = []) {
   const match = normalizeClinicalComparisonText(text).match(/(?:tomar|administrar|aplicar)\s+(\d+(?:[.,]\d+)?|una|un|uno|dos|tres|½|¼|¾|\d+\/\d+)\s*(?:de\s+)?(tabletas?|capsulas?|comprimidos?|ampulas?|ampollas?|atomizaciones?|ml|mililitros|cucharadas?|cucharaditas?|gotas?)/i);
   if (match) return { quantity: parseClinicalQuantity(match[1]), unit: match[2].toLowerCase() };
@@ -190,15 +341,16 @@ export function parseMedicationCandidates({ text = "", section = "tratamiento", 
     }
   });
   const comparableText = normalizeClinicalComparisonText(text);
-  candidates.sort((left, right) => {
+  const consolidatedCandidates = consolidateMedicationCandidates(candidates);
+  consolidatedCandidates.sort((left, right) => {
     const leftPosition = comparableText.indexOf(normalizeClinicalComparisonText(left.medicationName));
     const rightPosition = comparableText.indexOf(normalizeClinicalComparisonText(right.medicationName));
     return leftPosition - rightPosition;
   });
-  candidates.forEach((candidate) => clinicalImportLogger.info("medicationParser:item", JSON.stringify({ documentId, noteId, candidateId: candidate.id, medicationName: candidate.medicationName, confidence: candidate.confidence, schedulesCount: candidate.schedule.length })));
-  clinicalImportLogger.info("medicationParser:output-count", JSON.stringify({ documentId, noteId, count: candidates.length }));
-  clinicalImportLogger.info("medicationParser:finished", JSON.stringify({ documentId, noteId, itemCount: items.length, candidateCount: candidates.length }));
-  return candidates;
+  consolidatedCandidates.forEach((candidate) => clinicalImportLogger.info("medicationParser:item", JSON.stringify({ documentId, noteId, candidateId: candidate.id, medicationName: candidate.medicationName, confidence: candidate.confidence, schedulesCount: candidate.schedule.length })));
+  clinicalImportLogger.info("medicationParser:output-count", JSON.stringify({ documentId, noteId, count: consolidatedCandidates.length, collapsed: Math.max(0, candidates.length - consolidatedCandidates.length) }));
+  clinicalImportLogger.info("medicationParser:finished", JSON.stringify({ documentId, noteId, itemCount: items.length, candidateCount: consolidatedCandidates.length }));
+  return consolidatedCandidates;
 }
 
 export function detectMedicationCandidates({ sections = {}, fullText = "", sourceBlocks = [], medicationCatalog = MEDICAMENTOS_MAESTROS, documentId = "", noteId = "", date = "" } = {}) {
@@ -206,8 +358,8 @@ export function detectMedicationCandidates({ sections = {}, fullText = "", sourc
   if (!sources.length && String(fullText || "").trim()) sources.push(["texto_completo", fullText]);
   const result = [];
   sources.forEach(([section, text]) => parseMedicationCandidates({ text, section, documentId, noteId, date, medicationCatalog }).forEach((candidate) => {
-    if (!result.some((existing) => existing.normalizedMedicationName === candidate.normalizedMedicationName && existing.action === candidate.action && existing.sourceSection === candidate.sourceSection && existing.date === date)) result.push(candidate);
+    result.push(candidate);
   }));
   void sourceBlocks;
-  return result;
+  return consolidateMedicationCandidates(result);
 }

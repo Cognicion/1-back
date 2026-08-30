@@ -194,7 +194,7 @@ async function releaseSofiaRateLimit({ db, uid, requestId }) {
     if (!snapshot.exists) return;
     const activeRequests = { ...(snapshot.data()?.activeRequests || {}) };
     delete activeRequests[requestId];
-    transaction.set(ref, { activeRequests, updatedAt: new Date().toISOString() }, { merge: true });
+    transaction.update(ref, { activeRequests, updatedAt: new Date().toISOString() });
   });
 }
 

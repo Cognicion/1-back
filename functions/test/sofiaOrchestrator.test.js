@@ -14,6 +14,20 @@ const {
 const { SOFIA_RELEASE_CONFIG } = require("../sofiaOrchestrator/config");
 const { buildAuthorizedSofiaContext, sanitizePageState } = require("../sofiaOrchestrator/contextService");
 
+function mergeFirestoreSet(current = {}, next = {}) {
+  const result = { ...current };
+  Object.entries(next).forEach(([key, value]) => {
+    const existing = result[key];
+    const mergeable = value && existing
+      && typeof value === "object"
+      && typeof existing === "object"
+      && !Array.isArray(value)
+      && !Array.isArray(existing);
+    result[key] = mergeable ? mergeFirestoreSet(existing, value) : value;
+  });
+  return result;
+}
+
 function createContext() {
   return {
     mode: "patient",
@@ -57,7 +71,10 @@ function createFakeDb({ actor, patient }) {
         return { exists: stored.has(path), data: () => stored.get(path) || {} };
       },
       async set(value, options = {}) {
-        stored.set(path, options.merge ? { ...(stored.get(path) || {}), ...value } : value);
+        stored.set(path, options.merge ? mergeFirestoreSet(stored.get(path) || {}, value) : value);
+      },
+      async update(value) {
+        stored.set(path, { ...(stored.get(path) || {}), ...value });
       },
       collection(name) {
         return collection(`${path}/${name}`);
@@ -88,7 +105,8 @@ function createFakeDb({ actor, patient }) {
     async runTransaction(callback) {
       return callback({
         get(ref) { return ref.get(); },
-        set(ref, value, options) { return ref.set(value, options); }
+        set(ref, value, options) { return ref.set(value, options); },
+        update(ref, value) { return ref.update(value); }
       });
     },
   };
@@ -300,6 +318,8 @@ async function run() {
     (error) => error.code === "resource-exhausted"
   );
   await releaseSofiaRateLimit({ db: rateDb, uid: "doctor-1", requestId: "request-1" });
+  const usageAfterRelease = [...rateDb._stored.entries()].find(([path]) => path.startsWith("sofiaUsageLimits/"))?.[1];
+  assert.deepStrictEqual(Object.keys(usageAfterRelease.activeRequests), ["request-2"]);
   await acquireSofiaRateLimit({ db: rateDb, uid: "doctor-1", requestId: "request-3", now: 1_300 });
 
   const burstDb = createFakeDb({ actor: {}, patient: {} });

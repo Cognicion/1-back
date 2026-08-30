@@ -5,7 +5,7 @@ import { ClinicalEvidence } from "../core/ClinicalEvidence.js";
 import { evaluateConfidence, requiresReviewForConfidence } from "../confidence/confidenceEngine.js";
 import { normalizeClinicalComparisonText } from "../normalizers/textNormalizer.js";
 import { parseMedicationStrength, splitMedicationItems } from "../normalizers/medicationNormalizer.js?v=20260818-clinical-extraction-v1";
-import { parseMedicationCandidates } from "./medicationParser.js?v=20260819-midc-allergy-context-v1";
+import { consolidateMedicationCandidates, parseMedicationCandidates } from "./medicationParser.js?v=20260830-study-diagnosis-medication-dedup-v1";
 import { clinicalImportLogger } from "../utils/logger.js";
 import { MEDICAMENTOS_MAESTROS } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
 
@@ -205,7 +205,9 @@ export function parseTreatmentPlan({ text = "", documentId = "", noteId = "", da
     : [];
   clinicalImportLogger.info("treatmentPlanParser:medication-block", JSON.stringify({ documentId, noteId, subsectionCount: medicationSubsections.length, sourceLength: medicationText.length }));
   const delegatedMedicationText = delegatedItems.map((item, index) => `${index + 1}) ${item}`).join("\n");
-  const medicationCandidates = delegatedItems.length ? parseMedicationCandidates({ text: delegatedMedicationText, section: "plan", documentId, noteId, date }) : [];
+  const medicationCandidates = consolidateMedicationCandidates(
+    delegatedItems.length ? parseMedicationCandidates({ text: delegatedMedicationText, section: "plan", documentId, noteId, date }) : []
+  );
   const claimedMedicationNames = medicationCandidates.map((candidate) => normalizeClinicalComparisonText(candidate.medicationName)).filter(Boolean);
   const filteredCandidates = candidates.filter((candidate) => !claimedMedicationNames.some((name) => new RegExp(`\\b${name.replace(/[.*+?^${}()|[\\]\\]/g, "\\\\$&")}\\b`, "i").test(normalizeClinicalComparisonText(candidate.text))));
   clinicalImportLogger.info("treatmentPlanParser:delegated-medications", JSON.stringify({ documentId, noteId, inputCount: delegatedItems.length, count: medicationCandidates.length }));

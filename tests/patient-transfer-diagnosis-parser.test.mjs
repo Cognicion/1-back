@@ -300,6 +300,27 @@ const codeLikeTextOutsideDiagnosisContextIsIgnored = detectDiagnosisCandidates({
 });
 assert.deepEqual(codeLikeTextOutsideDiagnosisContextIsIgnored, []);
 
+const electrocardiogramStudyIsNotDiagnosis = detectDiagnosisCandidates({
+  documentId: "electrocardiogram-study-not-diagnosis",
+  sections: {
+    resultadosEstudios: "Electrocardiograma de 12 derivaciones: ritmo sinusal, sin datos de lesión o necrosis."
+  },
+  sourceBlocks: [{
+    type: "table",
+    rows: [["Electrocardiograma de 12 derivaciones: ritmo sinusal", "E12"]],
+    source: { tableIndex: 3, blockIndex: 8 }
+  }]
+});
+assert.deepEqual(electrocardiogramStudyIsNotDiagnosis, [], "un estudio de gabinete no se convierte en diagnóstico aunque el OCR produzca un código con forma CIE");
+
+const electrocardiogramInWrongSectionIsStillNotDiagnosis = parseDiagnosisBlock({
+  text: "Electrocardiograma de 12 derivaciones E12: ritmo sinusal.",
+  section: "diagnosticos",
+  explicit: true,
+  documentId: "electrocardiogram-wrong-section"
+});
+assert.deepEqual(electrocardiogramInWrongSectionIsStillNotDiagnosis, [], "la clase clínica del estudio prevalece aun cuando un formato lo ubique bajo un encabezado incorrecto");
+
 const prefixedRealDiagnosesRemainDetected = parseDiagnosisBlock({
   text: [
     "- Trastorno depresivo recurrente, episodio actual grave F33.2",

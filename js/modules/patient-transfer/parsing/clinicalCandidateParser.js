@@ -1,6 +1,6 @@
 import { MEDICAMENTOS_MAESTROS, medicamentoPorTexto } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
-import { adaptDiagnosisBlock, adaptDiagnosisCandidates } from "../../clinical-document-engine/adapters/diagnosisAdapter.js?v=20260828-diagnosis-versus-v2";
-import { adaptMedicationBlock, adaptMedicationCandidates } from "../../clinical-document-engine/adapters/medicationAdapter.js?v=20260819-midc-allergy-context-v1";
+import { adaptDiagnosisBlock, adaptDiagnosisCandidates } from "../../clinical-document-engine/adapters/diagnosisAdapter.js?v=20260830-study-diagnosis-medication-dedup-v1";
+import { adaptMedicationBlock, adaptMedicationCandidates } from "../../clinical-document-engine/adapters/medicationAdapter.js?v=20260830-study-diagnosis-medication-dedup-v1";
 
 function normalizeText(value = "") {
   return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim().toLowerCase();

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { parseMedicationSchedules } from "../js/modules/patient-transfer/parsing/clinicalCandidateParser.js";
-import { parseMedicationCandidates } from "../js/modules/clinical-document-engine/parsers/medicationParser.js";
+import { consolidateMedicationCandidates, parseMedicationCandidates } from "../js/modules/clinical-document-engine/parsers/medicationParser.js";
 
 const risperidona = parseMedicationSchedules("Risperidona tabletas 2 mg vía oral dos veces al día 1/2 tableta a las 08:00 y 1 tableta a las 22:00");
 assert.deepEqual(risperidona.map(({ time, quantity, administrationUnit }) => ({ time, quantity, administrationUnit })), [
@@ -49,5 +49,40 @@ assert.deepEqual(unitlessAdministrationResult.map((candidate) => candidate.sched
   [{ time: "08:00", quantity: 1, unit: "capsulas" }],
   [{ time: "21:00", quantity: 0.5, unit: "tableta" }]
 ]);
+
+const repeatedCandidateWithParserConflict = consolidateMedicationCandidates([
+  {
+    id: "fluoxetine-tablet",
+    medicationName: "Fluoxetina",
+    normalizedMedicationName: "fluoxetina",
+    presentation: "tabletas",
+    strength: 20,
+    strengthUnit: "mg",
+    action: "Suspende",
+    metadata: { sourceSection: "plan", rawMedicationText: "Suspender fluoxetina tabletas de 20 mg. Tomar vía oral una vez al día." }
+  },
+  {
+    id: "fluoxetine-parser-repeat",
+    medicationName: "Fluoxetina",
+    normalizedMedicationName: "fluoxetina",
+    presentation: "capsulas",
+    strength: 20,
+    strengthUnit: "mg",
+    route: "oral",
+    frequency: "onceDaily",
+    action: "Suspende",
+    metadata: { sourceSection: "medicamentos", rawMedicationText: "Suspender fluoxetina tabletas de 20 mg. Tomar vía oral una vez al día." }
+  }
+]);
+assert.equal(repeatedCandidateWithParserConflict.length, 1, "dos candidatos de la misma evidencia se consolidan aunque uno arrastre una presentación incorrecta");
+assert.equal(repeatedCandidateWithParserConflict[0].presentation, "tabletas", "la presentación respaldada junto al nombre del medicamento prevalece");
+assert.equal(repeatedCandidateWithParserConflict[0].route, "oral", "la consolidación conserva los datos complementarios no conflictivos");
+assert.equal(repeatedCandidateWithParserConflict[0].requiresReview, true, "una discrepancia interna queda marcada para revisión clínica");
+
+const distinctFluoxetineRegimens = consolidateMedicationCandidates([
+  { ...repeatedCandidateWithParserConflict[0], metadata: { rawMedicationText: "Fluoxetina tabletas de 20 mg vía oral una vez al día." } },
+  { ...repeatedCandidateWithParserConflict[0], id: "fluoxetine-capsule", presentation: "capsulas", metadata: { rawMedicationText: "Fluoxetina cápsulas de 20 mg vía oral una vez al día." } }
+]);
+assert.equal(distinctFluoxetineRegimens.length, 2, "dos presentaciones distintas con evidencia independiente no se fusionan");
 
 console.log("patient-transfer-medication-schedules: ok");

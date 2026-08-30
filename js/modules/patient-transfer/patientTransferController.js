@@ -7,7 +7,7 @@ import { normalizeDocxBlocks, normalizedBlocksToText } from "./docx/docxBlockNor
 import { parsePatientFields, fieldValues } from "./parsing/patientFieldParser.js?v=20260818-admission-date-v1";
 import { resolvePatientIdentity } from "./parsing/patientIdentityResolver.js";
 import { parseClinicalSections } from "./parsing/clinicalSectionParser.js?v=20260814-note-sections-runtime-v1";
-import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js?v=20260828-diagnosis-versus-v2";
+import { extractClinicalCandidates } from "./parsing/clinicalCandidateParser.js?v=20260830-study-diagnosis-medication-dedup-v1";
 import { detectMultipleClinicalNotes, expandSegmentedDocumentsForPersistence, mergeClinicalSegments, segmentClinicalNotes, splitClinicalSegment } from "./parsing/clinicalNoteSegmenter.js?v=20260818-diagnoses-studies-v1";
 import { extractVitalSignsCandidates } from "./parsing/vitalSignsParser.js";
 import { parseNoteMetadata } from "./parsing/noteMetadataParser.js";
@@ -17,7 +17,7 @@ import { initializeFileMultipleNotesMode, MULTIPLE_NOTES_MODES, normalizeMultipl
 import { groupDocumentsByPatient } from "./parsing/documentGroupingService.js";
 import { analyzeDocumentClinically } from "./integration/clinicalAnalysisAdapter.js";
 import { lockTransferGroupsToTargetPatient, normalizePatientTransferLaunchContext } from "./patientTransferLaunchContext.js?v=20260820-patient-notes-import-v1";
-import { adaptTreatmentPlan } from "../clinical-document-engine/adapters/treatmentPlanAdapter.js?v=20260819-midc-allergy-context-v1";
+import { adaptTreatmentPlan } from "../clinical-document-engine/adapters/treatmentPlanAdapter.js?v=20260830-study-diagnosis-medication-dedup-v1";
 import { resolveMedicationCandidatesAgainstCatalog } from "../clinical-document-engine/resolvers/medicationCatalogResolver.js?v=20260819-midc-allergy-context-v1";
 import { findDuplicateImport, findExistingPatientCandidates, saveTransferredGroups } from "./patientTransferRepository.js?v=20260828-duplicate-repeated-surname-v1";
 import {
