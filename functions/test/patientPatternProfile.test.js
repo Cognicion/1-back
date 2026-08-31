@@ -9,7 +9,7 @@ const {
   reviewPatientPatternResult,
   searchAuthorizedPatternPatients
 } = require("../clinicalAnalytics/patientPatternHandlers");
-const { assertAuthorizedPatientClinician } = require("../clinicalAnalytics/access");
+const { assertAuthorizedPatientClinician, isAdmin } = require("../clinicalAnalytics/access");
 
 function bssItems(count = 19) {
   return Array.from({ length: count }, (_value, index) => ({
@@ -192,9 +192,11 @@ async function verifyBackendDenial() {
 }
 
 async function verifyStrictClinicianAccess() {
+  assert.strictEqual(isAdmin({}, { uid: "NQ0CU5PSDBUgVrk56sjPEVhOs2D3", token: {} }), false);
   const profiles = {
     "usuarios/doctor-authorized": { rol: "medico" },
     "usuarios/admin-only": { rol: "admin" },
+    "usuarios/admin-clinician": { rol: "admin", roles: ["medico"], cedulaProfesional: "control-test" },
     "usuarios/patient-protected": { rol: "paciente", medicoUid: "doctor-authorized" }
   };
   const db = {
@@ -213,6 +215,13 @@ async function verifyStrictClinicianAccess() {
     () => assertAuthorizedPatientClinician({ auth: { uid: "admin-only", token: { admin: true } } }, db, "patient-protected"),
     (error) => error.code === "permission-denied"
   );
+  profiles["usuarios/patient-protected"].medicoUid = "admin-clinician";
+  const adminClinician = await assertAuthorizedPatientClinician(
+    { auth: { uid: "admin-clinician", token: { admin: true } } },
+    db,
+    "patient-protected"
+  );
+  assert.strictEqual(adminClinician.isAdmin, true);
 }
 
 function createReviewDb({ authorized = true } = {}) {

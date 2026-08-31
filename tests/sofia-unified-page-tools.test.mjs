@@ -28,6 +28,15 @@ test("el estado de página expone solo capacidades declaradas", () => {
   assert.ok(!ALLOWED_ACTIONS.has("run-javascript"));
 });
 
+test("el modo administrativo limita las capacidades de página al chat", () => {
+  const state = collectSofiaPageState({
+    capabilities: ["chat", "not-allowed", "chat"],
+    hasNoteDraft: false,
+    panelContext: {}
+  });
+  assert.deepEqual(state.capabilities, ["chat"]);
+});
+
 test("las acciones solo usan IDs permitidos y rechazan acciones arbitrarias", async () => {
   const timeline = createElement();
   const filter = createElement();

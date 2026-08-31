@@ -209,6 +209,33 @@ async function run() {
   assert.strictEqual(semanticKnowledge.relations[0].patientPairCount, 3);
   assert.strictEqual(semanticKnowledge.relations[0].utilityScore, 0.71);
   assert.ok(!JSON.stringify(semanticKnowledge).includes("must-not-leak"));
+  const hiddenAdminSection = await adminRegistry.execute("show_page_section", { section: "timeline" });
+  assert.strictEqual(hiddenAdminSection.error, "page_section_unavailable");
+
+  const adminGeneralContext = await buildAuthorizedSofiaContext({
+    request: { auth: { uid: "doctor-1", token: { admin: true } }, data: {} },
+    db: createFakeDb({ actor: { rol: "admin" }, patient: {} })
+  });
+  assert.strictEqual(adminGeneralContext.mode, "general");
+  assert.strictEqual(adminGeneralContext.isAdmin, true);
+  assert.strictEqual(adminGeneralContext.patientId, null);
+  assert.strictEqual(typeof adminGeneralContext.loadPlatformMatrices, "function");
+  await assert.rejects(
+    () => buildAuthorizedSofiaContext({
+      request: { auth: { uid: "doctor-1", token: { admin: true } }, data: { patientId: "patient-1" } },
+      db: createFakeDb({ actor: { rol: "admin" }, patient: { rol: "paciente", medicoTratanteUid: "doctor-1" } })
+    }),
+    (error) => error.code === "permission-denied"
+  );
+  const adminClinicianContext = await buildAuthorizedSofiaContext({
+    request: { auth: { uid: "doctor-1", token: { admin: true } }, data: { patientId: "patient-1" } },
+    db: createFakeDb({
+      actor: { rol: "admin", roles: ["medico"], cedulaProfesional: "control-test" },
+      patient: { rol: "paciente", medicoTratanteUid: "doctor-1", edad: 34 }
+    })
+  });
+  assert.strictEqual(adminClinicianContext.mode, "patient");
+  assert.strictEqual(adminClinicianContext.isAdmin, true);
 
   await assert.rejects(
     () => buildAuthorizedSofiaContext({
@@ -301,6 +328,20 @@ async function run() {
     assert.strictEqual(Object.hasOwn(telemetry, forbiddenField), false);
   }
 
+  const adminUnifiedDb = createFakeDb({ actor: { rol: "admin" }, patient: {} });
+  const adminUnified = await runUnifiedSofia({
+    request: {
+      auth: { uid: "doctor-1", token: { admin: true } },
+      data: { mensaje: "Resume el conocimiento agregado.", patientId: null, history: [], pageState: { capabilities: ["chat"] } }
+    },
+    db: adminUnifiedDb,
+    apiKey: "test-key",
+    OpenAIClass: FakeOpenAI
+  });
+  assert.strictEqual(adminUnified.mode, "general");
+  assert.strictEqual(adminUnified.contextSummary, null);
+  assert.strictEqual(adminUnified.clinicalWritesPerformed, false);
+
   assert.deepStrictEqual(SOFIA_RELEASE_CONFIG.limits, {
     windowMs: 5 * 60 * 1000,
     requestsPerWindow: 12,
@@ -352,6 +393,8 @@ async function run() {
   await acquireSofiaRateLimit({ db: leaseDb, uid: "doctor-1", requestId: "lease-1", now: 100_000 });
   await acquireSofiaRateLimit({ db: leaseDb, uid: "doctor-1", requestId: "lease-2", now: 100_001 });
   await acquireSofiaRateLimit({ db: leaseDb, uid: "doctor-1", requestId: "lease-after-expiration", now: 230_002 });
+  const leaseUsage = [...leaseDb._stored.entries()].find(([path]) => path.startsWith("sofiaUsageLimits/"))?.[1];
+  assert.deepStrictEqual(Object.keys(leaseUsage.activeRequests), ["lease-after-expiration"]);
 
   class FailingOpenAI {
     constructor() {

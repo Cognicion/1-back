@@ -156,6 +156,20 @@ test("los listados server-side usan asignaciones y conservan permisos compartido
   );
 });
 
+test("admin puro no recibe la lista clínica de pacientes de SOFÍA", async () => {
+  const adminUid = "admin-puro";
+  const db = new FakeDb({
+    [`usuarios/${adminUid}`]: { rol: "admin", tipoUsuario: "medico" }
+  });
+  await assert.rejects(
+    listAuthorizedSofiaPatients({
+      db,
+      request: { auth: { uid: adminUid, token: { admin: true } }, data: {} }
+    }),
+    (error) => error.code === "permission-denied"
+  );
+});
+
 test("los planes sin límite conservan todas las relaciones clínicas heredadas", async () => {
   const legacyUid = "profesional-legado";
   const legacyProfile = { rol: "medico", tieneCuenta: true };

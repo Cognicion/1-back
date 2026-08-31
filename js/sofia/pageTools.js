@@ -42,12 +42,15 @@ function showSection(section, { documentRef, windowRef }) {
 }
 
 export function collectSofiaPageState({
+  capabilities = Object.keys(SOFIA_PAGE_SECTIONS),
   timelineFilter = "",
   hasNoteDraft = false,
   panelContext = null
 } = {}) {
+  const allowedCapabilities = [...new Set((Array.isArray(capabilities) ? capabilities : [])
+    .filter((section) => Object.hasOwn(SOFIA_PAGE_SECTIONS, section)))];
   return {
-    capabilities: Object.keys(SOFIA_PAGE_SECTIONS),
+    capabilities: allowedCapabilities,
     timelineFilter: String(timelineFilter || "").slice(0, 120),
     hasNoteDraft: hasNoteDraft === true,
     panelContext: panelContext && typeof panelContext === "object" ? panelContext : {}

@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SOFIA Clinica | Cognicion Labs</title>
   <link rel="icon" href="assets/favicon-cognicion.png" />
-  <link rel="stylesheet" href="css/sofia.css?v=20260828-sofia-report-layout-v1" />
-  <link rel="stylesheet" href="./css/sofia-mascota.css" />
+  <link rel="stylesheet" href="css/sofia.css?v=20260831-sofia-admin-policy-v1" />
+  <link rel="stylesheet" href="./css/sofia-mascota.css?v=20260831-sofia-admin-policy-v1" />
   <link rel="stylesheet" href="./css/clinical-analysis.css?v=20260828-sofia-report-layout-v1" />
   <link rel="stylesheet" href="./css/patient-pattern-detector.css?v=20260821-patient-pattern-profile-v1" />
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
@@ -21,8 +21,9 @@
     </a>
     <nav class="top-actions">
       <a href="dashboard.html" class="ghost-link">Dashboard</a>
-      <a href="medico.html" class="ghost-link">Panel medico</a>
-      <a href="detector-patrones.html" class="ghost-link">Detector de patrones</a>
+      <a href="medico.html" class="ghost-link" data-sofia-clinical-link>Panel medico</a>
+      <a href="detector-patrones.html" class="ghost-link" data-sofia-clinical-link>Detector de patrones</a>
+      <a href="admin.html" class="ghost-link" data-sofia-admin-link hidden>Centro de Control</a>
     </nav>
   </header>
 
@@ -126,7 +127,7 @@
       <article class="sofia-panel span-2 chat-panel">
         <div class="panel-title"><span>SOFÍA unificada</span><small>Contexto autorizado y herramientas de la página</small></div>
         <section id="chatBox" class="chat-box">
-          <div class="msg sofia">Hola. Soy SOFÍA. Con un paciente seleccionado puedo consultar su análisis autorizado y ayudarte a navegar las herramientas de esta página. No modifico el expediente y mis respuestas deben ser verificadas por el profesional.</div>
+          <div class="msg sofia" id="mensajeBienvenidaSofia">Hola. Soy SOFÍA. Con un paciente seleccionado puedo consultar su análisis autorizado y ayudarte a navegar las herramientas de esta página. No modifico el expediente y mis respuestas deben ser verificadas por el profesional.</div>
         </section>
         <form id="formSofia" class="input-row">
           <input id="mensajeSofia" type="text" placeholder="Pregunta o pide mostrar una sección..." autocomplete="off" />
@@ -136,7 +137,7 @@
     </section>
   </main>
 
-  <script type="module" src="js/sofia.js?v=20260828-sofia-patient-search-report-layout-v1"></script>
+  <script type="module" src="js/sofia.js?v=20260831-sofia-admin-policy-v1"></script>
   <script type="module" src="./js/sofia-mascota-loader.js"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>

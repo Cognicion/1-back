@@ -53,3 +53,15 @@
 @keyframes mascot-neuron { 50% { transform: translateY(-2px) scale(1.015); } }
 @keyframes mascot-pulse { 50% { opacity: .82; } }
 @media (max-width: 720px) { .sofia-mascot { --mascot-size: 76px; right: 166px; bottom: calc(20px + env(safe-area-inset-bottom)); } }
+@media (max-width: 720px) {
+  .sofia-mascot__panel,
+  .sofia-mascot[data-position="bottom-left"] .sofia-mascot__panel {
+    position: fixed;
+    left: max(12px, env(safe-area-inset-left));
+    right: max(12px, env(safe-area-inset-right));
+    bottom: calc(30px + env(safe-area-inset-bottom) + var(--mascot-size));
+    width: auto;
+    max-height: calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom) - var(--mascot-size));
+    overflow-y: auto;
+  }
+}

@@ -37,8 +37,8 @@ assert.match(persistence, /vectorsExposedToClient:\s*false/);
 assert.match(persistence, /rawClinicalTextPersisted:\s*false/);
 assert.doesNotMatch(persistence, /console\.(?:debug|log|info|warn|error)\([^\n]*(?:patientId|sourceRecordHash|analyticsPatientId)/);
 
-assert.match(adminHtml, /css\/admin\.css\?v=20260820-sofia-patterns-v3/);
-  assert.match(adminHtml, /js\/admin\.js\?v=20260826-cuenta-profesional-gratuita-v1/);
+assert.match(adminHtml, /css\/admin\.css\?v=20260831-sofia-admin-policy-v1/);
+assert.match(adminHtml, /js\/admin\.js\?v=20260831-sofia-admin-policy-v1/);
 assert.match(adminJs, /clinicalKnowledgeController\.js\?v=20260820-sofia-patterns-v3/);
 assert.match(controller, /Construir índice semántico/);
 assert.match(controller, /Relaciones semánticas entre archivos/);

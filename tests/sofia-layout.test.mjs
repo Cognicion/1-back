@@ -12,7 +12,7 @@ test("el análisis de SOFÍA usa todo el ancho y no estira los paneles vecinos",
     read("css/clinical-analysis.css")
   ]);
 
-  assert.match(html, /css\/sofia\.css\?v=20260828-sofia-report-layout-v1/);
+  assert.match(html, /css\/sofia\.css\?v=20260831-sofia-admin-policy-v1/);
   assert.match(html, /css\/clinical-analysis\.css\?v=20260828-sofia-report-layout-v1/);
   assert.match(sofiaCss, /\.sofia-grid\s*\{[^}]*align-items:\s*start/s);
   assert.match(sofiaCss, /\.sofia-panel\s*\{[^}]*background:\s*transparent/s);
@@ -42,4 +42,27 @@ test("el selector de paciente de SOFÍA filtra coincidencias sin exponer una lis
   assert.match(script, /normalizarBusquedaPaciente\(patient\.label\)\.includes\(termino\)/);
   assert.match(script, /listAuthorizedSofiaPatients\(\)/);
   assert.match(css, /\.sofia-patient-results\s*\{/);
+});
+
+test("SOFÍA separa acceso general admin de contexto clínico individual", async () => {
+  const [html, script, css] = await Promise.all([
+    read("sofia.html"),
+    read("js/sofia.js"),
+    read("css/sofia.css")
+  ]);
+
+  assert.match(html, /data-sofia-admin-link hidden/);
+  assert.match(script, /canAccessSofia\(perfilActual\)/);
+  assert.match(script, /canUseSofiaPatientContext\(perfil\)/);
+  assert.match(script, /patientId:\s*puedeUsarContextoPaciente\s*\?/);
+  assert.match(script, /capabilities:\s*\["chat"\]/);
+  assert.match(css, /\.sofia-mode-admin \.sofia-grid > \.sofia-panel:not\(\.chat-panel\)\s*\{\s*display:\s*none/);
+});
+
+test("la navegación admin delega clics y se registra antes de cargar conocimiento", async () => {
+  const adminScript = await read("js/admin.js");
+  const configureIndex = adminScript.indexOf("configurarFiltros();");
+  const knowledgeIndex = adminScript.indexOf("await renderizarAccesoConocimientoSofia();");
+  assert.ok(configureIndex >= 0 && configureIndex < knowledgeIndex);
+  assert.match(adminScript, /navegacion\?\.addEventListener\("click",[\s\S]*?closest\("\[data-admin-section\]"\)/);
 });

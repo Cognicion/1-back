@@ -15,12 +15,42 @@ function normalized(value = "") {
 
 function isAdmin(profile = {}, auth = {}) {
   const roles = Array.isArray(profile.roles) ? profile.roles : Object.entries(profile.roles || {}).filter(([, active]) => active).map(([role]) => role);
-  return auth.uid === "NQ0CU5PSDBUgVrk56sjPEVhOs2D3" || auth.token?.admin === true || [profile.rol, profile.role, ...roles].some((role) => ADMIN_ROLES.has(normalized(role))) || profile.admin === true || profile.esAdmin === true;
+  return auth.token?.admin === true || [profile.rol, profile.role, ...roles].some((role) => ADMIN_ROLES.has(normalized(role))) || profile.admin === true || profile.esAdmin === true;
 }
 
 function isProfessional(profile = {}) {
   const roles = Array.isArray(profile.roles) ? profile.roles : Object.entries(profile.roles || {}).filter(([, active]) => active).map(([role]) => role);
-  return [profile.rol, profile.role, profile.tipoUsuario, ...roles].some((role) => PROFESSIONAL_ROLES.has(normalized(role)));
+  const professionalRole = [
+    profile.rol,
+    profile.role,
+    profile.tipoUsuario,
+    profile.tipoProfesional,
+    profile.profesion,
+    profile.profession,
+    profile.professionalProfile?.role,
+    profile.professionalProfile?.profession,
+    profile.clinicalProfile?.role,
+    profile.clinicalProfile?.profession,
+    ...roles
+  ].some((role) => {
+    const value = normalized(role);
+    return PROFESSIONAL_ROLES.has(value) || value.includes("medico") || value.includes("psicolog");
+  });
+  if (!professionalRole) return false;
+  if (!isAdmin(profile)) return true;
+  const verifiedClinicalProfile = profile.perfilClinicoHabilitado === true
+    || profile.clinicalProfileEnabled === true
+    || profile.perfilMedicoVerificado === true
+    || profile.medicoVerificado === true
+    || profile.professionalProfile?.enabled === true
+    || profile.clinicalProfile?.enabled === true;
+  const professionalCredentials = Boolean(
+    profile.cedulaProfesional
+    || profile.cedula
+    || profile.cedulaEspecialidad
+    || profile.perfilProfesionalActualizado
+  );
+  return verifiedClinicalProfile || professionalCredentials;
 }
 
 async function patientAllowsProfessionalServerAccess({

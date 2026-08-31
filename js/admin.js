@@ -241,8 +241,8 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("adminStartupState")?.setAttribute("hidden", "");
     console.log("[ADMIN] Iniciando render");
     renderizarAccesoMotorPatrones();
-    await renderizarAccesoConocimientoSofia();
     configurarFiltros();
+    await renderizarAccesoConocimientoSofia();
     await cargarResumen();
     await cargarCodigosMedicoAdmin();
     await cargarUsuariosAdmin();
@@ -1079,8 +1079,11 @@ function renderizarAvisosAdmin() {
   });
 }
 function configurarNavegacionCentroControl() {
-  document.querySelectorAll("[data-admin-section]").forEach((boton) => {
-    boton.addEventListener("click", () => mostrarSeccionAdmin(boton.dataset.adminSection));
+  const navegacion = document.querySelector(".admin-section-nav");
+  navegacion?.addEventListener("click", (evento) => {
+    const boton = evento.target.closest("[data-admin-section]");
+    if (!boton || !navegacion.contains(boton)) return;
+    mostrarSeccionAdmin(boton.dataset.adminSection);
   });
   mostrarSeccionAdmin("seccionUsuariosRecientes");
 }

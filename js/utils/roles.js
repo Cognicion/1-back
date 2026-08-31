@@ -160,6 +160,14 @@ export function isClinicalStaff(perfil = "") {
   return hasClinicalProfessionalProfile(perfil);
 }
 
+export function canAccessSofia(perfil = {}) {
+  return isAdministrator(perfil) || isClinicalStaff(perfil);
+}
+
+export function canUseSofiaPatientContext(perfil = {}) {
+  return isClinicalStaff(perfil);
+}
+
 export function canUseMedicalPanel(perfil = {}) {
   return isAdministrator(perfil) || isClinicalStaff(perfil);
 }

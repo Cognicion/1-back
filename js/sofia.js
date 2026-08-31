@@ -2,7 +2,7 @@ import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { aplicarAparienciaGuardada } from "./services/apariencia.js";
-import { usuarioEsPersonalClinico } from "./utils/roles.js";
+import { canAccessSofia, canUseSofiaPatientContext, isAdministrator } from "./utils/roles.js";
 import { emitSofiaState } from "./sofia-mascota/mascotaEvents.js";
 import { analyzeSelectedPatient, listAuthorizedSofiaPatients, renderClinicalAnalysis, renderClinicalAnalysisError } from "./sofia/clinicalAnalysis/clinicalAnalysisController.js?v=20260821-patient-pattern-profile-v1";
 import { createSofiaUnifiedClient } from "./sofia/sofiaUnifiedClient.js";
@@ -52,6 +52,24 @@ let notaCriticaActual = [];
 let contextoPatronPendiente = null;
 let ultimaClaveContextoPatron = "";
 let indicePacienteActivo = -1;
+let puedeUsarContextoPaciente = false;
+
+function aplicarModoAccesoSofia(perfil = {}) {
+  const admin = isAdministrator(perfil);
+  puedeUsarContextoPaciente = canUseSofiaPatientContext(perfil);
+  const adminPuro = admin && !puedeUsarContextoPaciente;
+  document.body.classList.toggle("sofia-mode-admin", adminPuro);
+  document.querySelectorAll("[data-sofia-clinical-link]").forEach((link) => {
+    link.hidden = adminPuro;
+  });
+  const adminLink = document.querySelector("[data-sofia-admin-link]");
+  if (adminLink) adminLink.hidden = !admin;
+  const bienvenida = document.getElementById("mensajeBienvenidaSofia");
+  if (adminPuro && bienvenida) {
+    bienvenida.textContent = "Hola. Soy SOFÍA en modo administrativo. Puedo ayudarte con conocimiento agregado, matrices y relaciones globales, sin acceder a expedientes ni contexto clínico individual.";
+  }
+  return { admin, adminPuro, patientContext: puedeUsarContextoPaciente };
+}
 
 function agregarMensaje(texto, tipo, claseExtra = "") {
   const div = document.createElement("div");
@@ -79,6 +97,7 @@ function sugerenciaPatron(patternId = "") {
 }
 
 async function aplicarContextoPatronSofia(context = {}) {
+  if (!puedeUsarContextoPaciente) return;
   const patientId = String(context.patientId || "");
   const patternId = String(context.patternId || "");
   if (!patientId || !patternId || !pacientesSofia.length) {
@@ -151,9 +170,16 @@ onAuthStateChanged(auth, async (user) => {
       return;
     }
     perfilActual = snapUsuario.data();
-    const rol = String(perfilActual.rol || "").toLowerCase();
-    if (!usuarioEsPersonalClinico(rol)) {
-      bloquearAcceso("Acceso restringido. SOFÍA con expediente está disponible únicamente para personal clínico autorizado.");
+    if (!canAccessSofia(perfilActual)) {
+      bloquearAcceso("Acceso restringido. SOFÍA está disponible únicamente para personal autorizado.");
+      return;
+    }
+    const mode = aplicarModoAccesoSofia(perfilActual);
+    if (mode.adminPuro) {
+      estadoAcceso.textContent = "Modo administrativo de SOFÍA. Chat general y conocimiento agregado, sin contexto clínico individual.";
+      if (formSofia) formSofia.style.display = "flex";
+      if (buscarPacienteSofia) buscarPacienteSofia.disabled = true;
+      if (recargarSofia) recargarSofia.disabled = true;
       return;
     }
     estadoAcceso.textContent = "Acceso concedido. SOFIA v2 trabaja en modo explicable y no modifica el expediente.";
@@ -165,6 +191,7 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 async function cargarSelectorPacientes() {
+  if (!puedeUsarContextoPaciente) return;
   if (buscarPacienteSofia) {
     buscarPacienteSofia.disabled = true;
     buscarPacienteSofia.placeholder = "Cargando pacientes...";
@@ -249,6 +276,7 @@ function renderResultadosPacientes(query = "") {
 }
 
 async function seleccionarPacienteSofia(patientId) {
+  if (!puedeUsarContextoPaciente) return;
   const patient = pacientesSofia.find((candidate) => candidate.id === patientId);
   if (!patient || !selectorPaciente) return;
   selectorPaciente.value = patient.id;
@@ -315,6 +343,7 @@ limpiarCritica?.addEventListener("click", () => {
 });
 
 async function cargarPacienteSeleccionado(idPaciente) {
+  if (!puedeUsarContextoPaciente) throw new Error("SOFIA_PATIENT_CONTEXT_FORBIDDEN");
   if (!pacientesSofia.some((patient) => patient.id === idPaciente)) {
     console.debug("[SOFÍA][SOURCE]", { panel: "patient-selection", source: "REJECTED_UNAUTHORIZED_SELECTION" });
     throw new Error("SOFIA_PATIENT_NOT_AUTHORIZED");
@@ -543,6 +572,9 @@ function construirContextoHerramientasPagina({ digital, narrativa, razonamiento,
 }
 
 function construirEstadoPaginaParaChat() {
+  if (!puedeUsarContextoPaciente) {
+    return collectSofiaPageState({ capabilities: ["chat"], panelContext: {} });
+  }
   const noteReview = notaCritica?.value.trim()
     ? generarCriticaNota(notaCritica.value, expedienteActual)
     : notaCriticaActual;
@@ -597,7 +629,7 @@ formSofia?.addEventListener("submit", async (e) => {
   try {
     const resultado = await sofiaUnifiedClient.ask({
       message: mensaje,
-      patientId: selectorPaciente?.value || "",
+      patientId: puedeUsarContextoPaciente ? (selectorPaciente?.value || "") : "",
       pageState: construirEstadoPaginaParaChat()
     });
     const acciones = await applySofiaPageActions(resultado.actions, {

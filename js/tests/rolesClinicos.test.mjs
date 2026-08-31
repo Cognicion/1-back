@@ -2,11 +2,13 @@ import assert from "node:assert/strict";
 import {
   ROL_ENFERMERIA_SALUD_MENTAL,
   canAccessService,
+  canAccessSofia,
   canManagePlatform,
   canPrescribe,
   canRecordExistingTreatment,
   canUseMedicalAgenda,
   canUseMedicalPanel,
+  canUseSofiaPatientContext,
   hasClinicalProfessionalProfile,
   isAdministrator,
   isClinicalStaff,
@@ -55,6 +57,8 @@ assert.equal(isAdministrator(adminSolo), true);
 assert.equal(canManagePlatform(adminSolo), true);
 assert.equal(hasClinicalProfessionalProfile(adminSolo), false);
 assert.equal(isClinicalStaff(adminSolo), false);
+assert.equal(canAccessSofia(adminSolo), true);
+assert.equal(canUseSofiaPatientContext(adminSolo), false);
 assert.equal(canUseMedicalPanel(adminSolo), true);
 assert.equal(canUseMedicalAgenda(adminSolo), true);
 assert.equal(canAccessService(adminSolo, "panel_medico"), true);
@@ -69,6 +73,8 @@ assert.equal(patientAllowsProfessionalAccess(pacienteNoAsignado, adminSolo.id), 
 assert.equal(isAdministrator(medicoSolo), false);
 assert.equal(canManagePlatform(medicoSolo), false);
 assert.equal(hasClinicalProfessionalProfile(medicoSolo), true);
+assert.equal(canAccessSofia(medicoSolo), true);
+assert.equal(canUseSofiaPatientContext(medicoSolo), true);
 assert.equal(canUseMedicalPanel(medicoSolo), true);
 assert.equal(canUseMedicalAgenda(medicoSolo), true);
 assert.equal(canPrescribe(medicoSolo), true);
@@ -78,6 +84,8 @@ assert.equal(patientAllowsProfessionalAccess(pacienteAdmin, medicoSolo.id), fals
 assert.equal(isAdministrator(adminMedico), true);
 assert.equal(canManagePlatform(adminMedico), true);
 assert.equal(hasClinicalProfessionalProfile(adminMedico), true);
+assert.equal(canAccessSofia(adminMedico), true);
+assert.equal(canUseSofiaPatientContext(adminMedico), true);
 assert.equal(canUseMedicalPanel(adminMedico), true);
 assert.equal(canUseMedicalAgenda(adminMedico), true);
 assert.equal(canPrescribe(adminMedico), true);
@@ -109,6 +117,8 @@ assert.equal(canRecordExistingTreatment(asesorSaludMental), true);
 assert.equal(canUseMedicalPanel(adminSolo), true);
 assert.equal(canRecordExistingTreatment(adminSolo), true);
 assert.equal(canUseMedicalAgenda(paciente), false);
+assert.equal(canAccessSofia(paciente), false);
+assert.equal(canUseSofiaPatientContext(paciente), false);
 assert.equal(canUseMedicalPanel(paciente), false);
 assert.equal(canAccessService(paciente, "panel_medico"), false);
 assert.equal(canUseMedicalAgenda(usuarioSinPerfil), false);

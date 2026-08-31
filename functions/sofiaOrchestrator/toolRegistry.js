@@ -578,10 +578,14 @@ function createSofiaToolRegistry(context) {
           break;
         }
         case "show_page_section":
-          result = addAction({ type: "show-section", section: args.section });
+          result = context.pageState.capabilities.includes(args.section)
+            ? addAction({ type: "show-section", section: args.section })
+            : { ok: false, error: "page_section_unavailable", section: args.section };
           break;
         case "filter_patient_timeline":
-          result = addAction({ type: "filter-timeline", query: cleanText(args.query || "", 120) });
+          result = context.pageState.capabilities.includes("timeline")
+            ? addAction({ type: "filter-timeline", query: cleanText(args.query || "", 120) })
+            : { ok: false, error: "page_section_unavailable", section: "timeline" };
           break;
         case "refresh_patient_analysis":
           result = context.analysis

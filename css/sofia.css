@@ -82,6 +82,10 @@ h1 { max-width: 920px; margin: 0; font-size: clamp(28px, 4vw, 44px); line-height
 .subtitle { max-width: 900px; color: var(--green-200); font-size: clamp(14px, 1.5vw, 16px); line-height: 1.55; }
 .status { display: block; margin: 12px 0 18px; color: var(--sofia-muted); font-size: 13px; }
 .control-row { display: flex; align-items: end; gap: 12px; flex-wrap: wrap; position: relative; z-index: 1; }
+.sofia-mode-admin .control-row,
+.sofia-mode-admin .sofia-grid > .sofia-panel:not(.chat-panel) { display: none; }
+.sofia-mode-admin .sofia-grid { grid-template-columns: minmax(0, 1fr); }
+.sofia-mode-admin .chat-panel { grid-column: 1 / -1; }
 .control-row label { color: var(--celtic-300); font-size: 12px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
 .control-row select, .sofia-patient-search, .mini-toolbar input, .input-row input, .sofia-textarea {
   border: 1px solid rgba(147, 197, 253, .25);

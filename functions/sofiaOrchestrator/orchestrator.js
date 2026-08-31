@@ -173,7 +173,7 @@ async function acquireSofiaRateLimit({ db, uid, requestId, now = Date.now() }) {
     if (requestCount >= limits.requestsPerWindow || burstCount >= limits.burstRequests || Object.keys(activeRequests).length >= limits.maxConcurrentRequests) {
       throw new HttpsError("resource-exhausted", "Has alcanzado temporalmente el límite de uso de SOFÍA. Intenta nuevamente más tarde.");
     }
-    transaction.set(ref, {
+    const nextUsage = {
       windowStartedAt: resetWindow ? now : windowStartedAt,
       requestCount: requestCount + 1,
       burstStartedAt: resetBurst ? now : burstStartedAt,
@@ -183,7 +183,9 @@ async function acquireSofiaRateLimit({ db, uid, requestId, now = Date.now() }) {
         [requestId]: now + limits.leaseMs
       },
       updatedAt: new Date(now).toISOString()
-    }, { merge: true });
+    };
+    if (snapshot.exists) transaction.update(ref, nextUsage);
+    else transaction.set(ref, nextUsage);
   });
 }
 
