@@ -20,10 +20,11 @@ test("el backend expone solo el recálculo administrativo de matrices", async ()
 });
 
 test("el panel usa Cloud Functions y no consulta perfiles por paciente", async () => {
-  const [controller, admin, html] = await Promise.all([
+  const [controller, admin, html, css] = await Promise.all([
     source("js/admin/clinicalKnowledge/clinicalKnowledgeController.js"),
     source("js/admin.js"),
-    source("admin.html")
+    source("admin.html"),
+    source("css/admin.css")
   ]);
   assert.match(controller, /httpsCallable\(functions, "rebuildClinicalPatternMatricesAdmin"\)/);
   assert.match(controller, /httpsCallable\(functions, "getClinicalKnowledgeAdmin"\)/);
@@ -32,10 +33,14 @@ test("el panel usa Cloud Functions y no consulta perfiles por paciente", async (
   assert.match(controller, /function variableLabel/);
   assert.match(controller, /effectMetricLabel/);
   assert.match(controller, /no implica causalidad/i);
-  assert.match(admin, /clinicalKnowledgeController\.js\?v=20260820-sofia-patterns-v3/);
+  assert.match(admin, /clinicalKnowledgeController\.js\?v=20260831-sofia-admin-density-v1/);
   assert.match(admin, /patternDiscoveryController\.js\?v=20260820-patterns-useful-v2/);
-  assert.match(html, /css\/admin\.css\?v=20260831-sofia-admin-policy-v1/);
-  assert.match(html, /js\/admin\.js\?v=20260831-sofia-admin-policy-v1/);
+  assert.match(html, /css\/admin\.css\?v=20260831-sofia-admin-density-v1/);
+  assert.match(html, /js\/admin\.js\?v=20260831-sofia-admin-density-v1/);
+  assert.match(controller, /Resumen agregado y desidentificado/);
+  assert.match(controller, /muestran asociaciones, no causas ni predicciones individuales/);
+  assert.match(css, /\.clinical-knowledge-admin > p[\s\S]*?font-size:\s*13px/);
+  assert.match(css, /\.clinical-knowledge-admin td[\s\S]*?font-size:\s*12px/);
 });
 
 test("las matrices aplican tipado, privacidad y corrección múltiple", async () => {

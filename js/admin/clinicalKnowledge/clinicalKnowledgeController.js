@@ -16,7 +16,7 @@ export async function initializeClinicalKnowledgePanel({ nav, main }) {
     <div class="tabla-header">
       <div>
         <h2>Conocimiento registrado por SOFÍA</h2>
-        <p>Matrices y patrones agregados de perfiles desidentificados; no contiene filas clínicas ni identidad directa.</p>
+        <p>Resumen agregado y desidentificado. No muestra pacientes ni expedientes.</p>
       </div>
       <div class="patrones-acciones">
         <button id="btnActualizarConocimientoSofiaAdmin" type="button">Actualizar vista</button>
@@ -26,7 +26,7 @@ export async function initializeClinicalKnowledgePanel({ nav, main }) {
     </div>
     <p id="estadoConocimientoSofiaAdmin">Cargando conocimiento agregado…</p>
     <p id="estadoIndiceSemanticoSofiaAdmin" class="clinical-embedding-status" aria-live="polite">Índice semántico pendiente de consulta.</p>
-    <p class="clinical-knowledge-caution"><strong>Lectura exploratoria:</strong> las interpretaciones propuestas describen asociaciones observadas en datos desidentificados. Las categorías de magnitud son operativas y dependen del contexto. No implican causalidad, no predicen a una persona y no sustituyen el juicio profesional.</p>
+    <p class="clinical-knowledge-caution"><strong>Resultados exploratorios:</strong> muestran asociaciones, no causas ni predicciones individuales. Requieren revisión profesional.</p>
     <div id="resumenConocimientoSofiaAdmin" class="clinical-knowledge-summary"></div>
     <div id="tablasConocimientoSofiaAdmin"></div>`;
   main.appendChild(section);
@@ -110,11 +110,11 @@ function matrixStatusText(status = {}) {
   const date = new Date(status.generatedAt);
   const suffix = Number.isNaN(date.getTime()) ? status.generatedAt : date.toLocaleString("es-MX");
   if (status.versionOutdated) {
-    return `Matrices disponibles, pero generadas con el motor ${status.matrixEngineVersion || "anterior"}. Recalcula para aplicar el motor ${status.currentMatrixEngineVersion || "actual"} · ${suffix}.`;
+    return `Matrices desactualizadas · motor ${status.matrixEngineVersion || "anterior"} · última generación: ${suffix}.`;
   }
   return status.stale
-    ? `Matrices pendientes de actualización desde ${suffix}.`
-    : `Matrices vigentes para ${status.cohortSize || 0} perfiles desidentificados · ${suffix}.`;
+    ? `Matrices desactualizadas · última generación: ${suffix}.`
+    : `Matrices vigentes · ${status.cohortSize || 0} perfiles desidentificados · ${suffix}.`;
 }
 
 function renderKnowledge(section, data) {
@@ -149,7 +149,7 @@ function renderKnowledge(section, data) {
   const prioritized = usefulDiscoveries.slice(0, 30);
   section.querySelector("#tablasConocimientoSofiaAdmin").innerHTML = `
     <h3>Hallazgos priorizados</h3>
-    <p>Solo incluye relaciones que superaron controles de redundancia, soporte mínimo y estabilidad. La puntuación combina magnitud, corrección estadística, estabilidad entre submuestras, cobertura, tamaño de muestra, información y novedad; no representa importancia clínica ni causalidad.</p>
+    <p>Relaciones con soporte suficiente y controles estadísticos. La utilidad ayuda a priorizar la revisión; no equivale a importancia clínica ni causalidad.</p>
     ${rows(prioritized, [
       { label: "Tipo de hallazgo", value: (item) => item.patternCategoryLabel || humanizeTechnical(item.patternCategory) },
       { label: "Variable A", value: (item) => variableLabel(item, "A") },
@@ -161,7 +161,7 @@ function renderKnowledge(section, data) {
       { label: "Advertencias", value: warningLabel }
     ])}
     <h3>Índice semántico de archivos clínicos</h3>
-    <p>Representa contenido desidentificado mediante embeddings generados en backend. El navegador recibe métricas agregadas: no recibe vectores, texto clínico, identidad ni filas por paciente.</p>
+    <p>Representación semántica desidentificada. El navegador solo recibe totales y relaciones agregadas; no recibe texto, vectores ni identidad.</p>
     <div class="clinical-embedding-metadata">
       <span><strong>Modelo</strong>${embeddingStatus.embeddingModel || "No inicializado"}</span>
       <span><strong>Dimensiones</strong>${embeddingStatus.embeddingDimensions || "—"}</span>
@@ -180,7 +180,7 @@ function renderKnowledge(section, data) {
       { label: "Última actualización", value: (item) => formatDateTime(item.lastProcessedAt) }
     ])}
     <h3>Relaciones semánticas entre archivos</h3>
-    <p>Solo se muestran afinidades repetidas en al menos ${embeddings.privacy?.minimumCrossPatientPairs || 3} pares de pacientes desidentificados y que superan el umbral de utilidad ${Math.round(Number(embeddings.privacy?.minimumSemanticUtilityScore || 0.5) * 100)}/100. La similitud no es una probabilidad ni demuestra causalidad.</p>
+    <p>Afinidades repetidas en al menos ${embeddings.privacy?.minimumCrossPatientPairs || 3} pares desidentificados y con utilidad mínima de ${Math.round(Number(embeddings.privacy?.minimumSemanticUtilityScore || 0.5) * 100)}/100. La similitud no es probabilidad ni causalidad.</p>
     ${rows(embeddings.relations, [
       { label: "Fuente A", value: (item) => item.sourceLabelA || humanizeTechnical(item.sourceCollectionA) },
       { label: "Fuente B", value: (item) => item.sourceLabelB || humanizeTechnical(item.sourceCollectionB) },
@@ -195,7 +195,7 @@ function renderKnowledge(section, data) {
       { label: "Estado", value: (item) => evidenceLabel(item.evidenceStatus) }
     ])}
     <h3>Matriz útil de variables</h3>
-    <p>Excluye metadatos técnicos, variables equivalentes y conteos deterministas. Equilibra variables clínicas, documentales y operativas antes de aplicar el método estadístico correspondiente.</p>
+    <p>Relaciones exploratorias entre variables clínicas, documentales y operativas. Excluye duplicados y metadatos técnicos.</p>
     ${rows(mixed, associationColumns())}
     <h3>Matriz de presencia y documentación</h3>
     <p>Busca qué variables suelen documentarse juntas o ausentarse de forma sistemática.</p>
@@ -244,7 +244,7 @@ function embeddingStatusText(embeddingKnowledge = {}) {
   const date = formatDateTime(status.lastProcessedAt);
   const failures = Number(status.failedRecords) || 0;
   const relationState = embeddingIndexLabel(status.relationIndexStatus);
-  return `Índice semántico: ${status.indexedRecords || 0} archivos y ${status.indexedFragments || 0} fragmentos · relaciones: ${relationState} · errores: ${failures} · última actualización: ${date}.`;
+  return `Índice semántico · ${status.indexedRecords || 0} archivos · ${status.indexedFragments || 0} fragmentos · ${relationState} · ${failures} errores · ${date}.`;
 }
 
 function embeddingIndexLabel(value) {
