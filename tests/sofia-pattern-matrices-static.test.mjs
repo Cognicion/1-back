@@ -35,11 +35,11 @@ test("el panel usa Cloud Functions y no consulta perfiles por paciente", async (
   assert.match(controller, /no implica causalidad/i);
   assert.match(admin, /clinicalKnowledgeController\.js\?v=20260831-sofia-admin-density-v1/);
   assert.match(admin, /patternDiscoveryController\.js\?v=20260820-patterns-useful-v2/);
-  assert.match(html, /css\/admin\.css\?v=20260831-sofia-admin-density-v1/);
+  assert.match(html, /css\/admin\.css\?v=20260831-sofia-admin-density-v2/);
   assert.match(html, /js\/admin\.js\?v=20260831-sofia-admin-density-v1/);
   assert.match(controller, /Resumen agregado y desidentificado/);
   assert.match(controller, /muestran asociaciones, no causas ni predicciones individuales/);
-  assert.match(css, /\.clinical-knowledge-admin > p[\s\S]*?font-size:\s*13px/);
+  assert.match(css, /\.card\.clinical-knowledge-admin > p[\s\S]*?font-size:\s*13px/);
   assert.match(css, /\.clinical-knowledge-admin td[\s\S]*?font-size:\s*12px/);
 });
 

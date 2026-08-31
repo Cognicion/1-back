@@ -175,7 +175,7 @@ body.admin-startup-error .admin-startup-state span { color: #fca5a5; }
   line-height: 1.2;
 }
 .clinical-knowledge-admin .tabla-header p,
-.clinical-knowledge-admin > p,
+.card.clinical-knowledge-admin > p,
 .clinical-knowledge-admin #tablasConocimientoSofiaAdmin > p {
   color: var(--gray-300, #d1d5db);
   font-size: 13px;

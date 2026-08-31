@@ -37,7 +37,7 @@ assert.match(persistence, /vectorsExposedToClient:\s*false/);
 assert.match(persistence, /rawClinicalTextPersisted:\s*false/);
 assert.doesNotMatch(persistence, /console\.(?:debug|log|info|warn|error)\([^\n]*(?:patientId|sourceRecordHash|analyticsPatientId)/);
 
-assert.match(adminHtml, /css\/admin\.css\?v=20260831-sofia-admin-density-v1/);
+assert.match(adminHtml, /css\/admin\.css\?v=20260831-sofia-admin-density-v2/);
 assert.match(adminHtml, /js\/admin\.js\?v=20260831-sofia-admin-density-v1/);
 assert.match(adminJs, /clinicalKnowledgeController\.js\?v=20260831-sofia-admin-density-v1/);
 assert.match(controller, /Construir índice semántico/);
