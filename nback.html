@@ -332,7 +332,7 @@ letter-spacing:1px;
     <button class="boton-secundario" onclick="verInstrucciones()">Ver instrucciones</button>
   <button class="boton-practica" onclick="iniciarPractica()">Iniciar práctica</button>
   <button class="boton-practica" onclick="repetirPractica()">Repetir práctica</button>
-  <button onclick="comenzarEvaluacion()">Comenzar evaluación</button>
+  <button id="btnEvaluacionNback" onclick="comenzarEvaluacion()">Comenzar evaluación</button>
   <button class="stop" onclick="detener()">Detener</button>
 </div>
 
@@ -413,9 +413,21 @@ let audioRechazosCorrectos = 0;
 let respondioVisual = false;
 let respondioAudio = false;
 
-let inicioEstimulo = 0;
+let inicioEstimuloVisual = 0;
+let inicioEstimuloAudio = null;
 let trVisual = [];
 let trAudio = [];
+let rtVisualActual = null;
+let rtAudioActual = null;
+let historialEnsayos = [];
+let inicioSesionPerf = 0;
+let inicioSesionIso = "";
+let semillaSesionNback = null;
+let randomSesionNback = Math.random;
+let resultadoAdhdPublicado = false;
+let adhdPracticeCompleted = false;
+
+const nbackAdhdTaskMode = new URLSearchParams(window.location.search).get("adhd") === "1";
 
 function verInstrucciones() {
   document.getElementById("panelInstrucciones")?.classList.remove("oculto");
@@ -431,10 +443,16 @@ function repetirPractica() {
 }
 
 function comenzarEvaluacion() {
+  if (nbackAdhdTaskMode && !adhdPracticeCompleted) {
+    document.getElementById("resultado").innerText = "La práctica breve es obligatoria antes de la aplicación puntuable.";
+    iniciar("practica");
+    return;
+  }
   iniciar("evaluacion");
 }
 
 function iniciar(modo = "evaluacion") {
+  if (nbackAdhdTaskMode && modo !== "practica" && !adhdPracticeCompleted) modo = "practica";
   clearTimeout(temporizador);
   speechSynthesis.cancel();
 
@@ -444,8 +462,10 @@ function iniciar(modo = "evaluacion") {
   maxEnsayos = modoPractica ? 8 : 20;
   document.getElementById("panelInstrucciones")?.classList.toggle("oculto", !modoPractica);
 
-  nivel = parseInt(document.getElementById("nivel").value);
-  tiempo = parseInt(document.getElementById("tiempo").value);
+  const controlledConfig = nbackAdhdTaskMode ? window.__cognicionAdhdNback?.configuration || {} : {};
+  nivel = limitarEnteroNback(controlledConfig.level, parseInt(document.getElementById("nivel").value), 1, 4);
+  tiempo = limitarEnteroNback(controlledConfig.stimulusIntervalMs, parseInt(document.getElementById("tiempo").value), 500, 5000);
+  maxEnsayos = modoPractica ? 8 : limitarEnteroNback(controlledConfig.totalTrials, 20, 8, 200);
 
   secuenciaVisual = [];
   secuenciaAudio = [];
@@ -464,8 +484,34 @@ function iniciar(modo = "evaluacion") {
 
   trVisual = [];
   trAudio = [];
+  rtVisualActual = null;
+  rtAudioActual = null;
+  historialEnsayos = [];
+  inicioSesionPerf = performance.now();
+  inicioSesionIso = new Date().toISOString();
+  semillaSesionNback = nbackAdhdTaskMode
+    ? crearSemillaContextoNback(`nback:${modoPractica ? "practice" : "main"}`)
+    : null;
+  randomSesionNback = semillaSesionNback === null ? Math.random : crearRngNback(semillaSesionNback);
+  if (modoPractica || !nbackAdhdTaskMode) resultadoAdhdPublicado = false;
 
   generarSecuencias();
+
+  if (nbackAdhdTaskMode && modoPractica) {
+    window.__cognicionAdhdNback?.bridge?.publishEvent("practice_started", {
+      practiceTrials: maxEnsayos,
+      randomSeed: semillaSesionNback,
+      scored: false
+    });
+  } else if (nbackAdhdTaskMode) {
+    window.__cognicionAdhdNback?.bridge?.publishEvent("task_started", {
+      randomSeed: semillaSesionNback,
+      configuration: { level: nivel, stimulusIntervalMs: tiempo, totalTrials: maxEnsayos, modalities: ["audio", "visual"] },
+      sequenceControlled: true,
+      practiceAvailable: true,
+      practiceRequired: true
+    });
+  }
 
   document.getElementById("feedback").innerText = "";
   document.getElementById("resultado").innerText = modoPractica ? "Práctica iniciada: estos resultados no se guardan." : "Evaluación iniciada...";
@@ -490,16 +536,16 @@ function generarSecuencias() {
     let posicion;
     let letra;
 
-    if (i >= nivel && Math.random() < 0.3) {
+    if (i >= nivel && randomSesionNback() < 0.3) {
       posicion = secuenciaVisual[i - nivel];
     } else {
-      posicion = Math.floor(Math.random() * 9);
+      posicion = Math.floor(randomSesionNback() * 9);
     }
 
-    if (i >= nivel && Math.random() < 0.3) {
+    if (i >= nivel && randomSesionNback() < 0.3) {
       letra = secuenciaAudio[i - nivel];
     } else {
-      letra = letras[Math.floor(Math.random() * letras.length)];
+      letra = letras[Math.floor(randomSesionNback() * letras.length)];
     }
 
     secuenciaVisual.push(posicion);
@@ -521,11 +567,16 @@ function mostrarEstimulo() {
   let letraActual = secuenciaAudio[indice];
 
   cells[posicionActual].classList.add("active");
-  hablar(letraActual);
+  inicioEstimuloVisual = performance.now();
+  inicioEstimuloAudio = null;
+  hablar(letraActual, (onset) => {
+    inicioEstimuloAudio = onset;
+  });
 
   respondioVisual = false;
   respondioAudio = false;
-  inicioEstimulo = Date.now();
+  rtVisualActual = null;
+  rtAudioActual = null;
 
   document.getElementById("feedback").innerText = "";
 
@@ -541,13 +592,14 @@ function mostrarEstimulo() {
   }, tiempo);
 }
 
-function hablar(letra) {
+function hablar(letra, onStart = () => {}) {
   speechSynthesis.cancel();
 
   let voz = new SpeechSynthesisUtterance(letra);
   voz.lang = "es-MX";
   voz.rate = 0.8;
   voz.pitch = 1;
+  voz.onstart = () => onStart(performance.now());
 
   speechSynthesis.speak(voz);
 }
@@ -593,7 +645,8 @@ function responderAudio() {
   if (!pruebaActiva || respondioAudio || indice >= maxEnsayos) return;
 
   respondioAudio = true;
-  trAudio.push(Date.now() - inicioEstimulo);
+  rtAudioActual = inicioEstimuloAudio === null ? null : Math.round(performance.now() - inicioEstimuloAudio);
+  if (Number.isFinite(rtAudioActual)) trAudio.push(rtAudioActual);
 
   if (coincideAudio()) {
     audioAciertos++;
@@ -610,7 +663,8 @@ function responderVisual() {
   if (!pruebaActiva || respondioVisual || indice >= maxEnsayos) return;
 
   respondioVisual = true;
-  trVisual.push(Date.now() - inicioEstimulo);
+  rtVisualActual = Math.round(performance.now() - inicioEstimuloVisual);
+  trVisual.push(rtVisualActual);
 
   if (coincideVisual()) {
     visualAciertos++;
@@ -649,6 +703,24 @@ function evaluarSinRespuesta() {
   if (huboOmision) {
     mostrarFeedback("Omisión: no respondiste una coincidencia", "incorrecto");
   }
+
+  const audioEsObjetivo = coincideAudio();
+  const visualEsObjetivo = coincideVisual();
+  historialEnsayos.push({
+    trialIndex: indice + 1,
+    practice: modoPractica,
+    audioStimulus: secuenciaAudio[indice],
+    visualPosition: secuenciaVisual[indice],
+    audioIsTarget: audioEsObjetivo,
+    visualIsTarget: visualEsObjetivo,
+    audioResponded: respondioAudio,
+    visualResponded: respondioVisual,
+    audioResponseType: audioEsObjetivo ? (respondioAudio ? "hit" : "miss") : (respondioAudio ? "false_alarm" : "correct_rejection"),
+    visualResponseType: visualEsObjetivo ? (respondioVisual ? "hit" : "miss") : (respondioVisual ? "false_alarm" : "correct_rejection"),
+    audioReactionTimeMs: rtAudioActual,
+    visualReactionTimeMs: rtVisualActual,
+    validForMetrics: indice >= nivel
+  });
 }
 
 function finalizar() {
@@ -658,7 +730,32 @@ function finalizar() {
   document.getElementById("feedback").innerText = "Prueba terminada";
   document.getElementById("feedback").className = "info";
 
-  mostrarResultados(modoPractica ? "Práctica finalizada" : "Prueba finalizada");
+  const resultado = mostrarResultados(modoPractica ? "Práctica finalizada" : "Prueba finalizada");
+  if (nbackAdhdTaskMode && modoPractica) {
+    adhdPracticeCompleted = true;
+    actualizarGuardiaPracticaAdhd();
+    window.__cognicionAdhdNback?.bridge?.publishEvent("practice_completed", {
+      practiceTrials: historialEnsayos.length,
+      randomSeed: semillaSesionNback,
+      scored: false
+    });
+    document.getElementById("resultado").innerText += "\n\nPráctica completada. Ya puedes comenzar la evaluación puntuable.";
+    return;
+  }
+  if (nbackAdhdTaskMode && !modoPractica && !resultadoAdhdPublicado && window.__cognicionAdhdNback?.bridge) {
+    resultadoAdhdPublicado = window.__cognicionAdhdNback.bridge.publishResult(resultado);
+  }
+}
+
+function actualizarGuardiaPracticaAdhd() {
+  if (!nbackAdhdTaskMode) return;
+  const evaluationButton = document.getElementById("btnEvaluacionNback");
+  evaluationButton?.toggleAttribute("disabled", !adhdPracticeCompleted);
+  if (evaluationButton) {
+    evaluationButton.title = adhdPracticeCompleted
+      ? "Práctica completada"
+      : "Completa primero la práctica breve obligatoria";
+  }
 }
 
 function promedio(lista) {
@@ -710,6 +807,114 @@ function mostrarResultados(titulo) {
     "TR posición promedio: " + promedioVisual + " ms";
 
   graficar();
+  return construirResultadoNback({ totalAudio, totalVisual, precisionAudio, precisionVisual });
+}
+
+function construirResultadoNback({ totalAudio, totalVisual, precisionAudio, precisionVisual }) {
+  const completedAtIso = new Date().toISOString();
+  const durationMs = Math.round(performance.now() - inicioSesionPerf);
+  const eligibleDecisions = Math.max(0, historialEnsayos.length - nivel) * 2;
+  const hits = audioAciertos + visualAciertos;
+  const falseAlarms = audioComision + visualComision;
+  const misses = audioOmision + visualOmision;
+  const correctRejections = audioRechazosCorrectos + visualRechazosCorrectos;
+  const targets = totalAudio + totalVisual;
+  const nonTargets = Math.max(0, eligibleDecisions - targets);
+  const accuracy = eligibleDecisions > 0 ? ((hits + correctRejections) / eligibleDecisions) * 100 : 0;
+  return {
+    activityId: "nback",
+    activityName: "N-Back dual",
+    activityVersion: "1.1.0",
+    status: "completed",
+    practice: modoPractica,
+    date: inicioSesionIso,
+    startedAtIso: inicioSesionIso,
+    completedAtIso,
+    durationMs,
+    level: nivel,
+    randomSeed: semillaSesionNback,
+    configuration: {
+      level: nivel,
+      stimulusIntervalMs: tiempo,
+      totalTrials: maxEnsayos,
+      modalities: ["audio", "visual"],
+      targetProbability: 0.3
+    },
+    sequence: secuenciaVisual.map((visualPosition, index) => ({
+      trialIndex: index + 1,
+      visualPosition,
+      audioStimulus: secuenciaAudio[index]
+    })),
+    results: {
+      totalTrials: historialEnsayos.length,
+      completedTrials: historialEnsayos.length,
+      hits,
+      falseAlarms,
+      misses,
+      correctRejections,
+      targets,
+      nonTargets,
+      accuracy,
+      administeredLevel: nivel,
+      maximumStableLevel: null,
+      audioReactionTimes: [...trAudio],
+      visualReactionTimes: [...trVisual],
+      audio: {
+        hits: audioAciertos,
+        falseAlarms: audioComision,
+        misses: audioOmision,
+        correctRejections: audioRechazosCorrectos,
+        targets: totalAudio,
+        accuracy: Number(precisionAudio)
+      },
+      visual: {
+        hits: visualAciertos,
+        falseAlarms: visualComision,
+        misses: visualOmision,
+        correctRejections: visualRechazosCorrectos,
+        targets: totalVisual,
+        accuracy: Number(precisionVisual)
+      }
+    },
+    trialHistory: historialEnsayos.map((trial) => ({ ...trial }))
+  };
+}
+
+function crearSemillaContextoNback(namespace) {
+  const explicitSeed = new URLSearchParams(window.location.search).get("adhdSeed");
+  const integration = window.__cognicionAdhdNback;
+  const context = integration?.context;
+  const controlledValue = integration?.randomSeed ?? context?.randomSeed;
+  const controlledSeed = controlledValue === null || controlledValue === undefined || controlledValue === ""
+    ? null
+    : Number(controlledValue);
+  const hasControlledSeed = Number.isFinite(controlledSeed) && controlledSeed !== 0;
+  if (hasControlledSeed && namespace.endsWith(":main")) return Math.trunc(controlledSeed) >>> 0;
+  const source = hasControlledSeed
+    ? controlledSeed
+    : explicitSeed || context?.attemptId || context?.sessionId || context?.bridgeToken || "nback";
+  let hash = 2166136261;
+  for (const character of `${source}:${namespace}`) {
+    hash ^= character.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0) || 1;
+}
+
+function limitarEnteroNback(value, fallback, minimum, maximum) {
+  const numeric = Math.trunc(Number(value));
+  return Number.isFinite(numeric) ? Math.min(maximum, Math.max(minimum, numeric)) : fallback;
+}
+
+function crearRngNback(seed) {
+  let state = Number(seed) >>> 0;
+  return function randomNback() {
+    state += 0x6D2B79F5;
+    let value = state;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
 }
 
 function graficar() {
@@ -743,6 +948,40 @@ document.addEventListener("keydown", function(event) {
   if (tecla === "a") responderAudio();
   if (tecla === "d") responderVisual();
 });
+
+actualizarGuardiaPracticaAdhd();
+</script>
+
+<script type="module">
+const adhdTaskMode = new URLSearchParams(window.location.search).get("adhd") === "1";
+if (adhdTaskMode) {
+  try {
+    const [{ parseExistingTaskContext }, { createAdhdTaskPageBridge }] = await Promise.all([
+      import("./js/adhd/adapters/existingTaskAdapters.js"),
+      import("./js/adhd/integration/adhdTaskPageBridge.js")
+    ]);
+    const context = parseExistingTaskContext();
+    if (context.taskId !== "nback") throw new TypeError("El contexto TDAH no corresponde a N-Back.");
+    const integration = {
+      context,
+      bridge: null,
+      randomSeed: context.randomSeed,
+      configuration: context.configuration || {}
+    };
+    integration.bridge = createAdhdTaskPageBridge({
+      context,
+      onConfig(launchConfig) {
+        if (launchConfig?.taskId !== "nback") return;
+        integration.randomSeed = launchConfig.randomSeed ?? integration.randomSeed;
+        integration.configuration = launchConfig.configuration || integration.configuration;
+      }
+    });
+    window.__cognicionAdhdNback = integration;
+  } catch (error) {
+    window.__cognicionAdhdNback = { context: null, bridge: null, error: String(error?.message || error) };
+    console.error("No se pudo iniciar el puente TDAH de N-Back.", error);
+  }
+}
 </script>
 
   <script type="module" src="js/components/accesosRapidos.js"></script>

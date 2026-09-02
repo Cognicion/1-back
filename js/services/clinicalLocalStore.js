@@ -74,8 +74,8 @@ export async function guardarBorradorClinicoLocal(key, payload) {
     payload,
     updatedAt: Date.now()
   };
-  await conStore(STORE_DRAFTS, "readwrite", (store) => store.put(registro));
-  return registro;
+  const request = await conStore(STORE_DRAFTS, "readwrite", (store) => store.put(registro));
+  return request ? registro : null;
 }
 
 export async function obtenerBorradorClinicoLocal(key) {
@@ -89,6 +89,43 @@ export async function eliminarBorradorClinicoLocal(key) {
   await conStore(STORE_DRAFTS, "readwrite", (store) => store.delete(key));
 }
 
+export async function listarBorradoresClinicosLocalesPorPrefijo(prefix) {
+  const safePrefix = String(prefix || "");
+  if (!safePrefix) return [];
+  const db = await abrirDb();
+  if (!db) return [];
+  return new Promise((resolve) => {
+    const registros = [];
+    const tx = db.transaction(STORE_DRAFTS, "readonly");
+    const store = tx.objectStore(STORE_DRAFTS);
+    const upperBound = `${safePrefix}\uffff`;
+    const range = typeof IDBKeyRange !== "undefined"
+      ? IDBKeyRange.bound(safePrefix, upperBound, false, false)
+      : null;
+    const request = store.openCursor(range);
+    request.onsuccess = () => {
+      const cursor = request.result;
+      if (!cursor) return;
+      const registro = cursor.value;
+      if (String(registro?.key || "").startsWith(safePrefix)) registros.push(registro);
+      cursor.continue();
+    };
+    request.onerror = () => {};
+    tx.oncomplete = () => {
+      db.close();
+      resolve(registros);
+    };
+    tx.onerror = () => {
+      db.close();
+      resolve([]);
+    };
+    tx.onabort = () => {
+      db.close();
+      resolve([]);
+    };
+  });
+}
+
 export async function guardarTransferenciaClinicaLocal(key, payload, { ttlMs = 12 * 60 * 60 * 1000 } = {}) {
   if (!key) return null;
   const registro = {
@@ -97,8 +134,8 @@ export async function guardarTransferenciaClinicaLocal(key, payload, { ttlMs = 1
     createdAt: Date.now(),
     expiresAt: Date.now() + ttlMs
   };
-  await conStore(STORE_HANDOFFS, "readwrite", (store) => store.put(registro));
-  return registro;
+  const request = await conStore(STORE_HANDOFFS, "readwrite", (store) => store.put(registro));
+  return request ? registro : null;
 }
 
 export async function obtenerTransferenciaClinicaLocal(key, { consumir = true } = {}) {

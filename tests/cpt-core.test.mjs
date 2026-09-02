@@ -48,6 +48,8 @@ assert.equal(metrics.correctRejections, 1);
 assert.equal(metrics.anticipatoryResponses, 1);
 assert.equal(metrics.hitRate, 1 / 3);
 assert.equal(metrics.falseAlarmRate, 1 / 2);
+assert.equal(metrics.correctRejectionRate, 1 / 2);
+assert.equal(metrics.balancedAccuracy, 0.4167);
 
 const csv = ensayosCptACsv([hit, miss, fa, cr]);
 assert.equal(csv.trim().split("\n").length, 5);

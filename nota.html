@@ -7,7 +7,7 @@
 
 <link rel="stylesheet" href="css/theme.css">
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-<link rel="stylesheet" href="css/nota.css?v=20260813-hugo-receta-emblem-v1">
+<link rel="stylesheet" href="css/nota.css?v=2.170-nota-minimalista-v1">
 <link rel="stylesheet" href="css/components/mis-apuntes-flotante.css">
 <link rel="stylesheet" href="css/components/diagnostico-manual-modal.css">
 <link rel="stylesheet" href="css/modules/patient-transfer.css?v=20260811-medication-presentation-concentration-ui-v1">
@@ -165,11 +165,17 @@
 
 <aside id="notasFlotantesCostado" class="notas-flotantes-costado" aria-live="polite"></aside>
 
-<div class="contenedor">
+<main class="contenedor">
 
-<img class="logo-nota" src="assets/favicon-cognicion.png" alt="Cognicion">
-
-<h1>Nota medica</h1>
+<header class="cabecera-nota-clinica">
+    <div>
+        <span class="cabecera-nota-clinica__eyebrow">Expediente clínico</span>
+        <h1>Nota médica</h1>
+    </div>
+    <button type="button" class="boton-secundario boton-regresar-paciente" onclick="regresarDesdeNota()">
+        <span aria-hidden="true">←</span> Perfil del paciente
+    </button>
+</header>
 <div id="encabezadoPacienteNota" class="encabezado-paciente-nota">
     <span>Paciente</span>
     <strong id="nombrePacienteNota">Selecciona un paciente</strong>
@@ -546,7 +552,7 @@ Cancelar edicion
     <p style="color:#999;">No hay notas registradas</p>
 </div>
 
-</div>
+</main>
 
 <div id="modalLecturaNota" class="modal-lectura-nota" aria-hidden="true">
     <div class="modal-lectura-nota__fondo" data-cerrar-lectura-nota></div>

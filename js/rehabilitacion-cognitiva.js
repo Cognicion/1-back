@@ -186,6 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
   configurarBusqueda();
   asegurarPanelTamizajeCognitivo();
   configurarEnlaceRehabilitacionEvc();
+  configurarEnlaceRehabilitacionTdah();
 });
 
 onAuthStateChanged(auth, async (user) => {
@@ -590,6 +591,12 @@ function configurarEnlaceRehabilitacionEvc() {
     destino.searchParams.set("id", idPaciente);
     enlace.href = `${destino.pathname.split("/").pop()}${destino.search}`;
   });
+}
+
+function configurarEnlaceRehabilitacionTdah() {
+  const enlace = document.querySelector("[data-enlace-rehabilitacion-tdah]");
+  if (!enlace) return;
+  enlace.href = construirUrlActividadRehabilitacion(enlace.getAttribute("href") || "rehabilitacion-tdah.html");
 }
 
 function renderizarFiltros() {

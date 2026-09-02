@@ -10,6 +10,40 @@ import {
   generarSecuenciaCpt,
   normalizarConfigCpt
 } from "./cpt-core.js";
+const adhdTaskMode = new URLSearchParams(globalThis.location?.search || "").get("adhd") === "1";
+let adhdTaskContext = null;
+let adhdTaskBridge = null;
+let adhdResultPublished = false;
+let adhdBridgeConfiguration = {};
+let adhdBridgeRandomSeed = null;
+let adhdPracticeCompleted = false;
+
+if (adhdTaskMode) {
+  try {
+    const [{ parseExistingTaskContext }, { createAdhdTaskPageBridge }] = await Promise.all([
+      import("./adhd/adapters/existingTaskAdapters.js"),
+      import("./adhd/integration/adhdTaskPageBridge.js")
+    ]);
+    adhdTaskContext = parseExistingTaskContext();
+    if (adhdTaskContext.taskId !== "cpt_x") throw new TypeError("El contexto TDAH no corresponde a CPT-X.");
+    adhdBridgeRandomSeed = adhdTaskContext.randomSeed;
+    adhdTaskBridge = createAdhdTaskPageBridge({
+      context: adhdTaskContext,
+      onConfig(launchConfig) {
+        if (launchConfig?.taskId !== "cpt_x") return;
+        adhdBridgeConfiguration = launchConfig.configuration || {};
+        adhdBridgeRandomSeed = launchConfig.randomSeed !== null
+          && launchConfig.randomSeed !== undefined
+          && launchConfig.randomSeed !== ""
+          && Number.isFinite(Number(launchConfig.randomSeed))
+          ? Number(launchConfig.randomSeed)
+          : adhdBridgeRandomSeed;
+      }
+    });
+  } catch (error) {
+    console.error("No se pudo iniciar el puente TDAH de CPT-X.", error);
+  }
+}
 
 let usuarioId = "";
 let pacienteId = "";
@@ -41,6 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ocultarTodo("inicio");
   actualizarInstrucciones();
   configurarEventos();
+  actualizarGuardiaPracticaAdhd();
   iniciarMonitoreoGamepad();
 });
 
@@ -71,7 +106,7 @@ function configurarEventos() {
 }
 
 function leerConfig() {
-  return normalizarConfigCpt({
+  const localConfig = {
     modality: $("modalidadCpt")?.value,
     durationSeconds: $("duracionTotal")?.value,
     totalTrials: $("totalEnsayos")?.value,
@@ -83,7 +118,8 @@ function leerConfig() {
     practiceTrials: $("ensayosPractica")?.value,
     minimumValidLatencyMs: $("latenciaMinima")?.value,
     blockSize: $("tamanoBloque")?.value
-  });
+  };
+  return normalizarConfigCpt(adhdTaskMode ? { ...localConfig, ...adhdBridgeConfiguration } : localConfig);
 }
 
 function actualizarInstrucciones() {
@@ -104,9 +140,23 @@ function actualizarBotonesPractica() {
 async function prepararSesion(esPractica) {
   limpiarTemporizadores();
   config = leerConfig();
+  if (adhdTaskMode) {
+    config = {
+      ...config,
+      practiceEnabled: true,
+      practiceTrials: Math.max(4, Math.min(10, Number(config.practiceTrials) || 6))
+    };
+    if (!esPractica && !adhdPracticeCompleted) {
+      mostrarToast("Primero se realizara la practica breve obligatoria.");
+      esPractica = true;
+    }
+  }
   practica = Boolean(esPractica && config.practiceEnabled);
   const total = practica ? Math.max(1, config.practiceTrials) : config.totalTrials;
-  semillaSesion = crearSemillaCpt();
+  semillaSesion = adhdTaskMode
+    ? crearSemillaContextoAdhd(`cpt_x:${practica ? "practice" : "main"}`)
+    : crearSemillaCpt();
+  if (practica || !adhdTaskMode) adhdResultPublished = false;
   secuencia = generarSecuenciaCpt({ ...config, totalTrials: total }, semillaSesion);
   ensayos = secuencia.map((e) => ({ ...e }));
   indice = -1;
@@ -117,6 +167,21 @@ async function prepararSesion(esPractica) {
   dispositivoRespuesta = "sin_respuesta";
   inicioSesionPerf = performance.now();
   inicioSesionIso = new Date().toISOString();
+  if (adhdTaskMode && practica) {
+    adhdTaskBridge?.publishEvent("practice_started", {
+      practiceTrials: total,
+      randomSeed: semillaSesion,
+      scored: false
+    });
+  } else if (adhdTaskMode) {
+    adhdTaskBridge?.publishEvent("task_started", {
+      randomSeed: semillaSesion,
+      configuration: config,
+      sequenceControlled: true,
+      practiceAvailable: true,
+      practiceRequired: true
+    });
+  }
   estado = "jugando";
   document.body.classList.add("en-sesion");
   ocultarTodo("juego");
@@ -132,13 +197,15 @@ async function prepararSesion(esPractica) {
 
 function iniciarProgramador() {
   const sesionMaxMs = config.durationSeconds * 1000;
-  timeoutFinalizar = window.setTimeout(() => finalizarSesion(), sesionMaxMs + config.stimulusIntervalMs);
+  timeoutFinalizar = practica
+    ? null
+    : window.setTimeout(() => finalizarSesion(), sesionMaxMs + config.stimulusIntervalMs);
   programarSiguienteEnsayo();
 }
 
 function programarSiguienteEnsayo() {
   if (estado !== "jugando") return;
-  if (indice + 1 >= ensayos.length || performance.now() - inicioSesionPerf >= config.durationSeconds * 1000) {
+  if (indice + 1 >= ensayos.length || (!practica && performance.now() - inicioSesionPerf >= config.durationSeconds * 1000)) {
     finalizarSesion();
     return;
   }
@@ -313,13 +380,39 @@ function finalizarSesion() {
   const actualDurationSeconds = (performance.now() - inicioSesionPerf) / 1000;
   const metrics = calcularMetricasCpt(completados, config, { actualDurationSeconds });
   resultadoActual = construirResultado(metrics, completados, actualDurationSeconds);
+  if (adhdTaskMode && practica) {
+    adhdPracticeCompleted = true;
+    actualizarGuardiaPracticaAdhd();
+    adhdTaskBridge?.publishEvent("practice_completed", {
+      trialCount: completados.length,
+      randomSeed: semillaSesion,
+      scored: false
+    });
+  }
   if (!practica) {
-    guardarResultadoLocal(resultadoActual);
-    guardarResultadoRemoto(resultadoActual);
+    if (adhdTaskMode) {
+      publicarResultadoAdhd(resultadoActual);
+    } else {
+      guardarResultadoLocal(resultadoActual);
+      guardarResultadoRemoto(resultadoActual);
+    }
   }
   renderizarResultados(resultadoActual);
   $("btnContinuarSesion")?.toggleAttribute("hidden", !practica);
   ocultarTodo("resultados");
+}
+
+function actualizarGuardiaPracticaAdhd() {
+  if (!adhdTaskMode) return;
+  const practiceSelect = $("usarPractica");
+  if (practiceSelect) {
+    practiceSelect.value = "si";
+    practiceSelect.disabled = true;
+  }
+  $("btnPractica")?.removeAttribute("disabled");
+  $("btnSesion")?.toggleAttribute("disabled", !adhdPracticeCompleted);
+  const sessionButton = $("btnSesion");
+  if (sessionButton) sessionButton.title = adhdPracticeCompleted ? "Practica completada" : "Completa primero la practica";
 }
 
 function construirResultado(metrics, trialHistory, actualDurationSeconds) {
@@ -331,6 +424,9 @@ function construirResultado(metrics, trialHistory, actualDurationSeconds) {
     uidProfesional: usuarioId,
     patientId: pacienteId || usuarioId,
     date: inicioSesionIso,
+    completedAtIso: new Date().toISOString(),
+    durationMs: Math.round(actualDurationSeconds * 1000),
+    status: "completed",
     modality: config.modality,
     configuration: config,
     randomSeed: semillaSesion,
@@ -343,6 +439,31 @@ function construirResultado(metrics, trialHistory, actualDurationSeconds) {
     interruptions,
     practice: practica
   };
+}
+
+function crearSemillaContextoAdhd(namespace) {
+  const controlledValue = adhdBridgeRandomSeed ?? adhdTaskContext?.randomSeed;
+  const controlledSeed = controlledValue === null || controlledValue === undefined || controlledValue === ""
+    ? null
+    : Number(controlledValue);
+  const hasControlledSeed = Number.isFinite(controlledSeed) && controlledSeed !== 0;
+  if (hasControlledSeed && namespace.endsWith(":main")) return Math.trunc(controlledSeed) >>> 0;
+  const explicitSeed = new URLSearchParams(globalThis.location?.search || "").get("adhdSeed");
+  const source = hasControlledSeed
+    ? controlledSeed
+    : explicitSeed || adhdTaskContext?.attemptId || adhdTaskContext?.sessionId || adhdTaskContext?.bridgeToken || "cpt_x";
+  let hash = 2166136261;
+  for (const character of `${source}:${namespace}`) {
+    hash ^= character.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0) || 1;
+}
+
+function publicarResultadoAdhd(resultado) {
+  if (!adhdTaskMode || !adhdTaskBridge || adhdResultPublished) return false;
+  adhdResultPublished = adhdTaskBridge.publishResult(resultado);
+  return adhdResultPublished;
 }
 
 function renderizarResultados(resultado) {

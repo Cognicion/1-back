@@ -1,6 +1,51 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { collection, doc, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const adhdTaskMode = new URLSearchParams(globalThis.location?.search || "").get("adhd") === "1";
+let adhdTaskContext = null;
+let adhdTaskBridge = null;
+let adhdResultPublished = false;
+let adhdBridgeConfiguration = {};
+let adhdBridgeRandomSeed = null;
+let adhdPracticeCompleted = false;
+
+if (adhdTaskMode) {
+  try {
+    const [{ parseExistingTaskContext }, { createAdhdTaskPageBridge }] = await Promise.all([
+      import("./adhd/adapters/existingTaskAdapters.js"),
+      import("./adhd/integration/adhdTaskPageBridge.js")
+    ]);
+    adhdTaskContext = parseExistingTaskContext();
+    if (adhdTaskContext.taskId !== "go_nogo") throw new TypeError("El contexto TDAH no corresponde a Go/No-Go.");
+    adhdBridgeRandomSeed = adhdTaskContext.randomSeed;
+    adhdTaskBridge = createAdhdTaskPageBridge({
+      context: adhdTaskContext,
+      onConfig(launchConfig) {
+        if (launchConfig?.taskId !== "go_nogo") return;
+        adhdBridgeConfiguration = launchConfig.configuration || {};
+        adhdBridgeRandomSeed = launchConfig.randomSeed !== null
+          && launchConfig.randomSeed !== undefined
+          && launchConfig.randomSeed !== ""
+          && Number.isFinite(Number(launchConfig.randomSeed))
+          ? Number(launchConfig.randomSeed)
+          : adhdBridgeRandomSeed;
+      }
+    });
+  } catch (error) {
+    console.error("No se pudo iniciar el puente TDAH de Go/No-Go.", error);
+  }
+}
+
+function createSeededRandom(seed = 1) {
+  let state = (Number(seed) || 1) >>> 0;
+  return () => {
+    state += 0x6D2B79F5;
+    let value = state;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
 const perfiles = {
   facil: { duracion: 60, ensayos: 40, visible: 1000, intervalo: 900, go: 80, variable: 0.12 },
@@ -29,6 +74,9 @@ let timeoutVisible = null;
 let timeoutSiguiente = null;
 let intervalReloj = null;
 let audioCtx = null;
+let semillaSesion = null;
+let randomSesion = Math.random;
+let inicioSesionIso = "";
 
 const $ = (id) => document.getElementById(id);
 
@@ -41,13 +89,14 @@ document.addEventListener("DOMContentLoaded", () => {
   $("btnResponder")?.addEventListener("click", registrarRespuesta);
   $("zonaEstimulo")?.addEventListener("click", registrarRespuesta);
   $("btnCancelar")?.addEventListener("click", cancelarSesion);
-  $("btnRepetir")?.addEventListener("click", () => iniciarFlujo(practica));
+  $("btnRepetir")?.addEventListener("click", () => iniciarFlujo(adhdTaskMode && practica && adhdPracticeCompleted ? false : practica));
   $("btnCambiar")?.addEventListener("click", () => ocultarTodo("config"));
   document.addEventListener("keydown", manejarTeclado);
   document.addEventListener("visibilitychange", () => { if (document.hidden && estado === "jugando") cancelarSesion("La sesion se pauso al cambiar de pestana."); });
   window.addEventListener("beforeunload", limpiarTemporizadores);
   document.querySelectorAll("[data-toggle-grafica]").forEach((boton) => boton.addEventListener("click", () => toggleGrafica(boton.dataset.toggleGrafica)));
   aplicarPerfilDificultad();
+  actualizarGuardiaPracticaAdhd();
 });
 
 onAuthStateChanged(auth, (user) => { usuarioId = user?.uid || ""; });
@@ -62,30 +111,41 @@ function aplicarPerfilDificultad() {
 }
 
 function leerConfig() {
-  const dificultad = $("dificultad").value;
+  const controlled = adhdTaskMode ? adhdBridgeConfiguration : {};
+  const dificultad = perfiles[controlled.dificultad] ? controlled.dificultad : $("dificultad").value;
   const perfil = perfiles[dificultad] || perfiles.facil;
-  const porcentajeGo = limitar(Number($("porcentajeGo").value || perfil.go), 10, 90);
+  const porcentajeGo = limitar(Number(controlled.porcentajeGo ?? ($("porcentajeGo").value || perfil.go)), 10, 90);
   return {
     dificultad,
-    duracionSesion: limitar(Number($("duracionSesion").value || perfil.duracion), 20, 600),
-    totalEnsayos: limitar(Number($("totalEnsayos").value || perfil.ensayos), 10, 200),
-    duracionEstimulo: limitar(Number($("duracionEstimulo").value || perfil.visible), 200, 2000),
-    intervaloEstimulo: limitar(Number($("intervaloEstimulo").value || perfil.intervalo), 200, 2500),
+    duracionSesion: limitar(Number(controlled.duracionSesion ?? ($("duracionSesion").value || perfil.duracion)), 20, 600),
+    totalEnsayos: limitar(Number(controlled.totalEnsayos ?? ($("totalEnsayos").value || perfil.ensayos)), 10, 200),
+    duracionEstimulo: limitar(Number(controlled.duracionEstimulo ?? ($("duracionEstimulo").value || perfil.visible)), 200, 2000),
+    intervaloEstimulo: limitar(Number(controlled.intervaloEstimulo ?? ($("intervaloEstimulo").value || perfil.intervalo)), 200, 2500),
     porcentajeGo,
     porcentajeNoGo: 100 - porcentajeGo,
-    tipoEstimulo: $("tipoEstimulo").value || "colores",
-    sonido: $("sonido").value === "on",
-    feedback: $("feedback").value === "on",
-    efectos: $("efectos").value === "on",
-    variabilidad: perfil.variable
+    tipoEstimulo: estimulos[controlled.tipoEstimulo] ? controlled.tipoEstimulo : $("tipoEstimulo").value || "colores",
+    sonido: typeof controlled.sonido === "boolean" ? controlled.sonido : $("sonido").value === "on",
+    feedback: typeof controlled.feedback === "boolean" ? controlled.feedback : $("feedback").value === "on",
+    efectos: typeof controlled.efectos === "boolean" ? controlled.efectos : $("efectos").value === "on",
+    variabilidad: Number.isFinite(Number(controlled.variabilidad)) ? Number(controlled.variabilidad) : perfil.variable
   };
 }
 
 function iniciarFlujo(esPractica) {
+  if (adhdTaskMode && !esPractica && !adhdPracticeCompleted) {
+    mostrarToast("Completa primero la practica breve. La aplicacion puntuable iniciara despues.");
+    esPractica = true;
+  }
   limpiarTemporizadores();
   config = leerConfig();
   practica = esPractica;
-  ensayos = crearEnsayos(practica ? Math.min(8, config.totalEnsayos) : config.totalEnsayos, config.porcentajeGo);
+  semillaSesion = adhdTaskMode
+    ? crearSemillaContextoAdhd(`go_nogo:${practica ? "practice" : "main"}`)
+    : null;
+  randomSesion = semillaSesion === null ? Math.random : createSeededRandom(semillaSesion);
+  if (practica || !adhdTaskMode) adhdResultPublished = false;
+  inicioSesionIso = new Date().toISOString();
+  ensayos = crearEnsayos(practica ? Math.min(8, config.totalEnsayos) : config.totalEnsayos, config.porcentajeGo, randomSesion);
   indice = -1;
   ensayoActual = null;
   respondido = false;
@@ -97,16 +157,31 @@ function iniciarFlujo(esPractica) {
   $("feedbackGo").textContent = practica ? "Practica: responde solo ante GO." : "Preparado.";
   cuentaRegresiva(3, () => {
     inicioSesion = performance.now();
+    if (adhdTaskMode && practica) {
+      adhdTaskBridge?.publishEvent("practice_started", {
+        practiceTrials: ensayos.length,
+        randomSeed: semillaSesion,
+        scored: false
+      });
+    } else if (adhdTaskMode) {
+      adhdTaskBridge?.publishEvent("task_started", {
+        randomSeed: semillaSesion,
+        configuration: config,
+        sequenceControlled: true,
+        practiceAvailable: true,
+        practiceRequired: true
+      });
+    }
     estado = "jugando";
     intervalReloj = window.setInterval(actualizarReloj, 250);
     siguienteEnsayo();
   });
 }
 
-function crearEnsayos(total, porcentajeGo) {
+function crearEnsayos(total, porcentajeGo, random = Math.random) {
   const lista = Array.from({ length: total }, (_, i) => ({
     id: i + 1,
-    tipo: Math.random() * 100 < porcentajeGo ? "go" : "nogo",
+    tipo: random() * 100 < porcentajeGo ? "go" : "nogo",
     respondio: false,
     correcta: null,
     rt: null,
@@ -131,7 +206,7 @@ function cuentaRegresiva(n, alTerminar) {
 function siguienteEnsayo() {
   limpiarEnsayoVisual();
   if (estado !== "jugando") return;
-  if (indice + 1 >= ensayos.length || segundosTranscurridos() >= config.duracionSesion) {
+  if (indice + 1 >= ensayos.length || (!practica && segundosTranscurridos() >= config.duracionSesion)) {
     finalizarSesion();
     return;
   }
@@ -212,7 +287,7 @@ function programarSiguiente() {
 function intervaloVariable() {
   if (config.dificultad === "facil") return config.intervaloEstimulo;
   const rango = config.intervaloEstimulo * config.variabilidad;
-  return Math.max(160, Math.round(config.intervaloEstimulo + (Math.random() * 2 - 1) * rango));
+  return Math.max(160, Math.round(config.intervaloEstimulo + (randomSesion() * 2 - 1) * rango));
 }
 
 function manejarTeclado(event) {
@@ -223,21 +298,48 @@ function manejarTeclado(event) {
 function actualizarReloj() {
   const restante = Math.max(0, config.duracionSesion - segundosTranscurridos());
   $("tiempoRestante").textContent = formatearSegundos(restante);
-  if (restante <= 0 && estado === "jugando") finalizarSesion();
+  if (!practica && restante <= 0 && estado === "jugando") finalizarSesion();
 }
 
 function finalizarSesion() {
+  if (estado === "resultados") return;
   estado = "resultados";
   limpiarTemporizadores();
   limpiarEnsayoVisual();
   $("barraProgreso").style.width = "100%";
   const resultado = calcularResultados();
+  if (adhdTaskMode && practica) {
+    adhdPracticeCompleted = true;
+    actualizarGuardiaPracticaAdhd();
+    adhdTaskBridge?.publishEvent("practice_completed", {
+      practiceTrials: resultado.totalTrials,
+      randomSeed: semillaSesion,
+      scored: false
+    });
+  }
   if (!practica) {
-    guardarResultadoLocal(resultado);
-    guardarResultadoRemoto(resultado);
+    if (adhdTaskMode) {
+      publicarResultadoAdhd(resultado);
+    } else {
+      guardarResultadoLocal(resultado);
+      guardarResultadoRemoto(resultado);
+    }
   }
   renderizarResultados(resultado);
+  if (adhdTaskMode && practica && $("btnRepetir")) $("btnRepetir").textContent = "Continuar a sesion real";
+  else if ($("btnRepetir")) $("btnRepetir").textContent = "Repetir";
   ocultarTodo("resultados");
+}
+
+function actualizarGuardiaPracticaAdhd() {
+  if (!adhdTaskMode) return;
+  const sessionButton = $("btnSesion");
+  sessionButton?.toggleAttribute("disabled", !adhdPracticeCompleted);
+  if (sessionButton) {
+    sessionButton.title = adhdPracticeCompleted
+      ? "Practica completada"
+      : "Completa primero la practica breve obligatoria";
+  }
 }
 
 function calcularResultados() {
@@ -248,15 +350,32 @@ function calcularResultados() {
   const omissions = completados.filter((e) => e.resultado === "omision").length;
   const commissionErrors = completados.filter((e) => e.resultado === "error_comision").length;
   const correctInhibitions = completados.filter((e) => e.resultado === "inhibicion").length;
-  const rts = completados.map((e) => e.rt).filter((v) => Number.isFinite(v));
+  const rts = completados
+    .filter((e) => e.resultado === "acierto_go")
+    .map((e) => e.rt)
+    .filter((v) => Number.isFinite(v));
+  const postErrorRts = completados
+    .filter((trial, index) => trial.resultado === "acierto_go" && completados[index - 1]?.resultado === "error_comision")
+    .map((trial) => trial.rt)
+    .filter((value) => Number.isFinite(value));
+  const baselineGoRts = completados
+    .filter((trial, index) => trial.resultado === "acierto_go" && completados[index - 1]?.resultado !== "error_comision")
+    .map((trial) => trial.rt)
+    .filter((value) => Number.isFinite(value));
   const avg = promedio(rts);
   const accuracy = completados.length ? ((correctGo + correctInhibitions) / completados.length) * 100 : 0;
   const impulsivity = nogo.length ? (commissionErrors / nogo.length) * 100 : 0;
   return {
     activityId: "go_nogo",
+    activityVersion: "1.1.0",
     activityName: "Go / No-Go",
     userId: usuarioId,
-    date: new Date().toISOString(),
+    date: inicioSesionIso,
+    completedAtIso: new Date().toISOString(),
+    status: "completed",
+    practice: practica,
+    randomSeed: semillaSesion,
+    configuration: config,
     difficulty: config.dificultad,
     totalTrials: completados.length,
     goTrials: go.length,
@@ -269,12 +388,41 @@ function calcularResultados() {
     minimumReactionTime: rts.length ? Math.min(...rts) : 0,
     maximumReactionTime: rts.length ? Math.max(...rts) : 0,
     reactionTimeVariability: Math.round(desviacion(rts) || 0),
+    postErrorSlowingMs: postErrorRts.length && baselineGoRts.length
+      ? Math.round(promedio(postErrorRts) - promedio(baselineGoRts))
+      : null,
     accuracy: Math.round(accuracy * 10) / 10,
     errorRate: Math.round((100 - accuracy) * 10) / 10,
     impulsivityIndex: Math.round(impulsivity * 10) / 10,
     duration: Math.round(segundosTranscurridos()),
+    durationMs: Math.round(segundosTranscurridos() * 1000),
     trialHistory: completados
   };
+}
+
+function crearSemillaContextoAdhd(namespace) {
+  const controlledValue = adhdBridgeRandomSeed ?? adhdTaskContext?.randomSeed;
+  const controlledSeed = controlledValue === null || controlledValue === undefined || controlledValue === ""
+    ? null
+    : Number(controlledValue);
+  const hasControlledSeed = Number.isFinite(controlledSeed) && controlledSeed !== 0;
+  if (hasControlledSeed && namespace.endsWith(":main")) return Math.trunc(controlledSeed) >>> 0;
+  const explicitSeed = new URLSearchParams(globalThis.location?.search || "").get("adhdSeed");
+  const source = hasControlledSeed
+    ? controlledSeed
+    : explicitSeed || adhdTaskContext?.attemptId || adhdTaskContext?.sessionId || adhdTaskContext?.bridgeToken || "go_nogo";
+  let hash = 2166136261;
+  for (const character of `${source}:${namespace}`) {
+    hash ^= character.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0) || 1;
+}
+
+function publicarResultadoAdhd(resultado) {
+  if (!adhdTaskMode || !adhdTaskBridge || adhdResultPublished) return false;
+  adhdResultPublished = adhdTaskBridge.publishResult(resultado);
+  return adhdResultPublished;
 }
 
 function renderizarResultados(r) {

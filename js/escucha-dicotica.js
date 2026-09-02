@@ -10,8 +10,38 @@ import {
   dichoticTrialsToCsv,
   scoreDichoticTrial
 } from "./dichotic/dichotic-core.js";
-
 const DICHOTIC_ACTIVITY_ID = "escucha_dicotica_derecho";
+const adhdTaskMode = new URLSearchParams(globalThis.location?.search || "").get("adhd") === "1";
+let adhdTaskContext = null;
+let adhdTaskBridge = null;
+let adhdResultPublished = false;
+let adhdBridgeConfiguration = {};
+let adhdPracticeCompleted = false;
+let normalizeExistingTaskResult = null;
+
+if (adhdTaskMode) {
+  try {
+    const [adapterModule, bridgeModule] = await Promise.all([
+      import("./adhd/adapters/existingTaskAdapters.js"),
+      import("./adhd/integration/adhdTaskPageBridge.js")
+    ]);
+    const { parseExistingTaskContext } = adapterModule;
+    normalizeExistingTaskResult = adapterModule.normalizeExistingTaskResult;
+    const { createAdhdTaskPageBridge } = bridgeModule;
+    adhdTaskContext = parseExistingTaskContext();
+    if (adhdTaskContext.taskId !== "dichotic_listening") throw new TypeError("El contexto TDAH no corresponde a escucha dicotica.");
+    adhdTaskBridge = createAdhdTaskPageBridge({
+      context: adhdTaskContext,
+      onConfig(launchConfig) {
+        if (launchConfig?.taskId !== "dichotic_listening") return;
+        adhdBridgeConfiguration = launchConfig.configuration || {};
+      }
+    });
+  } catch (error) {
+    console.error("No se pudo iniciar el puente TDAH de escucha dicotica.", error);
+  }
+}
+
 rehabilitationModeManager.registerActivity(DICHOTIC_ACTIVITY_ID, {
   supportsTraining: true,
   supportsRehabilitation: true,
@@ -59,11 +89,13 @@ let detailSearch = "";
 let detailSort = "trialNumber";
 let sessionConfig = null;
 let sessionStartedAt = null;
+let sessionStartedAtIso = "";
 let clinicalConfigUnlocked = false;
 let trialPaused = false;
 
 const CORPUS_PAGE_SIZE = 10;
 const AUTO_RECOGNITION_DELAY_MS = 300;
+const ADHD_DICHOTIC_PRACTICE_TRIAL_COUNT = 6;
 const STANDARD_PROTOCOL_CONFIG = {
   configModo: "clinical",
   configBloques: "4",
@@ -927,11 +959,46 @@ function getTestConfig(modeOverride = "") {
     sequenceMode: corpus?.sequenceMode,
     randomized: false
   };
-  return rehabilitationModeManager.getConfiguration(overrides, DICHOTIC_ACTIVITY_ID);
+  const localConfig = rehabilitationModeManager.getConfiguration(overrides, DICHOTIC_ACTIVITY_ID);
+  return adhdTaskMode ? applyControlledDichoticConfig(localConfig) : localConfig;
+}
+
+function applyControlledDichoticConfig(localConfig) {
+  const controlled = adhdBridgeConfiguration || {};
+  const merged = { ...localConfig };
+  const numericFields = {
+    blocks: [1, 4],
+    trialsPerBlock: [1, 30],
+    totalTrials: [1, 120],
+    interTrialMs: [300, 5000],
+    fixationMs: [0, 5000],
+    responseMaxSeconds: [3, 60],
+    maxRepetitions: [0, 10]
+  };
+  for (const [field, [minimum, maximum]] of Object.entries(numericFields)) {
+    if (controlled[field] !== undefined) merged[field] = clampNumber(controlled[field], minimum, maximum, merged[field]);
+  }
+  merged.totalTrials = Math.min(merged.totalTrials, merged.blocks * merged.trialsPerBlock);
+  for (const field of [
+    "immediateFeedback", "showCorrectAnswer", "showClassification", "allowStimulusRepeat",
+    "automaticRecognition", "manualCaptureMode", "automaticPause", "manualPause", "fullscreen",
+    "sounds", "animations", "showFixation", "showCounter", "showProgress", "showBlockResults"
+  ]) {
+    if (typeof controlled[field] === "boolean") merged[field] = controlled[field];
+  }
+  return merged;
 }
 
 function buildSessionPairs(pairList, config) {
-  return (pairList || []).slice(0, config.totalTrials).map((pair, index) => ({
+  const practiceTrialIds = adhdTaskMode
+    ? new Set((corpus?.pairs || [])
+      .slice(0, ADHD_DICHOTIC_PRACTICE_TRIAL_COUNT)
+      .map((pair) => pair.trialId))
+    : new Set();
+  const mainPairCandidates = adhdTaskMode
+    ? (pairList || []).filter((pair) => !practiceTrialIds.has(pair.trialId))
+    : (pairList || []);
+  return mainPairCandidates.slice(0, config.totalTrials).map((pair, index) => ({
     ...pair,
     sessionTrialNumber: index + 1,
     blockNumber: Math.floor(index / config.trialsPerBlock) + 1,
@@ -946,25 +1013,47 @@ function clampNumber(value, min, max, fallback) {
 }
 
 function startPractice() {
-  const config = { ...getTestConfig("demo"), blocks: 1, trialsPerBlock: 6, totalTrials: 6, immediateFeedback: true };
-  const practicePairs = (corpus?.pairs || []).slice(0, 6).map((pair, index) => ({
+  const config = {
+    ...getTestConfig("demo"),
+    blocks: 1,
+    trialsPerBlock: ADHD_DICHOTIC_PRACTICE_TRIAL_COUNT,
+    totalTrials: ADHD_DICHOTIC_PRACTICE_TRIAL_COUNT,
+    immediateFeedback: true
+  };
+  const practicePairs = (corpus?.pairs || []).slice(0, ADHD_DICHOTIC_PRACTICE_TRIAL_COUNT).map((pair, index) => ({
     ...pair,
+    sourceTrialId: pair.trialId,
     trialId: `practice-${index + 1}`,
     blockNumber: 1,
     trialNumber: index + 1,
     sessionTrialNumber: index + 1
   }));
+  if (adhdTaskMode && practicePairs.length < ADHD_DICHOTIC_PRACTICE_TRIAL_COUNT) {
+    const error = new Error("El corpus no contiene suficientes pares fuente-seguros para la practica obligatoria.");
+    error.code = "dichotic_practice_material_unavailable";
+    adhdTaskBridge?.publishError(error);
+    toast(error.message);
+    return;
+  }
   sessionId = createSessionId();
   sessionMode = "practice_demo";
   sessionConfig = config;
   sessionStartedAt = performance.now();
   trials = [];
+  interruptions = [];
   currentIndex = -1;
   activeList = practicePairs;
   activeIsPractice = true;
   showTrialScreen();
   $("demoBanner").hidden = false;
   toast("Practica de demostracion: material provisional no valido para interpretacion clinica.");
+  if (adhdTaskMode) {
+    adhdTaskBridge?.publishEvent("practice_started", {
+      practiceTrials: practicePairs.length,
+      sequenceControl: "corpus_order",
+      scored: false
+    });
+  }
   runTrialList(practicePairs, true);
 }
 
@@ -1032,21 +1121,61 @@ function startDemo() {
 }
 
 function beginSession(mode, pairList, config = getTestConfig()) {
+  if (adhdTaskMode && !adhdPracticeCompleted) {
+    toast("Completa primero la practica breve obligatoria. La aplicacion puntuable iniciara despues.");
+    startPractice();
+    return;
+  }
+  if (adhdTaskMode && (!Array.isArray(pairList) || !pairList.length)) {
+    const error = new Error("El corpus no contiene pares puntuables disjuntos de la practica.");
+    error.code = "dichotic_practice_material_unavailable";
+    adhdTaskBridge?.publishError(error);
+    toast(error.message);
+    return;
+  }
+  const requestedTotalTrials = config.totalTrials;
+  const resolvedConfig = adhdTaskMode
+    ? {
+        ...config,
+        requestedTotalTrials,
+        totalTrials: pairList.length,
+        blocks: Math.max(1, Math.ceil(pairList.length / Math.max(1, config.trialsPerBlock))),
+        practiceTrialCount: ADHD_DICHOTIC_PRACTICE_TRIAL_COUNT,
+        practiceMaterialExcludedFromMain: true
+      }
+    : config;
   sessionId = createSessionId();
   sessionMode = mode;
-  sessionConfig = config;
+  sessionConfig = resolvedConfig;
   sessionStartedAt = performance.now();
+  sessionStartedAtIso = new Date().toISOString();
+  if (!adhdTaskMode) adhdResultPublished = false;
   rehabilitationModeManager.clearResearchEvents();
-  if (config.researchLogging) {
+  if (sessionConfig.researchLogging) {
     rehabilitationModeManager.attachResearchLogging(document);
   } else {
     rehabilitationModeManager.detachResearchLogging(document);
   }
   trials = [];
   breaks = [];
+  interruptions = [];
   currentIndex = -1;
   activeList = pairList;
   activeIsPractice = false;
+  if (adhdTaskMode) {
+    adhdTaskBridge?.publishEvent("task_started", {
+      randomSeed: null,
+      configuration: {
+        ...sessionConfig,
+        sequenceControl: "corpus_order",
+        corpusVersion: corpus?.corpusVersion || null
+      },
+      sequenceControlled: true,
+      alternativeFormsBySeed: false,
+      practiceAvailable: true,
+      practiceRequired: true
+    });
+  }
   $("demoBanner").hidden = mode !== "demo_technical";
   showTrialScreen();
   runTrialList(pairList, false);
@@ -1056,9 +1185,17 @@ async function runTrialList(list, isPractice) {
   currentIndex += 1;
   if (currentIndex >= list.length) {
     if (isPractice) {
+      if (adhdTaskMode) {
+        adhdPracticeCompleted = true;
+        adhdTaskBridge?.publishEvent("practice_completed", {
+          practiceTrials: trials.length,
+          sequenceControl: "corpus_order",
+          scored: false
+        });
+      }
       $("pantallaEnsayo").classList.add("oculta");
       $("pantallaPreparacion").classList.remove("oculta");
-      toast("Practica finalizada.");
+      toast(adhdTaskMode ? "Practica finalizada. Ya puedes iniciar la aplicacion puntuable." : "Practica finalizada.");
       return;
     }
     finishSession();
@@ -1225,6 +1362,12 @@ function finishSession() {
     patientId: pacienteId || usuarioId,
     uidProfesional: usuarioId,
     date: new Date().toISOString(),
+    startedAtIso: sessionStartedAtIso,
+    completedAtIso: new Date().toISOString(),
+    durationMs,
+    status: "completed",
+    practice: false,
+    randomSeed: null,
     corpusId: corpus?.corpusId || "",
     corpusVersion: corpus?.corpusVersion || "",
     corpusType: corpus?.corpusType || "",
@@ -1232,7 +1375,12 @@ function finishSession() {
     authorizedMaterial: corpus?.authorizedMaterial === true,
     sessionMode,
     demoWarning: sessionMode === "demo_technical" ? "MODO DEMOSTRACION - NO VALIDO PARA INTERPRETACION CLINICA" : "",
-    configuration: sessionConfig || { attendedEar: "right", totalTrials: 120, blocks: 4, trialsPerBlock: 30, sequenceMode: corpus?.sequenceMode, randomized: false },
+    configuration: {
+      ...(sessionConfig || { attendedEar: "right", totalTrials: 120, blocks: 4, trialsPerBlock: 30, sequenceMode: corpus?.sequenceMode, randomized: false }),
+      sequenceControl: "corpus_order",
+      corpusVersion: corpus?.corpusVersion || null,
+      alternativeFormsBySeed: false
+    },
     headphoneCheck,
     volumeSetting: Number($("volumenDicotica").value),
     exclusionFlags: collectConditions(),
@@ -1246,9 +1394,30 @@ function finishSession() {
     voicePrivacy: { voiceRecordingConsent: false, consentDate: null, consentVersion: "no_audio_storage_default" }
   };
   rehabilitationModeManager.detachResearchLogging(document);
-  saveLocal(result);
-  saveRemote(result);
+  if (adhdTaskMode) {
+    publishAdhdResult(result);
+  } else {
+    saveLocal(result);
+    saveRemote(result);
+  }
   renderResults(result);
+}
+
+function publishAdhdResult(payload) {
+  if (!adhdTaskMode || !adhdTaskBridge || adhdResultPublished) return false;
+  const normalized = normalizeExistingTaskResult("dichotic_listening", payload, {
+    ...adhdTaskContext,
+    randomSeed: null,
+    configuration: payload.configuration
+  });
+  normalized.randomSeed = null;
+  normalized.configuration = {
+    ...normalized.configuration,
+    sequenceControl: "corpus_order",
+    alternativeFormsBySeed: false
+  };
+  adhdResultPublished = adhdTaskBridge.publishResult(normalized);
+  return adhdResultPublished;
 }
 
 function renderResults(r) {

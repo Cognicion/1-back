@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="biocelular">
+<head>
+  <script src="js/theme-preload.js?v=2.115-navbar-unica-v2"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Programa longitudinal de rehabilitación cognitiva multicomponente para TDAH en COGNICIÓN.">
+  <title>COGNICIÓN | Rehabilitación cognitiva para TDAH</title>
+  <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
+  <link rel="stylesheet" href="css/theme/cognicion-theme.css">
+  <link rel="stylesheet" href="css/rehabilitacion-cognitiva.css">
+  <link rel="stylesheet" href="css/rehabilitacion-tdah.css?v=20260902-adhd-v1">
+  <script type="module" src="js/services/themeBootstrap.js"></script>
+</head>
+<body class="adhd-page">
+  <header class="topbar-rehabilitacion adhd-topbar">
+    <a class="marca-rehabilitacion" href="rehabilitacion-cognitiva.html" data-adhd-back-link aria-label="Volver a Rehabilitación Cognitiva">
+      <img src="assets/favicon-cognicion.png" alt="COGNICIÓN">
+      <div>
+        <strong>Rehabilitación TDAH</strong>
+        <span>Evaluar · Entrenar · Transferir · Reevaluar</span>
+      </div>
+    </a>
+    <nav class="nav-rehabilitacion" aria-label="Navegación del programa">
+      <button type="button" data-adhd-nav="overview">Resumen</button>
+      <button type="button" data-adhd-nav="assessment">Evaluación</button>
+      <button type="button" data-adhd-nav="session">Sesión</button>
+      <button type="button" data-adhd-nav="clinician">Panel clínico</button>
+      <a href="dashboard.html">Dashboard</a>
+    </nav>
+  </header>
+
+  <main class="adhd-shell" id="adhdApp" aria-busy="true">
+    <section class="adhd-intro" aria-labelledby="adhdTitle">
+      <div>
+        <span class="kicker">Programa multicomponente y longitudinal</span>
+        <h1 id="adhdTitle">Entrenamiento personalizado de atención y funciones ejecutivas</h1>
+        <p class="adhd-purpose">Programa de rehabilitación y entrenamiento cognitivo basado en evidencia, destinado a complementar el tratamiento integral del TDAH.</p>
+        <p>No cura el TDAH ni reemplaza medicación, psicoterapia, intervenciones conductuales, intervención familiar, apoyos escolares/laborales o atención médica.</p>
+      </div>
+      <aside class="adhd-validation-notice" role="note">
+        <strong>Alcance de la evidencia</strong>
+        <p>“Basado en evidencia” describe el fundamento de sus componentes. COGNICIÓN todavía no ha sido clínicamente validado como programa; demostrar eficacia propia requerirá estudios prospectivos controlados.</p>
+      </aside>
+    </section>
+
+    <section class="adhd-patient-context" aria-labelledby="patientContextTitle">
+      <div>
+        <span class="adhd-eyebrow">Contexto del expediente</span>
+        <h2 id="patientContextTitle">Paciente y modalidad</h2>
+      </div>
+      <label class="adhd-patient-selector">Paciente
+        <select id="adhdPatientSelect" aria-describedby="adhdPatientHelp">
+          <option value="">Cargando acceso…</option>
+        </select>
+      </label>
+      <p id="adhdPatientHelp" class="adhd-help">Los datos se asocian al expediente seleccionado. No se incluyen identificadores directos en las exportaciones de investigación.</p>
+      <div class="adhd-context-status" aria-live="polite">
+        <span id="adhdUserMode">Verificando acceso</span>
+        <strong id="adhdPatientName">Sin paciente seleccionado</strong>
+        <small id="adhdAgeMode">Modalidad pendiente</small>
+      </div>
+    </section>
+
+    <div class="adhd-status-banner" id="adhdStatusBanner" role="status" aria-live="polite">Inicializando el programa…</div>
+
+    <nav class="adhd-section-tabs" aria-label="Secciones del programa">
+      <button type="button" class="adhd-current-tab" data-adhd-tab="overview" aria-controls="adhdOverview" aria-selected="true">Resumen</button>
+      <button type="button" data-adhd-tab="assessment" aria-controls="adhdAssessment">Evaluación basal</button>
+      <button type="button" data-adhd-tab="profile" aria-controls="adhdProfile">Perfil</button>
+      <button type="button" data-adhd-tab="plan" aria-controls="adhdPlan">Plan</button>
+      <button type="button" data-adhd-tab="session" aria-controls="adhdSession">Sesión de hoy</button>
+      <button type="button" data-adhd-tab="clinician" aria-controls="adhdClinician">Panel clínico</button>
+    </nav>
+
+    <section class="adhd-view adhd-current-view" id="adhdOverview" data-adhd-view="overview" aria-labelledby="overviewTitle">
+      <header class="adhd-section-heading">
+        <div>
+          <span class="adhd-eyebrow">Estado longitudinal</span>
+          <h2 id="overviewTitle">Resumen del programa</h2>
+        </div>
+        <button type="button" class="adhd-primary" id="adhdPrimaryAction">Iniciar evaluación basal</button>
+      </header>
+      <dl class="adhd-dashboard-facts" id="adhdDashboardFacts">
+        <div><dt>Estado</dt><dd id="adhdProgramStatus">Sin programa</dd></div>
+        <div><dt>Evaluación basal</dt><dd id="adhdBaselineStatus">Pendiente</dd></div>
+        <div><dt>Sesiones completadas</dt><dd id="adhdSessionsCompleted">0</dd></div>
+        <div><dt>Sesiones programadas</dt><dd id="adhdSessionsScheduled">0</dd></div>
+        <div><dt>Última sesión</dt><dd id="adhdLastSession">Sin sesiones</dd></div>
+        <div><dt>Próxima reevaluación</dt><dd id="adhdNextReassessment">Por definir</dd></div>
+      </dl>
+      <div class="adhd-overview-columns">
+        <section aria-labelledby="trainedDomainsTitle">
+          <h3 id="trainedDomainsTitle">Dominios en entrenamiento</h3>
+          <ul class="adhd-plain-list" id="adhdTrainedDomains"><li>Aún no se ha generado un plan.</li></ul>
+        </section>
+        <section aria-labelledby="currentGoalsTitle">
+          <h3 id="currentGoalsTitle">Objetivos funcionales</h3>
+          <ul class="adhd-plain-list" id="adhdCurrentGoals"><li>Aún no se han definido objetivos.</li></ul>
+        </section>
+        <section aria-labelledby="todayTitle">
+          <h3 id="todayTitle">Siguiente paso</h3>
+          <p id="adhdNextStep">Selecciona un paciente para comenzar.</p>
+        </section>
+      </div>
+      <section class="adhd-progress-summary" aria-labelledby="simpleEvolutionTitle">
+        <h3 id="simpleEvolutionTitle">Evolución</h3>
+        <div id="adhdOverviewChart" class="adhd-chart-container"><p class="adhd-empty">La evolución aparecerá después de contar con mediciones comparables.</p></div>
+      </section>
+    </section>
+
+    <section class="adhd-view" id="adhdAssessment" data-adhd-view="assessment" aria-labelledby="assessmentTitle" hidden>
+      <header class="adhd-section-heading">
+        <div>
+          <span class="adhd-eyebrow">T0 basal · T1 intermedia · T2 final · T3 seguimiento</span>
+          <h2 id="assessmentTitle">Evaluación inicial y batería cognitiva</h2>
+          <p>La batería puede interrumpirse entre bloques. Una tarea interrumpida no continúa a mitad de ensayo: el bloque se reinicia o queda marcado como interrumpido.</p>
+        </div>
+        <span class="adhd-phase-badge" id="adhdAssessmentPhase">T0</span>
+      </header>
+
+      <form id="adhdIntakeForm" class="adhd-form-stack" novalidate>
+        <section class="adhd-form-section" aria-labelledby="assessmentContextTitle">
+          <div class="adhd-form-heading">
+            <div><span>Paso 1</span><h3 id="assessmentContextTitle">Condiciones que modifican la interpretación</h3></div>
+            <p>Estos datos contextualizan el resultado; no se usan para diagnosticar automáticamente.</p>
+          </div>
+          <div class="adhd-form-grid">
+            <label>Edad
+              <input id="adhdAge" name="age" type="number" min="0" max="120" required inputmode="numeric">
+            </label>
+            <label>Lateralidad
+              <select name="laterality"><option value="">No registrada</option><option value="right">Diestra</option><option value="left">Zurda</option><option value="mixed">Mixta</option></select>
+            </label>
+            <label>Horas de sueño la noche previa
+              <input name="sleepHours" type="number" min="0" max="24" step="0.5" required inputmode="decimal">
+            </label>
+            <label>Calidad subjetiva del sueño (0–10)
+              <input name="sleepQuality" type="number" min="0" max="10" value="5" required inputmode="numeric">
+            </label>
+            <label>Fatiga subjetiva (0–10)
+              <input name="fatigue" type="number" min="0" max="10" value="3" required inputmode="numeric">
+            </label>
+            <label>Motivación actual (0–10)
+              <input name="motivation" type="number" min="0" max="10" value="7" required inputmode="numeric">
+            </label>
+            <label>Distractibilidad ambiental (0–10)
+              <input name="environmentalDistractibility" type="number" min="0" max="10" value="3" required inputmode="numeric">
+            </label>
+            <label>Medicación para TDAH
+              <input name="adhdMedication" type="text" maxlength="160" placeholder="Opcional; no registrar si no desea">
+            </label>
+            <label>Hora de última dosis
+              <input name="lastDoseTime" type="time">
+            </label>
+            <label>Modalidad de batería
+              <select name="batteryType"><option value="essential">Esencial · aprox. 25–35 min</option><option value="expanded">Ampliada · incluye atención auditiva opcional</option></select>
+            </label>
+          </div>
+          <div class="adhd-check-grid">
+            <label><input name="recentCaffeine" type="checkbox"> Cafeína reciente</label>
+            <label><input name="recentTreatmentChanges" type="checkbox"> Cambios recientes de tratamiento</label>
+            <label><input name="visualProblems" type="checkbox"> Problemas visuales relevantes</label>
+            <label><input name="auditoryProblems" type="checkbox"> Problemas auditivos relevantes</label>
+            <label><input name="telemetryEnabled" type="checkbox"> Conservar telemetría detallada por bloques para revisión clínica/investigación</label>
+          </div>
+          <label>Interrupciones u observaciones de la evaluación
+            <textarea name="interruptions" maxlength="500" placeholder="Ej. llamada, ruido, cambio de dispositivo o pausa prolongada."></textarea>
+          </label>
+        </section>
+
+        <section class="adhd-form-section" aria-labelledby="functionalDifficultiesTitle">
+          <div class="adhd-form-heading">
+            <div><span>Paso 2</span><h3 id="functionalDifficultiesTitle">Dificultades relevantes en la vida real</h3></div>
+            <p>Selecciona únicamente las dificultades que importan a la persona.</p>
+          </div>
+          <div class="adhd-check-grid adhd-difficulty-grid" id="adhdFunctionalDifficulties"></div>
+        </section>
+
+        <section class="adhd-form-section" aria-labelledby="functionalGoalTitle">
+          <div class="adhd-form-heading">
+            <div><span>Paso 3</span><h3 id="functionalGoalTitle">Objetivo funcional estructurado</h3></div>
+            <p>Acción concreta, contexto, frecuencia, meta y fecha de revisión.</p>
+          </div>
+          <div class="adhd-form-grid">
+            <label class="adhd-wide-field">Acción concreta
+              <input name="goalAction" maxlength="240" placeholder="Ej. realizar lectura académica durante 30 minutos" required>
+            </label>
+            <label>Contexto
+              <input name="goalContext" maxlength="160" placeholder="En casa, después de comer" required>
+            </label>
+            <label>Frecuencia
+              <input name="goalFrequency" maxlength="120" placeholder="4 días por semana" required>
+            </label>
+            <label>Meta observable
+              <input name="goalTarget" maxlength="180" placeholder="Máximo una interrupción voluntaria" required>
+            </label>
+            <label>Fecha de revisión
+              <input name="goalReviewDate" type="date" required>
+            </label>
+            <label>Fuente de valoración
+              <select name="goalReviewSource"><option value="patient">Paciente</option><option value="caregiver">Padre/cuidador</option><option value="clinician">Médico/profesional</option></select>
+            </label>
+          </div>
+          <div class="adhd-form-actions">
+            <button type="submit" class="adhd-primary" id="adhdCreateAssessment">Guardar contexto e iniciar batería</button>
+            <button type="button" class="adhd-secondary" id="adhdSaveAssessmentDraft">Guardar borrador</button>
+          </div>
+          <p class="adhd-form-error" id="adhdIntakeError" role="alert"></p>
+        </section>
+      </form>
+
+      <section class="adhd-battery" id="adhdBattery" aria-labelledby="batteryTitle" hidden>
+        <div class="adhd-form-heading">
+          <div><span>Paso 4</span><h3 id="batteryTitle">Batería cognitiva</h3></div>
+          <p id="adhdBatteryProgressText">0 de 8 tareas completadas</p>
+        </div>
+        <div class="adhd-linear-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="adhdBatteryProgress"><i></i></div>
+        <ol class="adhd-task-list" id="adhdBatteryTasks"></ol>
+        <div class="adhd-form-actions">
+          <button type="button" class="adhd-primary" id="adhdGenerateProfile" disabled>Generar perfil estructurado</button>
+          <button type="button" class="adhd-secondary" id="adhdSuspendAssessment">Interrumpir y continuar después</button>
+        </div>
+      </section>
+    </section>
+
+    <section class="adhd-view" id="adhdProfile" data-adhd-view="profile" aria-labelledby="profileTitle" hidden>
+      <header class="adhd-section-heading">
+        <div>
+          <span class="adhd-eyebrow">Medidas crudas y cambio intraindividual</span>
+          <h2 id="profileTitle">Perfil cognitivo y funcional</h2>
+          <p>No se calcula un “score TDAH”. Las visualizaciones conservan las medidas individuales y no utilizan percentiles sin normas documentadas.</p>
+        </div>
+        <span class="adhd-phase-badge" id="adhdProfilePhase">T0</span>
+      </header>
+      <div class="adhd-quality-summary" id="adhdProfileQuality">Sin perfil disponible.</div>
+      <div class="adhd-domain-profile" id="adhdDomainProfile"></div>
+      <div class="adhd-form-actions">
+        <button type="button" class="adhd-primary" id="adhdGoToPlan">Crear plan personalizado</button>
+        <button type="button" class="adhd-secondary" id="adhdReviewAssessment">Revisar evaluación</button>
+      </div>
+    </section>
+
+    <section class="adhd-view" id="adhdPlan" data-adhd-view="plan" aria-labelledby="planTitle" hidden>
+      <header class="adhd-section-heading">
+        <div>
+          <span class="adhd-eyebrow">Reglas explícitas y editables</span>
+          <h2 id="planTitle">Plan de rehabilitación</h2>
+          <p>El generador sugiere contenidos y explica por qué. El profesional conserva control final y puede editar cada elemento.</p>
+        </div>
+      </header>
+      <form id="adhdPlanConfig" class="adhd-plan-config">
+        <label>Sesiones totales<input name="totalSessions" type="number" min="20" max="25" value="24"></label>
+        <label>Semanas<input name="weeks" type="number" min="4" max="8" value="6"></label>
+        <label>Sesiones por semana (estimada)<input name="sessionsPerWeek" type="number" min="1" max="7" step="0.01" value="4" readonly aria-describedby="adhdFrequencyHelp"></label>
+        <label>Minutos por sesión<input name="sessionMinutes" type="number" min="20" max="30" value="25"></label>
+        <button type="submit" class="adhd-primary">Generar o ajustar programa</button>
+      </form>
+      <p class="adhd-help" id="adhdFrequencyHelp">La frecuencia se deriva de sesiones totales ÷ semanas; puede ajustarse cambiando cualquiera de esos dos campos.</p>
+      <div class="adhd-plan-rationale" id="adhdPlanRationale"><p>Primero completa la evaluación y genera el perfil.</p></div>
+      <div class="adhd-plan-toolbar">
+        <strong id="adhdPlanSummary">Sin plan</strong>
+        <button type="button" class="adhd-secondary" id="adhdAddPlanItem">Añadir o sustituir ejercicio</button>
+        <button type="button" class="adhd-secondary" id="adhdEditGoal">Editar objetivo</button>
+        <button type="button" class="adhd-danger" id="adhdRemoveGoal">Desactivar objetivo</button>
+        <button type="button" class="adhd-secondary" id="adhdSavePlan">Guardar plan revisado</button>
+      </div>
+      <div class="adhd-session-plan-list" id="adhdSessionPlanList"></div>
+    </section>
+
+    <section class="adhd-view adhd-patient-view" id="adhdSession" data-adhd-view="session" aria-labelledby="sessionTitle" hidden>
+      <header class="adhd-section-heading">
+        <div>
+          <span class="adhd-eyebrow">Vista del paciente</span>
+          <h2 id="sessionTitle">Sesión de hoy</h2>
+          <p id="adhdSessionEstimate">Selecciona un plan para conocer la duración aproximada.</p>
+        </div>
+        <button type="button" class="adhd-primary" id="adhdStartSession">Iniciar sesión</button>
+      </header>
+      <div class="adhd-today-summary">
+        <div><span>Progreso</span><strong id="adhdTodayProgress">0 de 0</strong></div>
+        <div><span>Objetivo actual</span><strong id="adhdTodayGoal">Por definir</strong></div>
+        <div><span>Dificultad</span><strong id="adhdTodayDifficulty">Calibración inicial</strong></div>
+      </div>
+      <ol class="adhd-today-components" id="adhdTodayComponents"><li>Genera un plan para preparar la primera sesión.</li></ol>
+      <section class="adhd-transfer-panel" aria-labelledby="transferTitle">
+        <span class="adhd-eyebrow">Transferencia a la vida real</span>
+        <h3 id="transferTitle">Reto funcional posterior</h3>
+        <p id="adhdTransferPrompt">El reto se asigna durante una sesión y su resultado se informa posteriormente, sin bloquear el cierre.</p>
+        <div class="adhd-transfer-goal" id="adhdTransferGoal" role="group" aria-labelledby="adhdTransferGoalLabel" hidden>
+          <span id="adhdTransferGoalLabel">Objetivo SMART vinculado</span>
+          <strong id="adhdTransferGoalAction"></strong>
+          <dl>
+            <div><dt>Contexto</dt><dd id="adhdTransferGoalContext"></dd></div>
+            <div><dt>Frecuencia</dt><dd id="adhdTransferGoalFrequency"></dd></div>
+            <div><dt>Meta observable</dt><dd id="adhdTransferGoalTarget"></dd></div>
+          </dl>
+          <p id="adhdTransferApplication"></p>
+        </div>
+        <div class="adhd-transfer-actions" id="adhdTransferActions" hidden>
+          <label><input type="radio" name="transferStatus" value="completed"> Realizado</label>
+          <label><input type="radio" name="transferStatus" value="partial"> Parcial</label>
+          <label><input type="radio" name="transferStatus" value="not_completed"> No realizado</label>
+          <label class="adhd-wide-field">Nota opcional<textarea id="adhdTransferNote" maxlength="800"></textarea></label>
+          <button type="button" class="adhd-secondary" id="adhdSaveTransfer">Guardar resultado del reto</button>
+        </div>
+      </section>
+      <section class="adhd-self-rating" id="adhdSelfRating" hidden aria-labelledby="selfRatingTitle">
+        <h3 id="selfRatingTitle">Autoevaluación breve</h3>
+        <div class="adhd-form-grid">
+          <label>Fatiga (0–10)<input id="adhdSessionFatigue" type="number" min="0" max="10" value="3"></label>
+          <label>Frustración (0–10)<input id="adhdSessionFrustration" type="number" min="0" max="10" value="2"></label>
+          <label>Concentración percibida (0–10)<input id="adhdSessionConcentration" type="number" min="0" max="10" value="6"></label>
+        </div>
+        <button type="button" class="adhd-primary" id="adhdCompleteSession">Completar sesión</button>
+        <p>Detenerse, pausar o reducir dificultad no se penaliza.</p>
+      </section>
+    </section>
+
+    <section class="adhd-view adhd-clinician-only" id="adhdClinician" data-adhd-view="clinician" aria-labelledby="clinicianTitle" hidden>
+      <header class="adhd-section-heading">
+        <div>
+          <span class="adhd-eyebrow">Vista clínica</span>
+          <h2 id="clinicianTitle">Monitoreo longitudinal</h2>
+          <p>Consulta fuentes, condiciones de aplicación, adherencia, dificultad, transferencia y reevaluaciones. Las decisiones clínicas siguen bajo control profesional.</p>
+        </div>
+        <div class="adhd-export-actions">
+          <button type="button" class="adhd-secondary" id="adhdExportJson">Exportar JSON pseudonimizado</button>
+          <button type="button" class="adhd-secondary" id="adhdExportCsv">Exportar CSV pseudonimizado</button>
+        </div>
+      </header>
+      <div class="adhd-clinical-facts" id="adhdClinicalFacts"></div>
+      <section aria-labelledby="longitudinalTitle">
+        <h3 id="longitudinalTitle">Gráfica longitudinal</h3>
+        <div class="adhd-chart-container" id="adhdLongitudinalChart"><p class="adhd-empty">Sin reevaluaciones comparables.</p></div>
+      </section>
+      <section aria-labelledby="assessmentsTableTitle">
+        <div class="adhd-subheading"><h3 id="assessmentsTableTitle">Evaluaciones y condiciones</h3><button type="button" class="adhd-primary" id="adhdStartReassessment">Iniciar reevaluación</button></div>
+        <div class="adhd-table-wrap"><table><thead><tr><th>Fase</th><th>Fecha</th><th>Condiciones</th><th>Calidad</th><th>Fuente</th></tr></thead><tbody id="adhdAssessmentsTable"><tr><td colspan="5">Sin evaluaciones.</td></tr></tbody></table></div>
+      </section>
+      <section aria-labelledby="sessionsTableTitle">
+        <h3 id="sessionsTableTitle">Adherencia y registro de sesiones</h3>
+        <div class="adhd-clinical-facts" id="adhdSessionAdherence" aria-live="polite"><p class="adhd-empty">Sin sesiones programadas ni iniciadas.</p></div>
+        <p class="adhd-help" id="adhdSessionAdherenceNote">La adherencia se mostrará con su denominador. Una sesión sin registro no se interpreta como abandono.</p>
+        <div class="adhd-table-wrap"><table><thead><tr><th>Sesión</th><th>Estado</th><th>Tareas</th><th>Fatiga</th><th>Reto funcional</th></tr></thead><tbody id="adhdSessionsTable"><tr><td colspan="5">Sin sesiones.</td></tr></tbody></table></div>
+      </section>
+      <section aria-labelledby="adaptiveHistoryTitle">
+        <h3 id="adaptiveHistoryTitle">Historial adaptativo por resultado canónico</h3>
+        <p class="adhd-help">Cada fila corresponde a una decisión persistida después de un bloque. Mantener la dificultad no equivale a ausencia de cambio clínico.</p>
+        <div class="adhd-table-wrap"><table><thead><tr><th>Resultado</th><th>Fecha</th><th>Tarea y versión</th><th>Decisión</th><th>Ajuste</th><th>Evidencia disponible</th><th>Control de seguridad</th></tr></thead><tbody id="adhdAdaptiveHistoryTable"><tr><td colspan="7">Sin decisiones adaptativas persistidas en resultados canónicos.</td></tr></tbody></table></div>
+      </section>
+      <section aria-labelledby="functionalProgressTitle">
+        <h3 id="functionalProgressTitle">Progreso funcional por fuente</h3>
+        <p class="adhd-help">Los reportes de paciente, cuidador, profesional y docente se conservan separados; no se sustituyen entre sí ni demuestran eficacia por sí solos.</p>
+        <div class="adhd-table-wrap"><table><thead><tr><th>Fuente</th><th>Registros</th><th>Logro medio registrado</th><th>Intentos</th><th>Último estado</th><th>Última fecha</th></tr></thead><tbody id="adhdFunctionalProgressTable"><tr><td colspan="6">Sin registros funcionales por fuente. Esto no significa ausencia de dificultad.</td></tr></tbody></table></div>
+      </section>
+      <section aria-labelledby="protocolAuditTitle">
+        <h3 id="protocolAuditTitle">Versiones y trazabilidad</h3>
+        <pre id="adhdProtocolAudit" class="adhd-audit-box">Sin programa cargado.</pre>
+      </section>
+    </section>
+
+    <section class="adhd-evidence-summary" aria-labelledby="evidenceSummaryTitle">
+      <span class="kicker">Interpretación prudente</span>
+      <h2 id="evidenceSummaryTitle">Qué puede y qué no puede concluirse</h2>
+      <div>
+        <p><strong>La práctica puede mejorar el desempeño en la propia tarea.</strong> La transferencia cercana es posible, pero inconsistente. La transferencia a síntomas y funcionamiento cotidiano no es uniforme.</p>
+        <p><strong>El componente funcional es obligatorio.</strong> Por eso el programa combina entrenamiento, estrategias metacognitivas, organización, planificación, gestión temporal y retos reales.</p>
+        <p><strong>La mejoría longitudinal no prueba causalidad.</strong> Deben considerarse efectos de práctica, sueño, medicación, dispositivo, expectativas y tratamientos concomitantes.</p>
+      </div>
+      <a href="docs/adhd-cognitive-rehabilitation.md">Consultar fundamento científico, fórmulas y limitaciones</a>
+    </section>
+  </main>
+
+  <dialog class="adhd-task-dialog" id="adhdTaskDialog" aria-labelledby="adhdTaskDialogTitle">
+    <div class="adhd-task-shell">
+      <header>
+        <div><span id="adhdTaskDialogMode">Modo concentración</span><h2 id="adhdTaskDialogTitle">Tarea</h2><p id="adhdTaskDialogDescription"></p></div>
+        <button type="button" id="adhdCloseTask" aria-label="Cerrar tarea">×</button>
+      </header>
+      <div class="adhd-task-host" id="adhdTaskHost" aria-live="polite"></div>
+      <iframe id="adhdTaskFrame" class="adhd-task-frame" title="Prueba cognitiva existente" referrerpolicy="no-referrer" hidden></iframe>
+      <footer>
+        <button type="button" class="adhd-secondary" id="adhdPauseTask">Pausar</button>
+        <button type="button" class="adhd-secondary" id="adhdReduceDifficulty">Reducir dificultad</button>
+        <button type="button" class="adhd-danger" id="adhdInterruptTask">Terminar bloque</button>
+      </footer>
+    </div>
+  </dialog>
+
+  <dialog class="adhd-confirm-dialog adhd-feedback-dialog" id="adhdFeedbackDialog" aria-labelledby="adhdFeedbackTitle">
+    <section>
+      <span class="adhd-eyebrow">Feedback descriptivo</span>
+      <h2 id="adhdFeedbackTitle">Resultado del bloque</h2>
+      <p id="adhdFeedbackQuality"></p>
+      <ul class="adhd-feedback-metrics" id="adhdFeedbackMetrics"></ul>
+      <p class="adhd-feedback-comparison" id="adhdFeedbackComparison"></p>
+      <fieldset>
+        <legend>Registro breve posterior al bloque</legend>
+        <div class="adhd-form-grid">
+          <label>Fatiga (0–10)<input id="adhdPostBlockFatigue" type="number" min="0" max="10" value="3" inputmode="numeric"></label>
+          <label>Frustración (0–10)<input id="adhdPostBlockFrustration" type="number" min="0" max="10" value="2" inputmode="numeric"></label>
+          <label>Concentración percibida (0–10)<input id="adhdPostBlockConcentration" type="number" min="0" max="10" value="6" inputmode="numeric"></label>
+        </div>
+      </fieldset>
+      <p class="adhd-help">Los cambios son intraindividuales y descriptivos. No son percentiles, diagnóstico ni una medida de “mejora cerebral”.</p>
+      <div class="adhd-form-actions">
+        <button type="button" class="adhd-secondary" id="adhdSkipTaskFeedback">Omitir registro breve</button>
+        <button type="button" class="adhd-primary" id="adhdSaveTaskFeedback">Guardar y continuar</button>
+      </div>
+    </section>
+  </dialog>
+
+  <dialog class="adhd-confirm-dialog adhd-metacognitive-dialog" id="adhdMetacognitiveDialog" aria-labelledby="adhdMetacognitiveTitle" aria-describedby="adhdMetacognitiveDescription">
+    <form id="adhdMetacognitiveForm" novalidate>
+      <header>
+        <div>
+          <span class="adhd-eyebrow">Estrategia para una situación real</span>
+          <h2 id="adhdMetacognitiveTitle">Módulo metacognitivo</h2>
+          <p id="adhdMetacognitiveDescription"></p>
+          <small id="adhdMetacognitiveDuration"></small>
+        </div>
+        <button type="button" class="adhd-dialog-close" id="adhdCloseMetacognitiveModule" aria-label="Cerrar módulo metacognitivo">×</button>
+      </header>
+      <fieldset>
+        <legend>Practica cada paso y márcalo al terminar</legend>
+        <ol class="adhd-metacognitive-steps" id="adhdMetacognitiveSteps"></ol>
+      </fieldset>
+      <div class="adhd-metacognitive-fields">
+        <label for="adhdMetacognitiveStrategy">
+          <span id="adhdMetacognitiveStrategyPrompt">Describe brevemente la estrategia elegida.</span>
+        </label>
+        <textarea id="adhdMetacognitiveStrategy" maxlength="500" rows="3" required aria-describedby="adhdMetacognitiveStrategyPrompt"></textarea>
+        <label for="adhdMetacognitiveApplication">
+          <span id="adhdMetacognitiveApplicationPrompt">Indica dónde y cuándo la aplicarás.</span>
+        </label>
+        <textarea id="adhdMetacognitiveApplication" maxlength="500" rows="3" required aria-describedby="adhdMetacognitiveApplicationPrompt"></textarea>
+      </div>
+      <p class="adhd-metacognitive-progress" id="adhdMetacognitiveProgress" role="status" aria-live="polite">0 de 0 pasos marcados</p>
+      <p class="adhd-help">Registra una estrategia concreta y breve. Completar el módulo no demuestra por sí solo un cambio clínico o funcional.</p>
+      <footer>
+        <button type="button" class="adhd-secondary" id="adhdCancelMetacognitiveModule">Cancelar</button>
+        <button type="button" class="adhd-primary" id="adhdSaveMetacognitiveModule" disabled>Guardar estrategia y aplicación</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog class="adhd-confirm-dialog" id="adhdReassessmentDialog" aria-labelledby="adhdReassessmentTitle">
+    <form method="dialog">
+      <h2 id="adhdReassessmentTitle">Nueva reevaluación</h2>
+      <p>Selecciona el momento longitudinal. Se usarán formas alternativas mediante una nueva semilla y se conservará el versionado.</p>
+      <label>Fase
+        <select id="adhdReassessmentPhase"><option value="T1">T1 · Intermedia</option><option value="T2">T2 · Final</option><option value="T3">T3 · Seguimiento</option></select>
+      </label>
+      <div><button value="cancel" class="adhd-secondary">Cancelar</button><button value="default" id="adhdConfirmReassessment" class="adhd-primary">Continuar</button></div>
+    </form>
+  </dialog>
+
+  <div class="toast-rehabilitacion" id="adhdToast" role="status" aria-live="polite"></div>
+  <script type="module" src="js/rehabilitacion-tdah.js?v=20260902-adhd-v1"></script>
+  <script type="module" src="js/components/accesosRapidos.js"></script>
+</body>
+</html>

@@ -1,6 +1,52 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const adhdTaskMode = new URLSearchParams(globalThis.location?.search || "").get("adhd") === "1";
+let adhdTaskContext = null;
+let adhdTaskBridge = null;
+let adhdResultPublished = false;
+let adhdBridgeConfiguration = {};
+let adhdBridgeRandomSeed = null;
+let adhdBridgeMode = "program";
+
+if (adhdTaskMode) {
+  try {
+    const [{ parseExistingTaskContext }, { createAdhdTaskPageBridge }] = await Promise.all([
+      import("./adhd/adapters/existingTaskAdapters.js"),
+      import("./adhd/integration/adhdTaskPageBridge.js")
+    ]);
+    adhdTaskContext = parseExistingTaskContext();
+    if (adhdTaskContext.taskId !== "stroop") throw new TypeError("El contexto TDAH no corresponde a Stroop.");
+    adhdBridgeRandomSeed = adhdTaskContext.randomSeed;
+    adhdTaskBridge = createAdhdTaskPageBridge({
+      context: adhdTaskContext,
+      onConfig(launchConfig) {
+        if (launchConfig?.taskId !== "stroop") return;
+        adhdBridgeMode = launchConfig.mode || adhdBridgeMode;
+        adhdBridgeConfiguration = launchConfig.configuration || {};
+        adhdBridgeRandomSeed = launchConfig.randomSeed !== null
+          && launchConfig.randomSeed !== undefined
+          && launchConfig.randomSeed !== ""
+          && Number.isFinite(Number(launchConfig.randomSeed))
+          ? Number(launchConfig.randomSeed)
+          : adhdBridgeRandomSeed;
+      }
+    });
+  } catch (error) {
+    console.error("No se pudo iniciar el puente TDAH de Stroop.", error);
+  }
+}
+
+function createSeededRandom(seed = 1) {
+  let state = (Number(seed) || 1) >>> 0;
+  return () => {
+    state += 0x6D2B79F5;
+    let value = state;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
 const COLORS = [
   { key: "rojo", label: "ROJO", hex: "#ef4444" },
@@ -28,6 +74,11 @@ let trialStartedAt = 0;
 let trialTimer = null;
 let rafId = null;
 let acceptingAnswers = false;
+let sessionSeed = null;
+let sessionRandom = Math.random;
+let sessionStartedAtIso = "";
+let stroopPracticeMode = false;
+let adhdPracticeCompleted = false;
 
 const els = {
   start: document.getElementById("stroopStart"),
@@ -56,19 +107,21 @@ const els = {
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (els.status) {
-    els.status.textContent = user
-      ? "Sesion autenticada. El resultado se guardara al finalizar."
-      : "No hay usuario autenticado. Puedes entrenar, pero no se guardara en Firestore.";
+    els.status.textContent = adhdTaskMode
+      ? "Modo programa TDAH: el resultado se devolvera al programa sin guardado paralelo."
+      : user
+        ? "Sesion autenticada. El resultado se guardara al finalizar."
+        : "No hay usuario autenticado. Puedes entrenar, pero no se guardara en Firestore.";
   }
 });
 
 function randomItem(items) {
-  return items[Math.floor(Math.random() * items.length)];
+  return items[Math.floor(sessionRandom() * items.length)];
 }
 
 function generateTrial(activeConfig) {
   const word = randomItem(COLORS);
-  const congruent = Math.random() < activeConfig.congruentRate;
+  const congruent = sessionRandom() < activeConfig.congruentRate;
   const inkColor = congruent
     ? word
     : randomItem(COLORS.filter((color) => color.key !== word.key));
@@ -87,11 +140,50 @@ function generateTrials(activeConfig) {
 }
 
 function startSession() {
-  difficulty = document.querySelector('input[name="difficulty"]:checked')?.value || "facil";
-  config = DIFFICULTIES[difficulty] || DIFFICULTIES.facil;
+  startSessionPhase(adhdTaskMode && !adhdPracticeCompleted);
+}
+
+function startSessionPhase(isPractice) {
+  const localDifficulty = document.querySelector('input[name="difficulty"]:checked')?.value || "facil";
+  difficulty = DIFFICULTIES[adhdBridgeConfiguration.difficulty]
+    ? adhdBridgeConfiguration.difficulty
+    : localDifficulty;
+  const baseConfig = DIFFICULTIES[difficulty] || DIFFICULTIES.facil;
+  const configuredSession = adhdTaskMode ? {
+    ...baseConfig,
+    totalTrials: boundedInteger(adhdBridgeConfiguration.totalTrials, baseConfig.totalTrials, 6, 200),
+    timeLimitMs: boundedInteger(adhdBridgeConfiguration.timeLimitMs, baseConfig.timeLimitMs, 500, 10000),
+    congruentRate: boundedNumber(adhdBridgeConfiguration.congruentRate, baseConfig.congruentRate, 0.1, 0.9),
+    distractors: typeof adhdBridgeConfiguration.distractors === "boolean"
+      ? adhdBridgeConfiguration.distractors
+      : baseConfig.distractors
+  } : baseConfig;
+  stroopPracticeMode = Boolean(isPractice);
+  config = stroopPracticeMode
+    ? { ...configuredSession, totalTrials: 6, timeLimitMs: Math.max(3000, configuredSession.timeLimitMs), distractors: false }
+    : configuredSession;
+  sessionSeed = adhdTaskMode ? createAdhdContextSeed(`stroop:${stroopPracticeMode ? "practice" : "main"}`) : null;
+  sessionRandom = sessionSeed === null ? Math.random : createSeededRandom(sessionSeed);
+  sessionStartedAtIso = new Date().toISOString();
+  if (stroopPracticeMode || !adhdTaskMode) adhdResultPublished = false;
   trials = generateTrials(config);
   currentIndex = 0;
   startedAt = performance.now();
+  if (adhdTaskMode && stroopPracticeMode) {
+    adhdTaskBridge?.publishEvent("practice_started", {
+      practiceTrials: config.totalTrials,
+      randomSeed: sessionSeed,
+      scored: false
+    });
+  } else if (adhdTaskMode) {
+    adhdTaskBridge?.publishEvent("task_started", {
+      randomSeed: sessionSeed,
+      configuration: { ...config, difficulty },
+      sequenceControlled: true,
+      practiceAvailable: true,
+      practiceRequired: true
+    });
+  }
   clearFeedback();
   renderButtons();
   showPanel("task");
@@ -124,14 +216,15 @@ function nextTrial() {
   }
 
   currentTrial = trials[currentIndex];
-  acceptingAnswers = true;
-  trialStartedAt = performance.now();
+  acceptingAnswers = false;
   els.stimulusWord.textContent = currentTrial.word;
   els.stimulusWord.style.color = currentTrial.inkHex;
   els.stimulusWord.style.animation = "none";
   void els.stimulusWord.offsetWidth;
   els.stimulusWord.style.animation = "";
   els.stimulusWrap.classList.toggle("distractors", Boolean(config.distractors));
+  trialStartedAt = performance.now();
+  acceptingAnswers = true;
   updateHud();
   updateTimer();
 
@@ -145,7 +238,7 @@ function updateHud() {
   const correct = answered.filter((trial) => trial.isCorrect).length;
   const accuracy = answered.length ? Math.round((correct / answered.length) * 100) : 0;
   els.trialCounter.textContent = `${Math.min(currentIndex + 1, trials.length)}/${trials.length}`;
-  els.liveAccuracy.textContent = `${accuracy}%`;
+  els.liveAccuracy.textContent = suppressScoredAssessmentFeedback() ? "—" : `${accuracy}%`;
   els.progressBar.style.width = `${Math.round((answered.length / trials.length) * 100)}%`;
 }
 
@@ -177,7 +270,15 @@ function submitAnswer(answer) {
   window.setTimeout(nextTrial, 520);
 }
 
+function suppressScoredAssessmentFeedback() {
+  return adhdTaskMode && adhdBridgeMode === "assessment" && !stroopPracticeMode;
+}
+
 function showFeedback(isCorrect, timedOut) {
+  if (suppressScoredAssessmentFeedback()) {
+    clearFeedback();
+    return;
+  }
   els.feedback.textContent = timedOut ? "SIN RESPUESTA" : isCorrect ? "CORRECTO" : "ERROR";
   els.feedback.className = `stroop-feedback ${isCorrect ? "ok" : "bad"}`;
   els.stimulusWrap.classList.add(isCorrect ? "ok" : "bad");
@@ -189,20 +290,27 @@ function clearFeedback() {
   els.stimulusWrap.classList.remove("ok", "bad");
 }
 
-function calculateStatistics(sessionTrials, activeDifficulty, sessionStartedAt) {
+function calculateStatistics(sessionTrials, activeDifficulty, sessionStartedAt, isPractice = false) {
   const totalTrials = sessionTrials.length;
   const correct = sessionTrials.filter((trial) => trial.isCorrect).length;
   const incorrect = totalTrials - correct;
   const accuracy = totalTrials ? Math.round((correct / totalTrials) * 1000) / 10 : 0;
-  const averageReactionTime = totalTrials
-    ? Math.round(sessionTrials.reduce((sum, trial) => sum + Number(trial.reactionTime || 0), 0) / totalTrials)
+  const correctReactionTimes = sessionTrials.filter((trial) => trial.isCorrect).map((trial) => Number(trial.reactionTime)).filter(Number.isFinite);
+  const averageReactionTime = correctReactionTimes.length
+    ? Math.round(correctReactionTimes.reduce((sum, value) => sum + value, 0) / correctReactionTimes.length)
     : 0;
   const durationMs = Math.round(performance.now() - sessionStartedAt);
   const score = Math.max(0, Math.round(correct * 100 - averageReactionTime / 10));
 
   return {
     module: "stroop",
+    activityVersion: "1.1.0",
+    status: "completed",
+    practice: Boolean(isPractice),
     difficulty: activeDifficulty,
+    configuration: { ...config, difficulty: activeDifficulty },
+    randomSeed: sessionSeed,
+    startedAtIso: sessionStartedAtIso,
     totalTrials,
     correct,
     incorrect,
@@ -212,6 +320,7 @@ function calculateStatistics(sessionTrials, activeDifficulty, sessionStartedAt) 
     durationSeconds: Math.round(durationMs / 1000),
     score,
     createdAtIso: new Date().toISOString(),
+    completedAtIso: new Date().toISOString(),
     trials: sessionTrials.map((trial, index) => ({
       attempt: index + 1,
       word: trial.word,
@@ -255,7 +364,19 @@ async function saveSession(stats) {
 }
 
 async function finishSession() {
-  const stats = calculateStatistics(trials, difficulty, startedAt);
+  const stats = calculateStatistics(trials, difficulty, startedAt, stroopPracticeMode);
+  if (adhdTaskMode && stroopPracticeMode) {
+    adhdPracticeCompleted = true;
+    adhdTaskBridge?.publishEvent("practice_completed", {
+      practiceTrials: stats.totalTrials,
+      randomSeed: sessionSeed,
+      scored: false
+    });
+    if (els.status) els.status.textContent = "Practica completada. Inicia ahora la aplicacion puntuable.";
+    if (els.startButton) els.startButton.textContent = "Iniciar aplicacion";
+    showPanel("start");
+    return;
+  }
   els.score.textContent = String(stats.score);
   els.accuracy.textContent = `${stats.accuracy}%`;
   els.reaction.textContent = `${stats.averageReactionTime} ms`;
@@ -265,14 +386,54 @@ async function finishSession() {
   els.recommendation.textContent = recommendationFor(stats);
   showPanel("results");
 
-  try {
-    await saveSession(stats);
-  } catch (error) {
-    console.error("No se pudo guardar la sesion Stroop", error);
-    els.recommendation.textContent += " No se pudo guardar la sesion en Firestore.";
+  if (adhdTaskMode) {
+    publishAdhdResult(stats);
+  } else {
+    try {
+      await saveSession(stats);
+    } catch (error) {
+      console.error("No se pudo guardar la sesion Stroop", error);
+      els.recommendation.textContent += " No se pudo guardar la sesion en Firestore.";
+    }
   }
+}
+
+function createAdhdContextSeed(namespace) {
+  const controlledValue = adhdBridgeRandomSeed ?? adhdTaskContext?.randomSeed;
+  const controlledSeed = controlledValue === null || controlledValue === undefined || controlledValue === ""
+    ? null
+    : Number(controlledValue);
+  const hasControlledSeed = Number.isFinite(controlledSeed) && controlledSeed !== 0;
+  if (hasControlledSeed && namespace.endsWith(":main")) return Math.trunc(controlledSeed) >>> 0;
+  const explicitSeed = new URLSearchParams(globalThis.location?.search || "").get("adhdSeed");
+  const source = hasControlledSeed
+    ? controlledSeed
+    : explicitSeed || adhdTaskContext?.attemptId || adhdTaskContext?.sessionId || adhdTaskContext?.bridgeToken || "stroop";
+  let hash = 2166136261;
+  for (const character of `${source}:${namespace}`) {
+    hash ^= character.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0) || 1;
+}
+
+function boundedInteger(value, fallback, minimum, maximum) {
+  const numeric = Math.trunc(Number(value));
+  return Number.isFinite(numeric) ? Math.min(maximum, Math.max(minimum, numeric)) : fallback;
+}
+
+function boundedNumber(value, fallback, minimum, maximum) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? Math.min(maximum, Math.max(minimum, numeric)) : fallback;
+}
+
+function publishAdhdResult(stats) {
+  if (!adhdTaskMode || !adhdTaskBridge || adhdResultPublished) return false;
+  adhdResultPublished = adhdTaskBridge.publishResult(stats);
+  return adhdResultPublished;
 }
 
 els.startButton?.addEventListener("click", startSession);
 els.restartButton?.addEventListener("click", () => showPanel("start"));
+if (adhdTaskMode && els.startButton) els.startButton.textContent = "Comenzar practica";
 showPanel("start");

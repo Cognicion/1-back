@@ -3527,3 +3527,272 @@ html[data-theme="light"] .sincronizar-estudio-item.is-synced {
     flex: 1 1 100%;
   }
 }
+
+/* Nota clínica minimalista: lienzo fluido sin tarjeta exterior. */
+body {
+  min-width: 320px;
+  padding: 0 0 32px;
+  overflow-x: clip;
+  background: var(--page-bg, var(--black-900, #050706));
+}
+
+.contenedor {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: clamp(16px, 2.6vw, 40px);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.cabecera-nota-clinica {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-subtle, rgba(190, 196, 188, 0.16));
+}
+
+.cabecera-nota-clinica__eyebrow {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--accent-primary, var(--celtic-300));
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cabecera-nota-clinica h1 {
+  margin: 0;
+  color: var(--text-primary, var(--white-950));
+  font-family: inherit;
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
+  line-height: 1.08;
+}
+
+.boton-regresar-paciente {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  margin: 0;
+}
+
+.logo-nota {
+  display: none;
+}
+
+.encabezado-paciente-nota {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 10px 0 12px;
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle, rgba(190, 196, 188, 0.12));
+  border-radius: 0;
+  background: transparent;
+}
+
+.encabezado-paciente-nota span {
+  flex: 0 0 auto;
+  font-size: 0.68rem;
+}
+
+.encabezado-paciente-nota strong {
+  min-width: 0;
+  font-size: 0.98rem;
+  overflow-wrap: anywhere;
+}
+
+.acciones-escalas-nota,
+.controles-secciones-nota,
+.acciones-guardado-nota {
+  justify-content: flex-start;
+  gap: 7px;
+}
+
+.acciones-escalas-nota {
+  margin: 0 0 8px;
+  flex-wrap: wrap;
+}
+
+.controles-secciones-nota {
+  margin: 0 0 8px;
+}
+
+.acciones-escalas-nota button,
+.acciones-guardado-nota button {
+  width: auto;
+  min-width: 0;
+}
+
+.contenedor button {
+  min-height: 34px;
+  padding: 7px 11px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  line-height: 1.15;
+  box-shadow: none;
+}
+
+.contenedor button:hover {
+  box-shadow: none;
+}
+
+.contenedor input,
+.contenedor textarea,
+.contenedor select {
+  margin-bottom: 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+}
+
+.contenedor label {
+  margin: 11px 0 6px;
+}
+
+details.nota-seccion-colapsable,
+.panel-escala-nota,
+.selector-formato-nota {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle, rgba(190, 196, 188, 0.14));
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+details.nota-seccion-colapsable > summary,
+.panel-escala-summary {
+  min-height: 42px;
+  padding: 10px 2px;
+  background: transparent;
+}
+
+.nota-seccion-contenido,
+.panel-escala-contenido {
+  padding: 0 0 14px;
+}
+
+.indicador-panel-escala {
+  padding: 5px 9px;
+  border-radius: 7px;
+  font-size: 0.68rem;
+}
+
+.bloque-observacion {
+  gap: 0;
+  margin: 14px 0 22px;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid var(--border-subtle, rgba(190, 196, 188, 0.14));
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.observacion-seccion {
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle, rgba(190, 196, 188, 0.14));
+  border-radius: 0;
+  background: transparent;
+}
+
+.observacion-seccion h3,
+.firmas-extra summary {
+  padding: 11px 2px;
+  background: transparent;
+}
+
+.grid-observacion,
+.grid-clinica-fray,
+.grid-vitales {
+  padding: 10px 0 12px;
+}
+
+.bloque-observacion .tabla-diagnosticos {
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.tabla-diagnosticos,
+.version-nota,
+.campos-nota-previa {
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.selector-formato-nota {
+  margin: 0 0 12px;
+}
+
+.acciones-guardado-nota {
+  margin: 12px 0 8px;
+}
+
+.contenedor > hr {
+  margin: 24px 0 18px !important;
+  border: 0;
+  border-top: 1px solid var(--border-subtle, rgba(190, 196, 188, 0.14));
+}
+
+html[data-theme="light"] .contenedor,
+html[data-theme="light"] .bloque-observacion,
+html[data-theme="light"] .observacion-seccion,
+html[data-theme="light"] .panel-escala-nota,
+html[data-theme="light"] .selector-formato-nota {
+  background: transparent;
+  background-image: none;
+  box-shadow: none;
+}
+
+@media (max-width: 760px) {
+  body {
+    padding: 0 0 24px;
+  }
+
+  .contenedor {
+    padding: 14px;
+  }
+
+  .cabecera-nota-clinica {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .boton-regresar-paciente {
+    min-height: 38px;
+  }
+
+  .encabezado-paciente-nota {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .acciones-escalas-nota button,
+  .acciones-guardado-nota button {
+    flex: 1 1 150px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contenedor *,
+  .contenedor *::before,
+  .contenedor *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

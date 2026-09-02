@@ -915,6 +915,88 @@ body.public-lab-page .module-card:hover {
   color: var(--public-text);
 }
 
+.public-contact {
+  width: min(var(--public-content-width), 100%);
+  margin: 22px auto 0;
+  padding: 18px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  border-block: 1px solid var(--public-line);
+}
+
+.public-contact-copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.public-contact-copy strong {
+  color: var(--public-text);
+  font-size: 14px;
+}
+
+.public-contact-copy span {
+  color: var(--public-muted);
+  font-size: 10px;
+}
+
+.public-contact-actions {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 18px;
+}
+
+.public-contact-button {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 16px;
+  border: 1px solid var(--public-line-strong);
+  border-radius: 7px;
+  color: var(--public-text);
+  background: color-mix(in srgb, var(--public-cyan) 12%, transparent);
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease;
+}
+
+.public-contact-button:hover {
+  border-color: var(--public-cyan);
+  color: var(--public-cyan);
+  background: color-mix(in srgb, var(--public-cyan) 18%, transparent);
+}
+
+.public-contact-detail {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  color: var(--public-text);
+  text-decoration: none;
+}
+
+.public-contact-detail span {
+  color: var(--public-muted);
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.public-contact-detail strong {
+  font-size: 10px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.public-contact-detail:hover strong {
+  color: var(--public-cyan);
+}
+
 .public-footer > p {
   width: min(var(--public-content-width), 100%);
   margin: 22px auto 0;
@@ -1425,6 +1507,19 @@ html[data-theme="biocelular"] .roadmap-line li::before {
 
   .public-footer nav {
     gap: 14px;
+  }
+
+  .public-contact {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .public-contact-actions {
+    width: 100%;
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 
   .public-scroll-top {

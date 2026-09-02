@@ -167,6 +167,691 @@ service cloud.firestore {
       ].hasAny([subcollection]);
     }
 
+    function isCanonicalAdhdData(data) {
+      return data.get("protocolId", "") == "cognicion-tdah-multicomponente";
+    }
+
+    function validLegacyRehabilitationResult(data) {
+      return !isCanonicalAdhdData(data)
+        && !data.keys().hasAny([
+          "programId",
+          "protocolId",
+          "protocolVersion",
+          "persistenceSchemaVersion",
+          "references"
+        ]);
+    }
+
+    function validAdhdMetadata(data, programId) {
+      return data.keys().hasAll([
+          "programId",
+          "persistenceSchemaVersion",
+          "protocolId",
+          "protocolVersion"
+        ])
+        && data.get("programId", "") == programId
+        && data.get("programId", "") is string
+        && data.get("programId", "") != ""
+        && data.get("persistenceSchemaVersion", "") is string
+        && data.get("persistenceSchemaVersion", "") != ""
+        && data.get("protocolId", "") == "cognicion-tdah-multicomponente"
+        && data.get("protocolVersion", "") is string
+        && data.get("protocolVersion", "") != "";
+    }
+
+    function validAdhdEvaluationCreate(programId, evaluationId) {
+      return validAdhdMetadata(request.resource.data, programId)
+        && request.resource.data.keys().hasAll([
+          "id",
+          "assessmentId",
+          "phase",
+          "status",
+          "batteryType",
+          "taskIds",
+          "resultIds",
+          "validResultIds",
+          "formConfiguration",
+          "createdAtIso"
+        ])
+        && request.resource.data.get("id", "") == evaluationId
+        && request.resource.data.get("assessmentId", "") == evaluationId
+        && request.resource.data.get("status", "") == "in_progress"
+        && request.resource.data.get("taskIds", []) is list
+        && request.resource.data.get("resultIds", []) is list
+        && request.resource.data.get("validResultIds", []) is list;
+    }
+
+    function adhdEvaluationReferencesAppendOnly() {
+      return request.resource.data.get("resultIds", []) is list
+        && request.resource.data.get("resultIds", []).hasAll(resource.data.get("resultIds", []))
+        && request.resource.data.get("taskResultIds", []) is list
+        && request.resource.data.get("taskResultIds", []).hasAll(resource.data.get("taskResultIds", []))
+        && request.resource.data.get("validResultIds", []) is list
+        && request.resource.data.get("validResultIds", []).hasAll(resource.data.get("validResultIds", []));
+    }
+
+    function validPatientAdhdEvaluationTransition() {
+      return request.resource.data.get("status", "") == resource.data.get("status", "")
+        || (
+          resource.data.get("status", "") == "in_progress"
+          && ["paused", "completed_pending_profile"]
+            .hasAny([request.resource.data.get("status", "")])
+        )
+        || (
+          resource.data.get("status", "") == "paused"
+          && ["in_progress", "completed_pending_profile"]
+            .hasAny([request.resource.data.get("status", "")])
+        );
+    }
+
+    function validClinicalAdhdEvaluationTransition() {
+      return validPatientAdhdEvaluationTransition()
+        || (
+          resource.data.get("status", "") == "completed_pending_profile"
+          && request.resource.data.get("status", "") == "completed"
+        );
+    }
+
+    function validAdhdEvaluationUpdate(programId, evaluationId, clinical) {
+      return validAdhdMetadata(request.resource.data, programId)
+        && request.resource.data.get("id", "") == evaluationId
+        && request.resource.data.get("assessmentId", "") == evaluationId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "resultIds",
+          "taskResultIds",
+          "validResultIds",
+          "status",
+          "completedAt",
+          "pausedAt",
+          "context",
+          "quality",
+          "postBlockSelfReports",
+          "profileId",
+          "updatedAt",
+          "pendingSync"
+        ])
+        && adhdEvaluationReferencesAppendOnly()
+        && (
+          (
+            clinical
+            && (
+              resource.data.get("profileId", "") == ""
+              || request.resource.data.get("profileId", "") == resource.data.get("profileId", "")
+            )
+          )
+          || (
+            !clinical
+            && request.resource.data.get("profileId", "") == resource.data.get("profileId", "")
+          )
+        )
+        && (
+          (clinical && validClinicalAdhdEvaluationTransition())
+          || (!clinical && validPatientAdhdEvaluationTransition())
+        );
+    }
+
+    function validAdhdGoalCreate(programId, goalId) {
+      return validAdhdMetadata(request.resource.data, programId)
+        && request.resource.data.keys().hasAll([
+          "id",
+          "action",
+          "context",
+          "frequency",
+          "target",
+          "reviewDate",
+          "active",
+          "progress",
+          "createdAt"
+        ])
+        && request.resource.data.get("id", "") == goalId
+        && request.resource.data.get("active", false) == true
+        && request.resource.data.get("progress", []) is list;
+    }
+
+    function adhdGoalReferencesAppendOnly() {
+      return request.resource.data.get("resultIds", []) is list
+        && request.resource.data.get("resultIds", []).hasAll(resource.data.get("resultIds", []))
+        && request.resource.data.get("progress", []) is list
+        && request.resource.data.get("progress", []).hasAll(resource.data.get("progress", []));
+    }
+
+    function validPatientAdhdGoalUpdate(programId, goalId) {
+      return validAdhdMetadata(request.resource.data, programId)
+        && request.resource.data.get("id", "") == goalId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "progress",
+          "resultIds",
+          "updatedAt",
+          "pendingSync"
+        ])
+        && adhdGoalReferencesAppendOnly();
+    }
+
+    function validClinicalAdhdGoalUpdate(programId, goalId) {
+      return validAdhdMetadata(request.resource.data, programId)
+        && request.resource.data.get("id", "") == goalId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "action",
+          "context",
+          "frequency",
+          "target",
+          "reviewDate",
+          "difficultyId",
+          "domains",
+          "active",
+          "deactivatedAt",
+          "reviewSource",
+          "progress",
+          "resultIds",
+          "updatedAt",
+          "pendingSync"
+        ])
+        && adhdGoalReferencesAppendOnly();
+    }
+
+    function validAdhdSessionCreate(programId, sessionId) {
+      return validAdhdMetadata(request.resource.data, programId)
+        && request.resource.data.keys().hasAll([
+          "id",
+          "sessionId",
+          "sessionEngineVersion",
+          "schemaVersion",
+          "programEngineVersion",
+          "status",
+          "blocks",
+          "transitionLog"
+        ])
+        && request.resource.data.get("id", "") == sessionId
+        && request.resource.data.get("sessionId", "") == sessionId
+        && ["not_started", "in_progress"].hasAny([request.resource.data.get("status", "")])
+        && request.resource.data.get("blocks", []) is list
+        && request.resource.data.get("transitionLog", []) is list
+        && validAdhdSessionBlocks(request.resource.data)
+        && validAdhdSessionTerminalState(request.resource.data);
+    }
+
+    function adhdBlockIsActive(block) {
+      return ["in_progress", "paused"].hasAny([block.get("status", "")]);
+    }
+
+    function adhdBlockIsFinished(block) {
+      return ["completed", "completed_with_incomplete_data"].hasAny([block.get("status", "")])
+        || (
+          block.get("required", true) == false
+          && block.get("status", "") == "skipped"
+        );
+    }
+
+    function validAdhdBlockShape(block, kind) {
+      return block is map
+        && block.keys().hasAll(["id", "kind", "required", "status", "attempts"])
+        && block.get("id", "") is string
+        && block.get("id", "") != ""
+        && block.get("kind", "") == kind
+        && block.get("required", false) == true
+        && block.get("attempts", []) is list
+        && [
+          "pending",
+          "in_progress",
+          "paused",
+          "completed",
+          "completed_with_incomplete_data"
+        ].hasAny([block.get("status", "")]);
+    }
+
+    function validAdhdCognitiveBlockPayload(block) {
+      let result = block.get("result", null);
+      return result == null
+        || (
+          result is map
+          && result.keys().hasAll(["resultId", "canonicalSource", "snapshotContainsMetrics"])
+          && result.keys().hasOnly([
+            "resultId", "taskId", "taskVersion", "metricsVersion", "status", "valid",
+            "quality", "canonicalSource", "snapshotContainsMetrics", "completedAtIso"
+          ])
+          && result.get("resultId", "") is string
+          && result.get("resultId", "") != ""
+          && result.get("canonicalSource", "") == "usuarios/{patientId}/rehabilitacionResultados/{resultId}"
+          && result.get("snapshotContainsMetrics", true) == false
+        );
+    }
+
+    function validAdhdCurrentBlockPointer(data) {
+      let blocks = data.get("blocks", []);
+      let current = data.get("currentBlockId", null);
+      return (
+          current == null
+          && !adhdBlockIsActive(blocks[0])
+          && !adhdBlockIsActive(blocks[1])
+          && !adhdBlockIsActive(blocks[2])
+          && !adhdBlockIsActive(blocks[3])
+          && !adhdBlockIsActive(blocks[4])
+          && !adhdBlockIsActive(blocks[5])
+          && !adhdBlockIsActive(blocks[6])
+        )
+        || (current == blocks[0].get("id", "") && adhdBlockIsActive(blocks[0]))
+        || (current == blocks[1].get("id", "") && adhdBlockIsActive(blocks[1]))
+        || (current == blocks[2].get("id", "") && adhdBlockIsActive(blocks[2]))
+        || (current == blocks[3].get("id", "") && adhdBlockIsActive(blocks[3]))
+        || (current == blocks[4].get("id", "") && adhdBlockIsActive(blocks[4]))
+        || (current == blocks[5].get("id", "") && adhdBlockIsActive(blocks[5]))
+        || (current == blocks[6].get("id", "") && adhdBlockIsActive(blocks[6]));
+    }
+
+    function validAdhdSessionBlocks(data) {
+      let blocks = data.get("blocks", []);
+      return blocks is list
+        && blocks.size() == 7
+        && validAdhdBlockShape(blocks[0], "activation")
+        && validAdhdBlockShape(blocks[1], "cognitive_task")
+        && validAdhdBlockShape(blocks[2], "cognitive_task")
+        && validAdhdCognitiveBlockPayload(blocks[1])
+        && validAdhdCognitiveBlockPayload(blocks[2])
+        && validAdhdBlockShape(blocks[3], "metacognition")
+        && validAdhdBlockShape(blocks[4], "functional_transfer")
+        && validAdhdBlockShape(blocks[5], "self_assessment")
+        && validAdhdBlockShape(blocks[6], "feedback")
+        && blocks[0].get("id", "") != blocks[1].get("id", "")
+        && blocks[0].get("id", "") != blocks[2].get("id", "")
+        && blocks[0].get("id", "") != blocks[3].get("id", "")
+        && blocks[0].get("id", "") != blocks[4].get("id", "")
+        && blocks[0].get("id", "") != blocks[5].get("id", "")
+        && blocks[0].get("id", "") != blocks[6].get("id", "")
+        && blocks[1].get("id", "") != blocks[2].get("id", "")
+        && blocks[1].get("id", "") != blocks[3].get("id", "")
+        && blocks[1].get("id", "") != blocks[4].get("id", "")
+        && blocks[1].get("id", "") != blocks[5].get("id", "")
+        && blocks[1].get("id", "") != blocks[6].get("id", "")
+        && blocks[2].get("id", "") != blocks[3].get("id", "")
+        && blocks[2].get("id", "") != blocks[4].get("id", "")
+        && blocks[2].get("id", "") != blocks[5].get("id", "")
+        && blocks[2].get("id", "") != blocks[6].get("id", "")
+        && blocks[3].get("id", "") != blocks[4].get("id", "")
+        && blocks[3].get("id", "") != blocks[5].get("id", "")
+        && blocks[3].get("id", "") != blocks[6].get("id", "")
+        && blocks[4].get("id", "") != blocks[5].get("id", "")
+        && blocks[4].get("id", "") != blocks[6].get("id", "")
+        && blocks[5].get("id", "") != blocks[6].get("id", "")
+        && (blocks[1].get("status", "") == "pending" || adhdBlockIsFinished(blocks[0]))
+        && (blocks[2].get("status", "") == "pending" || (adhdBlockIsFinished(blocks[0]) && adhdBlockIsFinished(blocks[1])))
+        && (blocks[3].get("status", "") == "pending" || (adhdBlockIsFinished(blocks[0]) && adhdBlockIsFinished(blocks[1]) && adhdBlockIsFinished(blocks[2])))
+        && (blocks[4].get("status", "") == "pending" || (adhdBlockIsFinished(blocks[0]) && adhdBlockIsFinished(blocks[1]) && adhdBlockIsFinished(blocks[2]) && adhdBlockIsFinished(blocks[3])))
+        && (blocks[5].get("status", "") == "pending" || (adhdBlockIsFinished(blocks[0]) && adhdBlockIsFinished(blocks[1]) && adhdBlockIsFinished(blocks[2]) && adhdBlockIsFinished(blocks[3]) && adhdBlockIsFinished(blocks[4])))
+        && (blocks[6].get("status", "") == "pending" || (adhdBlockIsFinished(blocks[0]) && adhdBlockIsFinished(blocks[1]) && adhdBlockIsFinished(blocks[2]) && adhdBlockIsFinished(blocks[3]) && adhdBlockIsFinished(blocks[4]) && adhdBlockIsFinished(blocks[5])))
+        && validAdhdCurrentBlockPointer(data);
+    }
+
+    function validAdhdSessionTerminalState(data) {
+      let blocks = data.get("blocks", []);
+      let status = data.get("status", "");
+      return (
+          status != "completed"
+          && status != "completed_with_incomplete_data"
+        )
+        || (
+          data.get("currentBlockId", null) == null
+          && adhdBlockIsFinished(blocks[0])
+          && adhdBlockIsFinished(blocks[1])
+          && adhdBlockIsFinished(blocks[2])
+          && adhdBlockIsFinished(blocks[3])
+          && adhdBlockIsFinished(blocks[4])
+          && adhdBlockIsFinished(blocks[5])
+          && adhdBlockIsFinished(blocks[6])
+          && (
+            status != "completed"
+            || (
+              blocks[0].get("status", "") == "completed"
+              && blocks[1].get("status", "") == "completed"
+              && blocks[2].get("status", "") == "completed"
+              && blocks[3].get("status", "") == "completed"
+              && blocks[4].get("status", "") == "completed"
+              && blocks[5].get("status", "") == "completed"
+              && blocks[6].get("status", "") == "completed"
+            )
+          )
+        );
+    }
+
+    function validAdhdBlockTransition(before, after) {
+      let beforeStatus = before.get("status", "");
+      let afterStatus = after.get("status", "");
+      return after.get("id", "") == before.get("id", "")
+        && after.get("kind", "") == before.get("kind", "")
+        && after.get("required", true) == before.get("required", true)
+        && after.get("taskId", null) == before.get("taskId", null)
+        && after.get("moduleId", null) == before.get("moduleId", null)
+        && after.get("challengeId", null) == before.get("challengeId", null)
+        && (
+          afterStatus == beforeStatus
+          || (beforeStatus == "pending" && ["in_progress", "completed", "completed_with_incomplete_data"].hasAny([afterStatus]))
+          || (beforeStatus == "in_progress" && ["paused", "pending", "completed", "completed_with_incomplete_data"].hasAny([afterStatus]))
+          || (beforeStatus == "paused" && ["in_progress", "pending"].hasAny([afterStatus]))
+        )
+        && (
+          !["completed", "completed_with_incomplete_data"].hasAny([beforeStatus])
+          || after.diff(before).affectedKeys().hasOnly(["result", "postBlockSelfReport", "feedbackSkipped"])
+        );
+    }
+
+    function validAdhdSessionBlockTransitions() {
+      let before = resource.data.get("blocks", []);
+      let after = request.resource.data.get("blocks", []);
+      return validAdhdBlockTransition(before[0], after[0])
+        && validAdhdBlockTransition(before[1], after[1])
+        && validAdhdBlockTransition(before[2], after[2])
+        && validAdhdBlockTransition(before[3], after[3])
+        && validAdhdBlockTransition(before[4], after[4])
+        && validAdhdBlockTransition(before[5], after[5])
+        && validAdhdBlockTransition(before[6], after[6]);
+    }
+
+    function validAdhdSingleBlockMutation() {
+      let before = resource.data.get("blocks", []);
+      let after = request.resource.data.get("blocks", []);
+      return (
+          after[0] == before[0]
+          && after[1] == before[1]
+          && after[2] == before[2]
+          && after[3] == before[3]
+          && after[4] == before[4]
+          && after[5] == before[5]
+          && after[6] == before[6]
+        )
+        || (
+          after[0] != before[0]
+          && after[1] == before[1]
+          && after[2] == before[2]
+          && after[3] == before[3]
+          && after[4] == before[4]
+          && after[5] == before[5]
+          && after[6] == before[6]
+        )
+        || (
+          after[0] == before[0]
+          && after[1] != before[1]
+          && after[2] == before[2]
+          && after[3] == before[3]
+          && after[4] == before[4]
+          && after[5] == before[5]
+          && after[6] == before[6]
+        )
+        || (
+          after[0] == before[0]
+          && after[1] == before[1]
+          && after[2] != before[2]
+          && after[3] == before[3]
+          && after[4] == before[4]
+          && after[5] == before[5]
+          && after[6] == before[6]
+        )
+        || (
+          after[0] == before[0]
+          && after[1] == before[1]
+          && after[2] == before[2]
+          && after[3] != before[3]
+          && after[4] == before[4]
+          && after[5] == before[5]
+          && after[6] == before[6]
+        )
+        || (
+          after[0] == before[0]
+          && after[1] == before[1]
+          && after[2] == before[2]
+          && after[3] == before[3]
+          && after[4] != before[4]
+          && after[5] == before[5]
+          && after[6] == before[6]
+        )
+        || (
+          after[0] == before[0]
+          && after[1] == before[1]
+          && after[2] == before[2]
+          && after[3] == before[3]
+          && after[4] == before[4]
+          && after[5] != before[5]
+          && after[6] == before[6]
+        )
+        || (
+          after[0] == before[0]
+          && after[1] == before[1]
+          && after[2] == before[2]
+          && after[3] == before[3]
+          && after[4] == before[4]
+          && after[5] == before[5]
+          && after[6] != before[6]
+        );
+    }
+
+    function validAdhdSessionTransition() {
+      return request.resource.data.get("status", "") == resource.data.get("status", "")
+        || (
+          resource.data.get("status", "") == "not_started"
+          && ["in_progress", "abandoned"].hasAny([request.resource.data.get("status", "")])
+        )
+        || (
+          ["in_progress", "paused"]
+            .hasAny([resource.data.get("status", "")])
+          && ["in_progress", "paused", "completed", "completed_with_incomplete_data", "abandoned"]
+            .hasAny([request.resource.data.get("status", "")])
+        );
+    }
+
+    function adhdSessionHistoryAppendOnly() {
+      return request.resource.data.get("resultIds", []) is list
+        && request.resource.data.get("resultIds", []).hasAll(resource.data.get("resultIds", []))
+        && request.resource.data.get("taskResultIds", []) is list
+        && request.resource.data.get("taskResultIds", []).hasAll(resource.data.get("taskResultIds", []))
+        && request.resource.data.get("transitionLog", []) is list
+        && request.resource.data.get("transitionLog", []).hasAll(resource.data.get("transitionLog", []));
+    }
+
+    function validAdhdSessionUpdate(programId, sessionId) {
+      return validAdhdMetadata(request.resource.data, programId)
+        && request.resource.data.get("id", "") == sessionId
+        && request.resource.data.get("sessionId", "") == sessionId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "blocks",
+          "transitionLog",
+          "dataQuality",
+          "status",
+          "hasStarted",
+          "startedAt",
+          "completedAt",
+          "pausedAt",
+          "currentBlockId",
+          "taskResultIds",
+          "resultIds",
+          "selfRating",
+          "transferStatus",
+          "migration",
+          "recoveredAfterReload",
+          "updatedAt",
+          "pendingSync"
+        ])
+        && request.resource.data.get("blocks", []).size() == resource.data.get("blocks", []).size()
+        && validAdhdSessionBlocks(request.resource.data)
+        && validAdhdSessionTerminalState(request.resource.data)
+        && validAdhdSessionBlockTransitions()
+        && validAdhdSingleBlockMutation()
+        && adhdSessionHistoryAppendOnly()
+        && validAdhdSessionTransition();
+    }
+
+    function validAdhdChallengeCreate(programId, challengeId) {
+      return validAdhdMetadata(request.resource.data, programId)
+        && request.resource.data.keys().hasAll([
+          "id", "templateId", "sessionId", "sessionNumber", "label", "domains",
+          "status", "ratings", "sourceReports", "linkedGoalIds", "createdAt"
+        ])
+        && request.resource.data.get("id", "") == challengeId
+        && request.resource.data.get("templateId", "") is string
+        && request.resource.data.get("templateId", "") != ""
+        && request.resource.data.get("sessionId", "") is string
+        && request.resource.data.get("sessionId", "") != ""
+        && request.resource.data.get("sessionNumber", 0) is int
+        && request.resource.data.get("sessionNumber", 0) > 0
+        && request.resource.data.get("label", "") is string
+        && request.resource.data.get("label", "") != ""
+        && request.resource.data.get("domains", []) is list
+        && request.resource.data.get("ratings", {}) is map
+        && request.resource.data.get("sourceReports", []) is list
+        && request.resource.data.get("sourceReports", []).size() == 0
+        && request.resource.data.get("linkedGoalIds", []) is list
+        && request.resource.data.get("status", "") == "pending";
+    }
+
+    function validAdhdChallengeUpdate(programId, challengeId) {
+      let beforeStatus = resource.data.get("status", "");
+      let afterStatus = request.resource.data.get("status", "");
+      return validAdhdMetadata(request.resource.data, programId)
+        && request.resource.data.get("id", "") == challengeId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "status", "note", "ratings", "sourceReports", "completedAt",
+          "resultIds", "updatedAt", "pendingSync"
+        ])
+        && request.resource.data.get("sourceReports", []) is list
+        && request.resource.data.get("resultIds", []) is list
+        && request.resource.data.get("resultIds", []).hasAll(resource.data.get("resultIds", []))
+        && (
+          afterStatus == beforeStatus
+          || (beforeStatus == "pending" && ["completed", "partial", "not_completed"].hasAny([afterStatus]))
+        )
+        && (
+          beforeStatus == "pending"
+          || request.resource.data.get("sourceReports", []) == resource.data.get("sourceReports", [])
+        );
+    }
+
+    function validCanonicalAdhdResultCreate(uid, resultId) {
+      return validAdhdMetadata(
+          request.resource.data,
+          request.resource.data.get("programId", "")
+        )
+        && exists(
+          /databases/$(database)/documents/usuarios/$(uid)/rehabilitacionProgramas/$(request.resource.data.programId)
+        )
+        && request.resource.data.keys().hasAll([
+          "idResultado",
+          "resultId",
+          "taskId",
+          "activityId",
+          "taskVersion",
+          "metricsVersion",
+          "metrics",
+          "results",
+          "references",
+          "status",
+          "valid",
+          "createdAt",
+          "updatedAt"
+        ])
+        && request.resource.data.get("idResultado", "") == resultId
+        && request.resource.data.get("resultId", "") == resultId
+        && request.resource.data.get("id", resultId) == resultId
+        && request.resource.data.get("taskId", "") is string
+        && request.resource.data.get("taskId", "") != ""
+        && request.resource.data.get("references", {}) is map
+        && request.resource.data.get("metrics", {}) is map
+        && request.resource.data.get("results", {}) is map
+        && ["completed", "interrupted", "completed_with_incomplete_data"]
+          .hasAny([request.resource.data.get("status", "")])
+        && request.resource.data.get("valid", false) is bool
+        && request.resource.data.get("createdAt", null) == request.time
+        && request.resource.data.get("updatedAt", null) == request.time;
+    }
+
+    function validCanonicalAdhdFeedbackFields(resultId) {
+      return request.resource.data.get("id", resultId) == resultId
+        && (
+          !resource.data.keys().hasAny(["id"])
+          || request.resource.data.get("id", "") == resource.data.get("id", "")
+        )
+        && (
+          !request.resource.data.keys().hasAny(["adaptiveDecision"])
+          || request.resource.data.get("adaptiveDecision", {}) is map
+        )
+        && (
+          !request.resource.data.keys().hasAny(["feedback"])
+          || request.resource.data.get("feedback", {}) is map
+        )
+        && (
+          !request.resource.data.keys().hasAny(["postBlockSelfReport"])
+          || request.resource.data.get("postBlockSelfReport", {}) is map
+        )
+        && (
+          !request.resource.data.keys().hasAny(["feedbackSkipped"])
+          || request.resource.data.get("feedbackSkipped", false) is bool
+        )
+        && (
+          !request.resource.data.keys().hasAny(["pendingSync"])
+          || request.resource.data.get("pendingSync", false) is bool
+        );
+    }
+
+    function canonicalAdhdFeedbackIsWriteOnce() {
+      return (
+          !resource.data.keys().hasAny(["adaptiveDecision"])
+          || request.resource.data.get("adaptiveDecision", null) == resource.data.get("adaptiveDecision", null)
+        )
+        && (
+          !resource.data.keys().hasAny(["feedback"])
+          || request.resource.data.get("feedback", null) == resource.data.get("feedback", null)
+        )
+        && (
+          !resource.data.keys().hasAny(["postBlockSelfReport"])
+          || request.resource.data.get("postBlockSelfReport", null) == resource.data.get("postBlockSelfReport", null)
+        )
+        && (
+          !resource.data.keys().hasAny(["feedbackSkipped"])
+          || request.resource.data.get("feedbackSkipped", null) == resource.data.get("feedbackSkipped", null)
+        );
+    }
+
+    function validCanonicalAdhdResultUpdate(resultId) {
+      return isCanonicalAdhdData(resource.data)
+        && isCanonicalAdhdData(request.resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "adaptiveDecision",
+          "feedback",
+          "postBlockSelfReport",
+          "feedbackSkipped",
+          "id",
+          "pendingSync",
+          "createdAt",
+          "updatedAt"
+        ])
+        && request.resource.data.get("createdAt", null) == resource.data.get("createdAt", null)
+        && request.resource.data.get("updatedAt", null) == request.time
+        && validCanonicalAdhdFeedbackFields(resultId)
+        && canonicalAdhdFeedbackIsWriteOnce();
+    }
+
+    function validAdhdTelemetryCreate(uid, resultId) {
+      let parent = getAfter(
+        /databases/$(database)/documents/usuarios/$(uid)/rehabilitacionResultados/$(resultId)
+      ).data;
+      return isCanonicalAdhdData(parent)
+        && validAdhdMetadata(request.resource.data, parent.get("programId", ""))
+        && request.resource.data.get("resultId", "") == resultId
+        && request.resource.data.get("taskId", "") == parent.get("taskId", "")
+        && request.resource.data.get("channel", "") is string
+        && request.resource.data.get("blockIndex", -1) is int
+        && request.resource.data.get("blockIndex", -1) >= 0
+        && request.resource.data.get("totalBlocks", 0) is int
+        && request.resource.data.get("totalBlocks", 0) > 0
+        && request.resource.data.get("records", []) is list
+        && request.resource.data.get("recordCount", -1) == request.resource.data.get("records", []).size()
+        && request.resource.data.get("createdAt", null) == request.time;
+    }
+
+    function validAdhdTelemetryIdempotentUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(["createdAt"])
+        && (
+          request.resource.data.get("createdAt", null) == resource.data.get("createdAt", null)
+          || request.resource.data.get("createdAt", null) == request.time
+        );
+    }
+
     function hasNoAlternateRoleClaims(data) {
       return !data.keys().hasAny([
         "role",
@@ -443,6 +1128,267 @@ service cloud.firestore {
         allow read, create, update, delete: if false;
       }
 
+      // Programa TDAH: el paciente puede ejecutar y registrar avance, pero no
+      // prescribir ni alterar el perfil derivado o el plan clínico.
+      match /rehabilitacionProgramas/{programId} {
+        allow read: if accountIsActive(uid)
+                    && (
+                      isSelf(uid)
+                      || isAdmin()
+                      || professionalCanReadPatient(uid, patientProfile(uid))
+                    );
+        allow create: if accountIsActive(uid)
+                      && (
+                        isAdmin()
+                        || professionalCanEditPatient(uid, patientProfile(uid))
+                      );
+        allow update: if accountIsActive(uid)
+                      && (
+                        isAdmin()
+                        || professionalCanEditPatient(uid, patientProfile(uid))
+                        || (
+                          isSelf(uid)
+                          && request.resource.data.diff(resource.data).affectedKeys()
+                            .hasOnly(["lastActivityAt", "lastResultId", "updatedAt"])
+                        )
+                      );
+        allow delete: if accountIsActive(uid) && isAdmin();
+
+        match /evaluaciones/{evaluationId} {
+          allow read: if accountIsActive(uid)
+                      && (
+                        isSelf(uid)
+                        || isAdmin()
+                        || professionalCanReadPatient(uid, patientProfile(uid))
+                      );
+          allow create: if accountIsActive(uid)
+                        && validAdhdEvaluationCreate(programId, evaluationId)
+                        && (
+                          isSelf(uid)
+                          || isAdmin()
+                          || professionalCanEditPatient(uid, patientProfile(uid))
+                        );
+          allow update: if accountIsActive(uid)
+                        && (
+                          (
+                            isSelf(uid)
+                            && validAdhdEvaluationUpdate(programId, evaluationId, false)
+                          )
+                          || (
+                            (isAdmin() || professionalCanEditPatient(uid, patientProfile(uid)))
+                            && validAdhdEvaluationUpdate(programId, evaluationId, true)
+                          )
+                        );
+          allow delete: if accountIsActive(uid)
+                        && (
+                          isAdmin()
+                          || professionalCanEditPatient(uid, patientProfile(uid))
+                        );
+        }
+
+        match /perfiles/{profileId} {
+          allow read: if accountIsActive(uid)
+                      && (
+                        isSelf(uid)
+                        || isAdmin()
+                        || professionalCanReadPatient(uid, patientProfile(uid))
+                      );
+          allow create, update: if accountIsActive(uid)
+                                && (
+                                  isAdmin()
+                                  || professionalCanEditPatient(uid, patientProfile(uid))
+                                );
+          allow delete: if accountIsActive(uid) && isAdmin();
+        }
+
+        match /planes/{planId} {
+          allow read: if accountIsActive(uid)
+                      && (
+                        isSelf(uid)
+                        || isAdmin()
+                        || professionalCanReadPatient(uid, patientProfile(uid))
+                      );
+          allow create, update: if accountIsActive(uid)
+                                && (
+                                  isAdmin()
+                                  || professionalCanEditPatient(uid, patientProfile(uid))
+                                );
+          allow delete: if accountIsActive(uid) && isAdmin();
+        }
+
+        match /metas/{goalId} {
+          allow read: if accountIsActive(uid)
+                      && (
+                        isSelf(uid)
+                        || isAdmin()
+                        || professionalCanReadPatient(uid, patientProfile(uid))
+                      );
+          allow create: if accountIsActive(uid)
+                        && validAdhdGoalCreate(programId, goalId)
+                        && (
+                          isSelf(uid)
+                          || isAdmin()
+                          || professionalCanEditPatient(uid, patientProfile(uid))
+                        );
+          allow update: if accountIsActive(uid)
+                        && (
+                          (
+                            isSelf(uid)
+                            && validPatientAdhdGoalUpdate(programId, goalId)
+                          )
+                          || (
+                            (isAdmin() || professionalCanEditPatient(uid, patientProfile(uid)))
+                            && validClinicalAdhdGoalUpdate(programId, goalId)
+                          )
+                        );
+          allow delete: if accountIsActive(uid)
+                        && (
+                          isAdmin()
+                          || professionalCanEditPatient(uid, patientProfile(uid))
+                        );
+        }
+
+        match /sesiones/{sessionId} {
+          allow read: if accountIsActive(uid)
+                      && (
+                        isSelf(uid)
+                        || isAdmin()
+                        || professionalCanReadPatient(uid, patientProfile(uid))
+                      );
+          allow create: if accountIsActive(uid)
+                        && validAdhdSessionCreate(programId, sessionId)
+                        && (
+                          isSelf(uid)
+                          || isAdmin()
+                          || professionalCanEditPatient(uid, patientProfile(uid))
+                        );
+          allow update: if accountIsActive(uid)
+                        && validAdhdSessionUpdate(programId, sessionId)
+                        && (
+                          isSelf(uid)
+                          || isAdmin()
+                          || professionalCanEditPatient(uid, patientProfile(uid))
+                        );
+          allow delete: if accountIsActive(uid)
+                        && (
+                          isAdmin()
+                          || professionalCanEditPatient(uid, patientProfile(uid))
+                        );
+        }
+
+        match /retos/{challengeId} {
+          allow read: if accountIsActive(uid)
+                      && (
+                        isSelf(uid)
+                        || isAdmin()
+                        || professionalCanReadPatient(uid, patientProfile(uid))
+                      );
+          allow create: if accountIsActive(uid)
+                        && validAdhdChallengeCreate(programId, challengeId)
+                        && (
+                          isSelf(uid)
+                          || isAdmin()
+                          || professionalCanEditPatient(uid, patientProfile(uid))
+                        );
+          allow update: if accountIsActive(uid)
+                        && validAdhdChallengeUpdate(programId, challengeId)
+                        && (
+                          isSelf(uid)
+                          || isAdmin()
+                          || professionalCanEditPatient(uid, patientProfile(uid))
+                        );
+          allow delete: if accountIsActive(uid)
+                        && (
+                          isAdmin()
+                          || professionalCanEditPatient(uid, patientProfile(uid))
+                        );
+        }
+
+        // Auditoría append-only. Ni el paciente ni el profesional pueden reescribirla.
+        match /auditoria/{auditId} {
+          allow read: if accountIsActive(uid)
+                      && (
+                        isSelf(uid)
+                        || isAdmin()
+                        || professionalCanReadPatient(uid, patientProfile(uid))
+                      );
+          allow create: if accountIsActive(uid)
+                        && (
+                          isSelf(uid)
+                          || isAdmin()
+                          || professionalCanEditPatient(uid, patientProfile(uid))
+                        );
+          allow update, delete: if false;
+        }
+      }
+
+      // Resumen canónico compatible con los resultados de rehabilitación ya
+      // existentes. La telemetría detallada vive en bloques, no en el resumen.
+      match /rehabilitacionResultados/{resultId} {
+        allow read: if accountIsActive(uid)
+                    && (
+                      isSelf(uid)
+                      || isAdmin()
+                      || professionalCanReadPatient(uid, patientProfile(uid))
+                    );
+        allow create: if accountIsActive(uid)
+                      && (
+                        isSelf(uid)
+                        || isAdmin()
+                        || professionalCanEditPatient(uid, patientProfile(uid))
+                      )
+                      && (
+                        validLegacyRehabilitationResult(request.resource.data)
+                        || validCanonicalAdhdResultCreate(uid, resultId)
+                      );
+        allow update: if accountIsActive(uid)
+                      && (
+                        isSelf(uid)
+                        || isAdmin()
+                        || professionalCanEditPatient(uid, patientProfile(uid))
+                      )
+                      && (
+                        (
+                          isCanonicalAdhdData(resource.data)
+                          && validCanonicalAdhdResultUpdate(resultId)
+                        )
+                        || (
+                          validLegacyRehabilitationResult(resource.data)
+                          && validLegacyRehabilitationResult(request.resource.data)
+                        )
+                      );
+        allow delete: if accountIsActive(uid)
+                      && !isCanonicalAdhdData(resource.data)
+                      && (
+                        isAdmin()
+                        || professionalCanEditPatient(uid, patientProfile(uid))
+                      );
+
+        match /telemetryBlocks/{blockId} {
+          allow read: if accountIsActive(uid)
+                      && (
+                        isSelf(uid)
+                        || isAdmin()
+                        || professionalCanReadPatient(uid, patientProfile(uid))
+                      );
+          allow create: if accountIsActive(uid)
+                        && validAdhdTelemetryCreate(uid, resultId)
+                        && (
+                          isSelf(uid)
+                          || isAdmin()
+                          || professionalCanEditPatient(uid, patientProfile(uid))
+                        );
+          allow update: if accountIsActive(uid)
+                        && validAdhdTelemetryIdempotentUpdate()
+                        && (
+                          isSelf(uid)
+                          || isAdmin()
+                          || professionalCanEditPatient(uid, patientProfile(uid))
+                        );
+          allow delete: if false;
+        }
+      }
+
       match /{subcollection}/{subdocument=**} {
         allow read: if accountIsActive(uid)
                     && subcollection != "agenda"
@@ -456,6 +1402,8 @@ service cloud.firestore {
                     && subcollection != "permisosMedicos"
                     && subcollection != "patientQuotaAssignments"
                     && subcollection != "patientCreationOperations"
+                    && subcollection != "rehabilitacionProgramas"
+                    && subcollection != "rehabilitacionResultados"
                     && (
                       isSelf(uid)
                       || isAdmin()
@@ -473,6 +1421,8 @@ service cloud.firestore {
                       && subcollection != "permisosMedicos"
                       && subcollection != "patientQuotaAssignments"
                       && subcollection != "patientCreationOperations"
+                      && subcollection != "rehabilitacionProgramas"
+                      && subcollection != "rehabilitacionResultados"
                       && (
                         isSelf(uid)
                         || isAdmin()
@@ -494,6 +1444,8 @@ service cloud.firestore {
                               && subcollection != "permisosMedicos"
                               && subcollection != "patientQuotaAssignments"
                               && subcollection != "patientCreationOperations"
+                              && subcollection != "rehabilitacionProgramas"
+                              && subcollection != "rehabilitacionResultados"
                               && (
                                 isSelf(uid)
                                 || isAdmin()

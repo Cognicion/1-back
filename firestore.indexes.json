@@ -178,6 +178,26 @@
           "queryScope": "COLLECTION_GROUP"
         }
       ]
+    },
+    {
+      "collectionGroup": "telemetryBlocks",
+      "fieldPath": "records",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "telemetryBlocks",
+      "fieldPath": "trials",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "telemetryBlocks",
+      "fieldPath": "events",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "telemetryBlocks",
+      "fieldPath": "sequence",
+      "indexes": []
     }
   ]
 }

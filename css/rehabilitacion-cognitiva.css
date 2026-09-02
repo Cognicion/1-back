@@ -1179,6 +1179,122 @@ html[data-theme="light"] .programa-evc { color: var(--text-primary); border-colo
 html[data-theme="light"] .programa-evc :where(.programa-evc-beneficios li, .programa-evc-accion) { color: var(--text-primary); border-color: var(--paleta-clara-borde); background: rgb(255 255 255 / 48%); }
 html[data-theme="light"] .programa-evc-icono { color: var(--accent-active); border-color: var(--paleta-clara-borde); background: var(--accent-soft); }
 
+.programa-tdah {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(270px, 0.7fr);
+  gap: 32px;
+  align-items: stretch;
+  margin-top: 24px;
+}
+
+.programa-tdah-intro > p {
+  max-width: 800px;
+  color: var(--gray-200);
+  line-height: 1.7;
+}
+
+.programa-tdah-subtitulo {
+  color: var(--ivory-50) !important;
+  font-size: 1.08rem;
+  font-weight: 800;
+}
+
+.programa-tdah-beneficios {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.programa-tdah-beneficios li,
+.programa-tdah-accion {
+  padding: 17px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(8, 18, 13, 0.38);
+}
+
+.programa-tdah-beneficios strong,
+.programa-tdah-beneficios span {
+  display: block;
+}
+
+.programa-tdah-beneficios strong {
+  margin-bottom: 6px;
+  color: var(--celtic-300);
+}
+
+.programa-tdah-beneficios span {
+  color: var(--gray-200);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.programa-tdah-accion {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 16px;
+}
+
+.programa-tdah-accion p {
+  margin: 0;
+  color: var(--gray-200);
+  line-height: 1.6;
+}
+
+.programa-tdah-icono {
+  display: grid;
+  width: 74px;
+  height: 74px;
+  place-items: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 20px;
+  color: var(--ivory-50);
+  background: rgba(52, 122, 77, 0.24);
+  font-size: 0.82rem;
+  font-weight: 950;
+}
+
+html[data-theme="light"] .programa-tdah {
+  color: var(--text-primary);
+  border-color: var(--paleta-clara-borde);
+  background: var(--paleta-clara-superficie);
+}
+
+html[data-theme="light"] .programa-tdah :where(.programa-tdah-beneficios li, .programa-tdah-accion) {
+  color: var(--text-primary);
+  border-color: var(--paleta-clara-borde);
+  background: rgb(255 255 255 / 48%);
+}
+
+html[data-theme="light"] .programa-tdah-subtitulo,
+html[data-theme="light"] .programa-tdah-beneficios strong {
+  color: var(--accent-active) !important;
+}
+
+html[data-theme="light"] .programa-tdah :where(p, span) {
+  color: var(--text-secondary);
+}
+
+html[data-theme="light"] .programa-tdah-icono {
+  color: var(--accent-active);
+  border-color: var(--paleta-clara-borde);
+  background: var(--accent-soft);
+}
+
+@media (max-width: 900px) {
+  .programa-tdah {
+    grid-template-columns: 1fr;
+  }
+
+  .programa-tdah-beneficios {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 760px) {
   .programa-evc { grid-template-columns: 1fr; }
   .programa-evc-beneficios { grid-template-columns: 1fr; }

@@ -349,14 +349,22 @@ h2 { font-size: clamp(2rem, 5vw, 4.2rem); }
 @keyframes driftGrid { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(54px, 54px, 0); } }
 @keyframes spinSoft { to { transform: rotate(388deg); } }
 
+html.adhd-embedded-task .stimulus-word { animation: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .stimulus-word,
+  .stimulus-wrap.distractors::before,
+  .stimulus-wrap.distractors::after { animation: none; }
+}
+
 @media (max-width: 760px) {
   .stroop-topbar,
   .stroop-shell { width: min(100% - 20px, 1180px); }
   .stroop-topbar { align-items: flex-start; }
   .stroop-difficulty,
   .stroop-hud,
-  .results-grid,
-  .answer-buttons { grid-template-columns: 1fr; }
+  .results-grid { grid-template-columns: 1fr; }
+  .answer-buttons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .stimulus-wrap { min-height: 210px; }
   .stroop-link { padding: 9px 12px; }
 }

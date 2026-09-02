@@ -156,5 +156,8 @@
 // deployment marker: 2026-08-28-sofia-report-layout-v1 (+0.001)
 // deployment marker: 2026-08-30-study-diagnosis-medication-dedup-v1 (+0.001)
 // deployment marker: 2026-08-30-medication-presentation-bulk-selection-v1 (+0.001)
-export const APP_VERSION = "2.168";
+// deployment marker: 2026-09-01-index-contacto-publico-v1 (+0.001)
+// deployment marker: 2026-09-01-nota-minimalista-v1 (+0.001)
+// deployment marker: 2026-09-01-adhd-cognitive-rehabilitation-v1 (+0.001)
+export const APP_VERSION = "2.171";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

@@ -112,6 +112,10 @@ export function calcularMetricasCpt(ensayos = [], configEntrada = {}, session = 
   const falseAlarmRts = validos.filter((e) => e.responseType === "false_alarm").map((e) => e.reactionTimeMs).filter(Number.isFinite);
   const hitRate = tasa(hits, totalTargets);
   const falseAlarmRate = tasa(falseAlarms, totalNonTargets);
+  const correctRejectionRate = tasa(correctRejections, totalNonTargets);
+  const balancedAccuracy = totalTargets > 0 && totalNonTargets > 0
+    ? (hitRate + correctRejectionRate) / 2
+    : null;
   const dPrimeData = calcularDPrime(hitRate, falseAlarmRate, totalTargets, totalNonTargets);
   const blockResults = calcularBloquesCpt(validos, config.blockSize);
   const temporalTrend = describirTendenciaBloques(blockResults);
@@ -129,6 +133,8 @@ export function calcularMetricasCpt(ensayos = [], configEntrada = {}, session = 
     hitPercentage: redondear(hitRate * 100, 1),
     falseAlarmRate,
     falseAlarmPercentage: redondear(falseAlarmRate * 100, 1),
+    correctRejectionRate,
+    balancedAccuracy: Number.isFinite(balancedAccuracy) ? redondear(balancedAccuracy, 4) : null,
     meanHitReactionTimeMs: redondear(promedio(hitRts), 1),
     medianHitReactionTimeMs: redondear(mediana(hitRts), 1),
     sdHitReactionTimeMs: redondear(desviacion(hitRts), 1),
