@@ -124,27 +124,25 @@ button {
 }
 
 .rehabilitacion-shell {
-  width: min(1180px, calc(100% - 36px));
+  width: 100%;
+  max-width: 1680px;
   margin: 0 auto;
-  padding: 56px 0 80px;
+  padding: clamp(28px, 3vw, 48px) clamp(18px, 3vw, 48px) 64px;
 }
 
 .hero-rehabilitacion {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
-  gap: 28px;
-  min-height: 520px;
+  grid-template-columns: minmax(0, 1.4fr) minmax(240px, 0.6fr);
+  gap: clamp(22px, 3vw, 44px);
+  min-height: clamp(300px, 27vw, 390px);
   align-items: center;
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 34px;
-  padding: clamp(28px, 5vw, 62px);
+  border-block: 1px solid var(--line);
+  padding: clamp(24px, 2.6vw, 38px) 0;
   background:
-    radial-gradient(circle at 72% 34%, rgba(82, 152, 102, 0.18), transparent 34%),
-    radial-gradient(circle at 50% 100%, rgba(124, 58, 237, 0.12), transparent 34%),
-    rgba(5, 10, 20, 0.78);
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    radial-gradient(circle at 82% 34%, rgba(82, 152, 102, 0.14), transparent 29%),
+    linear-gradient(90deg, rgba(5, 10, 20, 0.54), transparent 72%);
   animation: fadeUp 0.65s ease both;
 }
 
@@ -186,32 +184,33 @@ button {
 
 .hero-rehabilitacion h1 {
   max-width: 720px;
-  margin: 22px 0 0;
-  font-size: clamp(3rem, 7vw, 6rem);
+  margin: 16px 0 0;
+  font-size: clamp(2.6rem, 4.6vw, 4.5rem);
   line-height: 0.96;
   letter-spacing: 0;
 }
 
 .hero-subtitulo {
   max-width: 760px;
-  margin: 28px 0 0;
+  margin: 20px 0 0;
   color: #d5e3f2;
-  font-size: clamp(1.05rem, 1.4vw, 1.28rem);
-  line-height: 1.65;
+  font-size: clamp(1rem, 1.25vw, 1.15rem);
+  line-height: 1.48;
 }
 
 .hero-frase {
   max-width: 760px;
-  margin: 18px 0 0;
+  margin: 12px 0 0;
   color: var(--muted);
-  line-height: 1.65;
+  font-size: 0.95rem;
+  line-height: 1.48;
 }
 
 .hero-acciones {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 32px;
+  margin-top: 22px;
 }
 
 .boton-principal,
@@ -256,7 +255,9 @@ button {
   position: relative;
   z-index: 1;
   aspect-ratio: 1;
-  min-height: 320px;
+  width: min(100%, 340px);
+  min-height: 230px;
+  margin-inline: auto;
 }
 
 .orbita,
@@ -311,87 +312,74 @@ button {
 .punto-c { transform: translate(-50%, -50%) rotate(286deg) translateX(120px); }
 
 .bloque-rehabilitacion {
-  margin-top: 30px;
-  padding: clamp(22px, 4vw, 34px);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: rgba(7, 12, 22, 0.68);
-  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.24);
-  backdrop-filter: blur(16px);
+  margin: 0;
+  padding: clamp(22px, 2.5vw, 34px) 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
   animation: fadeUp 0.7s ease both;
 }
 
 .explicacion {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.36fr);
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.4fr);
+  gap: clamp(24px, 4vw, 58px);
   align-items: start;
 }
 
 .bloque-rehabilitacion h2 {
   margin: 12px 0 0;
-  font-size: clamp(1.7rem, 3vw, 2.35rem);
+  font-size: clamp(1.55rem, 2.4vw, 2.15rem);
 }
 
 .bloque-rehabilitacion p {
   color: var(--muted);
-  line-height: 1.68;
+  line-height: 1.56;
 }
 
 .aviso-clinico {
-  padding: 18px;
-  border: 1px solid rgba(251, 191, 36, 0.24);
-  border-radius: 18px;
+  padding: 3px 0 3px 18px;
+  border: 0;
+  border-left: 2px solid rgba(251, 191, 36, 0.42);
   color: #fde68a;
-  background: rgba(113, 63, 18, 0.14);
+  background: transparent;
   line-height: 1.55;
 }
 
 .seccion-titulo {
-  margin-bottom: 22px;
+  margin-bottom: 16px;
 }
 
 .grid-tamizajes,
 .grid-actividades {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  column-gap: clamp(18px, 2.4vw, 34px);
+  row-gap: 0;
 }
 
 .tarjeta-tamizaje,
 .tarjeta-actividad,
 .grid-progreso article {
   position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(126, 182, 138, 0.16);
-  border-radius: 22px;
-  padding: 22px;
-  background:
-    linear-gradient(180deg, rgba(14, 20, 17, 0.78), rgba(6, 10, 18, 0.74));
-  transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+  overflow: visible;
+  border: 0;
+  border-top: 1px solid rgba(126, 182, 138, 0.2);
+  border-radius: 0;
+  padding: 16px 0;
+  background: transparent;
+  transition: border-color 0.2s ease, color 0.2s ease;
 }
 
 .tarjeta-tamizaje::before,
 .tarjeta-actividad::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at top right, rgba(82, 152, 102, 0.14), transparent 38%);
-  opacity: 0;
-  transition: opacity 0.22s ease;
+  content: none;
 }
 
 .tarjeta-tamizaje:hover,
 .tarjeta-actividad:hover,
 .grid-progreso article:hover {
-  transform: translateY(-4px);
   border-color: rgba(126, 182, 138, 0.36);
-  background: rgba(14, 20, 17, 0.86);
-}
-
-.tarjeta-tamizaje:hover::before,
-.tarjeta-actividad:hover::before {
-  opacity: 1;
 }
 
 .tarjeta-tamizaje > *,
@@ -401,21 +389,27 @@ button {
 }
 
 .tarjeta-icono {
-  display: grid;
-  place-items: center;
-  width: 54px;
-  height: 54px;
-  border-radius: 18px;
-  color: var(--ivory-50);
+  display: inline;
+  width: auto;
+  height: auto;
+  color: var(--celtic-300);
   font-weight: 950;
-  background: rgba(52, 122, 77, 0.15);
-  border: 1px solid rgba(126, 182, 138, 0.24);
+  font-size: 0.76rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .tarjeta-tamizaje h3,
 .tarjeta-actividad h3 {
-  margin: 18px 0 8px;
-  font-size: 1.25rem;
+  margin: 8px 0 6px;
+  font-size: 1.08rem;
+}
+
+.tarjeta-tamizaje p,
+.tarjeta-actividad p {
+  margin: 7px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.48;
 }
 
 .tarjeta-tamizaje small,
@@ -451,8 +445,8 @@ button {
 
 .tarjeta-tamizaje button,
 .tarjeta-actividad button {
-  width: 100%;
-  margin-top: 18px;
+  width: fit-content;
+  margin-top: 10px;
 }
 
 .nota-derechos {
@@ -519,21 +513,22 @@ button {
 .chips-actividad {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
+  gap: 6px;
+  margin-top: 10px;
 }
 
 .actividad-footer {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: auto;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 12px;
 }
 
 .tarjeta-actividad {
   display: flex;
   flex-direction: column;
-  min-height: 330px;
+  min-height: 0;
 }
 
 .tarjeta-actividad.disponible {
@@ -543,11 +538,11 @@ button {
 .estado {
   display: inline-flex;
   width: fit-content;
-  margin-top: 18px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(52, 122, 77, 0.11);
-  border: 1px solid rgba(126, 182, 138, 0.2);
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   font-size: 0.76rem;
 }
 
@@ -567,7 +562,7 @@ button {
 .grid-progreso {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 14px;
+  gap: clamp(18px, 2.4vw, 34px);
 }
 
 .grid-progreso strong,
@@ -576,7 +571,7 @@ button {
 }
 
 .grid-progreso span {
-  margin-top: 12px;
+  margin-top: 6px;
   color: var(--celtic-300);
   font-size: 0.86rem;
   font-weight: 850;
@@ -760,7 +755,7 @@ button {
   }
 
   .hero-orbita {
-    min-height: 260px;
+    display: none;
   }
 
   .grid-tamizajes,
@@ -778,20 +773,47 @@ button {
     position: relative;
     align-items: flex-start;
     flex-direction: column;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .marca-rehabilitacion {
+    gap: 10px;
+  }
+
+  .marca-rehabilitacion img {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+  }
+
+  .marca-rehabilitacion strong {
+    font-size: 1.05rem;
+  }
+
+  .marca-rehabilitacion span {
+    font-size: 0.76rem;
   }
 
   .nav-rehabilitacion {
     justify-content: flex-start;
+    gap: 6px;
+  }
+
+  .nav-rehabilitacion a,
+  .nav-rehabilitacion button {
+    padding: 7px 10px;
+    font-size: 0.76rem;
   }
 
   .rehabilitacion-shell {
-    width: min(100% - 24px, 1180px);
-    padding-top: 26px;
+    width: 100%;
+    padding: 22px 14px 44px;
   }
 
   .hero-rehabilitacion {
     min-height: 0;
-    border-radius: 26px;
+    padding-block: 24px;
   }
 
   .grid-tamizajes,
@@ -801,7 +823,19 @@ button {
   }
 
   .hero-rehabilitacion h1 {
-    font-size: clamp(2.65rem, 15vw, 4rem);
+    max-width: 100%;
+    font-size: clamp(2.25rem, 10.5vw, 2.65rem);
+    overflow-wrap: anywhere;
+  }
+
+  .hero-acciones {
+    gap: 8px;
+  }
+
+  .hero-acciones :where(.boton-principal, .boton-secundario) {
+    min-height: 40px;
+    padding-inline: 12px;
+    font-size: 0.82rem;
   }
 }
 
@@ -1129,91 +1163,121 @@ button {
   height: 18px;
 }
 
-.programa-evc {
+.programa-evc,
+.programa-tdah {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.38fr);
-  gap: 28px;
-  align-items: center;
-  border-color: rgba(82, 152, 102, 0.34);
-  background: linear-gradient(135deg, rgba(16, 51, 32, 0.48), rgba(5, 10, 20, 0.78));
+  grid-template-columns: minmax(0, 1fr) minmax(270px, 0.34fr);
+  gap: clamp(26px, 4vw, 58px);
+  align-items: start;
+  border-color: rgba(82, 152, 102, 0.28);
 }
 
-.programa-evc-intro h2 { margin: 9px 0 10px; }
-.programa-evc-intro > p { max-width: 760px; color: var(--gray-200); line-height: 1.7; }
+.programa-evc-intro h2,
+.programa-tdah-intro h2 {
+  margin: 7px 0 8px;
+}
 
-.programa-evc-beneficios {
+.programa-evc-intro > p,
+.programa-tdah-intro > p {
+  max-width: none;
+  margin-block: 8px 0;
+  color: var(--gray-200);
+  line-height: 1.52;
+}
+
+.programa-evc-beneficios,
+.programa-tdah-beneficios {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin: 20px 0 0;
+  gap: 0;
+  margin: 16px 0 0;
   padding: 0;
   list-style: none;
 }
 
-.programa-evc-beneficios li {
+.programa-evc-beneficios li,
+.programa-tdah-beneficios li {
   display: grid;
-  gap: 5px;
-  padding: 13px;
-  border: 1px solid var(--line);
-  border-radius: 15px;
-  background: rgba(14, 20, 17, 0.44);
+  gap: 4px;
+  padding: 2px clamp(12px, 1.5vw, 22px);
+  border: 0;
+  border-left: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
 }
 
-.programa-evc-beneficios strong { color: var(--celtic-300); }
-.programa-evc-beneficios span { color: var(--gray-200); font-size: 0.82rem; line-height: 1.45; }
-
-.programa-evc-accion {
-  display: grid;
-  gap: 14px;
-  justify-items: start;
-  padding: 22px;
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  background: rgba(5, 10, 20, 0.58);
+.programa-evc-beneficios li:first-child,
+.programa-tdah-beneficios li:first-child {
+  padding-left: 0;
+  border-left: 0;
 }
 
-.programa-evc-accion p { margin: 0; font-size: 0.88rem; }
-.programa-evc-icono { display: grid; place-items: center; width: 64px; height: 64px; border: 1px solid var(--line-strong); border-radius: 20px; color: var(--ivory-50); background: rgba(52, 122, 77, 0.24); font-weight: 950; }
-
-html[data-theme="light"] .programa-evc { color: var(--text-primary); border-color: var(--paleta-clara-borde); background: var(--paleta-clara-superficie); }
-html[data-theme="light"] .programa-evc :where(.programa-evc-beneficios li, .programa-evc-accion) { color: var(--text-primary); border-color: var(--paleta-clara-borde); background: rgb(255 255 255 / 48%); }
-html[data-theme="light"] .programa-evc-icono { color: var(--accent-active); border-color: var(--paleta-clara-borde); background: var(--accent-soft); }
-
-.programa-tdah {
-  display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(270px, 0.7fr);
-  gap: 32px;
-  align-items: stretch;
-  margin-top: 24px;
+.programa-evc-beneficios strong,
+.programa-tdah-beneficios strong {
+  color: var(--celtic-300);
 }
 
-.programa-tdah-intro > p {
-  max-width: 800px;
+.programa-evc-beneficios span,
+.programa-tdah-beneficios span {
   color: var(--gray-200);
-  line-height: 1.7;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.programa-evc-accion,
+.programa-tdah-accion {
+  display: grid;
+  gap: 11px;
+  justify-items: start;
+  padding: 2px 0 2px clamp(20px, 2.5vw, 36px);
+  border: 0;
+  border-left: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.programa-evc-accion p,
+.programa-tdah-accion p {
+  margin: 0;
+  color: var(--gray-200);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.programa-evc-icono,
+.programa-tdah-icono {
+  display: block;
+  width: auto;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  color: var(--celtic-300);
+  background: transparent;
+  font-size: 0.76rem;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+}
+
+html[data-theme="light"] :where(.programa-evc, .programa-tdah) {
+  color: var(--text-primary);
+  border-color: var(--paleta-clara-borde);
+  background: transparent;
+}
+
+html[data-theme="light"] :where(.programa-evc-beneficios li, .programa-tdah-beneficios li, .programa-evc-accion, .programa-tdah-accion) {
+  color: var(--text-primary);
+  border-color: var(--paleta-clara-borde);
+  background: transparent;
+}
+
+html[data-theme="light"] :where(.programa-evc-icono, .programa-tdah-icono) {
+  color: var(--accent-active);
 }
 
 .programa-tdah-subtitulo {
   color: var(--ivory-50) !important;
-  font-size: 1.08rem;
+  font-size: 1rem;
   font-weight: 800;
-}
-
-.programa-tdah-beneficios {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin: 24px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.programa-tdah-beneficios li,
-.programa-tdah-accion {
-  padding: 17px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: rgba(8, 18, 13, 0.38);
 }
 
 .programa-tdah-beneficios strong,
@@ -1222,52 +1286,8 @@ html[data-theme="light"] .programa-evc-icono { color: var(--accent-active); bord
 }
 
 .programa-tdah-beneficios strong {
-  margin-bottom: 6px;
+  margin-bottom: 0;
   color: var(--celtic-300);
-}
-
-.programa-tdah-beneficios span {
-  color: var(--gray-200);
-  font-size: 0.82rem;
-  line-height: 1.45;
-}
-
-.programa-tdah-accion {
-  display: grid;
-  align-content: center;
-  justify-items: start;
-  gap: 16px;
-}
-
-.programa-tdah-accion p {
-  margin: 0;
-  color: var(--gray-200);
-  line-height: 1.6;
-}
-
-.programa-tdah-icono {
-  display: grid;
-  width: 74px;
-  height: 74px;
-  place-items: center;
-  border: 1px solid var(--line-strong);
-  border-radius: 20px;
-  color: var(--ivory-50);
-  background: rgba(52, 122, 77, 0.24);
-  font-size: 0.82rem;
-  font-weight: 950;
-}
-
-html[data-theme="light"] .programa-tdah {
-  color: var(--text-primary);
-  border-color: var(--paleta-clara-borde);
-  background: var(--paleta-clara-superficie);
-}
-
-html[data-theme="light"] .programa-tdah :where(.programa-tdah-beneficios li, .programa-tdah-accion) {
-  color: var(--text-primary);
-  border-color: var(--paleta-clara-borde);
-  background: rgb(255 255 255 / 48%);
 }
 
 html[data-theme="light"] .programa-tdah-subtitulo,
@@ -1279,23 +1299,32 @@ html[data-theme="light"] .programa-tdah :where(p, span) {
   color: var(--text-secondary);
 }
 
-html[data-theme="light"] .programa-tdah-icono {
-  color: var(--accent-active);
-  border-color: var(--paleta-clara-borde);
-  background: var(--accent-soft);
-}
-
 @media (max-width: 900px) {
+  .programa-evc,
   .programa-tdah {
     grid-template-columns: 1fr;
   }
 
-  .programa-tdah-beneficios {
-    grid-template-columns: 1fr;
+  .programa-evc-accion,
+  .programa-tdah-accion {
+    padding: 16px 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--line);
   }
 }
 
 @media (max-width: 760px) {
-  .programa-evc { grid-template-columns: 1fr; }
-  .programa-evc-beneficios { grid-template-columns: 1fr; }
+  .programa-evc-beneficios,
+  .programa-tdah-beneficios {
+    grid-template-columns: 1fr;
+  }
+
+  .programa-evc-beneficios li,
+  .programa-tdah-beneficios li,
+  .programa-evc-beneficios li:first-child,
+  .programa-tdah-beneficios li:first-child {
+    padding: 10px 0;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
 }

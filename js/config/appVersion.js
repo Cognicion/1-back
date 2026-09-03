@@ -159,5 +159,6 @@
 // deployment marker: 2026-09-01-index-contacto-publico-v1 (+0.001)
 // deployment marker: 2026-09-01-nota-minimalista-v1 (+0.001)
 // deployment marker: 2026-09-01-adhd-cognitive-rehabilitation-v1 (+0.001)
-export const APP_VERSION = "2.171";
+// deployment marker: 2026-09-02-rehabilitacion-cognitiva-compact-layout-v1 (+0.001)
+export const APP_VERSION = "2.172";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;
