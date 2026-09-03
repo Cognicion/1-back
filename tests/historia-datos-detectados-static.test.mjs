@@ -9,8 +9,8 @@ test("historia incluye una única pestaña y contenedor de Datos detectados", as
   assert.equal((html.match(/data-seccion="detectados"/g) || []).length, 1);
   assert.equal((html.match(/id="datosDetectadosHistoria"/g) || []).length, 1);
   assert.match(html, /Datos detectados/);
-  assert.match(html, /css\/historia\.css\?v=20260821-detected-data-v1/);
-  assert.match(html, /js\/historia\.js\?v=20260821-detected-data-v1/);
+  assert.match(html, /css\/historia\.css\?v=20260902-note-history-extraction-v1/);
+  assert.match(html, /js\/historia\.js\?v=20260902-note-history-extraction-v1/);
 });
 
 test("el aviso diferencia fuentes analizadas de datos realmente detectados", async () => {
@@ -27,6 +27,14 @@ test("la pestaña y el prellenado consumen el mismo resultado automático", asyn
   assert.match(controlador, /gestorDatosDetectados\?\.cargar\(automatico\.detecciones/);
   assert.match(servicio, /datos: construirDatosAutomaticos\(detecciones\)/);
   assert.match(servicio, /detecciones,/);
+});
+
+test("las secciones canónicas de notas se transforman antes de detectar datos", async () => {
+  const servicio = await leer("js/services/historiaClinicaAutomatica.js");
+  const detector = await leer("js/services/historiaClinicaDeteccion.js");
+  assert.match(servicio, /construirTextoDeteccionNota\(nota\)/);
+  assert.match(servicio, /construirFuentesHistoria/);
+  assert.match(detector, /export function construirTextoDeteccionNota/);
 });
 
 test("los candidatos no se guardan automáticamente ni usan almacenamiento local", async () => {

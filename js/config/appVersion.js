@@ -164,5 +164,6 @@
 // deployment marker: 2026-09-02-adhd-battery-launch-recovery-v3 (+0.001)
 // deployment marker: 2026-09-02-adhd-battery-launch-click-v4 (+0.001)
 // deployment marker: 2026-09-02-classic-prescription-office-address-v1 (+0.001)
-export const APP_VERSION = "2.176";
+// deployment marker: 2026-09-02-note-history-extraction-v1 (+0.001)
+export const APP_VERSION = "2.177";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

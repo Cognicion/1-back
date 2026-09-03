@@ -3,10 +3,11 @@ import { listarEstudios } from "./estudios.js";
 import { listarNotasRapidas } from "./notasRapidas.js";
 import {
   construirDatosAutomaticos,
+  construirTextoDeteccionNota,
   crearDeteccionHistoria,
   detectarDatosHistoria,
   obtenerDefinicionHistoria
-} from "./historiaClinicaDeteccion.js?v=20260821-detected-data-v1";
+} from "./historiaClinicaDeteccion.js?v=20260902-note-history-extraction-v1";
 const FAMILIARES = [["madre", /\bmadre\b/iu], ["padre", /\bpadre\b/iu], ["hermano", /\bherman[oa]s?\b/iu], ["hijo", /\bhij[oa]s?\b/iu], ["abuelo", /\babuel[oa]s?\b/iu], ["tio", /\bt[ií]o[as]?\b/iu], ["primo", /\bprim[oa]s?\b/iu], ["pareja", /\bpareja|conyuge|cónyuge|espos[oa]\b/iu]];
 const COMORBILIDADES = ["diabetes", "hipertension", "hipertensión", "cancer", "cáncer", "depresion", "depresión", "ansiedad", "bipolar", "esquizofrenia", "epilepsia", "cardiopatia", "cardiopatía", "alcoholismo", "suicidio", "demencia", "alzheimer", "parkinson", "obesidad", "tuberculosis", "enfermedad renal", "enfermedad tiroidea"];
 const texto = (valor) => String(valor ?? "").replace(/\s+/g, " ").trim();
@@ -55,23 +56,42 @@ function extraerFamiliograma(fuentes = [], paciente = {}) {
   return { personas, relaciones, observacionesGenerales: "Generado automáticamente a partir de fuentes clínicas; revisar y confirmar.", generadoAutomaticamente: true, requiereRevision: mapa.size > 0 };
 }
 
-function construirFuentes({ paciente = {}, historia = {}, notas = [], estudios = [] } = {}) {
+function notaVigente(nota = {}) {
+  if (!nota?.notaEditada || typeof nota.notaEditada !== "object") return nota || {};
+  return {
+    ...nota,
+    ...nota.notaEditada,
+    observacionFray: { ...(nota.observacionFray || {}), ...(nota.notaEditada.observacionFray || {}) }
+  };
+}
+
+export function construirFuentesHistoria({ paciente = {}, historia = {}, notas = [], estudios = [] } = {}) {
   const fuentes = [];
-  const agregar = (tipo, id, datos, fecha = "") => {
+  const agregar = (tipo, id, datos, fecha = "", textoDeteccionExplicito = "") => {
     const campos = textosDeObjeto(datos);
     const partes = campos.map((item) => {
       const campo = item.ruta.split(".").pop();
       return campo ? `${campo}: ${item.texto}` : item.texto;
     });
-    const textoDeteccion = campos
+    const textoDeteccionGenerico = campos
       .filter((item) => CAMPOS_NARRATIVOS.has(normalizar(item.ruta.split(".").pop())))
       .map((item) => item.texto)
       .join("\n");
-    if (partes.length) fuentes.push({ tipo, id, fecha, texto: partes.join("\n"), textoDeteccion, campos });
+    const textoDeteccion = texto(textoDeteccionExplicito) || textoDeteccionGenerico;
+    if (partes.length || textoDeteccion) fuentes.push({ tipo, id, fecha, texto: partes.join("\n"), textoDeteccion, campos });
   };
   agregar("paciente", "paciente", paciente, paciente.fechaCreacion);
   agregar("historia_clinica", "historiaInicial", historia, historia.fechaActualizacion);
-  notas.forEach((nota) => agregar(nota.tipoFuente || "nota", nota.id || "nota", nota.notaEditada || nota, nota.fecha || nota.fechaCreacion || nota.fechaISO));
+  notas.forEach((nota) => {
+    const vigente = notaVigente(nota);
+    agregar(
+      nota.tipoFuente || "nota",
+      nota.id || "nota",
+      vigente,
+      vigente.fechaNotaInput || vigente.fechaNota || nota.fecha || nota.fechaCreacion || nota.fechaISO,
+      construirTextoDeteccionNota(nota)
+    );
+  });
   estudios.forEach((estudio) => agregar("documento_oficial", estudio.id || "estudio", estudio, estudio.fecha || estudio.fechaCreacion));
   return fuentes;
 }
@@ -83,7 +103,7 @@ export async function generarHistoriaClinicaAutomatica({ uidPaciente, paciente =
   try { notas = (await obtenerHistorialNotas(uidPaciente)).docs.map((documento) => ({ id: documento.id, ...documento.data() })); } catch (error) { console.warn("No se pudieron cargar notas para la historia automática", error?.code || error); }
   try { estudios = await listarEstudios(uidPaciente); } catch (error) { console.warn("No se pudieron cargar documentos oficiales para la historia automática", error?.code || error); }
   try { notasRapidas = await listarNotasRapidas(uidPaciente); } catch (error) { console.warn("No se pudieron cargar notas rápidas para la historia automática", error?.code || error); }
-  const fuentes = construirFuentes({ paciente, historia, notas: [...notas, ...notasRapidas.map((nota) => ({ ...nota, tipoFuente: "nota_rapida" }))], estudios });
+  const fuentes = construirFuentesHistoria({ paciente, historia, notas: [...notas, ...notasRapidas.map((nota) => ({ ...nota, tipoFuente: "nota_rapida" }))], estudios });
   const familiograma = extraerFamiliograma(fuentes, paciente);
   const historiaFamiliar = familiograma.personas.slice(1).map((persona) => `${persona.parentesco}: ${persona.antecedentes || "sin comorbilidades reportadas"}`).join("\n");
   const detecciones = detectarDatosHistoria(fuentes);

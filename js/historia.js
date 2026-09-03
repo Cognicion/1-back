@@ -9,10 +9,10 @@ import { configurarCamposRedimensionables } from "./components/redimensionadorCa
 import { esPacienteMujer } from "./utils/sexo.js";
 import { crearGestorHitosDesarrolloHistoria } from "./components/hitosDesarrolloHistoria.js";
 import { crearGestorFamiliogramaHistoria } from "./components/familiogramaHistoria.js";
-import { crearGestorDatosDetectadosHistoria } from "./components/datosDetectadosHistoria.js?v=20260821-detected-data-v1";
+import { crearGestorDatosDetectadosHistoria } from "./components/datosDetectadosHistoria.js?v=20260902-note-history-extraction-v1";
 import { calcularIMC } from "./utils/imc.js";
-import { generarHistoriaClinicaAutomatica, combinarHistoriaAutomatica } from "./services/historiaClinicaAutomatica.js?v=20260821-detected-data-v1";
-import { contieneDeteccion, valorDeteccionParaDestino } from "./services/historiaClinicaDeteccion.js?v=20260821-detected-data-v1";
+import { generarHistoriaClinicaAutomatica, combinarHistoriaAutomatica } from "./services/historiaClinicaAutomatica.js?v=20260902-note-history-extraction-v1";
+import { contieneDeteccion, valorDeteccionParaDestino } from "./services/historiaClinicaDeteccion.js?v=20260902-note-history-extraction-v1";
 
 import {
   obtenerUsuario,

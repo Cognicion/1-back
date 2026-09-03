@@ -76,6 +76,7 @@ export const HISTORIA_CAMPOS_DETECTABLES = Object.freeze([
 
   definirCampo({ clave: "diagnosticoClinico", etiqueta: "Diagnóstico clínico", seccionId: "diagnostico", seccionEtiqueta: "Diagnóstico", campoId: "diagnosticoClinico", aliases: ["diagnostico", "diagnóstico", "diagnosticos", "diagnósticos", "impresion diagnostica", "impresión diagnóstica"] }),
   definirCampo({ clave: "codigoDiagnostico", etiqueta: "Código diagnóstico", seccionId: "diagnostico", seccionEtiqueta: "Diagnóstico", campoId: "codigoDiagnostico", aliases: ["cie10", "cie-10", "cie11", "cie-11", "dsm5", "dsm-5", "codigo diagnostico"] }),
+  definirCampo({ clave: "analisisClinico", etiqueta: "Análisis clínico", seccionId: null, seccionEtiqueta: "Sin apartado compatible", tipoDestino: "manual", aliases: ["analisis clinico", "análisis clínico"] }),
 
   definirCampo({ clave: "tratamientoFarmacologico", etiqueta: "Tratamiento farmacológico", seccionId: "plan", seccionEtiqueta: "Plan terapéutico", campoId: "tratamientoFarmacologico", aliases: ["tratamiento", "manejo farmacologico", "manejo farmacológico"] }),
   definirCampo({ clave: "psicoterapia", etiqueta: "Psicoterapia o rehabilitación", seccionId: "plan", seccionEtiqueta: "Plan terapéutico", campoId: "psicoterapia", aliases: ["rehabilitacion", "rehabilitación"] }),
@@ -99,6 +100,106 @@ const limpiarValor = (valor) => String(valor ?? "")
   .filter(Boolean)
   .join("\n")
   .trim();
+
+function textoClinico(valor = "") {
+  return limpiarValor(String(valor ?? "").replace(/<[^>]*>/g, " "));
+}
+
+function valorEnRuta(origen = {}, ruta = "") {
+  return String(ruta || "").split(".").filter(Boolean).reduce((actual, clave) => (
+    actual && typeof actual === "object" ? actual[clave] : undefined
+  ), origen);
+}
+
+function valoresTextoClinico(valor) {
+  if (Array.isArray(valor)) return valor.flatMap((item) => valoresTextoClinico(item));
+  if (valor && typeof valor === "object") {
+    return [valor.texto, valor.nombre, valor.descripcion, valor.diagnostico, valor.valor, valor.value]
+      .map(textoClinico)
+      .filter(Boolean);
+  }
+  const limpio = textoClinico(valor);
+  return limpio ? [limpio] : [];
+}
+
+function notaVigenteParaDeteccion(nota = {}) {
+  if (!nota?.notaEditada || typeof nota.notaEditada !== "object") return nota || {};
+  return {
+    ...nota,
+    ...nota.notaEditada,
+    observacionFray: { ...(nota.observacionFray || {}), ...(nota.notaEditada.observacionFray || {}) }
+  };
+}
+
+function diagnosticosDeNota(nota = {}) {
+  const fuentes = [nota.diagnosticos, nota.historialDiagnosticos, nota.diagnostico];
+  const encontrados = [];
+  fuentes.forEach((fuente) => {
+    const items = Array.isArray(fuente) ? fuente : [fuente];
+    items.forEach((item) => {
+      if (item && typeof item === "object") {
+        const codigo = textoClinico(item.codigo || item.code || item.cie10 || item.cie11 || item.dsm5);
+        const nombre = textoClinico(item.nombre || item.texto || item.descripcion || item.diagnostico);
+        if (codigo || nombre) encontrados.push({ codigo, nombre: nombre || codigo });
+        return;
+      }
+      const valor = textoClinico(item);
+      if (valor) encontrados.push({ codigo: "", nombre: valor });
+    });
+  });
+  const vistos = new Set();
+  return encontrados.filter((item) => {
+    const clave = `${normalizar(item.codigo)}|${normalizar(item.nombre)}`;
+    if (!clave || vistos.has(clave)) return false;
+    vistos.add(clave);
+    return true;
+  });
+}
+
+/**
+ * Convierte los campos canónicos de cualquier formato de nota al lenguaje de
+ * encabezados que consume el detector de Historia clínica. No infiere datos:
+ * conserva únicamente el texto que el profesional dejó en la nota.
+ */
+export function construirTextoDeteccionNota(nota = {}) {
+  const vigente = notaVigenteParaDeteccion(nota);
+  const secciones = [];
+  const vistos = new Set();
+  const agregar = (encabezado, valor) => {
+    valoresTextoClinico(valor).forEach((textoFuente) => {
+      const clave = `${normalizar(encabezado)}|${normalizar(textoFuente)}`;
+      if (!clave || vistos.has(clave)) return;
+      vistos.add(clave);
+      secciones.push(`${encabezado}: ${textoFuente}`);
+    });
+  };
+
+  agregar("Padecimiento actual", vigente.subjetivo);
+  agregar("Padecimiento actual", vigente.padecimientoActual);
+  agregar("Padecimiento actual", vigente.motivoConsulta || vigente.motivoIngreso);
+  if (!textoClinico(vigente.subjetivo) && !textoClinico(vigente.padecimientoActual)) agregar("Padecimiento actual", vigente.notaRapida);
+
+  agregar("Exploración mental", vigente.objetivo);
+  agregar("Exploración mental", vigente.examenMental || vigente.exploracionMental);
+  agregar("Análisis clínico", vigente.analisis);
+
+  const diagnosticos = diagnosticosDeNota(vigente);
+  agregar("Diagnóstico clínico", diagnosticos.map((item) => item.codigo && item.nombre !== item.codigo ? `${item.codigo} - ${item.nombre}` : item.nombre));
+  agregar("Código diagnóstico", diagnosticos.map((item) => item.codigo));
+
+  agregar("Tratamiento farmacológico", vigente.tratamiento);
+  agregar("Plan terapéutico", vigente.plan);
+  agregar("Psicoterapia o rehabilitación", vigente.psicoterapia || vigente.rehabilitacion);
+  agregar("Plan de seguimiento", vigente.seguimiento);
+  agregar("Exploración física", valorEnRuta(vigente, "observacionFray.exploracionFisicaNeurologica"));
+  agregar("Pronóstico", valorEnRuta(vigente, "observacionFray.pronostico"));
+
+  const tieneSeccionCanonica = secciones.length > 0;
+  if (!tieneSeccionCanonica) {
+    agregar("Observaciones clínicas", vigente.texto || vigente.contenido || vigente.nota || vigente.resumen);
+  }
+  return secciones.join("\n\n");
+}
 const escaparRegExp = (valor) => String(valor).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const hash = (valor) => {
   let salida = 2166136261;

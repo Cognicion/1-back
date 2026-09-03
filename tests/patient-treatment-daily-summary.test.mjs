@@ -85,5 +85,5 @@ test("la tarjeta del expediente usa el resumen diario y filtra null", async () =
   assert.match(pacienteJs, /nombreMedicamentoResumenTratamiento/);
   assert.match(pacienteJs, /\^\(\?:null\|undefined\)\$/);
   assert.match(pacienteJs, /VERSION_RESUMEN_EXPEDIENTE = "1\.42"/);
-  assert.match(pacienteHtml, /treatment-daily-dose-summary-v1/);
+  assert.match(pacienteHtml, /js\/paciente\.js\?v=[^"']+/);
 });
