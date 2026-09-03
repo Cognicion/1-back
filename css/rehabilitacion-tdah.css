@@ -1074,6 +1074,11 @@ html[data-theme] body.adhd-page .adhd-view.adhd-current-view {
   user-select: none;
 }
 
+.adhd-task-host[hidden],
+.adhd-task-frame[hidden] {
+  display: none !important;
+}
+
 .adhd-task-frame {
   width: 100%;
   height: 100%;

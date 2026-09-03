@@ -11,7 +11,10 @@ import {
   scoreDichoticTrial
 } from "./dichotic/dichotic-core.js";
 const DICHOTIC_ACTIVITY_ID = "escucha_dicotica_derecho";
-const adhdTaskMode = new URLSearchParams(globalThis.location?.search || "").get("adhd") === "1";
+const launchParameters = new URLSearchParams(globalThis.location?.search || "");
+const adhdTaskMode = launchParameters.get("adhd") === "1";
+const embeddedAdhdTaskMode = document.documentElement.dataset.cognicionEmbed === "adhd-task";
+if (embeddedAdhdTaskMode) document.documentElement.dataset.cognicionEmbed = "adhd-task";
 let adhdTaskContext = null;
 let adhdTaskBridge = null;
 let adhdResultPublished = false;
@@ -136,13 +139,22 @@ const CRITICAL_PROTOCOL_FIELDS = [
 ];
 
 const $ = (id) => document.getElementById(id);
+let dichoticPageInitialized = false;
 
-document.addEventListener("DOMContentLoaded", async () => {
-  pacienteId = new URLSearchParams(window.location.search).get("id") || new URLSearchParams(window.location.search).get("paciente") || "";
+async function initializeDichoticPage() {
+  if (dichoticPageInitialized) return;
+  dichoticPageInitialized = true;
+  pacienteId = launchParameters.get("id") || launchParameters.get("paciente") || "";
   wireEvents();
   applyModeDefaults($("configModo")?.value || "clinical");
   await initializeCorpus();
-});
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => void initializeDichoticPage(), { once: true });
+} else {
+  void initializeDichoticPage();
+}
 
 onAuthStateChanged(auth, (user) => {
   usuarioId = user?.uid || "";
@@ -174,6 +186,8 @@ function wireEvents() {
   $("dominanciaLinguistica")?.addEventListener("change", () => $("dominanciaOtra")?.classList.toggle("oculta", $("dominanciaLinguistica").value !== "otra"));
   $("btnContinuarPractica")?.addEventListener("click", () => startPractice());
   $("btnPractica")?.addEventListener("click", () => startPractice());
+  $("btnValidarAudiosEmbed")?.addEventListener("click", validateAudioAssets);
+  $("btnPracticaEmbed")?.addEventListener("click", handleEmbeddedPrimaryAction);
   $("btnIniciarModalidad")?.addEventListener("click", startSelectedMode);
   $("btnEntrenamiento")?.addEventListener("click", startTraining);
   $("btnIniciar")?.addEventListener("click", startExperimental);
@@ -305,8 +319,13 @@ function renderCorpusState() {
 }
 
 async function validateAudioAssets() {
+  const embedValidationButton = $("btnValidarAudiosEmbed");
   try {
     $("estadoAudios").textContent = "Comprobando archivos...";
+    if (embedValidationButton) {
+      embedValidationButton.disabled = true;
+      embedValidationButton.textContent = "Validando audios...";
+    }
     const ctx = await engine.ensureContext();
     audioValidation = await validateDichoticAudioFiles(corpus, ctx);
   } catch (error) {
@@ -803,6 +822,38 @@ function updateStartButtons() {
   $("btnEntrenamiento")?.toggleAttribute("disabled", !demoReady);
   $("btnInvestigacion")?.toggleAttribute("disabled", !demoReady);
   $("btnIniciarModalidad")?.toggleAttribute("disabled", !demoReady);
+  const embedValidationButton = $("btnValidarAudiosEmbed");
+  if (embedValidationButton) {
+    embedValidationButton.toggleAttribute("disabled", !corpusValidation?.ok);
+    embedValidationButton.textContent = audioValidation.ok ? "Audios validados" : "Validar audios";
+  }
+  const embedPrimaryButton = $("btnPracticaEmbed");
+  embedPrimaryButton?.toggleAttribute("disabled", !(embeddedAdhdTaskMode && demoReady));
+  if (embedPrimaryButton) embedPrimaryButton.textContent = adhdPracticeCompleted ? "Iniciar aplicacion" : "Iniciar practica";
+  updateEmbeddedPreparationStatus({ captureReady, prepReady, demoReady });
+}
+
+function updateEmbeddedPreparationStatus({ captureReady, prepReady, demoReady }) {
+  if (!embeddedAdhdTaskMode) return;
+  const status = $("estadoPreparacionEmbed");
+  if (!status) return;
+  if (!corpusValidation) {
+    status.textContent = "Cargando material auditivo...";
+  } else if (!corpusValidation.ok) {
+    status.textContent = "El corpus no supero la validacion estructural.";
+  } else if (!audioValidation.ok) {
+    status.textContent = "Valida los audios y completa las tres comprobaciones.";
+  } else if (!headphoneCheck.headphoneCheckCompleted) {
+    status.textContent = "Verifica los canales izquierdo y derecho de los auriculares.";
+  } else if (!volumeConfirmed) {
+    status.textContent = "Confirma un volumen comodo.";
+  } else if (!captureReady) {
+    status.textContent = "Comprueba el microfono o selecciona captura manual.";
+  } else if (prepReady && demoReady) {
+    status.textContent = adhdPracticeCompleted
+      ? "Practica completa. Ya puedes iniciar la aplicacion."
+      : "Preparacion completa. Ya puedes iniciar la practica.";
+  }
 }
 
 function syncConfigTotals(event) {
@@ -1070,6 +1121,14 @@ function startSelectedMode() {
   return startExperimental();
 }
 
+function handleEmbeddedPrimaryAction() {
+  if (!adhdPracticeCompleted) {
+    startPractice();
+    return;
+  }
+  startSelectedMode();
+}
+
 function startRehabilitation() {
   const config = getTestConfig("rehabilitation");
   beginSession("rehabilitation", buildSessionPairs(corpus.pairs, config), config);
@@ -1192,6 +1251,7 @@ async function runTrialList(list, isPractice) {
           sequenceControl: "corpus_order",
           scored: false
         });
+        updateStartButtons();
       }
       $("pantallaEnsayo").classList.add("oculta");
       $("pantallaPreparacion").classList.remove("oculta");

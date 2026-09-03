@@ -30,6 +30,12 @@ test("cada tarea legacy activa el puente solo con adhd=1 y valida su identidad",
   }
 });
 
+test("el host transmite el token al contexto de navegación real del iframe", async () => {
+  const host = await source("js/rehabilitacion-tdah.js");
+  assert.match(host, /const bootstrapName = buildExistingTaskBootstrapName\(launchContext\)/u);
+  assert.match(host, /iframe\.name = bootstrapName;[\s\S]*?iframe\.contentWindow\.name = bootstrapName;[\s\S]*?iframe\.src = buildExistingTaskUrl/u);
+});
+
 test("CPT, Go/No-Go, Stroop y escucha dicotica evitan persistencia paralela", async () => {
   const cpt = await source("js/cpt.js");
   assert.match(cpt, /if \(adhdTaskMode\) \{\s*publicarResultadoAdhd\(resultadoActual\);\s*\} else \{\s*guardarResultadoLocal/u);

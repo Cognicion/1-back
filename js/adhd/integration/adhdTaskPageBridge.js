@@ -27,7 +27,11 @@ function enableEmbeddedFocusMode() {
   style.id = EMBEDDED_FOCUS_STYLE_ID;
   style.textContent = `
     html.adhd-embedded-task body > header,
-    html.adhd-embedded-task body > nav {
+    html.adhd-embedded-task body > nav,
+    html.adhd-embedded-task [data-global-app-header],
+    html.adhd-embedded-task [data-accesos-rapidos-global],
+    html.adhd-embedded-task #reporteGlobalWidget,
+    html.adhd-embedded-task #cognicion-biocellular-background {
       display: none !important;
     }
   `;

@@ -64,7 +64,7 @@ const LETRAS_CIE10_BIBLIOTECA = [
   { letra: "Y", rango: "Y00-Y99", titulo: "Otros eventos externos, atención médica y secuelas" },
   { letra: "Z", rango: "Z00-Z99", titulo: "Factores que influyen en el estado de salud y contacto con los servicios de salud" }
 ];
-const CAPITULOS_CIE10_CODIGOS_COMPLETOS = new Set(["A", "B", "C", "D", "E", "F", "G"]);
+const CAPITULOS_CIE10_CODIGOS_COMPLETOS = new Set(["A", "B", "C", "D", "E", "F", "G", "I"]);
 const CAPITULOS_CIE10_FICHAS_COMPLETAS = new Set(["C", "D", "E"]);
 let DIAGNOSTICOS_VALIDOS = [];
 let diagnosticosPorId = new Map();
@@ -219,7 +219,7 @@ function usuarioPuedeUsarBiblioteca(user, usuario = {}) {
 
 const libraryRoot = document.querySelector("[data-library-root]");
 const datosBibliotecaListos = libraryRoot
-    ? import("./data/catalogoDiagnosticos.js?v=20260825-biblioteca-catalogos-g-v2").then((diagnosticosModule) => {
+    ? import("./data/catalogoDiagnosticos.js?v=20260902-biblioteca-cie10-i-v1").then((diagnosticosModule) => {
     DIAGNOSTICOS_VALIDOS = validarDiagnosticosBiblioteca(diagnosticosModule.CATALOGO_DIAGNOSTICOS);
     diagnosticosPorId = new Map(DIAGNOSTICOS_VALIDOS.map((diagnostico) => [diagnostico.id, diagnostico]));
     poblarCategoriasBiblioteca([]);
@@ -498,9 +498,8 @@ function obtenerCodigoPresentacionDiagnostico(diagnostico, catalogo = catalogoDi
   if (catalogo === "manual") return diagnostico.codigoManual || "";
   const sistema = diagnostico.sistemas?.[catalogo];
   if (!sistema) return "";
-  const clasificacionOficial = diagnostico.propiedadesPorFuente?.cie10?.clasificacionOficial;
+  const clasificacionOficial = diagnostico.propiedadesPorFuente?.[catalogo]?.clasificacionOficial;
   const codigoBase = catalogo === "cie10"
-    && String(sistema.codigo || "").startsWith("G")
     && clasificacionOficial?.codigoAsterisco
     && clasificacionOficial.codigoTabular
     ? clasificacionOficial.codigoTabular

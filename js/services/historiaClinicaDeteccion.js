@@ -18,7 +18,10 @@ function definirCampo({
     campoId,
     tipoDestino,
     incluirEtiqueta,
-    aliases: Object.freeze([clave, campoId, etiqueta, ...aliases].filter(Boolean))
+    // Los encabezados narrativos no deben heredar el campo de destino: varios
+    // hallazgos pueden escribirse en el mismo campo de Historia clínica.
+    aliases: Object.freeze([clave, etiqueta, ...aliases].filter(Boolean)),
+    aliasesRuta: Object.freeze([clave, campoId, etiqueta, ...aliases].filter(Boolean))
   });
 }
 
@@ -215,11 +218,24 @@ HISTORIA_CAMPOS_DETECTABLES.forEach((definicion) => {
   definicion.aliases.forEach((alias) => definicionesPorAlias.set(normalizarClave(alias), definicion));
 });
 
+const definicionesPorRuta = new Map();
+HISTORIA_CAMPOS_DETECTABLES.forEach((definicion) => {
+  definicionesPorRuta.set(normalizarClave(definicion.clave), definicion);
+});
+HISTORIA_CAMPOS_DETECTABLES.forEach((definicion) => {
+  definicion.aliasesRuta.forEach((alias) => {
+    const clave = normalizarClave(alias);
+    if (!definicionesPorRuta.has(clave)) definicionesPorRuta.set(clave, definicion);
+  });
+});
+
 const aliasesEncabezado = [...definicionesPorAlias.entries()]
   .filter(([alias]) => alias.length > 1)
   .map(([, definicion]) => definicion.aliases)
   .flat()
-  .filter((alias, indice, lista) => lista.findIndex((item) => normalizar(item) === normalizar(alias)) === indice)
+  // El modificador /i de la expresión no equipara acentos; conservar ambas
+  // grafías evita que “Pronóstico” o “Exploración” queden sin encabezado.
+  .filter((alias, indice, lista) => lista.findIndex((item) => texto(item).toLocaleLowerCase() === texto(alias).toLocaleLowerCase()) === indice)
   .sort((a, b) => b.length - a.length);
 
 function separarBloques(textoFuente = "") {
@@ -242,7 +258,7 @@ function separarBloques(textoFuente = "") {
 function definicionDesdeRuta(ruta = "") {
   const partes = String(ruta).split(".").filter(Boolean);
   if (!partes.length || partes.length > 2) return null;
-  return definicionesPorAlias.get(normalizarClave(partes.at(-1))) || null;
+  return definicionesPorRuta.get(normalizarClave(partes.at(-1))) || null;
 }
 
 function fuenteSegura(fuente = {}) {

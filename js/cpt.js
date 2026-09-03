@@ -10,7 +10,10 @@ import {
   generarSecuenciaCpt,
   normalizarConfigCpt
 } from "./cpt-core.js";
-const adhdTaskMode = new URLSearchParams(globalThis.location?.search || "").get("adhd") === "1";
+const launchParameters = new URLSearchParams(globalThis.location?.search || "");
+const adhdTaskMode = launchParameters.get("adhd") === "1";
+const embeddedTaskMode = document.documentElement.dataset.cognicionEmbed === "adhd-task";
+if (embeddedTaskMode) document.documentElement.dataset.cognicionEmbed = "adhd-task";
 let adhdTaskContext = null;
 let adhdTaskBridge = null;
 let adhdResultPublished = false;
@@ -70,14 +73,20 @@ let semillaSesion = 0;
 
 const $ = (id) => document.getElementById(id);
 
-document.addEventListener("DOMContentLoaded", () => {
+function inicializarCpt() {
   pacienteId = new URLSearchParams(window.location.search).get("id") || new URLSearchParams(window.location.search).get("paciente") || "";
-  ocultarTodo("inicio");
+  ocultarTodo(embeddedTaskMode ? "config" : "inicio");
   actualizarInstrucciones();
   configurarEventos();
   actualizarGuardiaPracticaAdhd();
   iniciarMonitoreoGamepad();
-});
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", inicializarCpt, { once: true });
+} else {
+  inicializarCpt();
+}
 
 onAuthStateChanged(auth, (user) => {
   usuarioId = user?.uid || "";
@@ -189,7 +198,7 @@ async function prepararSesion(esPractica) {
   $("modoJuego").textContent = practica ? "Practica" : "Sesion experimental";
   $("feedbackCpt").textContent = practica ? "Practica: responde solo ante 0." : "";
   $("barraProgreso").style.width = "0%";
-  if ($("pantallaCompleta")?.value !== "no") {
+  if (!embeddedTaskMode && $("pantallaCompleta")?.value !== "no") {
     await document.documentElement.requestFullscreen?.().catch(() => {});
   }
   iniciarProgramador();
@@ -436,7 +445,7 @@ function construirResultado(metrics, trialHistory, actualDurationSeconds) {
     blockResults: metrics.blockResults,
     trialHistory,
     responseDevice: dispositivoRespuesta,
-    interruptions,
+    interruptions: interrupciones,
     practice: practica
   };
 }

@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="biocelular">
 <head>
-<script src="js/theme-preload.js?v=2.115-navbar-unica-v2"></script>
+<script src="js/theme-preload.js?v=20260902-adhd-task-embed-v1"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>COGNICION | Prueba de Escucha Dicotica</title>
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 <link rel="stylesheet" href="css/escucha-dicotica.css">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
-<script type="module" src="js/services/themeBootstrap.js"></script>
+<link rel="stylesheet" href="css/escucha-dicotica-adhd-embed.css?v=20260902-adhd-task-embed-v1">
+<script type="module" src="js/services/themeBootstrap.js?v=20260902-adhd-task-embed-v1"></script>
 </head>
 <body>
 <header class="topbar-dicotica">
@@ -22,11 +23,13 @@
 <main class="dicotica-shell">
   <div class="demo-banner" id="demoBanner" hidden>MODO DEMOSTRACION - NO VALIDO PARA INTERPRETACION CLINICA</div>
   <section class="dicotica-hero" id="pantallaPreparacion">
-    <span class="kicker">Actividad auditiva</span>
-    <h1>Escucha Dicotica</h1>
-    <p>En cada ensayo escucharas dos palabras diferentes al mismo tiempo: una por el oido izquierdo y otra por el oido derecho. Repite en voz alta unicamente la palabra presentada por el oido derecho.</p>
-    <p class="alerta-dicotica">Antes de iniciar, completa la preparacion guiada. La prueba requiere auriculares estereo correctamente colocados, volumen comodo y una forma definida para capturar respuestas.</p>
-    <p class="alerta-dicotica advertencia" id="advertenciaCorpus">Cargando corpus...</p>
+    <div class="dicotica-preparacion-copy">
+      <span class="kicker">Actividad auditiva</span>
+      <h1>Escucha Dicotica</h1>
+      <p>En cada ensayo escucharas dos palabras diferentes al mismo tiempo: una por el oido izquierdo y otra por el oido derecho. Repite en voz alta unicamente la palabra presentada por el oido derecho.</p>
+      <p class="alerta-dicotica">Antes de iniciar, completa la preparacion guiada. La prueba requiere auriculares estereo correctamente colocados, volumen comodo y una forma definida para capturar respuestas.</p>
+      <p class="alerta-dicotica advertencia" id="advertenciaCorpus">Cargando corpus...</p>
+    </div>
 
     <div class="preparacion-grid" aria-label="Resumen de preparacion">
       <article><strong>Ensayos</strong><span>120</span></article>
@@ -130,7 +133,7 @@
       <div class="microfono-estado" id="detalleMicrofono" aria-live="polite"></div>
     </section>
 
-    <section class="panel-dicotica">
+    <section class="panel-dicotica condiciones-clinicas">
       <h2>Condiciones clinicas</h2>
       <div class="condiciones-secciones">
         <fieldset>
@@ -161,7 +164,7 @@
       </div>
     </section>
 
-    <section class="panel-dicotica">
+    <section class="panel-dicotica instrucciones-prueba">
       <h2>Instrucciones</h2>
       <p><strong>Escucharas dos palabras diferentes al mismo tiempo: una por cada oido. Repite en voz alta unicamente la palabra que escuches por el oido derecho. Ignora la palabra del oido izquierdo.</strong></p>
       <p>Responde con una sola palabra. Habla de forma clara despues de escuchar cada par.</p>
@@ -233,7 +236,7 @@
       </section>
     </section>
 
-    <section class="panel-dicotica">
+    <section class="panel-dicotica inicio-prueba">
       <h2>Inicio</h2>
       <div class="acciones-dicotica">
         <button id="btnIniciarModalidad" type="button">Iniciar modalidad seleccionada</button>
@@ -244,6 +247,11 @@
         <button id="btnIniciar" type="button">Iniciar prueba experimental</button>
         <button id="btnInvestigacion" type="button">Iniciar modo investigacion</button>
       </div>
+      <div class="acciones-dicotica acciones-adhd-embed" aria-label="Preparacion de la practica TDAH">
+        <button id="btnValidarAudiosEmbed" type="button" disabled>Validar audios</button>
+        <button id="btnPracticaEmbed" type="button" class="boton-principal-grande" disabled>Iniciar practica</button>
+      </div>
+      <p class="estado-preparacion-embed" id="estadoPreparacionEmbed" aria-live="polite">Cargando material auditivo...</p>
       <p class="alerta-dicotica advertencia" id="estadoValidado">Actividad pendiente de material auditivo bibliografico autorizado.</p>
     </section>
 
@@ -375,8 +383,8 @@
 </div>
 
 <div class="toast-dicotica" id="toastDicotica"></div>
-<script type="module" src="js/escucha-dicotica.js"></script>
-<script type="module" src="js/reportes.js"></script>
-<script type="module" src="js/components/accesosRapidos.js"></script>
+<script type="module" src="js/escucha-dicotica.js?v=20260902-adhd-task-embed-v1"></script>
+<script type="module" src="js/reportes.js?v=20260902-adhd-task-embed-v1"></script>
+  <script type="module" src="js/components/accesosRapidos.js?v=20260902-adhd-task-embed-v1"></script>
 </body>
 </html>

@@ -88,10 +88,27 @@ function paginaActual() {
   return nombre.toLowerCase();
 }
 
+function esTareaAdhdEmbebidaAutenticada() {
+  if (document.documentElement.dataset.cognicionEmbed === "adhd-task") return true;
+  const parameters = new URLSearchParams(window.location.search);
+  const bootstrapName = String(window.name || "");
+  let sameOriginParent = false;
+  try {
+    sameOriginParent = window.self !== window.top && window.parent.location.origin === window.location.origin;
+  } catch (_) {
+    sameOriginParent = false;
+  }
+  return parameters.get("adhd") === "1"
+    && parameters.get("embed") === "1"
+    && sameOriginParent
+    && /^cognicion-adhd-bridge:[a-zA-Z0-9_-]{8,160}$/u.test(bootstrapName);
+}
+
 function debeOmitirAccesosRapidos() {
+  const tareaAdhdEmbebida = esTareaAdhdEmbebidaAutenticada();
   const bibliotecaPublica = paginaActual() === "biblioteca.html"
     && new URLSearchParams(window.location.search).get("modo") === "publico";
-  return bibliotecaPublica || PAGINAS_SIN_ACCESOS_RAPIDOS.has(paginaActual());
+  return tareaAdhdEmbebida || bibliotecaPublica || PAGINAS_SIN_ACCESOS_RAPIDOS.has(paginaActual());
 }
 
 function obtenerUidFirebaseLocal() {

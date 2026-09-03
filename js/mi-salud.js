@@ -13,12 +13,8 @@ import { medicoPuedeVer, obtenerUsuario } from "./services/usuarios.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { crearCodigoPacienteParaMedico } from "./services/vinculacion.js";
+import { resolverAccesoMiSalud } from "./services/miSaludAccess.js?v=20260902-mi-salud-admin-access-v1";
 import { normalizarTextoFrecuencia } from "./utils/frecuencias.js";
-import {
-  isAdministrator,
-  usuarioEsPersonalClinico,
-  usuarioEsProfesionalTipoMedico
-} from "./utils/roles.js";
 
 import {
   onAuthStateChanged
@@ -68,15 +64,19 @@ onAuthStateChanged(auth, async (user) => {
     modoVistaPrevia = parametros.get("preview") === "1" && Boolean(pacientePreview);
     uidSeguimiento = user.uid;
     let datosSeguimiento = datos;
+    const acceso = resolverAccesoMiSalud({
+      actor: datos,
+      pacientePreview: modoVistaPrevia ? pacientePreview : ""
+    });
+
+    if (!acceso.permitido) {
+      alert(acceso.mensaje);
+      window.location.href = "dashboard.html";
+      return;
+    }
 
     if (modoVistaPrevia) {
-      if (!usuarioEsPersonalClinico(datos.rol)) {
-        alert("La vista previa de Mi Salud es solo para personal clinico.");
-        window.location.href = "dashboard.html";
-        return;
-      }
-
-      const autorizado = await medicoPuedeVer(user.uid, pacientePreview);
+      const autorizado = !acceso.requiereRelacionClinica || await medicoPuedeVer(user.uid, pacientePreview);
       if (!autorizado) {
         alert("No tienes permiso para previsualizar Mi Salud de este paciente.");
         window.location.href = "medico.html";
@@ -93,18 +93,10 @@ onAuthStateChanged(auth, async (user) => {
       uidSeguimiento = pacientePreview;
       datosSeguimiento = snapPaciente.data();
       document.body.classList.add("modo-preview");
-    } else if (
-      !isAdministrator(datos) &&
-      datos.rol !== "paciente" &&
-      !usuarioEsProfesionalTipoMedico(datos.rol)
-    ) {
-      alert("Este modulo esta disponible para pacientes, personal clinico y administradores.");
-      window.location.href = "dashboard.html";
-      return;
     }
 
     document.body.classList.remove("bloqueado");
-    rolActual = datos.rol || "";
+    rolActual = datos.rol || datos.role || "";
     await cargarMiSalud(uidSeguimiento, datosSeguimiento, rolActual);
     await configurarEscalas();
     await cargarResultadosEscalas(uidSeguimiento);

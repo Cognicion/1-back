@@ -1,0 +1,439 @@
+.acciones-adhd-embed,
+.estado-preparacion-embed {
+  display: none;
+}
+
+html[data-cognicion-embed="adhd-task"],
+html[data-cognicion-embed="adhd-task"] body {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+html[data-cognicion-embed="adhd-task"] .dicotica-shell {
+  width: 100%;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+html[data-cognicion-embed="adhd-task"] .demo-banner:not([hidden]) {
+  position: fixed;
+  inset: 8px 8px auto auto;
+  z-index: 30;
+  max-width: min(390px, calc(100% - 16px));
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: .66rem;
+}
+
+html[data-cognicion-embed="adhd-task"] #pantallaPreparacion:not(.oculta) {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(300px, .7fr);
+  grid-template-rows: auto minmax(118px, 1fr) minmax(118px, 1fr) auto;
+  grid-template-areas:
+    "copy summary"
+    "headphones volume"
+    "headphones microphone"
+    "start start";
+  gap: 8px 12px;
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
+  margin: 0;
+  padding: 12px;
+  overflow: auto;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: rgba(6, 17, 13, .96);
+}
+
+html[data-cognicion-embed="adhd-task"] .dicotica-preparacion-copy {
+  grid-area: copy;
+  min-width: 0;
+}
+
+html[data-cognicion-embed="adhd-task"] .dicotica-preparacion-copy .kicker {
+  font-size: .66rem;
+}
+
+html[data-cognicion-embed="adhd-task"] .dicotica-preparacion-copy h1 {
+  margin: 2px 0 4px;
+  font-size: clamp(1.45rem, 3vw, 2.15rem);
+  line-height: 1;
+}
+
+html[data-cognicion-embed="adhd-task"] .dicotica-preparacion-copy > p {
+  margin: 3px 0;
+  font-size: .78rem;
+  line-height: 1.3;
+}
+
+html[data-cognicion-embed="adhd-task"] .dicotica-preparacion-copy > .alerta-dicotica:not(#advertenciaCorpus) {
+  display: none;
+}
+
+html[data-cognicion-embed="adhd-task"] #advertenciaCorpus {
+  padding: 5px 8px;
+  border: 0;
+  border-left: 2px solid rgba(251, 191, 36, .55);
+  border-radius: 0;
+  background: transparent;
+}
+
+html[data-cognicion-embed="adhd-task"] .preparacion-grid {
+  grid-area: summary;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-self: start;
+  gap: 3px 8px;
+  margin: 0;
+}
+
+html[data-cognicion-embed="adhd-task"] .preparacion-grid article,
+html[data-cognicion-embed="adhd-task"] .resultado-card,
+html[data-cognicion-embed="adhd-task"] .hud-dicotica div,
+html[data-cognicion-embed="adhd-task"] .estado-voz,
+html[data-cognicion-embed="adhd-task"] .interpretacion-dicotica {
+  padding: 4px 7px;
+  border: 0;
+  border-left: 1px solid rgba(126, 182, 138, .25);
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+html[data-cognicion-embed="adhd-task"] .preparacion-grid article {
+  font-size: .76rem;
+}
+
+html[data-cognicion-embed="adhd-task"] #pasoAuriculares { grid-area: headphones; }
+html[data-cognicion-embed="adhd-task"] #pasoVolumen { grid-area: volume; }
+html[data-cognicion-embed="adhd-task"] #pasoMicrofono { grid-area: microphone; }
+html[data-cognicion-embed="adhd-task"] .inicio-prueba { grid-area: start; }
+
+html[data-cognicion-embed="adhd-task"] #pantallaPreparacion > :is(
+  .condiciones-clinicas,
+  .instrucciones-prueba,
+  .configuracion-prueba,
+  .admin-corpus
+) {
+  display: none !important;
+}
+
+html[data-cognicion-embed="adhd-task"] #pantallaPreparacion > .panel-dicotica {
+  min-width: 0;
+  margin: 0;
+  padding: 7px 10px;
+  overflow: auto;
+  border: 0;
+  border-top: 1px solid rgba(126, 182, 138, .2);
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+html[data-cognicion-embed="adhd-task"] #pantallaPreparacion .panel-header {
+  gap: 8px;
+  margin: 0 0 5px;
+}
+
+html[data-cognicion-embed="adhd-task"] #pantallaPreparacion .panel-header h2 {
+  margin: 1px 0 0;
+  font-size: .92rem;
+}
+
+html[data-cognicion-embed="adhd-task"] #pantallaPreparacion .estado-paso {
+  padding: 2px 6px;
+  font-size: .6rem;
+}
+
+html[data-cognicion-embed="adhd-task"] #pantallaPreparacion .panel-header > strong {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  font-size: .69rem;
+  background: transparent;
+}
+
+html[data-cognicion-embed="adhd-task"] #pasoAuriculares > p,
+html[data-cognicion-embed="adhd-task"] #pasoVolumen > p,
+html[data-cognicion-embed="adhd-task"] #pasoMicrofono > p:first-of-type,
+html[data-cognicion-embed="adhd-task"] .canal-card > p,
+html[data-cognicion-embed="adhd-task"] #auricularesVerificados {
+  display: none;
+}
+
+html[data-cognicion-embed="adhd-task"] .canales-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+html[data-cognicion-embed="adhd-task"] .canal-card {
+  padding: 4px 6px;
+  border: 0;
+  border-left: 1px solid rgba(126, 182, 138, .25);
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+html[data-cognicion-embed="adhd-task"] .canal-card > strong {
+  margin: 1px 0 3px;
+  font-size: .82rem;
+}
+
+html[data-cognicion-embed="adhd-task"] .acciones-dicotica {
+  gap: 5px;
+  margin-top: 5px;
+}
+
+html[data-cognicion-embed="adhd-task"] button,
+html[data-cognicion-embed="adhd-task"] .boton-secundario {
+  min-height: 32px;
+  padding: 6px 10px;
+  border-radius: 5px;
+  font-size: .72rem;
+}
+
+html[data-cognicion-embed="adhd-task"] #pantallaPreparacion input,
+html[data-cognicion-embed="adhd-task"] #pantallaPreparacion select,
+html[data-cognicion-embed="adhd-task"] #pantallaPreparacion textarea {
+  min-height: 30px;
+  padding: 4px 7px;
+  border-radius: 4px;
+  font-size: .72rem;
+}
+
+html[data-cognicion-embed="adhd-task"] #pantallaPreparacion label,
+html[data-cognicion-embed="adhd-task"] #pantallaPreparacion p,
+html[data-cognicion-embed="adhd-task"] .opciones-profesional {
+  font-size: .7rem;
+}
+
+html[data-cognicion-embed="adhd-task"] .opciones-profesional {
+  margin-top: 5px;
+  padding-top: 4px;
+}
+
+html[data-cognicion-embed="adhd-task"] .microfono-estado {
+  min-height: 0;
+  margin-top: 4px;
+  padding: 0;
+  font-size: .68rem;
+}
+
+html[data-cognicion-embed="adhd-task"] .inicio-prueba {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 12px;
+  overflow: visible !important;
+}
+
+html[data-cognicion-embed="adhd-task"] .inicio-prueba > h2,
+html[data-cognicion-embed="adhd-task"] .inicio-prueba > .acciones-dicotica:not(.acciones-adhd-embed),
+html[data-cognicion-embed="adhd-task"] .inicio-prueba > #estadoValidado {
+  display: none;
+}
+
+html[data-cognicion-embed="adhd-task"] .acciones-adhd-embed {
+  display: flex;
+  grid-column: 2;
+  grid-row: 1;
+  flex-wrap: nowrap;
+  margin: 0;
+}
+
+html[data-cognicion-embed="adhd-task"] .acciones-adhd-embed .boton-principal-grande {
+  width: auto;
+}
+
+html[data-cognicion-embed="adhd-task"] .estado-preparacion-embed {
+  display: block;
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
+  color: var(--green-100);
+  font-size: .75rem;
+}
+
+html[data-cognicion-embed="adhd-task"] #pantallaEnsayo:not(.oculta) {
+  display: grid;
+  grid-template-rows: auto minmax(48px, 1fr) auto auto auto;
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
+  margin: 0;
+  padding: 10px 12px;
+  overflow: auto;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: rgba(6, 17, 13, .96);
+}
+
+html[data-cognicion-embed="adhd-task"] .hud-dicotica {
+  gap: 5px;
+}
+
+html[data-cognicion-embed="adhd-task"] .hud-dicotica div {
+  font-size: .75rem;
+}
+
+html[data-cognicion-embed="adhd-task"] .fijacion {
+  height: auto;
+  min-height: 48px;
+  font-size: clamp(3rem, 13vh, 6rem);
+}
+
+html[data-cognicion-embed="adhd-task"] #indicacionRespuesta {
+  margin: 3px 0;
+  font-size: .8rem;
+}
+
+html[data-cognicion-embed="adhd-task"] .retroalimentacion-ensayo {
+  width: 100%;
+  margin: 3px 0;
+  padding: 7px 9px;
+  border-radius: 0;
+}
+
+html[data-cognicion-embed="adhd-task"] .captura-respuesta {
+  width: min(900px, 100%);
+  margin: 0 auto;
+}
+
+html[data-cognicion-embed="adhd-task"] .estado-voz {
+  min-height: 0;
+  margin: 2px 0 5px;
+  gap: 2px;
+  font-size: .72rem;
+}
+
+html[data-cognicion-embed="adhd-task"] .estado-voz strong {
+  font-size: 1rem;
+}
+
+html[data-cognicion-embed="adhd-task"] .boton-microfono {
+  width: auto;
+  min-height: 34px;
+  margin: 0 auto 4px;
+  font-size: .78rem;
+}
+
+html[data-cognicion-embed="adhd-task"] .transcripcion-panel {
+  gap: 3px;
+  margin: 3px 0;
+  padding: 5px 8px;
+  border-radius: 0;
+}
+
+html[data-cognicion-embed="adhd-task"] .transcripcion-panel strong {
+  font-size: 1rem;
+}
+
+html[data-cognicion-embed="adhd-task"] .acciones-respuesta {
+  gap: 4px;
+  margin-top: 4px;
+}
+
+html[data-cognicion-embed="adhd-task"] .descanso-bloque {
+  padding: 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+html[data-cognicion-embed="adhd-task"] #pantallaResultados:not(.oculta) {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
+  margin: 0;
+  padding: 12px;
+  overflow: auto;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: rgba(6, 17, 13, .96);
+}
+
+html[data-cognicion-embed="adhd-task"] #pantallaResultados .seccion-titulo h2 {
+  margin: 2px 0;
+  font-size: 1.25rem;
+}
+
+html[data-cognicion-embed="adhd-task"] #pantallaResultados .seccion-titulo p {
+  margin: 2px 0;
+  font-size: .75rem;
+}
+
+html[data-cognicion-embed="adhd-task"] #pantallaResultados .resultados-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
+  margin: 0;
+}
+
+html[data-cognicion-embed="adhd-task"] #pantallaResultados .resultado-card {
+  font-size: .8rem;
+}
+
+html[data-cognicion-embed="adhd-task"] #pantallaResultados :is(
+  .bloques-resumen-grid,
+  .graficas-dicotica,
+  .detalle-respuestas,
+  .acciones-dicotica,
+  .tabla-wrap
+),
+html[data-cognicion-embed="adhd-task"] #pantallaResultados > h3 {
+  display: none !important;
+}
+
+html[data-cognicion-embed="adhd-task"] #pantallaResultados .interpretacion-dicotica {
+  margin: 0;
+  font-size: .76rem;
+}
+
+html[data-cognicion-embed="adhd-task"] .modal-dicotica-card {
+  max-height: calc(100dvh - 20px);
+  overflow: auto;
+}
+
+@media (max-width: 760px), (max-height: 520px) {
+  html[data-cognicion-embed="adhd-task"] #pantallaPreparacion:not(.oculta) {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    grid-template-areas:
+      "copy"
+      "summary"
+      "headphones"
+      "volume"
+      "microphone"
+      "start";
+  }
+
+  html[data-cognicion-embed="adhd-task"] .inicio-prueba {
+    position: sticky;
+    bottom: 0;
+    grid-template-columns: 1fr;
+    padding: 8px !important;
+    background: rgba(6, 17, 13, .97) !important;
+  }
+
+  html[data-cognicion-embed="adhd-task"] .acciones-adhd-embed,
+  html[data-cognicion-embed="adhd-task"] .estado-preparacion-embed {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  html[data-cognicion-embed="adhd-task"] #pantallaResultados .resultados-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

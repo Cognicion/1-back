@@ -1,0 +1,29 @@
+html[data-cognicion-embed="adhd-task"],
+html[data-cognicion-embed="adhd-task"] body {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+html[data-cognicion-embed="adhd-task"] :is(
+  body > header,
+  body > nav,
+  [data-global-app-header],
+  [data-accesos-rapidos-global],
+  #reporteGlobalWidget,
+  #cognicion-biocellular-background
+) {
+  display: none !important;
+}
+
+html[data-cognicion-embed="adhd-task"] body > main {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+html[data-cognicion-embed="adhd-task"] :where(a[href="dashboard.html"], a[href="rehabilitacion-cognitiva.html"]) {
+  display: none !important;
+}

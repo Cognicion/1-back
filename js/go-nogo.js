@@ -1,7 +1,9 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { collection, doc, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const adhdTaskMode = new URLSearchParams(globalThis.location?.search || "").get("adhd") === "1";
+const launchParameters = new URLSearchParams(globalThis.location?.search || "");
+const adhdTaskMode = launchParameters.get("adhd") === "1";
+const embeddedTaskMode = document.documentElement.dataset.cognicionEmbed === "adhd-task";
 let adhdTaskContext = null;
 let adhdTaskBridge = null;
 let adhdResultPublished = false;
@@ -77,11 +79,15 @@ let audioCtx = null;
 let semillaSesion = null;
 let randomSesion = Math.random;
 let inicioSesionIso = "";
+let interfazInicializada = false;
 
 const $ = (id) => document.getElementById(id);
 
-document.addEventListener("DOMContentLoaded", () => {
-  ocultarTodo("inicio");
+function inicializarInterfaz() {
+  if (interfazInicializada) return;
+  interfazInicializada = true;
+  if (embeddedTaskMode) document.documentElement.dataset.cognicionEmbed = "adhd-task";
+  ocultarTodo(embeddedTaskMode ? "config" : "inicio");
   $("btnIrConfiguracion")?.addEventListener("click", () => ocultarTodo("config"));
   $("dificultad")?.addEventListener("change", aplicarPerfilDificultad);
   $("btnPractica")?.addEventListener("click", () => iniciarFlujo(true));
@@ -97,7 +103,13 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-toggle-grafica]").forEach((boton) => boton.addEventListener("click", () => toggleGrafica(boton.dataset.toggleGrafica)));
   aplicarPerfilDificultad();
   actualizarGuardiaPracticaAdhd();
-});
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", inicializarInterfaz, { once: true });
+} else {
+  inicializarInterfaz();
+}
 
 onAuthStateChanged(auth, (user) => { usuarioId = user?.uid || ""; });
 

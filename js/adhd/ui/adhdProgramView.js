@@ -520,6 +520,7 @@ export function setTaskDialog({ title, description, external = false } = {}) {
   setText("adhdTaskDialogDescription", description || "Sigue las instrucciones y completa primero la práctica.");
   $("adhdTaskHost")?.toggleAttribute("hidden", external);
   $("adhdTaskFrame")?.toggleAttribute("hidden", !external);
+  $("adhdReduceDifficulty")?.toggleAttribute("hidden", external);
 }
 
 export function renderTaskFeedback({ taskLabel = "Tarea", result = {}, previous = null } = {}) {

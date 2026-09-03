@@ -6,6 +6,28 @@
   const LEGACY_KEYS = ["cognicion.apariencia.modoInterfaz", "theme"];
   const DEFAULT_THEME = "biocelular";
   const root = document.documentElement;
+  const launchParameters = new URLSearchParams(window.location.search);
+  const bootstrapName = String(window.name || "");
+  const bootstrapPrefix = "cognicion-adhd-bridge:";
+  const bootstrapToken = bootstrapName.startsWith(bootstrapPrefix) ? bootstrapName.slice(bootstrapPrefix.length) : "";
+  let embeddedBySameOriginHost = false;
+  try {
+    embeddedBySameOriginHost = window.self !== window.top && window.parent.location.origin === window.location.origin;
+  } catch (_) {
+    embeddedBySameOriginHost = false;
+  }
+  const embeddedAdhdTask = launchParameters.get("adhd") === "1"
+    && launchParameters.get("embed") === "1"
+    && embeddedBySameOriginHost
+    && /^[a-zA-Z0-9_-]{8,160}$/u.test(bootstrapToken);
+  if (embeddedAdhdTask) {
+    root.dataset.cognicionEmbed = "adhd-task";
+    const embedStyles = document.createElement("link");
+    embedStyles.rel = "stylesheet";
+    embedStyles.href = "css/adhd-task-embed.css?v=20260902-adhd-task-embed-v1";
+    embedStyles.dataset.adhdTaskEmbedStyles = "true";
+    document.head.appendChild(embedStyles);
+  }
   // Claro está temporalmente deshabilitado. Se migra a Oscuro antes de que
   // cualquier CSS visible pueda pintar la interfaz.
   const normalizarTemaGuardado = (value) => value === "light" ? "dark" : value;
@@ -58,7 +80,7 @@
       link.href = "css/theme/biocellular.css?v=20260812-content-roots";
       document.head.appendChild(link);
     }
-    if (appliedTheme === "biocelular") {
+    if (appliedTheme === "biocelular" && !embeddedAdhdTask) {
       void import("./themes/biocellularThemeController.js?v=2.046-diagnostico-visual")
         .then(({ activateBiocellularTheme }) => activateBiocellularTheme())
         .catch((error) => console.error("[BIOCELULAR] Error en bootstrap temprano", error));
@@ -73,6 +95,7 @@
   window.addEventListener("pageshow", apply);
   // El encabezado se carga de forma diferida y solo monta la fase autenticada validada.
   window.addEventListener("DOMContentLoaded", () => {
+    if (embeddedAdhdTask) return;
     void import("./components/globalAppHeader.js?v=2.115-navbar-unica-v2")
       .then(({ scheduleGlobalAppHeader }) => scheduleGlobalAppHeader())
       .catch((error) => console.warn("[GLOBAL HEADER] Error de carga", error));

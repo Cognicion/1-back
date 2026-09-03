@@ -799,7 +799,9 @@ async function launchNativeTask(taskId, taskForm, taskConfiguration) {
 
 function launchExistingTask(taskId, launchContext) {
   const iframe = $("adhdTaskFrame");
-  iframe.name = buildExistingTaskBootstrapName(launchContext);
+  const bootstrapName = buildExistingTaskBootstrapName(launchContext);
+  iframe.name = bootstrapName;
+  if (iframe.contentWindow) iframe.contentWindow.name = bootstrapName;
   iframe.referrerPolicy = "no-referrer";
   state.activeBridge = createAdhdTaskBridgeHost({
     iframe,

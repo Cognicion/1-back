@@ -1,4 +1,22 @@
-asegurarCssReporte();
+function esTareaAdhdEmbebidaAutenticada() {
+  if (document.documentElement.dataset.cognicionEmbed === "adhd-task") return true;
+  const parameters = new URLSearchParams(window.location.search);
+  const bootstrapName = String(window.name || "");
+  let sameOriginParent = false;
+  try {
+    sameOriginParent = window.self !== window.top && window.parent.location.origin === window.location.origin;
+  } catch (_) {
+    sameOriginParent = false;
+  }
+  return parameters.get("adhd") === "1"
+    && parameters.get("embed") === "1"
+    && sameOriginParent
+    && /^cognicion-adhd-bridge:[a-zA-Z0-9_-]{8,160}$/u.test(bootstrapName);
+}
+
+const ES_TAREA_ADHD_EMBEBIDA = esTareaAdhdEmbebidaAutenticada();
+
+if (!ES_TAREA_ADHD_EMBEBIDA) asegurarCssReporte();
 
 const TIPOS_REPORTE = [
   {
@@ -30,12 +48,14 @@ let tipoSeleccionado = TIPOS_REPORTE[0].valor;
 const ES_PAGINA_PUBLICA = document.body?.classList.contains("public-lab-page")
   || ["index.html", "login.html", "registro.html", "recuperar.html", ""].includes(window.location.pathname.split("/").pop() || "");
 
-if (!ES_PAGINA_PUBLICA) ejecutarCuandoEsteLibre(sincronizarUsuarioReporte);
+if (!ES_PAGINA_PUBLICA && !ES_TAREA_ADHD_EMBEBIDA) ejecutarCuandoEsteLibre(sincronizarUsuarioReporte);
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", inicializarReporteGlobal, { once: true });
-} else {
-  inicializarReporteGlobal();
+if (!ES_TAREA_ADHD_EMBEBIDA) {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", inicializarReporteGlobal, { once: true });
+  } else {
+    inicializarReporteGlobal();
+  }
 }
 
 

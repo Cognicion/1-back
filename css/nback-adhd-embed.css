@@ -1,0 +1,226 @@
+html[data-cognicion-embed="adhd-task"],
+html[data-cognicion-embed="adhd-task"] body {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+html[data-cognicion-embed="adhd-task"] body {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+html[data-cognicion-embed="adhd-task"] .container {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: clamp(10px, 2vh, 16px);
+  overflow: hidden;
+}
+
+html[data-cognicion-embed="adhd-task"] .container > :is(h1, .autor, p:not(#resultado)),
+html[data-cognicion-embed="adhd-task"] #grid,
+html[data-cognicion-embed="adhd-task"] #feedback,
+html[data-cognicion-embed="adhd-task"] #resultado,
+html[data-cognicion-embed="adhd-task"] #graficas,
+html[data-cognicion-embed="adhd-task"] #mobileControls {
+  display: none;
+}
+
+html[data-cognicion-embed="adhd-task"] .instrucciones-nback {
+  width: min(900px, 100%);
+  max-width: none;
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+html[data-cognicion-embed="adhd-task"] .instrucciones-nback h2 {
+  margin: 0 0 6px;
+  font-size: clamp(1.2rem, 3.6vh, 1.65rem);
+}
+
+html[data-cognicion-embed="adhd-task"] .instrucciones-nback h3 {
+  margin: 0 0 4px;
+  font-size: 0.88rem;
+}
+
+html[data-cognicion-embed="adhd-task"] .instrucciones-nback p {
+  margin: 5px 0;
+  font-size: clamp(0.76rem, 1.8vh, 0.9rem);
+  line-height: 1.34;
+}
+
+html[data-cognicion-embed="adhd-task"] .instrucciones-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 7px;
+}
+
+html[data-cognicion-embed="adhd-task"] .instruccion-card {
+  padding: 4px 9px;
+  border: 0;
+  border-left: 1px solid rgba(96, 165, 250, 0.4);
+  border-radius: 0;
+  background: transparent;
+}
+
+html[data-cognicion-embed="adhd-task"] .controls {
+  margin: 8px 0 0;
+  font-size: 0;
+}
+
+html[data-cognicion-embed="adhd-task"] .controls :is(label, select, br, button) {
+  display: none;
+}
+
+html[data-cognicion-embed="adhd-task"] .controls button {
+  min-height: 42px;
+  margin: 0;
+  padding: 9px 16px;
+  font-size: 0.92rem;
+}
+
+html[data-cognicion-embed="adhd-task"]:not([data-nback-phase]) .container,
+html[data-cognicion-embed="adhd-task"][data-nback-phase="intro"] .container {
+  display: grid;
+  align-content: center;
+  gap: 7px;
+}
+
+html[data-cognicion-embed="adhd-task"]:not([data-nback-phase]) .controls,
+html[data-cognicion-embed="adhd-task"][data-nback-phase="intro"] .controls {
+  display: flex;
+  justify-content: center;
+}
+
+html[data-cognicion-embed="adhd-task"]:not([data-nback-phase]) .controls button[onclick="iniciarPractica()"],
+html[data-cognicion-embed="adhd-task"][data-nback-phase="intro"] .controls button[onclick="iniciarPractica()"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+html[data-cognicion-embed="adhd-task"]:is([data-nback-phase="practice"], [data-nback-phase="assessment"]) .container {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+}
+
+html[data-cognicion-embed="adhd-task"]:is([data-nback-phase="practice"], [data-nback-phase="assessment"]) .instrucciones-nback,
+html[data-cognicion-embed="adhd-task"]:is([data-nback-phase="practice"], [data-nback-phase="assessment"]) .controls {
+  display: none;
+}
+
+html[data-cognicion-embed="adhd-task"]:is([data-nback-phase="practice"], [data-nback-phase="assessment"]) #grid {
+  display: grid;
+  grid-template-columns: repeat(3, clamp(64px, 14vh, 82px));
+  gap: clamp(6px, 1.5vh, 9px);
+  align-self: center;
+  margin: 0;
+}
+
+html[data-cognicion-embed="adhd-task"]:is([data-nback-phase="practice"], [data-nback-phase="assessment"]) .cell {
+  width: clamp(64px, 14vh, 82px);
+  height: clamp(64px, 14vh, 82px);
+  border-width: 2px;
+  border-radius: 10px;
+}
+
+html[data-cognicion-embed="adhd-task"]:is([data-nback-phase="practice"], [data-nback-phase="assessment"]) #feedback {
+  display: block;
+  min-height: 24px;
+  margin: 0;
+  font-size: clamp(0.9rem, 2.5vh, 1.15rem);
+}
+
+html[data-cognicion-embed="adhd-task"]:is([data-nback-phase="practice"], [data-nback-phase="assessment"]) #resultado {
+  display: block;
+  max-height: 3.75em;
+  margin: 0;
+  overflow: hidden;
+  font-size: clamp(0.72rem, 1.8vh, 0.85rem);
+  line-height: 1.25;
+}
+
+html[data-cognicion-embed="adhd-task"]:is([data-nback-phase="practice"], [data-nback-phase="assessment"]) #mobileControls {
+  position: static;
+  display: flex;
+  width: 100%;
+  height: clamp(62px, 14vh, 74px);
+}
+
+html[data-cognicion-embed="adhd-task"] #mobileControls :is(#tapLeft, #tapRight) {
+  min-width: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+html[data-cognicion-embed="adhd-task"] #mobileControls .icono {
+  font-size: 24px;
+}
+
+html[data-cognicion-embed="adhd-task"] #mobileControls .textoBoton {
+  margin-top: 3px;
+  font-size: 0.72rem;
+}
+
+html[data-cognicion-embed="adhd-task"][data-nback-phase="result"] body {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+html[data-cognicion-embed="adhd-task"][data-nback-phase="result"] .container {
+  display: grid;
+  grid-template-rows: minmax(0, auto) auto;
+  align-content: center;
+  gap: 12px;
+  padding: 12px 18px;
+}
+
+html[data-cognicion-embed="adhd-task"][data-nback-phase="result"] :is(.instrucciones-nback, #grid, #feedback, #graficas) {
+  display: none !important;
+}
+
+html[data-cognicion-embed="adhd-task"][data-nback-phase="result"] #resultado {
+  display: block;
+  width: min(760px, 100%);
+  max-height: min(58vh, 270px);
+  margin: 0 auto;
+  overflow: auto;
+  font-size: clamp(0.76rem, 1.8vh, 0.9rem);
+  line-height: 1.3;
+}
+
+html[data-cognicion-embed="adhd-task"][data-nback-phase="result"] .controls {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+html[data-cognicion-embed="adhd-task"][data-nback-phase="result"] .controls button[onclick="repetirPractica()"],
+html[data-cognicion-embed="adhd-task"][data-nback-phase="result"] .controls #btnEvaluacionNback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+html[data-cognicion-embed="adhd-task"][data-nback-phase="result"] #mobileControls {
+  display: none;
+}
+
+@media (max-width: 620px) {
+  html[data-cognicion-embed="adhd-task"] .instrucciones-grid {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  html[data-cognicion-embed="adhd-task"] .instruccion-card {
+    padding-block: 2px;
+  }
+}

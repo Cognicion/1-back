@@ -491,6 +491,10 @@ function createDiscoveryController(discovery, page, pageId) {
 
 export async function mountGlobalAppHeader() {
   if (globalThis.__cognicionGlobalHeader?.destroy) return globalThis.__cognicionGlobalHeader;
+  if (document.documentElement.dataset.cognicionEmbed === "adhd-task") {
+    log("Tarea embebida, navbar autenticada omitida");
+    return null;
+  }
   const pageId = pageIdFromLocation();
   if (isPublicPage(pageId)) {
     log("Página pública, navbar autenticada omitida", { pageId });

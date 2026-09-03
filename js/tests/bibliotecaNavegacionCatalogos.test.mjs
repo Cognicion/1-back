@@ -47,7 +47,7 @@ test("el validador conserva todos los diagnósticos y sus equivalencias entre si
 
   const validos = contexto.resultado;
   const contarSistema = (sistema) => validos.filter((diagnostico) => diagnostico.sistemas?.[sistema]).length;
-  assert.equal(contarSistema("cie10"), 3561);
+  assert.equal(contarSistema("cie10"), 3995);
   assert.equal(contarSistema("cie11"), 28);
   assert.equal(contarSistema("dsm5"), 12);
   assert.ok(validos.some((diagnostico) => diagnostico.id === "cie10-f41-1"));
@@ -73,7 +73,7 @@ test("el índice CIE-10 declara siempre las letras A-Z, su rango y título", () 
   assert.match(estilos, /\.letras-cie10-lista \.letra-cie10-card:hover\s*\{[^}]*box-shadow:\s*none\s*!important;[^}]*transform:\s*none\s*!important;/s);
   assert.match(estilos, /@media \(max-width: 760px\)\s*\{\s*\.navegacion-diagnosticos \.letras-cie10-lista \.letra-cie10-card\s*\{[^}]*grid-template-columns:/s);
   assert.match(javascript, /CAPITULOS_CIE10_FICHAS_COMPLETAS = new Set\(\["C", "D", "E"\]\)/);
-  assert.match(javascript, /CAPITULOS_CIE10_CODIGOS_COMPLETOS = new Set\(\["A", "B", "C", "D", "E", "F", "G"\]\)/);
+  assert.match(javascript, /CAPITULOS_CIE10_CODIGOS_COMPLETOS = new Set\(\["A", "B", "C", "D", "E", "F", "G", "I"\]\)/);
 });
 
 test("el buscador A-Z filtra letra, rango o título sin tocar búsquedas de otras vistas", () => {

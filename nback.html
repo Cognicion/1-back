@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="biocelular">
 <head>
-<script src="js/theme-preload.js?v=2.115-navbar-unica-v2"></script>
+<script src="js/theme-preload.js?v=20260902-adhd-task-embed-v1"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dual N-Back</title>
@@ -277,7 +277,8 @@ letter-spacing:1px;
 }
 </style>
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
-<script type="module" src="js/services/themeBootstrap.js"></script>
+<link rel="stylesheet" href="css/nback-adhd-embed.css?v=20260902-adhd-task-embed-v1">
+<script type="module" src="js/services/themeBootstrap.js?v=20260902-adhd-task-embed-v1"></script>
 </head>
 
 <body>
@@ -427,10 +428,18 @@ let randomSesionNback = Math.random;
 let resultadoAdhdPublicado = false;
 let adhdPracticeCompleted = false;
 
-const nbackAdhdTaskMode = new URLSearchParams(window.location.search).get("adhd") === "1";
+const nbackLaunchParameters = new URLSearchParams(window.location.search);
+const nbackAdhdTaskMode = nbackLaunchParameters.get("adhd") === "1";
+const nbackEmbeddedTaskMode = document.documentElement.dataset.cognicionEmbed === "adhd-task";
+
+function actualizarVistaEmbebidaNback(phase) {
+  if (!nbackEmbeddedTaskMode) return;
+  document.documentElement.dataset.nbackPhase = phase;
+}
 
 function verInstrucciones() {
   document.getElementById("panelInstrucciones")?.classList.remove("oculto");
+  actualizarVistaEmbebidaNback("intro");
   document.getElementById("resultado").innerText = "Lee las instrucciones y realiza una práctica breve antes de la evaluación.";
 }
 
@@ -459,8 +468,9 @@ function iniciar(modo = "evaluacion") {
   document.getElementById("graficas").style.display = "none";
 
   modoPractica = modo === "practica";
+  actualizarVistaEmbebidaNback(modoPractica ? "practice" : "assessment");
   maxEnsayos = modoPractica ? 8 : 20;
-  document.getElementById("panelInstrucciones")?.classList.toggle("oculto", !modoPractica);
+  document.getElementById("panelInstrucciones")?.classList.toggle("oculto", nbackEmbeddedTaskMode || !modoPractica);
 
   const controlledConfig = nbackAdhdTaskMode ? window.__cognicionAdhdNback?.configuration || {} : {};
   nivel = limitarEnteroNback(controlledConfig.level, parseInt(document.getElementById("nivel").value), 1, 4);
@@ -520,6 +530,7 @@ function iniciar(modo = "evaluacion") {
 
 function detener() {
   pruebaActiva = false;
+  actualizarVistaEmbebidaNback("result");
   clearTimeout(temporizador);
   speechSynthesis.cancel();
 
@@ -725,6 +736,7 @@ function evaluarSinRespuesta() {
 
 function finalizar() {
   pruebaActiva = false;
+  actualizarVistaEmbebidaNback("result");
   cells.forEach(c => c.classList.remove("active"));
 
   document.getElementById("feedback").innerText = "Prueba terminada";
@@ -949,6 +961,7 @@ document.addEventListener("keydown", function(event) {
   if (tecla === "d") responderVisual();
 });
 
+actualizarVistaEmbebidaNback("intro");
 actualizarGuardiaPracticaAdhd();
 </script>
 
@@ -984,7 +997,7 @@ if (adhdTaskMode) {
 }
 </script>
 
-  <script type="module" src="js/components/accesosRapidos.js"></script>
-  <script type="module" src="js/reportes.js"></script>
+  <script type="module" src="js/components/accesosRapidos.js?v=20260902-adhd-task-embed-v1"></script>
+  <script type="module" src="js/reportes.js?v=20260902-adhd-task-embed-v1"></script>
 </body>
 </html>
