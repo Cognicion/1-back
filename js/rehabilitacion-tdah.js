@@ -60,7 +60,7 @@ import {
   saveProgram,
   saveProgramAudit,
   syncPendingAdhdWrites
-} from "./adhd/services/adhdPersistenceAdapter.js";
+} from "./adhd/services/adhdPersistenceAdapter.js?v=20260902-adhd-launch-recovery-v3";
 import {
   applyTransferOutcomeToGoal,
   createTransferChallenge,
@@ -194,7 +194,10 @@ function bindStaticEvents() {
   });
   $("adhdPatientSelect")?.addEventListener("change", (event) => selectPatient(event.target.value));
   $("adhdIntakeForm")?.addEventListener("submit", beginAssessment);
-  $("adhdIntakeForm")?.addEventListener("input", scheduleIntakeDraft);
+  $("adhdIntakeForm")?.addEventListener("input", (event) => {
+    event.target?.removeAttribute?.("aria-invalid");
+    scheduleIntakeDraft();
+  });
   $("adhdIntakeForm")?.addEventListener("change", scheduleIntakeDraft);
   $("adhdSaveAssessmentDraft")?.addEventListener("click", () => saveIntakeDraft(true));
   $("adhdBatteryTasks")?.addEventListener("click", (event) => {
@@ -439,11 +442,7 @@ async function beginAssessment(event) {
     setAdhdStatus("Este permiso permite consultar, pero no iniciar ni modificar evaluaciones.", "warning");
     return;
   }
-  if (!form.reportValidity()) {
-    errorNode.textContent = "Revisa los campos obligatorios señalados antes de iniciar la batería.";
-    form.querySelector(":invalid")?.focus();
-    return;
-  }
+  if (!validateAssessmentForm(form, errorNode)) return;
   const intake = readIntakeForm();
   const modality = resolveAgeModality(intake.age);
   if (!modality) {
@@ -462,9 +461,11 @@ async function beginAssessment(event) {
   const requestedPhase = state.pendingAssessmentPhase || "T0";
   const existingPhase = state.evaluations.find((evaluation) => evaluation.phase === requestedPhase && evaluation.status !== "archived");
   if (existingPhase) {
-    errorNode.textContent = ["completed", "completed_pending_profile"].includes(existingPhase.status)
-      ? `${requestedPhase} ya está cerrada. No se sobrescribe ni se repite dentro del mismo registro longitudinal.`
-      : `${requestedPhase} ya está en curso. Reanuda los bloques conservados en lugar de crear otra evaluación.`;
+    if (!["completed", "completed_pending_profile"].includes(existingPhase.status)) {
+      await resumeExistingAssessment(existingPhase, errorNode);
+      return;
+    }
+    errorNode.textContent = `${requestedPhase} ya está cerrada. No se sobrescribe ni se repite dentro del mismo registro longitudinal.`;
     return;
   }
   const goalValidation = validateFunctionalGoal(intake.goal);
@@ -473,6 +474,7 @@ async function beginAssessment(event) {
     return;
   }
   let firstTaskId = "";
+  setAssessmentSubmitBusy(true);
   setBusy(true, "Preparando batería y forma reproducible…");
   try {
     state.ageMode = modality;
@@ -511,10 +513,23 @@ async function beginAssessment(event) {
       startedAt: nowIso(),
       createdAtIso: nowIso()
     };
-    const [evaluationSave, goalSave] = await Promise.all([
+    const persistenceOperations = [
       saveAdhdEvaluation({ patientId: state.patientId, programId: state.programId, id: assessmentId, data: evaluation }),
       saveAdhdGoal({ patientId: state.patientId, programId: state.programId, id: goal.id, data: goal })
-    ]);
+    ];
+    if (state.clinician) {
+      persistenceOperations.push(saveProgram({
+        patientId: state.patientId,
+        programId: state.programId,
+        data: {
+          ...state.program,
+          status: "baseline_in_progress",
+          activeEvaluationId: assessmentId,
+          telemetryEnabled: intake.telemetryEnabled
+        }
+      }));
+    }
+    const [evaluationSave, goalSave] = await Promise.all(persistenceOperations);
     evaluation.pendingSync = evaluationSave.pendingSync;
     goal.pendingSync = goalSave.pendingSync;
     state.currentEvaluation = evaluation;
@@ -525,28 +540,78 @@ async function beginAssessment(event) {
     state.assessmentResults = {};
     state.pendingAssessmentPhase = "T0";
     if (state.clinician) {
-      await saveProgram({
-        patientId: state.patientId,
-        programId: state.programId,
-        data: { status: "baseline_in_progress", activeEvaluationId: assessmentId, telemetryEnabled: intake.telemetryEnabled }
-      });
       state.program = { ...state.program, status: "baseline_in_progress", activeEvaluationId: assessmentId, telemetryEnabled: intake.telemetryEnabled };
     }
-    await clearAdhdDraft({ patientId: state.patientId, programId: state.programId, kind: "intake", id: "current" });
-    await auditEvent("assessment_started", { phase, evaluationId: assessmentId, batteryType: intake.batteryType });
+    await clearAdhdDraft({ patientId: state.patientId, programId: state.programId, kind: "intake", id: "current" }).catch(() => {});
+    void auditEvent("assessment_started", { phase, evaluationId: assessmentId, batteryType: intake.batteryType });
     setAssessmentVisible(true);
     renderAll();
     showAdhdView("assessment");
     setAdhdStatus("Batería preparada. Cada tarea inicia con práctica no puntuada y puede reanudarse por bloque.", "success");
   } catch (error) {
-    reportError(error, authorizationAwareMessage(error, "No fue posible iniciar la evaluación; el trabajo recuperable se conserva solo si el fallo es de conectividad."));
+    const message = authorizationAwareMessage(error, "No fue posible iniciar la evaluación; el trabajo recuperable se conserva solo si el fallo es de conectividad.");
+    errorNode.textContent = `${message} Código: ${String(error?.code || error?.name || "unknown_error")}.`;
+    reportError(error, message);
   } finally {
     setBusy(false);
+    setAssessmentSubmitBusy(false);
   }
   if (firstTaskId) {
     $("adhdBattery")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    await startTask(firstTaskId, "assessment");
+    const launched = await startTask(firstTaskId, "assessment");
+    if (!launched && !errorNode.textContent) {
+      errorNode.textContent = "La evaluación quedó guardada, pero otra acción requiere atención antes de abrir la primera tarea.";
+    }
   }
+}
+
+async function resumeExistingAssessment(evaluation, errorNode) {
+  const evaluationId = evaluation.assessmentId || evaluation.id;
+  state.currentEvaluation = evaluation;
+  state.batteryTasks = getBatteryDefinition(evaluation.batteryType || "essential");
+  state.assessmentResults = resultsForEvaluation(evaluationId);
+  const nextTask = state.batteryTasks.find((task) => state.assessmentResults[task.id]?.status !== "completed");
+  setAssessmentVisible(true);
+  renderAll();
+  showAdhdView("assessment");
+  if (!nextTask) {
+    errorNode.textContent = "La batería no tiene bloques pendientes. Revisa los resultados guardados antes de crear otra fase.";
+    setAdhdStatus(errorNode.textContent, "warning");
+    $("adhdBattery")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    return false;
+  }
+
+  if (evaluation.status === "paused") {
+    setAssessmentSubmitBusy(true, "Reanudando batería…");
+    setBusy(true, "Reanudando la evaluación guardada…");
+    try {
+      state.currentEvaluation = { ...evaluation, status: "in_progress", pausedAt: null };
+      const saved = await saveAdhdEvaluation({
+        patientId: state.patientId,
+        programId: state.programId,
+        id: evaluationId,
+        data: state.currentEvaluation
+      });
+      state.currentEvaluation.pendingSync = saved.pendingSync;
+      state.evaluations = upsertById(state.evaluations, state.currentEvaluation);
+    } catch (error) {
+      const message = authorizationAwareMessage(error, "No fue posible reanudar la evaluación guardada.");
+      errorNode.textContent = `${message} Código: ${String(error?.code || error?.name || "unknown_error")}.`;
+      reportError(error, message);
+      return false;
+    } finally {
+      setBusy(false);
+      setAssessmentSubmitBusy(false);
+    }
+  }
+
+  errorNode.textContent = "";
+  $("adhdBattery")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const launched = await startTask(nextTask.id, "assessment");
+  if (!launched && !errorNode.textContent) {
+    errorNode.textContent = "La batería está guardada, pero hay una acción pendiente antes de abrir el siguiente bloque.";
+  }
+  return launched;
 }
 
 async function createProgramRoot() {
@@ -567,21 +632,41 @@ async function createProgramRoot() {
 
 async function startTask(taskId, source = "assessment", requestedSessionBlockId = "") {
   const task = ADHD_TASK_CATALOG[taskId];
-  if (!task || state.activeTask || state.pendingFeedback || state.busy) return;
+  if (!task) {
+    setAdhdStatus("No se encontró la tarea solicitada en esta versión de la batería.", "error");
+    showToast("No se encontró la tarea solicitada.");
+    return false;
+  }
+  if (state.activeTask) {
+    showDialog($("adhdTaskDialog"));
+    setAdhdStatus("La tarea ya estaba iniciada; se volvió a abrir el modo de concentración.", "success");
+    return true;
+  }
+  if (state.pendingFeedback) {
+    renderTaskFeedback(state.pendingFeedback);
+    showDialog($("adhdFeedbackDialog"));
+    setAdhdStatus("Cierra el registro posterior del bloque anterior para continuar.", "warning");
+    return false;
+  }
+  if (state.busy) {
+    setAdhdStatus("Espera a que termine la operación en curso antes de abrir la tarea.", "warning");
+    return false;
+  }
   if (source === "assessment" && !state.currentEvaluation) {
     showToast("Primero registra el contexto de evaluación.");
-    return;
+    setAdhdStatus("Primero registra el contexto de evaluación.", "warning");
+    return false;
   }
   if (source === "assessment" && state.assessmentResults[taskId]?.status === "completed") {
     showToast("Este bloque ya está cerrado. Para repetirlo debe iniciarse una nueva fase de evaluación versionada.");
-    return;
+    return false;
   }
   let sessionBlock = null;
   if (source === "session") {
     if (!state.currentSession || state.currentSession.status === "paused" || state.currentSession.status === "not_started") {
       await startOrResumeTodaySession();
     }
-    if (!state.currentSession) return;
+    if (!state.currentSession) return false;
     sessionBlock = state.currentSession.blocks.find((block) => (
       block.kind === "cognitive_task"
       && block.taskId === taskId
@@ -590,14 +675,14 @@ async function startTask(taskId, source = "assessment", requestedSessionBlockId 
     ));
     if (!sessionBlock) {
       showToast("Esta tarea ya está completada o no pertenece al bloque actual.");
-      return;
+      return false;
     }
     try {
       state.currentSession = startAdhdBlock(state.currentSession, sessionBlock.id, { at: nowIso(), source: "patient_ui" });
       await persistCurrentSession();
     } catch (error) {
       reportError(error, "No fue posible iniciar este bloque de sesión.");
-      return;
+      return false;
     }
   }
   const taskForm = resolveTaskForm(taskId, source);
@@ -652,9 +737,11 @@ async function startTask(taskId, source = "assessment", requestedSessionBlockId 
   try {
     if (task.kind === "native") await launchNativeTask(taskId, taskForm, taskConfiguration);
     else launchExistingTask(taskId, launchContext);
+    return true;
   } catch (error) {
     await handleTaskInterruption({ status: "interrupted", valid: false, interruptionReason: "launch_error", errorCode: error?.code || error?.name });
     reportError(error, "La tarea no pudo iniciarse; el bloque quedó listo para reiniciarse.");
+    return false;
   }
 }
 
@@ -1888,6 +1975,41 @@ function readIntakeForm() {
       domains
     })
   };
+}
+
+function validateAssessmentForm(form, errorNode) {
+  if (form.checkValidity()) return true;
+  const invalid = form.querySelector(":invalid");
+  const fieldLabels = {
+    age: "edad",
+    sleepHours: "horas de sueño la noche previa",
+    sleepQuality: "calidad subjetiva del sueño",
+    fatigue: "fatiga subjetiva",
+    motivation: "motivación actual",
+    environmentalDistractibility: "distractibilidad ambiental",
+    goalAction: "acción concreta",
+    goalContext: "contexto",
+    goalFrequency: "frecuencia",
+    goalTarget: "meta observable",
+    goalReviewDate: "fecha de revisión"
+  };
+  const label = fieldLabels[invalid?.name] || "un campo obligatorio";
+  const message = `Falta completar o corregir: ${label}.`;
+  errorNode.textContent = message;
+  setAdhdStatus(message, "warning");
+  invalid?.setAttribute("aria-invalid", "true");
+  invalid?.scrollIntoView({ behavior: "smooth", block: "center" });
+  invalid?.focus({ preventScroll: true });
+  form.reportValidity();
+  return false;
+}
+
+function setAssessmentSubmitBusy(busy, busyLabel = "Guardando e iniciando batería…") {
+  const button = $("adhdCreateAssessment");
+  if (!button) return;
+  button.textContent = busy ? busyLabel : "Guardar contexto e iniciar batería";
+  button.setAttribute("aria-busy", String(busy));
+  button.disabled = Boolean(busy || (state.clinician && !state.canEditPatient));
 }
 
 function createAssessmentAdministration() {

@@ -161,5 +161,6 @@
 // deployment marker: 2026-09-01-adhd-cognitive-rehabilitation-v1 (+0.001)
 // deployment marker: 2026-09-02-rehabilitacion-cognitiva-compact-layout-v1 (+0.001)
 // deployment marker: 2026-09-02-adhd-battery-start-patient-record-v1 (+0.001)
-export const APP_VERSION = "2.173";
+// deployment marker: 2026-09-02-adhd-battery-launch-recovery-v3 (+0.001)
+export const APP_VERSION = "2.174";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

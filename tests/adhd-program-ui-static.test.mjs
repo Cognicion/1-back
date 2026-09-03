@@ -106,7 +106,7 @@ test("el controlador consume tareas legacy mediante adaptador y puente autentica
 });
 
 test("resultados, entidades y auditoría pasan por la persistencia canónica", () => {
-  assert.match(controller, /from "\.\/adhd\/services\/adhdPersistenceAdapter\.js"/u);
+  assert.match(controller, /from "\.\/adhd\/services\/adhdPersistenceAdapter\.js\?v=20260902-adhd-launch-recovery-v3"/u);
   assert.match(controller, /saveAdhdTaskResult\(\{/u);
   assert.match(controller, /saveAdhdEvaluation\(\{/u);
   assert.match(controller, /saveAdhdProfile\(\{/u);

@@ -10,7 +10,9 @@ async function loadPersistenceHarness() {
     export const __state = {
       now: 1_000,
       readErrorCode: null,
+      readHangs: false,
       writeErrorCode: null,
+      writeHangs: false,
       draftWriteFails: false,
       reads: 0,
       writes: [],
@@ -34,12 +36,14 @@ async function loadPersistenceHarness() {
     const failure = (code) => Object.assign(new Error(code), { code });
     const getDoc = async (reference) => {
       __state.reads += 1;
+      if (__state.readHangs) return new Promise(() => {});
       if (__state.readErrorCode) throw failure(__state.readErrorCode);
       const value = __state.remote.get(pathKey(reference));
       return { exists: () => value !== undefined, data: () => value };
     };
     const getDocs = async (reference) => {
       __state.reads += 1;
+      if (__state.readHangs) return new Promise(() => {});
       if (__state.readErrorCode) throw failure(__state.readErrorCode);
       const prefix = pathKey(reference);
       const expectedLength = reference.path.length + 1;
@@ -60,6 +64,7 @@ async function loadPersistenceHarness() {
       __state.writes.push({ path, payload, options });
     };
     const setDoc = async (reference, payload, options) => {
+      if (__state.writeHangs) return new Promise(() => {});
       if (__state.writeErrorCode) throw failure(__state.writeErrorCode);
       applySet(reference, payload, options);
     };
@@ -230,6 +235,40 @@ test("no anuncia pendingSync cuando el respaldo IndexedDB no pudo escribirse", a
     (error) => error.code === "adhd/local-draft-unavailable"
   );
   assert.equal(persistence.__state.drafts.size, 0);
+});
+
+test("una escritura remota colgada conserva primero el borrador y libera la interfaz por tiempo límite", async () => {
+  const persistence = await loadPersistenceHarness();
+  persistence.__state.writeHangs = true;
+  const startedAt = Date.now();
+  const result = await persistence.saveProgram({
+    patientId: "patient-timeout",
+    programId: "program-timeout",
+    data: { status: "active" },
+    remoteTimeoutMs: 250
+  });
+
+  assert.equal(result.pendingSync, true);
+  assert.equal(result.savedRemotely, false);
+  assert.equal(result.errorCode, "deadline-exceeded");
+  assert.equal(persistence.__state.drafts.size, 1, "el dato debe existir localmente antes de continuar");
+  assert.ok(Date.now() - startedAt < 1_500, "la interfaz no debe esperar indefinidamente a Firestore");
+});
+
+test("una carga remota colgada libera el estado ocupado y conserva el estado honesto de indisponibilidad", async () => {
+  const persistence = await loadPersistenceHarness();
+  persistence.__state.readHangs = true;
+  const startedAt = Date.now();
+  const bundle = await persistence.loadAdhdProgramBundle({
+    patientId: "patient-load-timeout",
+    programId: "program-load-timeout",
+    remoteTimeoutMs: 250
+  });
+
+  assert.equal(bundle.source, "unavailable");
+  assert.equal(bundle.loadErrorCode, "deadline-exceeded");
+  assert.equal(bundle.program, null);
+  assert.ok(Date.now() - startedAt < 1_500, "la selección del paciente no debe quedar ocupada indefinidamente");
 });
 
 test("los errores no transitorios se propagan y no quedan en una cola eterna", async () => {

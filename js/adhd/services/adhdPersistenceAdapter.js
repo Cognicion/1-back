@@ -305,6 +305,28 @@ const RETRYABLE_ERROR_CODES = new Set([
   "unavailable"
 ]);
 
+export const ADHD_REMOTE_OPERATION_TIMEOUT_MS = 5_000;
+
+export async function waitForAdhdRemoteOperation(operation, timeoutMs = ADHD_REMOTE_OPERATION_TIMEOUT_MS) {
+  const safeTimeout = Math.max(250, Number(timeoutMs) || ADHD_REMOTE_OPERATION_TIMEOUT_MS);
+  const remoteOperation = Promise.resolve().then(operation);
+  let timeoutId = null;
+  const deadline = new Promise((_, reject) => {
+    timeoutId = globalThis.setTimeout(() => {
+      const error = new Error("La operación remota no respondió dentro del tiempo esperado.");
+      error.name = "AdhdRemoteOperationTimeoutError";
+      error.code = "deadline-exceeded";
+      reject(error);
+    }, safeTimeout);
+  });
+  try {
+    return await Promise.race([remoteOperation, deadline]);
+  } finally {
+    globalThis.clearTimeout(timeoutId);
+    remoteOperation.catch(() => {});
+  }
+}
+
 function esErrorTransitorioAdhd(error) {
   const code = normalizedErrorCode(error).replace(/^(?:firestore|functions|auth)\//u, "");
   return RETRYABLE_ERROR_CODES.has(code);
@@ -478,10 +500,24 @@ function registerPendingSyncScope(patientId, programId) {
   });
 }
 
-async function persistWithDraft({ key, payload, id, patientId, programId, kind, operation }) {
+async function persistWithDraft({ key, payload, id, patientId, programId, kind, operation, remoteTimeoutMs }) {
+  const pendingEnvelope = {
+    ...persistenceMetadata(),
+    id,
+    patientId,
+    programId,
+    kind,
+    payload: cleanValue(payload),
+    pendingSince: new Date().toISOString(),
+    syncIntent: "remote-write",
+    retryEligible: true,
+    attemptCount: 0,
+    lastErrorCode: "remote-write-pending"
+  };
+  const initialLocalRecord = await guardarBorradorClinicoLocal(key, pendingEnvelope);
   try {
-    await operation();
-    await eliminarBorradorClinicoLocal(key);
+    await waitForAdhdRemoteOperation(operation, remoteTimeoutMs);
+    if (initialLocalRecord) await eliminarBorradorClinicoLocal(key);
     return { id, savedRemotely: true, pendingSync: false };
   } catch (error) {
     if (esErrorAutorizacionAdhd(error)) {
@@ -495,16 +531,8 @@ async function persistWithDraft({ key, payload, id, patientId, programId, kind, 
       throw error;
     }
     const localRecord = await guardarBorradorClinicoLocal(key, {
-      ...persistenceMetadata(),
-      id,
-      patientId,
-      programId,
-      kind,
-      payload: cleanValue(payload),
-      pendingSince: new Date().toISOString(),
-      syncIntent: "remote-write",
+      ...pendingEnvelope,
       retryEligible,
-      attemptCount: 0,
       lastErrorCode: loadErrorCode(error)
     });
     requireLocalDraft(localRecord, error);
@@ -513,7 +541,7 @@ async function persistWithDraft({ key, payload, id, patientId, programId, kind, 
   }
 }
 
-export async function createProgram({ patientId, programId, data = {} }) {
+export async function createProgram({ patientId, programId, data = {}, remoteTimeoutMs }) {
   const id = assertDocumentId(
     programId || data.programId || data.id || crearIdEstableAdhd("program", patientId, data.createdAtIso || Date.now()),
     "programId"
@@ -533,6 +561,7 @@ export async function createProgram({ patientId, programId, data = {} }) {
     patientId,
     programId: id,
     kind: "program",
+    remoteTimeoutMs,
     operation: () => setDoc(programRef(patientId, id), {
       ...payload,
       createdAt: serverTimestamp(),
@@ -541,13 +570,13 @@ export async function createProgram({ patientId, programId, data = {} }) {
   });
 }
 
-export async function loadProgram({ patientId, programId }) {
+export async function loadProgram({ patientId, programId, remoteTimeoutMs }) {
   const id = assertDocumentId(programId, "programId");
   const key = draftKey(patientId, id, "program", id);
   let remoteErrorCode = null;
   let remote = null;
   try {
-    const snapshot = await getDoc(programRef(patientId, id));
+    const snapshot = await waitForAdhdRemoteOperation(() => getDoc(programRef(patientId, id)), remoteTimeoutMs);
     if (snapshot.exists()) remote = snapshot.data();
   } catch (error) {
     if (esErrorAutorizacionAdhd(error)) throw error;
@@ -573,7 +602,7 @@ export async function loadProgram({ patientId, programId }) {
     : null;
 }
 
-export async function loadAdhdProgramBundle({ patientId, programId }) {
+export async function loadAdhdProgramBundle({ patientId, programId, remoteTimeoutMs }) {
   const id = assertDocumentId(programId, "programId");
   const rootReference = programRef(patientId, id);
   const safePatientId = assertDocumentId(patientId, "patientId");
@@ -583,14 +612,14 @@ export async function loadAdhdProgramBundle({ patientId, programId }) {
   let remoteResults = [];
   let remoteErrorCode = null;
   try {
-    const [programSnapshot, resultSnapshot, ...collectionSnapshots] = await Promise.all([
+    const [programSnapshot, resultSnapshot, ...collectionSnapshots] = await waitForAdhdRemoteOperation(() => Promise.all([
       getDoc(rootReference),
       getDocs(query(
         collection(db, "usuarios", safePatientId, ADHD_RESULT_COLLECTION),
         where("programId", "==", id)
       )),
       ...entityEntries.map(([, collectionName]) => getDocs(collection(rootReference, collectionName)))
-    ]);
+    ]), remoteTimeoutMs);
     if (programSnapshot.exists()) remoteProgram = { id, ...programSnapshot.data() };
     remoteResults = resultSnapshot.docs
       .map((snapshot) => ({ id: snapshot.id, ...snapshot.data() }))
@@ -661,7 +690,7 @@ export async function loadAdhdProgramBundle({ patientId, programId }) {
   };
 }
 
-export async function saveProgram({ patientId, programId, data = {} }) {
+export async function saveProgram({ patientId, programId, data = {}, remoteTimeoutMs }) {
   const id = assertDocumentId(programId || data.programId || data.id, "programId");
   const payload = { ...cleanValue(data), ...persistenceMetadata(), programId: id };
   const key = draftKey(patientId, id, "program", id);
@@ -672,11 +701,12 @@ export async function saveProgram({ patientId, programId, data = {} }) {
     patientId,
     programId: id,
     kind: "program",
+    remoteTimeoutMs,
     operation: () => setDoc(programRef(patientId, id), { ...payload, updatedAt: serverTimestamp() }, { merge: true })
   });
 }
 
-async function saveEntity(entityType, { patientId, programId, id: requestedId, data = {} }) {
+async function saveEntity(entityType, { patientId, programId, id: requestedId, data = {}, remoteTimeoutMs }) {
   const seed = requestedId || data.id || data[`${entityType}Id`] || data.createdAtIso || Date.now();
   const id = assertDocumentId(requestedId || crearIdEstableAdhd(entityType, programId, seed), `${entityType}Id`);
   const payload = {
@@ -693,6 +723,7 @@ async function saveEntity(entityType, { patientId, programId, id: requestedId, d
     patientId,
     programId,
     kind: entityType,
+    remoteTimeoutMs,
     operation: () => setDoc(entityRef(patientId, programId, entityType, id), {
       ...payload,
       updatedAt: serverTimestamp()
@@ -995,7 +1026,7 @@ async function replayPendingDraft(record) {
   return { status: "unsupported" };
 }
 
-async function syncPendingAdhdWritesInternal({ patientId, programId }) {
+async function syncPendingAdhdWritesInternal({ patientId, programId, remoteTimeoutMs }) {
   const safePatientId = assertDocumentId(patientId, "patientId");
   const safeProgramId = assertDocumentId(programId, "programId");
   const records = await loadLocalDraftRecords(safePatientId, safeProgramId);
@@ -1015,7 +1046,7 @@ async function syncPendingAdhdWritesInternal({ patientId, programId }) {
 
   for (const record of pending) {
     try {
-      const result = await replayPendingDraft(record);
+      const result = await waitForAdhdRemoteOperation(() => replayPendingDraft(record), remoteTimeoutMs);
       if (result.status === "unsupported") {
         report.ignored += 1;
         continue;
@@ -1060,12 +1091,12 @@ async function syncPendingAdhdWritesInternal({ patientId, programId }) {
   return report;
 }
 
-export function syncPendingAdhdWrites({ patientId, programId }) {
+export function syncPendingAdhdWrites({ patientId, programId, remoteTimeoutMs }) {
   const safePatientId = assertDocumentId(patientId, "patientId");
   const safeProgramId = assertDocumentId(programId, "programId");
   const key = syncScopeKey(safePatientId, safeProgramId);
   if (pendingSyncInFlight.has(key)) return pendingSyncInFlight.get(key);
-  const operation = syncPendingAdhdWritesInternal({ patientId: safePatientId, programId: safeProgramId })
+  const operation = syncPendingAdhdWritesInternal({ patientId: safePatientId, programId: safeProgramId, remoteTimeoutMs })
     .finally(() => pendingSyncInFlight.delete(key));
   pendingSyncInFlight.set(key, operation);
   return operation;
