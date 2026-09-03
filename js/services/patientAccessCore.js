@@ -7,7 +7,8 @@ export const PATIENT_OWNER_FIELDS = [
   "medicoTratanteUid",
   "medicoTratanteUID",
   "medicoTratanteId",
-  "idMedico"
+  "idMedico",
+  "professionalUid"
 ];
 
 export const PATIENT_AUTHORIZED_ARRAY_FIELDS = [

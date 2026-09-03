@@ -78,6 +78,44 @@ body.bloqueado main { display: none; }
   grid-column: 1 / -1;
 }
 
+.opcion-visibilidad-receta {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 13px 14px;
+  border: 1px solid rgba(126,182,138,0.22);
+  border-radius: 14px;
+  background: rgba(8,12,20,0.48);
+  cursor: pointer;
+}
+
+.opcion-visibilidad-receta input {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  padding: 0;
+  accent-color: var(--celtic-400);
+}
+
+.opcion-visibilidad-receta span,
+.opcion-visibilidad-receta strong,
+.opcion-visibilidad-receta small {
+  display: block;
+}
+
+.opcion-visibilidad-receta strong {
+  color: var(--white-950);
+}
+
+.opcion-visibilidad-receta small {
+  margin-top: 4px;
+  color: #aab4c3;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
 .foto-perfil-editor {
   display: grid;
   grid-template-columns: 92px minmax(0, 1fr);
@@ -232,6 +270,11 @@ nav {
 
 .linea strong {
   color: #e5e7eb;
+}
+
+.linea small {
+  color: #aab4c3;
+  font-size: 12px;
 }
 
 .descripcion {

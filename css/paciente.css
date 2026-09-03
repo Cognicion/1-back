@@ -1225,6 +1225,10 @@ textarea{
   margin-top: 18px;
 }
 
+.receta-layout--medica {
+  grid-template-columns: minmax(240px, 0.55fr) minmax(560px, 1.45fr);
+}
+
 .receta-subtarjeta {
   margin-bottom: 0;
 }
@@ -1249,6 +1253,57 @@ textarea{
     linear-gradient(145deg, rgba(255,255,255,0.98), rgba(238,248,255,0.96));
   color: var(--black-900);
   box-shadow: 0 18px 55px rgba(14,20,17,0.22);
+}
+
+.receta-preview--clasica {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 430px;
+  aspect-ratio: 17 / 11;
+  padding: 28px 32px;
+  border: 1px solid #c9d0cb;
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: 0 14px 42px rgba(14,20,17,0.2);
+}
+
+.receta-preview--clasica .receta-encabezado {
+  margin: 10px 0 14px;
+  padding-bottom: 11px;
+  border-bottom-color: #aeb9b1;
+}
+
+.receta-preview--clasica .receta-encabezado h2 {
+  font-size: 26px;
+}
+
+.receta-preview--clasica .receta-encabezado p {
+  margin: 5px 0 0;
+  font-size: 12px;
+}
+
+.receta-preview--clasica .receta-datos {
+  gap: 5px 18px;
+  padding: 10px 12px;
+  border-color: #c9d0cb;
+  border-radius: 0;
+  background: #fff;
+  font-size: 13px;
+}
+
+.receta-preview--clasica h3 {
+  margin: 14px 0 8px;
+  font-size: 12px;
+}
+
+.receta-preview--clasica .receta-medicamentos {
+  margin: 0;
+  font-size: 13px;
+}
+
+.receta-preview--clasica .receta-medicamentos li {
+  margin-bottom: 8px;
 }
 
 .solicitud-estudio-preview {
@@ -1447,6 +1502,46 @@ textarea{
   display: block;
 }
 
+.receta-pie-medico {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  gap: 40px;
+  align-items: end;
+  margin-top: 36px;
+}
+
+.receta-preview--clasica .receta-pie-medico {
+  margin-top: auto;
+  padding-top: 20px;
+}
+
+.receta-preview--clasica .receta-firma {
+  width: 100%;
+  margin: 0;
+}
+
+.receta-direccion-consultorio strong,
+.receta-direccion-consultorio span {
+  display: block;
+}
+
+.receta-direccion-consultorio strong {
+  color: var(--gray-700);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.receta-direccion-consultorio span {
+  min-height: 27px;
+  padding: 6px 0 4px;
+  border-bottom: 1px solid var(--black-900);
+  color: var(--black-900);
+  font-size: 12px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
 .medicamento-receta-item {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -1528,6 +1623,16 @@ textarea{
 
   .receta-preview {
     padding: 22px;
+  }
+
+  .receta-preview--clasica {
+    min-height: 520px;
+    aspect-ratio: auto;
+  }
+
+  .receta-pie-medico {
+    grid-template-columns: 1fr;
+    gap: 36px;
   }
 
   .panel-header{

@@ -35,6 +35,12 @@ const pacienteSinAsignacion = {
   nombre: "Paciente sin asignacion"
 };
 
+const pacienteProfessionalUid = {
+  rol: "paciente",
+  professionalUid: medicoA,
+  nombre: "Paciente con relación directa profesional"
+};
+
 assert.equal(patientAllowsProfessionalAccess(pacienteA, medicoA), true, "medicoA ve su paciente asignado");
 assert.equal(patientAllowsProfessionalAccess(pacienteB, medicoA), false, "medicoA no ve pacienteB");
 assert.equal(patientAllowsProfessionalAccess(pacienteB, medicoB), true, "medicoB ve pacienteB");
@@ -42,6 +48,7 @@ assert.equal(patientAllowsProfessionalAccess(pacienteA, medicoB), false, "medico
 assert.equal(patientAllowsProfessionalAccess(pacienteEquipo, medicoA), true, "medicoA ve paciente compartido explicito");
 assert.equal(patientAllowsProfessionalAccess(pacienteEquipo, medicoB), true, "medicoB ve paciente compartido explicito");
 assert.equal(patientAllowsProfessionalAccess(pacienteSinAsignacion, medicoA), false, "paciente sin asignacion queda excluido");
+assert.equal(patientAllowsProfessionalAccess(pacienteProfessionalUid, medicoA), true, "professionalUid coincide con las reglas de acceso directo");
 assert.equal(patientAllowsProfessionalAccess({ rol: "medico", medicoTratanteUid: medicoA }, medicoA), false, "no se mezclan cuentas no paciente");
 assert.equal(patientAllowsProfessionalAccess({
   rol: "paciente",
@@ -56,6 +63,7 @@ assert.match(patientListCacheKey(medicoA), /medicoA$/, "la cache queda aislada p
 const descriptors = createAuthorizedPatientQueryDescriptors(medicoA);
 assert.ok(descriptors.length >= 6, "se generan consultas autorizadas por relaciones conocidas");
 assert.ok(descriptors.every((descriptor) => descriptor.value === medicoA), "todas las consultas usan actorUserId");
+assert.ok(descriptors.some((descriptor) => descriptor.field === "professionalUid"), "el cliente consulta el campo directo que autorizan las reglas");
 assert.equal(createAuthorizedPatientQueryDescriptors("").length, 0, "no se generan consultas sin actor");
 assert.equal(
   isMissingAuthorizedPatientDirectoryError({ code: "functions/not-found" }),

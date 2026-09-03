@@ -20,6 +20,8 @@ const campos = {
   foto: document.getElementById("fotoPerfil"),
   especialidad: document.getElementById("especialidadPerfil"),
   institucion: document.getElementById("institucionPerfil"),
+  direccionConsultorio: document.getElementById("direccionConsultorioPerfil"),
+  mostrarDireccionConsultorioReceta: document.getElementById("mostrarDireccionConsultorioRecetaPerfil"),
   cedula: document.getElementById("cedulaPerfil"),
   cedulaEspecialidad: document.getElementById("cedulaEspecialidadPerfil"),
   telefono: document.getElementById("telefonoPerfil"),
@@ -108,6 +110,8 @@ document.getElementById("formPerfil").addEventListener("submit", async (e) => {
     fotoProfesional: campos.foto.value.trim(),
     especialidad: campos.especialidad.value.trim(),
     institucion: campos.institucion.value.trim(),
+    direccionConsultorio: campos.direccionConsultorio.value.trim(),
+    mostrarDireccionConsultorioReceta: campos.mostrarDireccionConsultorioReceta.checked,
     cedulaProfesional: campos.cedula.value.trim(),
     cedulaEspecialidad: campos.cedulaEspecialidad.value.trim(),
     contactoTelefono: campos.telefono.value.trim(),
@@ -128,6 +132,8 @@ document.getElementById("formPerfil").addEventListener("submit", async (e) => {
     detalles: {
       especialidad: campos.especialidad.value.trim(),
       institucion: campos.institucion.value.trim(),
+      tieneDireccionConsultorio: Boolean(campos.direccionConsultorio.value.trim()),
+      muestraDireccionConsultorioReceta: campos.mostrarDireccionConsultorioReceta.checked,
       tieneFoto: Boolean(campos.foto.value.trim())
     }
   });
@@ -137,7 +143,7 @@ document.getElementById("formPerfil").addEventListener("submit", async (e) => {
 });
 
 Object.values(campos).forEach((input) => {
-  input.addEventListener("input", renderPreview);
+  input.addEventListener(input.type === "checkbox" ? "change" : "input", renderPreview);
 });
 
 function llenarFormulario(usuario) {
@@ -145,6 +151,8 @@ function llenarFormulario(usuario) {
   campos.foto.value = usuario.fotoProfesional || "";
   campos.especialidad.value = usuario.especialidad || "";
   campos.institucion.value = usuario.institucion || usuario.unidad || "";
+  campos.direccionConsultorio.value = usuario.direccionConsultorio || "";
+  campos.mostrarDireccionConsultorioReceta.checked = usuario.mostrarDireccionConsultorioReceta === true;
   campos.cedula.value = usuario.cedulaProfesional || "";
   campos.cedulaEspecialidad.value = usuario.cedulaEspecialidad || "";
   campos.telefono.value = usuario.contactoTelefono || usuario.telefono || "";
@@ -156,6 +164,10 @@ function renderPreview() {
   document.getElementById("nombrePreview").textContent = campos.nombre.value || "Nombre profesional";
   document.getElementById("especialidadPreview").textContent = campos.especialidad.value || "Especialidad";
   document.getElementById("institucionPreview").textContent = campos.institucion.value || "---";
+  document.getElementById("direccionConsultorioPreview").textContent = campos.direccionConsultorio.value || "---";
+  document.getElementById("visibilidadDireccionConsultorioPreview").textContent = campos.mostrarDireccionConsultorioReceta.checked
+    ? "Visible en recetas"
+    : "Oculta en recetas";
   document.getElementById("cedulaPreview").textContent = [campos.cedula.value, campos.cedulaEspecialidad.value].filter(Boolean).join(" / ") || "---";
   document.getElementById("contactoPreview").textContent = [campos.telefono.value, campos.correo.value].filter(Boolean).join(" · ") || "---";
   document.getElementById("descripcionPreview").textContent = campos.descripcion.value || "";

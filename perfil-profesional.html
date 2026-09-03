@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Perfil profesional | Cognicion</title>
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-<link rel="stylesheet" href="css/perfil-profesional.css?v=1.866-profile-photo-v1">
+<link rel="stylesheet" href="css/perfil-profesional.css?v=20260902-office-address-prescription-v1">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -48,6 +48,16 @@
       <label>Institucion
         <input id="institucionPerfil" placeholder="Hospital, clinica o consulta">
       </label>
+      <label class="campo-amplio">Dirección del consultorio
+        <input id="direccionConsultorioPerfil" autocomplete="street-address" placeholder="Calle, número, colonia, ciudad y código postal">
+      </label>
+      <label class="campo-amplio opcion-visibilidad-receta">
+        <input id="mostrarDireccionConsultorioRecetaPerfil" type="checkbox">
+        <span>
+          <strong>Mostrar la dirección del consultorio en mis recetas</strong>
+          <small>Si no se activa, la receta conservará el apartado en blanco.</small>
+        </span>
+      </label>
       <label>Cedula profesional
         <input id="cedulaPerfil">
       </label>
@@ -75,6 +85,7 @@
         <h3 id="nombrePreview">Cargando...</h3>
         <p id="especialidadPreview">Especialidad</p>
         <div class="linea"><span>Institucion</span><strong id="institucionPreview">---</strong></div>
+        <div class="linea"><span>Consultorio</span><strong id="direccionConsultorioPreview">---</strong><small id="visibilidadDireccionConsultorioPreview">Oculta en recetas</small></div>
         <div class="linea"><span>Cedula</span><strong id="cedulaPreview">---</strong></div>
         <div class="linea"><span>Contacto</span><strong id="contactoPreview">---</strong></div>
         <p id="descripcionPreview" class="descripcion"></p>
@@ -83,7 +94,7 @@
   </section>
 </main>
 
-<script type="module" src="js/perfil-profesional.js?v=20260811-profile-photo-storage-guard-v2"></script>
+<script type="module" src="js/perfil-profesional.js?v=20260902-office-address-prescription-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>

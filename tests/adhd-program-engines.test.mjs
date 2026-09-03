@@ -39,6 +39,7 @@ import {
   buildAdhdSofiaSummary,
   validateAdhdSofiaSummary
 } from "../js/adhd/integration/adhdSofiaBridge.js";
+import { resolveAgeModality } from "../js/adhd/config/adhdProtocol.js";
 
 function profile(phase = "T0", commissionRate = 0.3, accuracy = 0.76, sleepHours = 7) {
   return {
@@ -79,6 +80,13 @@ function profile(phase = "T0", commissionRate = 0.3, accuracy = 0.76, sleepHours
     ]
   };
 }
+
+test("la batería estándar solo se bloquea cuando la modalidad lo declara explícitamente", () => {
+  assert.notEqual(resolveAgeModality(6)?.standardProgramAvailable, false);
+  assert.notEqual(resolveAgeModality(13)?.standardProgramAvailable, false);
+  assert.notEqual(resolveAgeModality(30)?.standardProgramAvailable, false);
+  assert.equal(resolveAgeModality(5)?.standardProgramAvailable, false);
+});
 
 test("el generador exige basal, respeta edad y produce sesiones multicomponente auditables", () => {
   const withoutBaseline = generateAdhdProgram({ age: 30, generatedAt: "2026-01-01T00:00:00Z" });

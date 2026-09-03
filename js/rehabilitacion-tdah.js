@@ -3,6 +3,7 @@ import { aplicarAparienciaGuardada, sincronizarAparienciaUsuario } from "./servi
 import { listarPacientes, obtenerPermisoMedico, obtenerUsuario } from "./services/usuarios.js?v=20260826-cuenta-profesional-gratuita-v1";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { hasClinicalProfessionalProfile, isAdministrator } from "./utils/roles.js?v=20260719-admin-universal-modules";
+import { PATIENT_OWNER_FIELDS } from "./services/patientAccessCore.js?v=20260902-adhd-launch-click-v4";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
@@ -153,7 +154,8 @@ const state = {
   adaptiveDecisions: {},
   adaptiveConfigurations: {},
   draftTimer: null,
-  busy: false
+  busy: false,
+  assessmentLaunchInFlight: false
 };
 
 bindStaticEvents();
@@ -193,7 +195,8 @@ function bindStaticEvents() {
     else showAdhdView(target || "assessment");
   });
   $("adhdPatientSelect")?.addEventListener("change", (event) => selectPatient(event.target.value));
-  $("adhdIntakeForm")?.addEventListener("submit", beginAssessment);
+  $("adhdIntakeForm")?.addEventListener("submit", handleAssessmentSubmit);
+  document.addEventListener("click", handleAssessmentLaunchClick, { capture: true });
   $("adhdIntakeForm")?.addEventListener("input", (event) => {
     event.target?.removeAttribute?.("aria-invalid");
     scheduleIntakeDraft();
@@ -278,7 +281,14 @@ function configureRoleView() {
     generate.textContent = state.canEditPatient ? "Generar perfil para revisión" : "Pendiente de revisión profesional";
   }
   const createAssessment = $("adhdCreateAssessment");
-  if (createAssessment) createAssessment.disabled = state.clinician && !state.canEditPatient;
+  if (createAssessment) {
+    const accessBlocked = state.clinician && !state.canEditPatient;
+    createAssessment.disabled = state.assessmentLaunchInFlight;
+    createAssessment.dataset.accessBlocked = String(accessBlocked);
+    createAssessment.title = accessBlocked
+      ? "Puedes pulsar para consultar por qué este expediente está en modo de solo lectura."
+      : "";
+  }
 }
 
 async function loadAuthorizedPatients() {
@@ -422,61 +432,82 @@ function resetPatientState() {
   closeDialog($("adhdFeedbackDialog"));
 }
 
-async function beginAssessment(event) {
+function handleAssessmentSubmit(event) {
   event.preventDefault();
-  const form = event.currentTarget;
+  void beginAssessment(event.currentTarget);
+}
+
+function handleAssessmentLaunchClick(event) {
+  const button = event.target?.closest?.("#adhdCreateAssessment");
+  if (!button) return;
+  event.preventDefault();
+  void beginAssessment(button.form || $("adhdIntakeForm"));
+}
+
+async function beginAssessment(form) {
   const errorNode = $("adhdIntakeError");
-  errorNode.textContent = "";
-  if (state.busy) {
-    errorNode.textContent = "Espera a que termine la operación en curso antes de iniciar la batería.";
-    return;
+  if (!form || !errorNode) {
+    setAdhdStatus("No fue posible preparar el formulario de evaluación. Recarga la página e inténtalo de nuevo.", "error");
+    return false;
   }
-  if (!state.patientId) {
-    errorNode.textContent = "Selecciona el expediente del paciente antes de iniciar la batería.";
-    setAdhdStatus("Selecciona un paciente autorizado para guardar la evaluación en su expediente.", "warning");
-    $("adhdPatientSelect")?.focus();
-    return;
-  }
-  if (state.clinician && !state.canEditPatient) {
-    errorNode.textContent = "Este permiso permite consultar, pero no iniciar ni modificar evaluaciones.";
-    setAdhdStatus("Este permiso permite consultar, pero no iniciar ni modificar evaluaciones.", "warning");
-    return;
-  }
-  if (!validateAssessmentForm(form, errorNode)) return;
-  const intake = readIntakeForm();
-  const modality = resolveAgeModality(intake.age);
-  if (!modality) {
-    errorNode.textContent = "Registra una edad válida para seleccionar la modalidad.";
-    return;
-  }
-  if (!modality.standardProgramAvailable) {
-    errorNode.textContent = modality.notice;
-    setAdhdStatus(modality.notice, "warning");
-    return;
-  }
-  if (!state.program && !state.clinician) {
-    errorNode.textContent = "El programa debe ser habilitado por un profesional antes de iniciar la evaluación.";
-    return;
-  }
-  const requestedPhase = state.pendingAssessmentPhase || "T0";
-  const existingPhase = state.evaluations.find((evaluation) => evaluation.phase === requestedPhase && evaluation.status !== "archived");
-  if (existingPhase) {
-    if (!["completed", "completed_pending_profile"].includes(existingPhase.status)) {
-      await resumeExistingAssessment(existingPhase, errorNode);
-      return;
-    }
-    errorNode.textContent = `${requestedPhase} ya está cerrada. No se sobrescribe ni se repite dentro del mismo registro longitudinal.`;
-    return;
-  }
-  const goalValidation = validateFunctionalGoal(intake.goal);
-  if (!goalValidation.valid) {
-    errorNode.textContent = "Completa acción, contexto, frecuencia, criterio observable y fecha de revisión del objetivo.";
-    return;
-  }
-  let firstTaskId = "";
-  setAssessmentSubmitBusy(true);
-  setBusy(true, "Preparando batería y forma reproducible…");
+  if (state.assessmentLaunchInFlight) return false;
+
+  state.assessmentLaunchInFlight = true;
+  setAssessmentSubmitBusy(true, "Comprobando datos…");
+  let ownsBusyState = false;
   try {
+    errorNode.textContent = "";
+    if (state.busy) {
+      errorNode.textContent = "Espera a que termine la operación en curso antes de iniciar la batería.";
+      return false;
+    }
+    if (!state.patientId) {
+      errorNode.textContent = "Selecciona el expediente del paciente antes de iniciar la batería.";
+      setAdhdStatus("Selecciona un paciente autorizado para guardar la evaluación en su expediente.", "warning");
+      $("adhdPatientSelect")?.focus();
+      return false;
+    }
+    if (state.clinician && !state.canEditPatient) {
+      errorNode.textContent = "Este expediente está en modo de solo lectura para tu cuenta. Solicita permiso de edición o selecciona un paciente asignado como tratante.";
+      setAdhdStatus(errorNode.textContent, "warning");
+      return false;
+    }
+    if (!validateAssessmentForm(form, errorNode)) return false;
+    const intake = readIntakeForm();
+    const modality = resolveAgeModality(intake.age);
+    if (!modality) {
+      errorNode.textContent = "Registra una edad válida para seleccionar la modalidad.";
+      return false;
+    }
+    if (modality.standardProgramAvailable === false) {
+      const modalityNotice = modality.notice || "La batería estándar no está disponible para esta modalidad de edad.";
+      errorNode.textContent = modalityNotice;
+      setAdhdStatus(modalityNotice, "warning");
+      return false;
+    }
+    if (!state.program && !state.clinician) {
+      errorNode.textContent = "El programa debe ser habilitado por un profesional antes de iniciar la evaluación.";
+      return false;
+    }
+    const requestedPhase = state.pendingAssessmentPhase || "T0";
+    const existingPhase = state.evaluations.find((evaluation) => evaluation.phase === requestedPhase && evaluation.status !== "archived");
+    if (existingPhase) {
+      if (!["completed", "completed_pending_profile"].includes(existingPhase.status)) {
+        return await resumeExistingAssessment(existingPhase, errorNode);
+      }
+      errorNode.textContent = `${requestedPhase} ya está cerrada. No se sobrescribe ni se repite dentro del mismo registro longitudinal.`;
+      return false;
+    }
+    const goalValidation = validateFunctionalGoal(intake.goal);
+    if (!goalValidation.valid) {
+      errorNode.textContent = "Completa acción, contexto, frecuencia, criterio observable y fecha de revisión del objetivo.";
+      return false;
+    }
+
+    let firstTaskId = "";
+    setAssessmentSubmitBusy(true, "Guardando e iniciando batería…");
+    setBusy(true, "Preparando batería y forma reproducible…");
+    ownsBusyState = true;
     state.ageMode = modality;
     if (!state.program) await createProgramRoot();
     resetTechnicalMonitor();
@@ -548,20 +579,28 @@ async function beginAssessment(event) {
     renderAll();
     showAdhdView("assessment");
     setAdhdStatus("Batería preparada. Cada tarea inicia con práctica no puntuada y puede reanudarse por bloque.", "success");
+    setBusy(false);
+    ownsBusyState = false;
+    setAssessmentSubmitBusy(true, "Abriendo primera tarea…");
+    if (firstTaskId) {
+      $("adhdBattery")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const launched = await startTask(firstTaskId, "assessment");
+      if (!launched && !errorNode.textContent) {
+        errorNode.textContent = "La evaluación quedó guardada, pero otra acción requiere atención antes de abrir la primera tarea.";
+      }
+      return launched;
+    }
+    errorNode.textContent = "La batería no contiene una primera tarea disponible en esta versión.";
+    return false;
   } catch (error) {
-    const message = authorizationAwareMessage(error, "No fue posible iniciar la evaluación; el trabajo recuperable se conserva solo si el fallo es de conectividad.");
+    const message = authorizationAwareMessage(error, "No fue posible iniciar o reanudar la evaluación; el trabajo recuperable se conserva solo si el fallo es de conectividad.");
     errorNode.textContent = `${message} Código: ${String(error?.code || error?.name || "unknown_error")}.`;
     reportError(error, message);
+    return false;
   } finally {
-    setBusy(false);
+    if (ownsBusyState) setBusy(false);
+    state.assessmentLaunchInFlight = false;
     setAssessmentSubmitBusy(false);
-  }
-  if (firstTaskId) {
-    $("adhdBattery")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    const launched = await startTask(firstTaskId, "assessment");
-    if (!launched && !errorNode.textContent) {
-      errorNode.textContent = "La evaluación quedó guardada, pero otra acción requiere atención antes de abrir la primera tarea.";
-    }
   }
 }
 
@@ -2009,7 +2048,8 @@ function setAssessmentSubmitBusy(busy, busyLabel = "Guardando e iniciando bater�
   if (!button) return;
   button.textContent = busy ? busyLabel : "Guardar contexto e iniciar batería";
   button.setAttribute("aria-busy", String(busy));
-  button.disabled = Boolean(busy || (state.clinician && !state.canEditPatient));
+  button.disabled = Boolean(busy);
+  if (!busy) configureRoleView();
 }
 
 function createAssessmentAdministration() {
@@ -2244,11 +2284,7 @@ function stableObjectString(value) {
 async function resolvePatientEditAccess(patientId, patient = {}) {
   if (!state.clinician) return false;
   if (isAdministrator(state.actor || {})) return true;
-  const ownerFields = [
-    "creadoPor", "ownerUid", "createdByUid", "medicoUid", "uidMedico",
-    "medicoTratanteUid", "medicoTratanteUID", "medicoTratanteId", "idMedico"
-  ];
-  if (ownerFields.some((field) => patient?.[field] === state.user?.uid)) return true;
+  if (PATIENT_OWNER_FIELDS.some((field) => patient?.[field] === state.user?.uid)) return true;
   const embedded = patient?.permisosMedicos?.[state.user?.uid];
   if (embedded) return embedded.editarPaciente === true;
   const permission = await obtenerPermisoMedico(patientId, state.user?.uid).catch(() => null);

@@ -15,11 +15,20 @@ const persistence = read("js/adhd/services/adhdPersistenceAdapter.js");
 
 test("el botón inicia la primera tarea después de guardar la evaluación", () => {
   assert.match(controller, /let firstTaskId = "";[\s\S]*?firstTaskId = tasks\[0\]\?\.id \|\| "";/u);
-  assert.match(controller, /finally \{\s*setBusy\(false\);\s*setAssessmentSubmitBusy\(false\);\s*\}\s*if \(firstTaskId\) \{[\s\S]*?await startTask\(firstTaskId, "assessment"\);/u);
+  assert.match(controller, /setBusy\(false\);[\s\S]*?if \(firstTaskId\) \{[\s\S]*?await startTask\(firstTaskId, "assessment"\);/u);
   assert.match(controller, /if \(!state\.patientId\) \{[\s\S]*?Selecciona el expediente del paciente/u);
   assert.match(controller, /validateAssessmentForm\(form, errorNode\)/u);
+  assert.match(controller, /modality\.standardProgramAvailable === false/u, "las modalidades válidas usan disponibilidad por defecto y solo se bloquea un false explícito");
   assert.match(controller, /Falta completar o corregir:[\s\S]*?invalid\?\.scrollIntoView/u);
   assert.match(controller, /Guardando e iniciando batería/u);
+});
+
+test("el clic del botón se captura directamente y ningún bloqueo de acceso queda silencioso", () => {
+  assert.match(controller, /document\.addEventListener\("click", handleAssessmentLaunchClick, \{ capture: true \}\)/u);
+  assert.match(controller, /handleAssessmentLaunchClick[\s\S]*?closest\?\.\("#adhdCreateAssessment"\)[\s\S]*?beginAssessment\(button\.form/u);
+  assert.match(controller, /createAssessment\.disabled = state\.assessmentLaunchInFlight/u);
+  assert.match(controller, /Este expediente está en modo de solo lectura para tu cuenta/u);
+  assert.match(controller, /catch \(error\)[\s\S]*?No fue posible iniciar o reanudar la evaluación/u);
 });
 
 test("el mismo botón reanuda una evaluación inconclusa y ningún bloqueo de tarea queda silencioso", () => {

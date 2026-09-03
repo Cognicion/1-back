@@ -49,6 +49,7 @@ import {
   formatearResumenDiarioTratamiento,
   obtenerDosisDiariaTratamiento
 } from "./utils/tratamientoIndicaciones.js?v=20260828-treatment-daily-dose-summary-v1";
+import { resolverDireccionConsultorioReceta } from "./utils/recetaMedica.js?v=20260902-classic-prescription-office-address-v1";
 import { buildGrowthAssessment } from "./services/growth/growthCalculationService.js";
 import {
   calcularIMC as calcularIMCPediatrico,
@@ -8657,6 +8658,7 @@ function obtenerNombrePacienteActual() {
 
 function datosRecetaActual() {
   const fecha = valorCampo("recetaFecha") || fechaISOHoy();
+  const datosConsultorio = resolverDireccionConsultorioReceta(medicoActualDatos);
   return {
     formato: valorCampo("recetaFormato") || "cognicion",
     fecha,
@@ -8667,6 +8669,7 @@ function datosRecetaActual() {
     expediente: datosPacienteActual?.expedienteCognicion || datosPacienteActual?.datosInstitucionales?.expedienteCognicion || datosPacienteActual?.expediente || "",
     medico: medicoActualDatos?.nombre || datosPacienteActual?.medicoTratante || "Mdico tratante",
     cedula: medicoActualDatos?.cedula || medicoActualDatos?.cedulaProfesional || "",
+    ...datosConsultorio,
     institucion: datosPacienteActual?.institucionPaciente || datosPacienteActual?.institucion || "",
     medicamentos: medicamentosRecetaActual,
     observaciones: valorCampo("recetaObservaciones"),
@@ -8712,6 +8715,7 @@ function htmlRecetaPreview(datos = datosRecetaActual()) {
   const marca = datos.formato === HUGO_WILSON_RECETA_FORMAT_ID
     ? `<div class="receta-marca receta-marca--hugo-wilson"><img src="${HUGO_WILSON_RECETA_LOGO_URL}" alt="Dr. Hugo Wilson - Psiquiatria"></div>`
     : '<div class="receta-marca">COGNICION</div>';
+  const direccionConsultorio = String(datos.direccionConsultorio || "").trim();
 
   return `
     ${marca}
@@ -8736,10 +8740,16 @@ function htmlRecetaPreview(datos = datosRecetaActual()) {
     ${datos.observaciones ? `<h3>Observaciones</h3><p>${escaparHTML(datos.observaciones)}</p>` : ""}
     ${datos.vigencia ? `<p class="receta-vigencia">${escaparHTML(datos.vigencia)}</p>` : ""}
 
-    <div class="receta-firma">
-      <span></span>
-      <strong>${escaparHTML(datos.medico)}</strong>
-      <small>${datos.cedula ? `Ced. Prof. ${escaparHTML(datos.cedula)}` : "Cdula profesional"}</small>
+    <div class="receta-pie-medico">
+      <div class="receta-direccion-consultorio">
+        <strong>Dirección del consultorio</strong>
+        <span>${direccionConsultorio ? escaparHTML(direccionConsultorio) : "&nbsp;"}</span>
+      </div>
+      <div class="receta-firma">
+        <span></span>
+        <strong>${escaparHTML(datos.medico)}</strong>
+        <small>${datos.cedula ? `Céd. Prof. ${escaparHTML(datos.cedula)}` : "Cédula profesional"}</small>
+      </div>
     </div>
   `;
 }
@@ -8827,19 +8837,22 @@ function descargarRecetaPaciente() {
 <meta charset="UTF-8">
 <title>Receta ${escaparHTML(datos.pacienteNombre)}</title>
 <style>
+  *{box-sizing:border-box;}
   body{margin:0;background:#f2f3ee;font-family:Arial,Helvetica,sans-serif;color:#0e1411;}
-  .hoja{width:760px;min-height:980px;margin:32px auto;padding:48px;background:white;border-radius:22px;box-shadow:0 22px 70px rgba(14,20,17,.18),0 0 0 1px rgba(52,122,77,.14);}
-  .receta-marca{color:#0284c7;font-weight:900;letter-spacing:.22em;font-size:12px;margin-bottom:18px;}
-  .receta-marca--hugo-wilson{display:flex;justify-content:center;margin:0 0 16px;letter-spacing:0;}.receta-marca--hugo-wilson img{display:block;width:150px;height:150px;object-fit:contain;border-radius:12px;}
-  .receta-encabezado{display:flex;justify-content:space-between;gap:22px;border-bottom:2px solid #dbeafe;padding-bottom:18px;margin-bottom:22px;}
-  h2{margin:0;color:#082f49;font-size:30px;} h3{margin:24px 0 10px;color:#0369a1;font-size:14px;text-transform:uppercase;letter-spacing:.12em;}
-  p{line-height:1.45;} .receta-datos{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;background:#f8fbff;border:1px solid #dbeafe;border-radius:16px;padding:14px 16px;}
-  .receta-datos p{margin:0;} .receta-medicamentos{padding-left:22px;} .receta-medicamentos li{margin:0 0 14px;} .receta-medicamentos strong{display:block;color:#0e1411;} .receta-medicamentos span{display:block;margin-top:4px;}
-  .receta-vigencia{margin-top:20px;color:#4c554f;} .receta-firma{margin-top:80px;text-align:center;margin-left:auto;width:280px;} .receta-firma span{display:block;border-top:1px solid #0e1411;margin-bottom:8px;} .receta-firma strong,.receta-firma small{display:block;}
-  @media print{body{background:white}.hoja{width:auto;min-height:auto;margin:0;box-shadow:none;border-radius:0}}
+  .hoja{display:flex;flex-direction:column;width:8.5in;min-height:5.5in;margin:32px auto;padding:.38in .48in;background:#fff;border:1px solid #c9d0cb;border-radius:0;box-shadow:0 18px 55px rgba(14,20,17,.18);}
+  .receta-marca{color:#0284c7;font-weight:900;letter-spacing:.22em;font-size:11px;margin-bottom:10px;}
+  .receta-marca--hugo-wilson{display:flex;justify-content:center;margin:0 0 10px;letter-spacing:0;}.receta-marca--hugo-wilson img{display:block;width:92px;height:92px;object-fit:contain;border-radius:0;}
+  .receta-encabezado{display:flex;justify-content:space-between;gap:22px;border-bottom:1px solid #aeb9b1;padding-bottom:10px;margin-bottom:12px;}
+  h2{margin:0;color:#082f49;font-size:25px;} h3{margin:14px 0 8px;color:#0369a1;font-size:12px;text-transform:uppercase;letter-spacing:.12em;}
+  p{line-height:1.35;} .receta-encabezado p{margin:5px 0 0;font-size:12px}.receta-datos{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;background:#fff;border:1px solid #c9d0cb;border-radius:0;padding:9px 12px;font-size:13px;}
+  .receta-datos p{margin:0;} .receta-medicamentos{margin:0;padding-left:22px;font-size:13px;} .receta-medicamentos li{margin:0 0 8px;} .receta-medicamentos strong{display:block;color:#0e1411;} .receta-medicamentos span{display:block;margin-top:2px;}
+  .receta-vigencia{margin:12px 0 0;color:#4c554f;font-size:12px;}.receta-pie-medico{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:40px;align-items:end;margin-top:auto;padding-top:20px;}.receta-direccion-consultorio strong,.receta-direccion-consultorio span{display:block}.receta-direccion-consultorio strong{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#4c554f}.receta-direccion-consultorio span{min-height:24px;padding:5px 0;border-bottom:1px solid #0e1411;font-size:12px;overflow-wrap:anywhere}.receta-firma{text-align:center;width:260px;}.receta-firma>span{display:block;border-top:1px solid #0e1411;margin-bottom:6px;}.receta-firma strong,.receta-firma small{display:block;}
+  @media(max-width:860px){body{padding:12px}.hoja{width:100%;min-height:0;margin:0;padding:24px}.receta-pie-medico{grid-template-columns:1fr;gap:34px}.receta-firma{width:min(260px,100%);margin-left:auto}}
+  @page{size:8.5in 5.5in;margin:0;}
+  @media print{body{background:#fff}.hoja{width:8.5in;min-height:5.5in;margin:0;box-shadow:none;border:none}}
 </style>
 </head>
-<body><main class="hoja">${htmlRecetaPreview(datos)}</main></body>
+<body><main class="hoja receta-documento-clasico">${htmlRecetaPreview(datos)}</main></body>
 </html>`;
 
   const blob = new Blob([html], { type: "text/html;charset=utf-8" });
