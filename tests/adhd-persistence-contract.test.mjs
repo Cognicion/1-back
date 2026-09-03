@@ -274,7 +274,7 @@ test("las reglas aíslan el programa y preservan identidad, versiones y transici
   assert.match(rules, /function validAdhdCognitiveBlockPayload\([\s\S]*?snapshotContainsMetrics[\s\S]*?== false/u);
   assert.match(rules, /validAdhdCognitiveBlockPayload\(blocks\[1\]\)[\s\S]*?validAdhdCognitiveBlockPayload\(blocks\[2\]\)/u);
   assert.match(rules, /function validPatientAdhdGoalUpdate\([\s\S]*?affectedKeys\(\)\.hasOnly\([\s\S]*?progress[\s\S]*?resultIds/u);
-  assert.match(rules, /match \/evaluaciones\/\{evaluationId\}[\s\S]*?validAdhdEvaluationCreate\(programId, evaluationId\)[\s\S]*?validAdhdEvaluationUpdate/u);
+  assert.match(rules, /match \/evaluaciones\/\{evaluationId\}[\s\S]*?validAdhdEvaluationCreate\(uid, programId, evaluationId\)[\s\S]*?validAdhdEvaluationUpdate/u);
   assert.match(rules, /match \/sesiones\/\{sessionId\}[\s\S]*?validAdhdSessionCreate\(programId, sessionId\)[\s\S]*?validAdhdSessionUpdate/u);
   assert.match(rules, /match \/metas\/\{goalId\}[\s\S]*?validAdhdGoalCreate\(programId, goalId\)[\s\S]*?validPatientAdhdGoalUpdate/u);
   assert.match(rules, /match \/auditoria\/\{auditId\}[\s\S]*?allow update, delete: if false/u);

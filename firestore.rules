@@ -199,7 +199,44 @@ service cloud.firestore {
         && data.get("protocolVersion", "") != "";
     }
 
-    function validAdhdEvaluationCreate(programId, evaluationId) {
+    function validAdhdAdministration(uid, administration) {
+      return administration is map
+        && administration.keys().hasAll([
+          "schemaVersion",
+          "actorRole",
+          "actorUid",
+          "patientId",
+          "source",
+          "recordedAtIso"
+        ])
+        && administration.keys().hasOnly([
+          "schemaVersion",
+          "actorRole",
+          "actorUid",
+          "patientId",
+          "source",
+          "recordedAtIso"
+        ])
+        && administration.get("schemaVersion", "") == "1.0.0"
+        && administration.get("actorUid", "") == request.auth.uid
+        && administration.get("patientId", "") == uid
+        && administration.get("recordedAtIso", "") is string
+        && administration.get("recordedAtIso", "") != ""
+        && (
+          (
+            isSelf(uid)
+            && administration.get("actorRole", "") == "patient"
+            && administration.get("source", "") == "patient_account"
+          )
+          || (
+            !isSelf(uid)
+            && administration.get("actorRole", "") == "clinician"
+            && administration.get("source", "") == "clinician_account"
+          )
+        );
+    }
+
+    function validAdhdEvaluationCreate(uid, programId, evaluationId) {
       return validAdhdMetadata(request.resource.data, programId)
         && request.resource.data.keys().hasAll([
           "id",
@@ -211,6 +248,7 @@ service cloud.firestore {
           "resultIds",
           "validResultIds",
           "formConfiguration",
+          "administration",
           "createdAtIso"
         ])
         && request.resource.data.get("id", "") == evaluationId
@@ -218,7 +256,8 @@ service cloud.firestore {
         && request.resource.data.get("status", "") == "in_progress"
         && request.resource.data.get("taskIds", []) is list
         && request.resource.data.get("resultIds", []) is list
-        && request.resource.data.get("validResultIds", []) is list;
+        && request.resource.data.get("validResultIds", []) is list
+        && validAdhdAdministration(uid, request.resource.data.get("administration", {}));
     }
 
     function adhdEvaluationReferencesAppendOnly() {
@@ -1162,7 +1201,7 @@ service cloud.firestore {
                         || professionalCanReadPatient(uid, patientProfile(uid))
                       );
           allow create: if accountIsActive(uid)
-                        && validAdhdEvaluationCreate(programId, evaluationId)
+                        && validAdhdEvaluationCreate(uid, programId, evaluationId)
                         && (
                           isSelf(uid)
                           || isAdmin()

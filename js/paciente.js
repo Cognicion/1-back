@@ -60,6 +60,8 @@ import { guardarTransferenciaClinicaLocal } from "./services/clinicalLocalStore.
 import { resolverExpedienteInstitucional, formatearFechaDocumento, formatearHoraLocalDocumento } from "./services/solicitudImagenologiaPlantilla.js";
 import { construirRegistroHistorialSignoVital } from "./services/signosVitalesNotas.js?v=20260810-vitals-history-write-proof-v1";
 import { construirActualizacionHistorialDiagnosticos } from "./services/diagnosticosPaciente.js?v=v160-imported-diagnoses-v1";
+import { ADHD_PROTOCOL_ID } from "./adhd/config/adhdProtocol.js";
+import { construirHistorialBateriasAdhd } from "./adhd/integration/adhdPatientRecord.js";
 
 import {
   collection,
@@ -3780,12 +3782,114 @@ window.abrirRehabilitacionCognitivaPaciente = function() {
   window.location.href = `rehabilitacion-cognitiva.html?id=${encodeURIComponent(uidPaciente)}`;
 };
 
+window.abrirProgramaTdahPaciente = function() {
+  if (!uidPaciente) {
+    alert("Selecciona o recarga el expediente del paciente antes de abrir el programa TDAH.");
+    return;
+  }
+  window.location.href = `rehabilitacion-tdah.html?id=${encodeURIComponent(uidPaciente)}`;
+};
+
 window.mostrarRehabilitacionCognitivaPaciente = async function() {
   ocultarSecciones();
   const seccion = document.getElementById("seccionRehabilitacionCognitivaPaciente");
   if (seccion) seccion.style.display = "block";
-  await cargarRehabilitacionCognitivaPaciente();
+  await Promise.all([
+    cargarRehabilitacionCognitivaPaciente(),
+    cargarHistorialBateriasCognitivasPaciente()
+  ]);
 };
+
+async function cargarHistorialBateriasCognitivasPaciente() {
+  const contenedor = document.getElementById("historialBateriasCognitivasPaciente");
+  if (!contenedor) return;
+  contenedor.textContent = "Cargando baterías...";
+  if (!uidPaciente) {
+    contenedor.innerHTML = '<p class="bateria-expediente-estado">Selecciona un expediente para consultar sus baterías.</p>';
+    return;
+  }
+
+  try {
+    const programasSnapshot = await getDocs(collection(db, "usuarios", uidPaciente, "rehabilitacionProgramas"));
+    const programas = programasSnapshot.docs
+      .map((documento) => ({ id: documento.id, ...documento.data() }))
+      .filter((programa) => programa.protocolId === ADHD_PROTOCOL_ID);
+    if (!programas.length) {
+      renderizarHistorialBateriasCognitivasPaciente(construirHistorialBateriasAdhd());
+      return;
+    }
+
+    const [coleccionesPrograma, resultadosSnapshot] = await Promise.all([
+      Promise.all(programas.map(async (programa) => {
+        const programId = programa.programId || programa.id;
+        const [evaluacionesSnapshot, auditoriaSnapshot] = await Promise.all([
+          getDocs(collection(db, "usuarios", uidPaciente, "rehabilitacionProgramas", programId, "evaluaciones")),
+          getDocs(collection(db, "usuarios", uidPaciente, "rehabilitacionProgramas", programId, "auditoria"))
+        ]);
+        return {
+          evaluations: evaluacionesSnapshot.docs.map((documento) => ({ id: documento.id, programId, ...documento.data() })),
+          audit: auditoriaSnapshot.docs.map((documento) => ({ id: documento.id, programId, ...documento.data() }))
+        };
+      })),
+      getDocs(collection(db, "usuarios", uidPaciente, "rehabilitacionResultados"))
+    ]);
+    const model = construirHistorialBateriasAdhd({
+      programs: programas,
+      evaluations: coleccionesPrograma.flatMap((coleccion) => coleccion.evaluations),
+      audit: coleccionesPrograma.flatMap((coleccion) => coleccion.audit),
+      results: resultadosSnapshot.docs.map((documento) => ({ id: documento.id, ...documento.data() }))
+    });
+    renderizarHistorialBateriasCognitivasPaciente(model);
+  } catch (error) {
+    console.error("Error al cargar baterías cognitivas del expediente:", error);
+    contenedor.innerHTML = '<p class="bateria-expediente-estado error">No se pudieron consultar las baterías del expediente. Intenta nuevamente.</p>';
+  }
+}
+
+function renderizarHistorialBateriasCognitivasPaciente(model = {}) {
+  const contenedor = document.getElementById("historialBateriasCognitivasPaciente");
+  if (!contenedor) return;
+  const registros = Array.isArray(model.records) ? model.records : [];
+  if (!registros.length) {
+    contenedor.innerHTML = '<p class="bateria-expediente-estado">No hay aplicaciones del programa TDAH registradas en este expediente.</p>';
+    return;
+  }
+
+  contenedor.innerHTML = registros.map((registro) => {
+    const tareas = registro.tasks.map((tarea) => {
+      const medidas = tarea.metrics.length
+        ? `<ul>${tarea.metrics.map((metrica) => `<li><span>${escaparHTML(metrica.label)}</span><strong>${escaparHTML(metrica.display)}</strong></li>`).join("")}</ul>`
+        : '<span class="bateria-expediente-sin-medidas">Sin medidas resumidas disponibles</span>';
+      return `<tr>
+        <td><strong>${escaparHTML(tarea.label)}</strong></td>
+        <td>${escaparHTML(tarea.statusLabel)}</td>
+        <td>${escaparHTML(formatearFechaEscalaFallback(tarea.completedAt, true))}</td>
+        <td>${medidas}</td>
+      </tr>`;
+    }).join("");
+    const fechaCierre = registro.completedAt || registro.pausedAt;
+    return `<article class="bateria-expediente-registro" data-bateria-id="${escaparHTML(registro.id)}">
+      <header>
+        <div><span>${escaparHTML(registro.phaseLabel)}</span><h3>Programa TDAH multicomponente</h3></div>
+        <strong class="bateria-expediente-badge" data-status="${escaparHTML(registro.status)}">${escaparHTML(registro.statusLabel)}</strong>
+      </header>
+      <dl class="bateria-expediente-meta">
+        <div><dt>Aplicada desde</dt><dd>${escaparHTML(registro.sourceLabel)}</dd></div>
+        <div><dt>Modalidad</dt><dd>${escaparHTML(registro.batteryLabel)}</dd></div>
+        <div><dt>Inicio</dt><dd>${escaparHTML(formatearFechaEscalaFallback(registro.startedAt, true))}</dd></div>
+        <div><dt>Cierre</dt><dd>${escaparHTML(fechaCierre ? formatearFechaEscalaFallback(fechaCierre, true) : "En curso")}</dd></div>
+        <div><dt>Progreso</dt><dd>${escaparHTML(`${registro.completedTasks} de ${registro.taskCount} tareas · ${registro.validTasks} ${registro.validTasks === 1 ? "interpretable" : "interpretables"}`)}</dd></div>
+        <div><dt>Protocolo</dt><dd>${escaparHTML(registro.protocolVersion)}</dd></div>
+      </dl>
+      <progress max="${Math.max(1, registro.taskCount)}" value="${registro.completedTasks}" aria-label="${escaparHTML(`${registro.completedTasks} de ${registro.taskCount} tareas completadas`)}"></progress>
+      <details class="bateria-expediente-detalle">
+        <summary>Ver tareas y medidas descriptivas</summary>
+        <p>Las medidas se muestran sin percentiles ni interpretación normativa cuando no existe una norma documentada.</p>
+        <div class="bateria-expediente-tabla-wrap"><table><thead><tr><th>Tarea</th><th>Resultado</th><th>Fecha</th><th>Medidas</th></tr></thead><tbody>${tareas || '<tr><td colspan="4">Dato insuficiente: no se registraron tareas para esta aplicación.</td></tr>'}</tbody></table></div>
+      </details>
+    </article>`;
+  }).join("");
+}
 
 async function cargarRehabilitacionCognitivaPaciente() {
   const perfil = document.getElementById("perfilCognitivoPaciente");

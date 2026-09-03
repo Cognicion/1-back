@@ -3195,3 +3195,237 @@ html[data-theme="biocelular"] .grupo-escala-registrada {
     flex-direction: column;
   }
 }
+
+/* Historial longitudinal de baterías cognitivas dentro del expediente. */
+.panel-header-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.rehabilitacion-baterias-expediente {
+  margin: 0 0 24px;
+  padding: 22px 0;
+  border-block: 1px solid var(--border-subtle);
+}
+
+.rehabilitacion-baterias-encabezado {
+  display: grid;
+  grid-template-columns: minmax(240px, .42fr) minmax(0, 1fr);
+  gap: clamp(20px, 4vw, 54px);
+  align-items: end;
+  margin-bottom: 18px;
+}
+
+.rehabilitacion-baterias-encabezado h2,
+.rehabilitacion-baterias-encabezado p {
+  margin: 0;
+}
+
+.rehabilitacion-baterias-encabezado h2 {
+  margin-top: 5px;
+  color: var(--text-primary);
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+}
+
+.rehabilitacion-baterias-encabezado p,
+.bateria-expediente-detalle > p {
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.rehabilitacion-baterias-kicker,
+.bateria-expediente-registro > header span {
+  color: var(--accent-primary);
+  font-size: .72rem;
+  font-weight: 850;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.rehabilitacion-baterias-lista {
+  display: grid;
+  min-width: 0;
+}
+
+.bateria-expediente-registro {
+  min-width: 0;
+  padding: 18px 0;
+  border-top: 1px solid var(--border-subtle);
+  background: transparent;
+}
+
+.bateria-expediente-registro > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.bateria-expediente-registro h3 {
+  margin: 4px 0 0;
+  color: var(--text-primary);
+  font-size: 1.08rem;
+}
+
+.bateria-expediente-badge {
+  color: var(--accent-primary);
+  font-size: .78rem;
+  text-align: right;
+}
+
+.bateria-expediente-badge[data-status="paused"],
+.bateria-expediente-badge[data-status="completed_pending_profile"] {
+  color: var(--warning-text, #f3cb6c);
+}
+
+.bateria-expediente-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 24px;
+  margin: 16px 0 12px;
+}
+
+.bateria-expediente-meta div {
+  min-width: 0;
+  padding-left: 11px;
+  border-left: 1px solid var(--border-subtle);
+}
+
+.bateria-expediente-meta dt {
+  color: var(--text-secondary);
+  font-size: .72rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.bateria-expediente-meta dd {
+  margin: 4px 0 0;
+  color: var(--text-primary);
+  font-size: .88rem;
+  overflow-wrap: anywhere;
+}
+
+.bateria-expediente-registro progress {
+  display: block;
+  width: 100%;
+  height: 6px;
+  border: 0;
+  border-radius: 0;
+  accent-color: var(--accent-primary);
+}
+
+.bateria-expediente-registro progress::-webkit-progress-bar {
+  background: var(--surface-secondary);
+}
+
+.bateria-expediente-registro progress::-webkit-progress-value {
+  background: var(--accent-primary);
+}
+
+.bateria-expediente-detalle {
+  min-width: 0;
+  margin-top: 12px;
+}
+
+.bateria-expediente-detalle summary {
+  width: fit-content;
+  color: var(--accent-primary);
+  cursor: pointer;
+  font-weight: 750;
+}
+
+.bateria-expediente-detalle > p {
+  margin: 10px 0;
+  font-size: .82rem;
+}
+
+.bateria-expediente-tabla-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.bateria-expediente-tabla-wrap table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  color: var(--text-primary);
+  font-size: .82rem;
+}
+
+.bateria-expediente-tabla-wrap :where(th, td) {
+  padding: 10px 12px 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: left;
+  vertical-align: top;
+}
+
+.bateria-expediente-tabla-wrap th {
+  color: var(--text-secondary);
+  font-size: .7rem;
+  text-transform: uppercase;
+}
+
+.bateria-expediente-tabla-wrap ul {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bateria-expediente-tabla-wrap li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bateria-expediente-tabla-wrap li span,
+.bateria-expediente-sin-medidas,
+.bateria-expediente-estado {
+  color: var(--text-secondary);
+}
+
+.bateria-expediente-estado {
+  margin: 0;
+  padding: 14px 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.bateria-expediente-estado.error {
+  color: var(--danger-text, #ef9a9a);
+}
+
+@media (max-width: 760px) {
+  .rehabilitacion-baterias-encabezado {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-header-acciones {
+    justify-content: flex-start;
+  }
+
+  .panel-header-acciones button {
+    flex: 1 1 180px;
+  }
+
+  .bateria-expediente-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .bateria-expediente-registro > header {
+    display: grid;
+  }
+
+  .bateria-expediente-badge {
+    text-align: left;
+  }
+
+  .bateria-expediente-meta {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+}

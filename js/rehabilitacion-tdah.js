@@ -421,15 +421,29 @@ function resetPatientState() {
 
 async function beginAssessment(event) {
   event.preventDefault();
-  if (state.busy || !state.patientId) return;
-  if (state.clinician && !state.canEditPatient) {
-    setAdhdStatus("Este permiso permite consultar, pero no iniciar ni modificar evaluaciones.", "warning");
-    return;
-  }
   const form = event.currentTarget;
   const errorNode = $("adhdIntakeError");
   errorNode.textContent = "";
-  if (!form.reportValidity()) return;
+  if (state.busy) {
+    errorNode.textContent = "Espera a que termine la operación en curso antes de iniciar la batería.";
+    return;
+  }
+  if (!state.patientId) {
+    errorNode.textContent = "Selecciona el expediente del paciente antes de iniciar la batería.";
+    setAdhdStatus("Selecciona un paciente autorizado para guardar la evaluación en su expediente.", "warning");
+    $("adhdPatientSelect")?.focus();
+    return;
+  }
+  if (state.clinician && !state.canEditPatient) {
+    errorNode.textContent = "Este permiso permite consultar, pero no iniciar ni modificar evaluaciones.";
+    setAdhdStatus("Este permiso permite consultar, pero no iniciar ni modificar evaluaciones.", "warning");
+    return;
+  }
+  if (!form.reportValidity()) {
+    errorNode.textContent = "Revisa los campos obligatorios señalados antes de iniciar la batería.";
+    form.querySelector(":invalid")?.focus();
+    return;
+  }
   const intake = readIntakeForm();
   const modality = resolveAgeModality(intake.age);
   if (!modality) {
@@ -458,6 +472,7 @@ async function beginAssessment(event) {
     errorNode.textContent = "Completa acción, contexto, frecuencia, criterio observable y fecha de revisión del objetivo.";
     return;
   }
+  let firstTaskId = "";
   setBusy(true, "Preparando batería y forma reproducible…");
   try {
     state.ageMode = modality;
@@ -491,6 +506,7 @@ async function beginAssessment(event) {
       formConfiguration,
       protocolId: ADHD_PROTOCOL_ID,
       protocolVersion: ADHD_PROTOCOL_VERSION,
+      administration: createAssessmentAdministration(),
       telemetryEnabled: intake.telemetryEnabled,
       startedAt: nowIso(),
       createdAtIso: nowIso()
@@ -505,6 +521,7 @@ async function beginAssessment(event) {
     state.evaluations = upsertById(state.evaluations, evaluation);
     state.goals = upsertById(state.goals, goal);
     state.batteryTasks = tasks;
+    firstTaskId = tasks[0]?.id || "";
     state.assessmentResults = {};
     state.pendingAssessmentPhase = "T0";
     if (state.clinician) {
@@ -525,6 +542,10 @@ async function beginAssessment(event) {
     reportError(error, authorizationAwareMessage(error, "No fue posible iniciar la evaluación; el trabajo recuperable se conserva solo si el fallo es de conectividad."));
   } finally {
     setBusy(false);
+  }
+  if (firstTaskId) {
+    $("adhdBattery")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    await startTask(firstTaskId, "assessment");
   }
 }
 
@@ -1866,6 +1887,18 @@ function readIntakeForm() {
       difficultyId: functionalDifficultyIds[0] || "",
       domains
     })
+  };
+}
+
+function createAssessmentAdministration() {
+  const actorRole = state.clinician ? "clinician" : "patient";
+  return {
+    schemaVersion: "1.0.0",
+    actorRole,
+    actorUid: state.user?.uid || "",
+    patientId: state.patientId,
+    source: state.clinician ? "clinician_account" : "patient_account",
+    recordedAtIso: nowIso()
   };
 }
 

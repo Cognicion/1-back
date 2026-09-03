@@ -6,7 +6,7 @@
   <title>Expediente medico</title>
   <link rel="stylesheet" href="css/theme.css">
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-  <link rel="stylesheet" href="css/paciente.css?v=20260816-escalas-agrupadas-v1">
+  <link rel="stylesheet" href="css/paciente.css?v=20260902-adhd-battery-record-v1">
   <link rel="stylesheet" href="css/components/mis-apuntes-flotante.css">
   <link rel="stylesheet" href="css/paciente-laboratorio.css?v=20260818-grafica-signos-ejes-v2">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
@@ -488,10 +488,24 @@
             <h2>Rehabilitación cognitiva</h2>
             <p class="texto-suave">Perfil cognitivo, tamizajes aplicados y actividades orientativas para seguimiento clínico.</p>
           </div>
-          <button type="button" class="boton-secundario" onclick="abrirRehabilitacionCognitivaPaciente()">Aplicar escala cognitiva</button>
+          <div class="panel-header-acciones">
+            <button type="button" class="boton-secundario" onclick="abrirRehabilitacionCognitivaPaciente()">Aplicar escala cognitiva</button>
+            <button type="button" onclick="abrirProgramaTdahPaciente()">Abrir programa TDAH</button>
+          </div>
         </div>
         <div id="perfilCognitivoPaciente" class="panel-lista">Cargando perfil cognitivo...</div>
       </div>
+
+      <section class="rehabilitacion-baterias-expediente" aria-labelledby="tituloBateriasCognitivasPaciente">
+        <header class="rehabilitacion-baterias-encabezado">
+          <div>
+            <span class="rehabilitacion-baterias-kicker">Registro longitudinal</span>
+            <h2 id="tituloBateriasCognitivasPaciente">Baterías utilizadas</h2>
+          </div>
+          <p>Aplicaciones del programa TDAH realizadas por el paciente desde su cuenta COGNICIÓN o por un médico/profesional desde el expediente seleccionado.</p>
+        </header>
+        <div id="historialBateriasCognitivasPaciente" class="rehabilitacion-baterias-lista" aria-live="polite">Cargando baterías...</div>
+      </section>
 
       <div class="panel-doble">
         <div class="tarjeta">
@@ -1256,7 +1270,7 @@
       }
     }, 15000);
   </script>
-<script type="module" src="js/paciente.js?v=20260828-treatment-daily-dose-summary-v1"></script>
+<script type="module" src="js/paciente.js?v=20260902-adhd-battery-record-v1"></script>
   <script type="module" src="js/components/misApuntesFlotante.js?v=20260820-apuntes-rich-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
 </body>
