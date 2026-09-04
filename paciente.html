@@ -8,7 +8,7 @@
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
   <link rel="stylesheet" href="css/paciente.css?v=20260902-classic-prescription-office-address-v1">
   <link rel="stylesheet" href="css/components/mis-apuntes-flotante.css">
-  <link rel="stylesheet" href="css/paciente-laboratorio.css?v=20260818-grafica-signos-ejes-v2">
+  <link rel="stylesheet" href="css/paciente-laboratorio.css?v=20260903-parametros-clinicos-expediente-v1">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
 <link rel="stylesheet" href="css/theme/diagnosticos-tema-oscuro.css?v=1.884">
 <link rel="stylesheet" href="css/theme/diagnosticos-tema-claro.css?v=1.884">
@@ -79,6 +79,7 @@
       <button onclick="mostrarNotasRapidas()">Nota rapida</button>
       <button onclick="abrirHistoriaClinica()">Historia clinica</button>
       <button onclick="mostrarEstudios()">Estudios</button>
+      <button onclick="mostrarParametrosPaciente()">Parámetros</button>
       <button id="btnTratamientoPaciente" onclick="mostrarTratamiento()">Tratamiento e indicaciones</button>
       <button onclick="mostrarDiagnosticos()">Diagnosticos</button>
       <button onclick="mostrarNotasFlotantes()">Notas flotantes</button>
@@ -278,6 +279,37 @@
 
         </div>
         <div id="datosGeneralesLaboratorio" class="paciente-lab-view" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section id="seccionParametrosPaciente" style="display:none;">
+      <div class="tarjeta parametros-paciente-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Parámetros clínicos</h2>
+            <p class="texto-suave">Registra cada resultado con su unidad, fecha e intervalo de referencia. Las clasificaciones usan el rango documentado y no sustituyen la interpretación clínica.</p>
+          </div>
+        </div>
+
+        <form id="formParametrosPaciente" novalidate>
+          <div id="parametrosPacienteFormulario" class="parametros-paciente-grupos" aria-live="polite"></div>
+
+          <div class="parametros-paciente-resultados">
+            <section class="parametros-paciente-resultado" aria-labelledby="tituloParametrosDerivados">
+              <h3 id="tituloParametrosDerivados">Valores derivados</h3>
+              <div id="parametrosPacienteDerivados" class="parametros-paciente-salida">Sin valores suficientes para calcular derivados.</div>
+            </section>
+            <section class="parametros-paciente-resultado" aria-labelledby="tituloParametrosClasificacion">
+              <h3 id="tituloParametrosClasificacion">Clasificación y revisión</h3>
+              <div id="parametrosPacienteClasificacion" class="parametros-paciente-salida">Sin parámetros registrados.</div>
+            </section>
+          </div>
+
+          <div class="form-actions parametros-paciente-acciones">
+            <span id="estadoParametrosPaciente" role="status" aria-live="polite"></span>
+            <button id="guardarParametrosPaciente" type="submit">Guardar parámetros</button>
+          </div>
+        </form>
       </div>
     </section>
 
@@ -1270,7 +1302,7 @@
       }
     }, 15000);
   </script>
-<script type="module" src="js/paciente.js?v=20260902-classic-prescription-office-address-v1"></script>
+<script type="module" src="js/paciente.js?v=20260903-parametros-clinicos-expediente-v1"></script>
   <script type="module" src="js/components/misApuntesFlotante.js?v=20260820-apuntes-rich-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
 </body>

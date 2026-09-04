@@ -136,7 +136,13 @@ const DX_EXTRA = [
   { id: "control_impulsos", nombre: "Trastorno del control de los impulsos", categoria: "control_impulsos", sinonimos: ["trastorno del control de los impulsos", "control de impulsos", "piromania", "piromanía", "cleptomania", "cleptomanía", "comportamiento sexual compulsivo", "trastorno explosivo intermitente"] },
   { id: "hiponatremia", nombre: "Hiponatremia", categoria: "sodio", sinonimos: ["hiponatremia", "sodio bajo", "na bajo"] },
   { id: "obesidad", nombre: "Obesidad / síndrome metabólico", categoria: "metabolico", sinonimos: ["obesidad", "síndrome metabólico", "sindrome metabolico", "dislipidemia"] },
-  { id: "suicidio", nombre: "Riesgo suicida", categoria: "riesgo_suicida", sinonimos: ["riesgo suicida", "ideacion suicida", "ideación suicida", "intento suicida", "plan suicida"] }
+  { id: "suicidio", nombre: "Riesgo suicida", categoria: "riesgo_suicida", sinonimos: ["riesgo suicida", "ideacion suicida", "ideación suicida", "intento suicida", "plan suicida"] },
+  {
+    id: "colera_perdidas_gastrointestinales",
+    nombre: "Cólera activa / riesgo de pérdidas gastrointestinales",
+    categoria: "perdidas_gastrointestinales",
+    sinonimos: ["colera", "cólera", "cholera", "a00", "a00.0", "a00.1", "a00.9", "diarrea acuosa por colera", "diarrea acuosa por cólera"]
+  }
 ];
 
 const MED_DX_EXTRA = [
@@ -211,6 +217,40 @@ const MED_DX_EXTRA = [
   { id: "clozapina_diabetes", ingrediente: "clozapina", diagnosticoCategoria: "glucosa", severidad: "alta", titulo: "Clozapina en diabetes o hiperglucemia", efecto: "Puede descompensar control glucémico y favorecer ganancia ponderal/dislipidemia.", recomendacion: "Requiere vigilancia metabólica estrecha y coordinación con manejo médico; individualizar continuidad según respuesta y alternativas.", parametrosVigilancia: ["Glucosa", "HbA1c", "Peso/IMC", "Lípidos"] },
   { id: "benzodiacepina_suicidio", clase: "benzodiacepina", diagnosticoCategoria: "riesgo_suicida", severidad: "moderada", titulo: "Benzodiacepina en contexto de riesgo suicida", efecto: "Puede aumentar desinhibición, sedación o riesgo de uso no seguro en sobredosis.", recomendacion: "Prescribir cantidades limitadas, involucrar red de apoyo y documentar plan de seguridad." },
   { id: "litio_deshidratacion", ingrediente: "litio", diagnosticoCategoria: "hidratacion", severidad: "alta", titulo: "Litio con deshidratación o pérdidas gastrointestinales", efecto: "La deshidratación puede elevar litio y precipitar toxicidad.", recomendacion: "Valorar suspensión temporal, hidratación, función renal y nivel sérico." },
+  {
+    id: "diuretico_deshidratacion",
+    clase: "diuretico",
+    diagnosticoCategoria: "hidratacion",
+    severidad: "alta",
+    titulo: "Diurético con deshidratación o depleción de volumen",
+    mecanismo: "La diuresis puede agravar la pérdida de agua y electrolitos ya existente y reducir el volumen intravascular.",
+    efecto: "Puede aumentar hipotensión, síncope, lesión renal aguda y alteraciones de sodio, potasio, cloro, bicarbonato, magnesio o calcio, según el diurético y la situación clínica.",
+    recomendacion: "Valorar de inmediato estado de volumen, indicación y continuidad temporal del diurético; revisar presión arterial, balance hídrico, creatinina/eGFR y electrolitos. No clasificarlo como contraindicación absoluta sin valorar el contexto.",
+    parametrosVigilancia: ["Estado de hidratación y balance", "Presión arterial y ortostatismo", "Creatinina/eGFR", "Sodio", "Potasio", "Cloro/bicarbonato", "Magnesio y calcio si aplica"],
+    evidencia: "inferencia_clinica_de_fuentes_oficiales",
+    confianza: "alta",
+    fuentes: [
+      "DailyMed, furosemide/Lasix: advertencias sobre deshidratación, reducción de volumen y depleción de electrolitos, https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=2c9b4d8f-0770-482d-a9e6-9c616a440b1a"
+    ]
+  },
+  {
+    id: "diuretico_colera_perdidas",
+    clase: "diuretico",
+    diagnosticoCategoria: "perdidas_gastrointestinales",
+    severidad: "alta",
+    titulo: "Cólera y diurético: riesgo de deshidratación y desequilibrio hidroelectrolítico",
+    mecanismo: "El cólera puede producir pérdidas rápidas de agua y electrolitos por diarrea/vómito; un diurético añade pérdida renal de volumen y, según la molécula, de electrolitos.",
+    efecto: "La combinación del contexto clínico con el efecto diurético puede agravar hipovolemia, hipotensión, lesión renal aguda y alteraciones hidroelectrolíticas.",
+    recomendacion: "Confirmar actividad y gravedad del cuadro, evaluar rehidratación y balance, revisar la necesidad inmediata del diurético y medir presión arterial, creatinina/eGFR, sodio, potasio, cloro, bicarbonato y magnesio. Escalar atención si hay datos de deshidratación grave o choque.",
+    parametrosVigilancia: ["Estado de hidratación y balance", "Presión arterial y frecuencia cardiaca", "Diuresis", "Creatinina/eGFR", "Sodio", "Potasio", "Cloro", "Bicarbonato", "Magnesio"],
+    evidencia: "inferencia_clinica_de_fuentes_oficiales",
+    confianza: "alta",
+    fuentes: [
+      "CDC, Clinical Features of Cholera: pérdida rápida de volumen y alteraciones electrolíticas, https://www.cdc.gov/yellow-book/hcp/travel-associated-infections-diseases/cholera.html",
+      "CDC, Treating Cholera: reposición de líquidos y electrolitos perdidos, https://www.cdc.gov/cholera/treatment/index.html",
+      "DailyMed, furosemide/Lasix: deshidratación, reducción de volumen y depleción electrolítica por diuresis excesiva, https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=2c9b4d8f-0770-482d-a9e6-9c616a440b1a"
+    ]
+  },
   { id: "ieca_lactancia", clases: ["ieca", "ara2"], diagnosticoCategoria: "lactancia", severidad: "moderada", titulo: "IECA/ARA-II durante lactancia", efecto: "Requiere valoración del fármaco específico, edad del lactante y alternativas.", recomendacion: "Confirmar compatibilidad y vigilar al lactante si procede." },
   {
     id: "olanzapina_riesgo_cardiovascular",

@@ -93,7 +93,7 @@ test("el modo TDAH operacional exige el contexto embebido autenticado", () => {
 });
 
 test("el host oculto no roba la fila central y el iframe conserva toda el área útil", () => {
-  assert.match(programHtml, /rehabilitacion-tdah\.css\?v=20260902-adhd-task-embed-v3/u);
+  assert.match(programHtml, /rehabilitacion-tdah\.css\?v=20260903-layout-continuo-v1/u);
   assert.match(programHtml, /rehabilitacion-tdah\.js\?v=20260902-adhd-task-embed-v2/u);
   assert.match(programCss, /\.adhd-task-host\[hidden\],[\s\S]*?\.adhd-task-frame\[hidden\][\s\S]*?display:\s*none\s*!important/u);
   assert.match(programCss, /\.adhd-task-shell\s*\{[\s\S]*?grid-template-rows:\s*auto minmax\(320px, 1fr\) auto/u);

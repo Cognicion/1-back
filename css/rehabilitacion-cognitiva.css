@@ -1074,6 +1074,80 @@ button {
   margin-top: 14px;
 }
 
+/* Layout continuo: la portada usa el lienzo completo y reserva las superficies
+   cerradas para controles, avisos y diálogos que sí requieren delimitación. */
+body.rehabilitacion-index-page .rehabilitacion-shell {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: clamp(18px, 2.4vw, 34px) clamp(18px, 3vw, 52px) 56px;
+}
+
+body.rehabilitacion-index-page .hero-rehabilitacion {
+  min-height: clamp(260px, 24vw, 350px);
+  gap: clamp(22px, 3vw, 42px);
+  padding: clamp(20px, 2.4vw, 34px) 0;
+  border-inline: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+body.rehabilitacion-index-page .bloque-rehabilitacion {
+  padding: clamp(20px, 2.2vw, 32px) 0;
+  border-inline: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.rehabilitacion-index-page :is(.grid-actividades, .grid-tamizajes) {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
+  gap: 0 clamp(18px, 2.2vw, 34px);
+}
+
+body.rehabilitacion-index-page :is(
+  .tarjeta-actividad,
+  .tarjeta-tamizaje,
+  .grid-progreso article
+) {
+  min-height: 0;
+  padding: 16px 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.rehabilitacion-index-page .grid-progreso {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 0 clamp(18px, 2.2vw, 34px);
+}
+
+body.rehabilitacion-index-page :is(.programa-evc, .programa-tdah) {
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+html[data-theme="light"] body.rehabilitacion-index-page .hero-orbita {
+  border-color: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 680px) {
+  body.rehabilitacion-index-page .rehabilitacion-shell {
+    width: 100%;
+    padding: 14px 16px 42px;
+  }
+
+  body.rehabilitacion-index-page .hero-rehabilitacion {
+    min-height: 0;
+  }
+}
+
 .acciones-tarjeta-tamizaje button {
   width: 100%;
 }

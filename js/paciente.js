@@ -15,9 +15,14 @@ import {
   esErrorConexionApunte
 } from "./services/apuntesMedicoPersistence.js";
 import {
-  detectarAlertasClinicasMedicamentos,
-  detectarInteraccionesFarmacologicas
+  detectarAlertasClinicasMedicamentos
 } from "./data/interaccionesFarmacologicas.js";
+import {
+  DEFINICIONES_PARAMETROS_CLINICOS,
+  GRUPOS_PARAMETROS_CLINICOS,
+  construirRegistroParametrosClinicos,
+  resolverParametrosClinicosPaciente
+} from "./services/parametrosClinicosPaciente.js";
 import {
   aplicarPermisosFormatosPagina,
   obtenerPermisosFormatosUsuario,
@@ -274,6 +279,14 @@ let campoFechaIngresoModal = "fechaIngreso";
 let textoIndicacionesEditado = false;
 let apuntesMedicoPacienteCache = [];
 let guardandoApunteMedicoPacienteEnPaciente = false;
+
+function construirContextoFarmacologicoPaciente(datos = datosPacienteActual || {}) {
+  const laboratoriosExistentes = Array.isArray(datos?.laboratorios) ? datos.laboratorios : [];
+  return {
+    ...datos,
+    laboratorios: [...estudiosCache, ...laboratoriosExistentes]
+  };
+}
 
 function ponerPanelApuntesPacienteOcupado(ocupado) {
   guardandoApunteMedicoPacienteEnPaciente = ocupado;

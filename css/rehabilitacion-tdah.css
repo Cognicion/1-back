@@ -1294,6 +1294,198 @@ html[data-theme] body.adhd-page .adhd-view.adhd-current-view {
   color: var(--adhd-muted);
 }
 
+/*
+ * Disposicion continua del programa.
+ * El alcance queda limitado al contenido de la pagina para conservar sin
+ * cambios los dialogos, el host de tareas y los estados de visibilidad.
+ */
+.adhd-shell {
+  width: calc(100% - clamp(24px, 4vw, 64px));
+  max-width: none;
+  padding: clamp(18px, 2vw, 30px) 0 64px;
+}
+
+.adhd-shell > :is(
+  .adhd-intro,
+  .adhd-patient-context,
+  .adhd-view,
+  .adhd-evidence-summary
+) {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.adhd-shell > :is(
+  .adhd-patient-context,
+  .adhd-view,
+  .adhd-evidence-summary
+) {
+  border-top: 1px solid var(--adhd-line);
+}
+
+.adhd-shell > .adhd-intro {
+  gap: clamp(24px, 4vw, 52px);
+  padding: clamp(20px, 3vw, 38px) 0;
+}
+
+.adhd-shell > .adhd-intro h1 {
+  font-size: clamp(2rem, 3.2vw, 3.6rem);
+}
+
+.adhd-shell .adhd-validation-notice {
+  padding: 10px 0 10px clamp(16px, 2vw, 24px);
+  border: 0;
+  border-left: 4px solid var(--adhd-warning);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.adhd-shell > .adhd-patient-context {
+  margin-top: 0;
+  padding: 18px 0;
+}
+
+.adhd-shell > .adhd-view {
+  min-height: 0;
+  padding: clamp(24px, 3vw, 38px) 0;
+}
+
+.adhd-shell > .adhd-evidence-summary {
+  margin-top: 0;
+  padding: clamp(24px, 3vw, 38px) 0;
+}
+
+.adhd-shell > .adhd-section-tabs {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--adhd-line);
+  border-radius: 0;
+}
+
+.adhd-shell > .adhd-section-tabs button {
+  border-radius: 0;
+}
+
+html[data-theme] body.adhd-page .adhd-section-tabs button.adhd-current-tab,
+html[data-theme] body.adhd-page .adhd-section-tabs button[aria-selected="true"] {
+  color: var(--adhd-accent);
+  border-color: transparent !important;
+  background: transparent;
+  box-shadow: inset 0 -3px 0 var(--adhd-accent);
+}
+
+.adhd-shell .adhd-form-stack {
+  gap: 0;
+}
+
+.adhd-shell :is(
+  .adhd-form-section,
+  .adhd-battery,
+  .adhd-transfer-panel,
+  .adhd-self-rating
+) {
+  margin-top: 0;
+  padding: clamp(18px, 2.2vw, 28px) 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.adhd-shell .adhd-form-stack > .adhd-form-section + .adhd-form-section,
+.adhd-shell #adhdAssessment > .adhd-battery,
+.adhd-shell #adhdSession > :is(.adhd-transfer-panel, .adhd-self-rating) {
+  border-top: 1px solid var(--adhd-line);
+}
+
+.adhd-shell :is(.adhd-form-grid, .adhd-plan-config) {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+
+.adhd-shell .adhd-check-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: 0 18px;
+}
+
+.adhd-shell :is(
+  .adhd-check-grid label,
+  .adhd-transfer-actions > label:not(.adhd-wide-field),
+  .adhd-task-list li,
+  .adhd-measure-table div,
+  .adhd-transfer-goal dl > div,
+  .adhd-clinical-facts article,
+  .adhd-chart-panel
+) {
+  border-top: 0;
+  border-inline: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.adhd-shell .adhd-difficulty-grid label:has(input:checked) {
+  color: var(--adhd-text);
+  border-color: var(--adhd-line);
+  background: transparent;
+}
+
+.adhd-shell :is(.adhd-dashboard-facts, .adhd-today-summary, .adhd-table-wrap) {
+  border-inline: 0;
+  border-radius: 0;
+}
+
+.adhd-shell .adhd-task-list {
+  gap: 0;
+}
+
+.adhd-shell .adhd-measure-table {
+  gap: 0 16px;
+}
+
+.adhd-shell .adhd-clinical-facts {
+  gap: 0 18px;
+}
+
+.adhd-shell .adhd-status-banner {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: inset 3px 0 var(--adhd-line);
+}
+
+.adhd-shell .adhd-status-banner[data-state="error"] {
+  box-shadow: inset 3px 0 var(--adhd-danger);
+}
+
+.adhd-shell .adhd-status-banner[data-state="success"] {
+  box-shadow: inset 3px 0 var(--adhd-accent);
+}
+
+.adhd-shell .adhd-transfer-goal {
+  border: 0;
+  border-left: 4px solid var(--adhd-accent);
+  border-radius: 0;
+  background: transparent;
+}
+
+html[data-theme="light"] body.adhd-page .adhd-shell :is(
+  .adhd-validation-notice,
+  .adhd-section-heading
+) {
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.adhd-shell .adhd-audit-box {
+  border-inline: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
 body.adhd-focus-mode {
   overflow: hidden;
 }

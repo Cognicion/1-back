@@ -1,0 +1,262 @@
+/*
+ * Presentacion continua para las actividades abiertas desde Rehabilitacion.
+ * El modo embebido del programa TDAH conserva sus reglas especificas.
+ */
+
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page {
+  --rehab-continuous-line: rgba(126, 182, 138, 0.2);
+}
+
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page :where(
+  .stroop-shell,
+  .go-shell,
+  .cpt-shell,
+  .dicotica-shell,
+  .visual-shell,
+  .emo-shell,
+  .container
+) {
+  width: calc(100% - clamp(20px, 3vw, 52px));
+  max-width: none;
+  margin-inline: auto;
+}
+
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page :where(
+  .go-shell,
+  .cpt-shell,
+  .dicotica-shell,
+  .visual-shell
+) {
+  padding-block: clamp(22px, 2.5vw, 38px) 64px;
+}
+
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page :where(
+  .stroop-topbar,
+  .emo-topbar
+) {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid var(--rehab-continuous-line);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Los paneles de pagina pasan a ser secciones continuas, no tarjetas. */
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page :where(
+  .instrucciones-nback,
+  .stroop-panel,
+  .go-hero,
+  .panel-go,
+  .arena-go,
+  .cpt-hero,
+  .panel-cpt,
+  .arena-cpt,
+  .dicotica-hero,
+  .panel-dicotica,
+  .arena-dicotica,
+  .visual-hero,
+  .visual-panel,
+  .visual-arena,
+  .emo-hero,
+  .emo-panel,
+  .arena-emociones
+) {
+  width: 100%;
+  max-width: none;
+  border: 0;
+  border-bottom: 1px solid var(--rehab-continuous-line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page :where(
+  .stroop-panel,
+  .go-hero,
+  .panel-go,
+  .cpt-hero,
+  .panel-cpt,
+  .dicotica-hero,
+  .panel-dicotica,
+  .visual-hero,
+  .visual-panel,
+  .emo-hero,
+  .emo-panel
+) {
+  padding: clamp(20px, 2.4vw, 36px) 0;
+}
+
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page :where(
+  .stroop-panel h1,
+  .go-hero h1,
+  .cpt-hero h1,
+  .visual-hero h1,
+  .emo-hero h1
+) {
+  font-size: clamp(2.35rem, 5.2vw, 5rem);
+}
+
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page .config-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+}
+
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page :where(
+  .go-hero,
+  .cpt-hero,
+  .visual-hero
+) {
+  min-height: 0;
+}
+
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page .stroop-shell {
+  min-height: 0;
+  margin-block: 0 48px;
+  place-items: stretch;
+}
+
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page .emo-shell {
+  margin-block: 0 48px;
+}
+
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page .container {
+  padding-inline: 0;
+}
+
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page .instrucciones-nback {
+  margin-block: 18px;
+  padding: 18px 0;
+}
+
+/* Los mensajes explicativos mantienen jerarquia mediante una franja lateral,
+   sin convertirse en otra superficie cerrada. */
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page :where(
+  .recommendation,
+  .interpretacion-go,
+  .aviso-clinico-cpt,
+  .instrucciones-cpt,
+  .interpretacion-cpt,
+  .interpretacion-dicotica,
+  .interpretacion-visual,
+  .aviso-clinico,
+  .interpretacion
+) {
+  padding: 10px 0 10px 16px;
+  border: 0;
+  border-left: 3px solid var(--rehab-continuous-line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page :where(
+  .estado-mando,
+  .indicador-protocolo,
+  .estado-exito
+) {
+  padding: 10px 0 10px 16px;
+  border: 0;
+  border-left: 3px solid var(--rehab-continuous-line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Métricas e información repetitiva: columnas con separadores simples. */
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page :where(
+  .instrucciones-grid > .instruccion-card,
+  .stroop-hud > div,
+  .stroop-results .results-grid > article,
+  .hud-go > div,
+  .panel-go.resultados .resultados-grid > .resultado-card,
+  .graficas-go > article,
+  .hud-cpt > div,
+  .panel-cpt.resultados .resultados-grid > .resultado-card,
+  .graficas-cpt > article,
+  .preparacion-grid > article,
+  .tarjeta-modos > article,
+  .atajos-dicotica,
+  .resumen-configuracion,
+  .config-checks > label,
+  .condiciones-secciones > fieldset,
+  .canales-grid > .canal-card,
+  .hud-dicotica > div,
+  .panel-dicotica.resultados .resultados-grid > .resultado-card,
+  .bloques-resumen-grid > .bloque-resumen-card,
+  .graficas-dicotica > article,
+  .hud-visual > div,
+  .visual-panel.resultados .resultados-grid > .resultado-card,
+  .graficas-visual > article,
+  .arena-emociones .hud > div,
+  .emo-panel.resultados .resultados-grid > article,
+  .emo-panel.resultados .graficas > article
+) {
+  border: 0;
+  border-top: 1px solid var(--rehab-continuous-line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page :where(
+  .instrucciones-grid > .instruccion-card,
+  .stroop-hud > div,
+  .stroop-results .results-grid > article,
+  .hud-go > div,
+  .panel-go.resultados .resultados-grid > .resultado-card,
+  .graficas-go > article,
+  .hud-cpt > div,
+  .panel-cpt.resultados .resultados-grid > .resultado-card,
+  .graficas-cpt > article,
+  .preparacion-grid > article,
+  .tarjeta-modos > article,
+  .atajos-dicotica,
+  .resumen-configuracion,
+  .config-checks > label,
+  .condiciones-secciones > fieldset,
+  .canales-grid > .canal-card,
+  .hud-dicotica > div,
+  .panel-dicotica.resultados .resultados-grid > .resultado-card,
+  .bloques-resumen-grid > .bloque-resumen-card,
+  .graficas-dicotica > article,
+  .hud-visual > div,
+  .visual-panel.resultados .resultados-grid > .resultado-card,
+  .graficas-visual > article,
+  .arena-emociones .hud > div,
+  .emo-panel.resultados .resultados-grid > article,
+  .emo-panel.resultados .graficas > article
+) {
+  padding-inline: 0;
+}
+
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page .canal-card.reproduciendo {
+  padding-left: 14px;
+  border-left: 3px solid #60a5fa;
+  box-shadow: none;
+}
+
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page .canal-card.confirmado {
+  padding-left: 14px;
+  border-left: 3px solid #34d399;
+}
+
+html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page main header {
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 760px) {
+  html:not([data-cognicion-embed="adhd-task"]) body.rehab-activity-page :where(
+    .stroop-shell,
+    .go-shell,
+    .cpt-shell,
+    .dicotica-shell,
+    .visual-shell,
+    .emo-shell,
+    .container
+  ) {
+    width: calc(100% - 18px);
+  }
+}
