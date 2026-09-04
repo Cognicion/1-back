@@ -90,7 +90,7 @@ for (const [archivo, modulo] of [
   ["paciente.html", "js/paciente.js?v=20260904-laboratorio-casos-parametros-v1"],
   ["nota.html", "js/nota.js?v=20260904-parametros-colera-v2"],
   ["biblioteca.html", "js/biblioteca.js?v=20260904-biblioteca-cie10-h-v1"],
-  ["laboratorio-farmacologia.html", "js/laboratorio-farmacologia.js?v=20260904-laboratorio-casos-parametros-v1"]
+  ["laboratorio-farmacologia.html", "js/laboratorio-farmacologia.js?v=20260904-parametros-tablas-desplegables-v1"]
 ]) {
   assert.match(await readFile(resolve(root, archivo), "utf8"), new RegExp(modulo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 }

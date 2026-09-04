@@ -33,6 +33,16 @@ test("la opción Parámetros expone el esquema clínico completo requerido", () 
   assert.match(html, /id="farmacoParametrosFecha"[^>]*type="date"/);
 });
 
+test("la captura se presenta como listas desplegables de resultados convencionales", () => {
+  assert.match(javascript, /<details class="parametros-estudio"/);
+  assert.match(javascript, /<table class="parametros-tabla"/);
+  assert.match(javascript, /<th scope="col">Prueba<\/th><th scope="col">Resultado<\/th><th scope="col">Unidad<\/th><th scope="col">Valores de referencia<\/th>/);
+  assert.match(javascript, /data-parametro-fila=/);
+  assert.match(css, /\.parametros-estudio > summary/);
+  assert.match(css, /\.parametros-tabla-contenedor/);
+  assert.doesNotMatch(javascript, /class="parametro-campo"/);
+});
+
 test("la UI serializa valor, unidad, rango y diagnósticos activos hacia el motor", () => {
   assert.match(javascript, /construirRegistroParametrosClinicos/);
   assert.match(javascript, /data-parametro-campo="rangoReferencia"/);
