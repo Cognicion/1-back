@@ -63,6 +63,7 @@ test("aplica los límites KDIGO de UACR en mg/g y mg/mmol", () => {
 
   assert.equal(categoriaUacr(-1, "mg/g"), null);
   assert.equal(categoriaUacr(null, "mg/g"), null);
+  assert.equal(categoriaUacr(40, "mg/L"), null, "Una concentración urinaria no equivale a una relación");
 });
 
 test("solo clasifica bajo/alto cuando el laboratorio aporta un rango", () => {
@@ -93,8 +94,8 @@ test("solo clasifica bajo/alto cuando el laboratorio aporta un rango", () => {
 
 test("convierte g/L y g/dL al derivar globulinas y relación A:G", () => {
   const derivado = resolverParametrosClinicosPaciente({
-    proteinasTotales: { valor: 70, unidad: "g/L" },
-    albumina: { valor: 4, unidad: "g/dL" },
+    proteinasTotales: { valor: 70, unidad: "g/L", fecha: "2026-09-04" },
+    albumina: { valor: 4, unidad: "g/dL", fecha: "2026-09-04" },
   });
 
   assert.equal(derivado.valoresCanonicos.proteinasTotalesGdl, 7);
@@ -106,14 +107,79 @@ test("convierte g/L y g/dL al derivar globulinas y relación A:G", () => {
   assert.equal(derivado.derivados.relacionAlbuminaGlobulina.valor, 1.33);
 
   const unidadesMixtas = resolverParametrosClinicosPaciente({
-    proteinasTotales: { valor: 7, unidad: "g/dL" },
-    albumina: { valor: 40, unidad: "g/L" },
-    globulinas: { valor: 30, unidad: "g/L" },
+    proteinasTotales: { valor: 7, unidad: "g/dL", fecha: "2026-09-04" },
+    albumina: { valor: 40, unidad: "g/L", fecha: "2026-09-04" },
+    globulinas: { valor: 30, unidad: "g/L", fecha: "2026-09-04" },
   });
 
   assert.equal(unidadesMixtas.valoresCanonicos.albuminaGdl, 4);
   assert.equal(unidadesMixtas.valoresCanonicos.globulinasGdl, 3);
   assert.equal(unidadesMixtas.derivados.relacionAlbuminaGlobulina.valor, 1.33);
+});
+
+test("no deriva globulinas ni relación A:G con mediciones de fechas distintas", () => {
+  const resultado = resolverParametrosClinicosPaciente({
+    proteinasTotales: { valor: 7, unidad: "g/dL", fecha: "2026-09-01" },
+    albumina: { valor: 4, unidad: "g/dL", fecha: "2026-09-04" },
+  });
+
+  assert.equal(resultado.derivados.globulinasCalculadas, undefined);
+  assert.equal(resultado.derivados.relacionAlbuminaGlobulina, undefined);
+  assert.ok(resultado.hallazgos.some((item) => item.id === "parametros_proteinas_fechas_no_comparables"));
+});
+
+test("no aplica categorías renales a unidades incompatibles", () => {
+  const resultado = resolverParametrosClinicosPaciente({
+    laboratorios: [
+      { analito: "eGFR", valor: 42, unidad: "mL/min" },
+      { analito: "UACR", valor: 40, unidad: "mg/L" },
+    ],
+  });
+
+  assert.equal(resultado.categorias.eGFR, null);
+  assert.equal(resultado.categorias.uacr, null);
+  assert.equal(resultado.valoresCanonicos.eGFR, null);
+  assert.equal(resultado.valoresCanonicos.uacr, null);
+  assert.ok(resultado.hallazgos.some((item) => item.id === "parametro_egfr_unidad_no_compatible"));
+  assert.ok(resultado.hallazgos.some((item) => item.id === "parametro_uacr_unidad_no_compatible"));
+});
+
+test("recupera la unidad embebida en un resultado libre sin asumir la unidad por defecto", () => {
+  const creatinina = resolverParametrosClinicosPaciente({
+    laboratorios: [{ nombre: "Creatinina", resultado: "88.4 µmol/L" }],
+  });
+  const egfrIncompatible = resolverParametrosClinicosPaciente({
+    laboratorios: [{ nombre: "eGFR", resultado: "42 mL/min" }],
+  });
+
+  assert.equal(creatinina.porId.creatinina.unidad, "µmol/L");
+  assert.equal(creatinina.valoresCanonicos.creatininaMgDl, 1);
+  assert.equal(egfrIncompatible.porId.eGFR.unidad, "mL/min");
+  assert.equal(egfrIncompatible.valoresCanonicos.eGFR, null);
+  assert.equal(egfrIncompatible.categorias.eGFR, null);
+
+  const creatininaMmol = resolverParametrosClinicosPaciente({
+    laboratorios: [{ nombre: "Creatinina", resultado: "0.1 mmol/L" }],
+  });
+  assert.equal(creatininaMmol.porId.creatinina.unidad, "mmol/L");
+  assert.equal(Number(creatininaMmol.valoresCanonicos.creatininaMgDl.toFixed(2)), 1.13);
+});
+
+test("no combina proteínas sin fecha o con identificadores de muestra distintos", () => {
+  const sinFecha = resolverParametrosClinicosPaciente({
+    proteinasTotales: { valor: 7, unidad: "g/dL" },
+    albumina: { valor: 4, unidad: "g/dL" },
+  });
+  const muestrasDistintas = resolverParametrosClinicosPaciente({
+    proteinasTotales: { valor: 7, unidad: "g/dL", fecha: "2026-09-04", identificadorMuestra: "A" },
+    albumina: { valor: 4, unidad: "g/dL", fecha: "2026-09-04", identificadorMuestra: "B" },
+  });
+
+  for (const resultado of [sinFecha, muestrasDistintas]) {
+    assert.equal(resultado.derivados.globulinasCalculadas, undefined);
+    assert.equal(resultado.derivados.relacionAlbuminaGlobulina, undefined);
+    assert.ok(resultado.hallazgos.some((item) => item.id === "parametros_proteinas_fechas_no_comparables"));
+  }
 });
 
 test("lee registros estructurados con la forma usada por ECG y conserva el más reciente", () => {
@@ -186,9 +252,9 @@ test("el bloque versionado de parámetros prevalece sobre registros y aliases le
 
 test("detecta incoherencia entre proteínas totales y la suma albúmina + globulinas", () => {
   const resultado = resolverParametrosClinicosPaciente({
-    proteinasTotales: { valor: 7, unidad: "g/dL" },
-    albumina: { valor: 4.5, unidad: "g/dL" },
-    globulinas: { valor: 1.8, unidad: "g/dL" },
+    proteinasTotales: { valor: 7, unidad: "g/dL", fecha: "2026-09-04" },
+    albumina: { valor: 4.5, unidad: "g/dL", fecha: "2026-09-04" },
+    globulinas: { valor: 1.8, unidad: "g/dL", fecha: "2026-09-04" },
   });
 
   const hallazgo = resultado.hallazgos.find(

@@ -552,6 +552,7 @@ export const REGLAS_INTERACCIONES_CLINICAS = [
     clasesB: ["diuretico"],
     severidad: "alta",
     titulo: "Litio + diurético",
+    categoria: "renal_electrolitica",
     efecto: "Los diuréticos pueden elevar litio y favorecer toxicidad neurológica o renal.",
     recomendacion: "Evitar o controlar estrechamente niveles, función renal e hidratación.",
     permiteOverride: true,

@@ -179,6 +179,43 @@ function numeroSeguro(valor) {
   return Number.isFinite(numero) ? numero : null;
 }
 
+function normalizarUnidadBusqueda(valor = "") {
+  return String(valor || "")
+    .toLowerCase()
+    .replace(/[µμ]/g, "u")
+    .replace(/m\^?2|m²/g, "m2")
+    .replace(/,/g, ".")
+    .replace(/\s+/g, "");
+}
+
+function contieneUnidadCompleta(texto, unidad) {
+  const fuente = normalizarUnidadBusqueda(texto);
+  const buscada = normalizarUnidadBusqueda(unidad);
+  if (!fuente || !buscada) return false;
+  let indice = fuente.indexOf(buscada);
+  while (indice >= 0) {
+    const anterior = indice > 0 ? fuente[indice - 1] : "";
+    const siguiente = fuente[indice + buscada.length] || "";
+    if (!/[a-z]/.test(anterior) && !/[a-z]/.test(siguiente)) return true;
+    indice = fuente.indexOf(buscada, indice + 1);
+  }
+  return false;
+}
+
+function unidadDesdeValorTexto(valor, definicion) {
+  if (typeof valor !== "string") return "";
+  return [...(definicion.unidades || [])]
+    .sort((a, b) => normalizarUnidadBusqueda(b).length - normalizarUnidadBusqueda(a).length)
+    .find((unidad) => contieneUnidadCompleta(valor, unidad)) || "";
+}
+
+function sufijoUnidadNoReconocida(valor) {
+  if (typeof valor !== "string") return "";
+  const coincidencia = valor.trim().match(/^[<>≤≥]?\s*[+-]?\d+(?:[.,]\d+)?\s*(.+)$/);
+  if (!coincidencia || !/[a-zµμ/]/i.test(coincidencia[1])) return "";
+  return coincidencia[1].split(/[;(]/)[0].trim();
+}
+
 function leerRuta(objeto, ruta = "") {
   return ruta.split(".").reduce((actual, parte) => actual?.[parte], objeto);
 }
@@ -258,7 +295,10 @@ function registroNormalizado(definicion, entrada, origen = "expediente") {
   const rangoReferencia = typeof rangoEntrada === "object"
     ? [rangoParseado?.minimo, rangoParseado?.maximo].filter((valorRango) => valorRango !== null && valorRango !== undefined).join(" – ")
     : String(rangoEntrada || "").trim();
-  const unidad = String(objeto.unidad || objeto.unit || definicion.unidad || "").trim();
+  const unidadDeclarada = String(objeto.unidad || objeto.unit || "").trim();
+  const unidadEnTexto = unidadDesdeValorTexto(valorOriginal, definicion);
+  const unidadNoReconocida = unidadDeclarada || unidadEnTexto ? "" : sufijoUnidadNoReconocida(valorOriginal);
+  const unidad = unidadDeclarada || unidadEnTexto || unidadNoReconocida || definicion.unidad || "";
   return {
     id: definicion.id,
     analyteId: definicion.id,
@@ -276,6 +316,7 @@ function registroNormalizado(definicion, entrada, origen = "expediente") {
     origen: String(objeto.origen || objeto.source || origen),
     procedencia: String(objeto.procedencia || objeto.sourceSystem || objeto.sistemaOrigen || objeto.origen || origen),
     muestra: String(objeto.muestra || objeto.specimen || definicion.muestra || ""),
+    identificadorMuestra: String(objeto.identificadorMuestra || objeto.specimenId || objeto.idMuestra || objeto.panelId || objeto.idPanel || ""),
     metodo: String(objeto.metodo || objeto.method || ""),
     formula: String(objeto.formula || objeto.equation || ""),
     versionFormula: String(objeto.versionFormula || objeto.equationVersion || ""),
@@ -329,9 +370,33 @@ function valorCanonicoProteina(registro) {
 
 function valorCanonicoCreatinina(registro) {
   if (!registro) return null;
+  const unidad = normalizarUnidadBusqueda(registro.unidad);
+  if (unidad === "umol/l") return registro.valor / 88.4;
+  if (unidad === "mmol/l") return (registro.valor * 1000) / 88.4;
+  if (unidad === "mg/dl") return registro.valor;
+  return null;
+}
+
+function unidadEgfrCompatible(registro) {
+  if (!registro) return false;
   const unidad = textoNormalizado(registro.unidad).replace(/\s/g, "");
-  if (/mol/.test(unidad)) return registro.valor / 88.4;
-  return registro.valor;
+  return /ml.*min/.test(unidad) && /1[.,]?73/.test(unidad);
+}
+
+function fechaMuestra(registro) {
+  return String(registro?.fecha || "").slice(0, 10);
+}
+
+function medicionesProteicasCompatibles(registros = []) {
+  const presentes = registros.filter(Boolean);
+  if (presentes.length <= 1) return true;
+  const fechas = [...new Set(presentes.map(fechaMuestra).filter(Boolean))];
+  if (fechas.length !== 1 || presentes.some((registro) => !fechaMuestra(registro))) return false;
+  const muestras = [...new Set(presentes.map((registro) => textoNormalizado(registro.muestra)).filter(Boolean))];
+  if (muestras.length > 1) return false;
+  const identificadores = presentes.map((registro) => String(registro.identificadorMuestra || "").trim());
+  if (identificadores.some(Boolean) && (identificadores.some((id) => !id) || new Set(identificadores).size > 1)) return false;
+  return true;
 }
 
 export function categoriaEgfr(valor) {
@@ -348,7 +413,10 @@ export function categoriaEgfr(valor) {
 export function categoriaUacr(valor, unidad = "mg/g") {
   const numero = numeroSeguro(valor);
   if (numero === null || numero < 0) return null;
-  const esMmol = /mmol/i.test(String(unidad || ""));
+  const unidadNormalizada = textoNormalizado(unidad).replace(/\s/g, "");
+  const esMmol = /mg.*mmol/.test(unidadNormalizada);
+  const esMgG = /mg.*g/.test(unidadNormalizada) && !esMmol;
+  if (!esMmol && !esMgG) return null;
   const limiteA2 = esMmol ? 3 : 30;
   const limiteA3 = esMmol ? 30 : 300;
   if (numero < limiteA2) return { id: "A1", etiqueta: "normal a ligeramente aumentada", severidad: "informativa" };
@@ -386,8 +454,13 @@ export function resolverParametrosClinicosPaciente(paciente = {}) {
   const total = valorCanonicoProteina(porId.proteinasTotales);
   const albumina = valorCanonicoProteina(porId.albumina);
   const globulinas = valorCanonicoProteina(porId.globulinas);
+  const proteinasComparables = medicionesProteicasCompatibles([
+    porId.proteinasTotales,
+    porId.albumina,
+    porId.globulinas
+  ]);
   const derivados = {};
-  if (globulinas === null && total !== null && albumina !== null && total >= albumina) {
+  if (proteinasComparables && globulinas === null && total !== null && albumina !== null && total >= albumina) {
     derivados.globulinasCalculadas = {
       id: "globulinasCalculadas",
       etiqueta: "Globulinas calculadas",
@@ -398,7 +471,7 @@ export function resolverParametrosClinicosPaciente(paciente = {}) {
     };
   }
   const globulinasParaRelacion = globulinas ?? derivados.globulinasCalculadas?.valor ?? null;
-  if (albumina !== null && globulinasParaRelacion !== null && globulinasParaRelacion > 0) {
+  if (proteinasComparables && albumina !== null && globulinasParaRelacion !== null && globulinasParaRelacion > 0) {
     derivados.relacionAlbuminaGlobulina = {
       id: "relacionAlbuminaGlobulina",
       etiqueta: "Relación albúmina/globulinas (A/G)",
@@ -409,7 +482,7 @@ export function resolverParametrosClinicosPaciente(paciente = {}) {
     };
   }
 
-  const egfr = porId.eGFR ? categoriaEgfr(porId.eGFR.valor) : null;
+  const egfr = unidadEgfrCompatible(porId.eGFR) ? categoriaEgfr(porId.eGFR.valor) : null;
   const uacr = porId.uacr ? categoriaUacr(porId.uacr.valor, porId.uacr.unidad) : null;
   const hallazgos = Object.values(porId)
     .filter((registro) => registro.estado === "bajo" || registro.estado === "alto")
@@ -424,7 +497,51 @@ export function resolverParametrosClinicosPaciente(paciente = {}) {
       fuente: registro.fuente
     }));
 
-  const discrepanciaProteinas = total !== null && albumina !== null && globulinas !== null
+  Object.values(porId).forEach((registro) => {
+    const estadoResultado = textoNormalizado(registro.estadoResultado || "final");
+    if (["final", "validado", "definitivo", "completo", "completed"].includes(estadoResultado)) return;
+    hallazgos.push({
+      id: `parametro_resultado_no_final:${registro.id}`,
+      parametroId: registro.id,
+      titulo: `${registro.etiqueta}: resultado ${registro.estadoResultado || "no final"}`,
+      estado: "dato_preliminar",
+      valor: registro.valor,
+      unidad: registro.unidad,
+      estadoResultado: registro.estadoResultado,
+      recomendacion: "Confirmar el resultado final antes de tomar una decisión farmacológica definitiva.",
+      fuente: registro.fuente
+    });
+  });
+
+  if (!proteinasComparables) {
+    hallazgos.push({
+      id: "parametros_proteinas_fechas_no_comparables",
+      parametroId: "proteinasSericas",
+      titulo: "Proteínas séricas registradas en fechas distintas",
+      estado: "dato_no_comparable",
+      recomendacion: "No calcular globulinas ni relación A/G con mediciones de fechas distintas; confirmar que procedan de la misma muestra o panel."
+    });
+  }
+  if (porId.eGFR && !unidadEgfrCompatible(porId.eGFR)) {
+    hallazgos.push({
+      id: "parametro_egfr_unidad_no_compatible",
+      parametroId: "eGFR",
+      titulo: "Unidad de eGFR no compatible con la clasificación cargada",
+      estado: "dato_no_clasificable",
+      recomendacion: "Verificar que el resultado esté expresado por 1.73 m² antes de aplicar categorías KDIGO."
+    });
+  }
+  if (porId.uacr && !uacr) {
+    hallazgos.push({
+      id: "parametro_uacr_unidad_no_compatible",
+      parametroId: "uacr",
+      titulo: "Unidad de UACR no compatible con la clasificación cargada",
+      estado: "dato_no_clasificable",
+      recomendacion: "Usar mg/g o mg/mmol, o convertir el resultado mediante un método validado antes de clasificarlo."
+    });
+  }
+
+  const discrepanciaProteinas = proteinasComparables && total !== null && albumina !== null && globulinas !== null
     ? Number((total - albumina - globulinas).toFixed(2))
     : null;
   if (discrepanciaProteinas !== null && Math.abs(discrepanciaProteinas) > 0.2) {
@@ -458,8 +575,8 @@ export function resolverParametrosClinicosPaciente(paciente = {}) {
     hallazgos,
     valoresCanonicos: {
       creatininaMgDl: valorCanonicoCreatinina(porId.creatinina),
-      eGFR: porId.eGFR?.valor ?? null,
-      uacr: porId.uacr?.valor ?? null,
+      eGFR: egfr ? porId.eGFR?.valor ?? null : null,
+      uacr: uacr ? porId.uacr?.valor ?? null : null,
       proteinasTotalesGdl: total,
       albuminaGdl: albumina,
       globulinasGdl: globulinasParaRelacion

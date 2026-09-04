@@ -25,7 +25,7 @@ const ICONOS_MINIMALISTAS_POR_RUTA = new Map([
 const MODULOS_PRINCIPALES_POR_RUTA = new Map([
   ["medico.html", "js/medico.js?v=20260828-diagnosis-versus-v2"],
   ["mi-salud.html", "js/mi-salud.js?v=20260731-admin-access"],
-  ["sofia.html", "js/sofia.js?v=20260826-cuenta-profesional-gratuita-v1"],
+  ["sofia.html", "js/sofia.js?v=20260904-parametros-colera-v2"],
   ["rehabilitacion-cognitiva.html", "js/rehabilitacion-cognitiva.js?v=20260814-evc-plan-v1"],
   ["estadistica.html", "js/estadistica.js?v=20260826-cuenta-profesional-gratuita-v1"],
   ["escalas.html", "js/escalas.js?v=20260716-expediente-fix-2"],
@@ -34,7 +34,7 @@ const MODULOS_PRINCIPALES_POR_RUTA = new Map([
   ["admin.html", "js/admin.js?v=20260826-cuenta-profesional-gratuita-v1"],
   ["pediatria.html", "js/pediatria/pediatria.js?v=20260826-cuenta-profesional-gratuita-v1"],
   ["laboratorio-neurofisiologia.html", "js/neurofisiologia/laboratorio-neurofisiologia.js?v=20260811-memory-connectome-v3"],
-  ["laboratorio-farmacologia.html", "js/laboratorio-farmacologia.js?v=20260811-cytochrome-bridge-v1"],
+  ["laboratorio-farmacologia.html", "js/laboratorio-farmacologia.js?v=20260904-parametros-colera-v2"],
   ["biblioteca.html", "js/biblioteca.js?v=20260811-cytochrome-bridge-v1"]
 ]);
 

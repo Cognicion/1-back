@@ -403,7 +403,7 @@ async function cargarModuloClinicoNuevoPaciente() {
   actualizarDatosPersonalesDraftNuevo();
   await asegurarMarkupClinicoNuevoPaciente();
   if (!moduloClinicoNuevoPacientePromise) {
-    moduloClinicoNuevoPacientePromise = import("./paciente.js?v=20260731-nuevo-paciente-draft");
+    moduloClinicoNuevoPacientePromise = import("./paciente.js?v=20260904-parametros-colera-v2");
   }
   await moduloClinicoNuevoPacientePromise;
   window.inicializarPacienteClinicoDraft?.({

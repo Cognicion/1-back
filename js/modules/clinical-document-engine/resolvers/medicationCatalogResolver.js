@@ -1,4 +1,4 @@
-import { MEDICAMENTOS_MAESTROS, normalizarNombreMedicamento } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
+import { MEDICAMENTOS_MAESTROS, normalizarNombreMedicamento } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260904-parametros-colera-v2";
 import { clinicalImportLogger } from "../utils/logger.js";
 
 const MATCH_STATUS = Object.freeze({

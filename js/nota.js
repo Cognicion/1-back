@@ -10,7 +10,7 @@ import {
   esErrorConexionApunte
 } from "./services/apuntesMedicoPersistence.js";
 import { usuarioEsPersonalClinico } from "./utils/roles.js";
-import { CIE10, CIE11 } from "./data/catalogoDiagnosticos.js?v=20260816-cie10-cde-v1";
+import { CIE10, CIE11 } from "./data/catalogoDiagnosticos.js?v=20260904-parametros-colera-v2";
 import { ESCALAS_PSIQUIATRICAS, interpretarEscala } from "./data/escalasPsiquiatricas.js";
 import { ESCALAS_SOLICITADAS } from "./data/escalasSolicitadas.js";
 import {

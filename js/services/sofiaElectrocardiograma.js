@@ -1,7 +1,7 @@
 import {
   evaluarMedicamentosPaciente,
   extraerDiagnosticosEstructuradosPaciente
-} from "./motorClinicoMedicamentos.js?v=20260811-pharmacology-files-consolidated-v1";
+} from "./motorClinicoMedicamentos.js?v=20260904-parametros-colera-v2";
 import { buildPatientEcgInterpretation } from "../clinical/ecg/ecgInterpretationCore.js";
 
 function normalizedText(value = "") {
@@ -31,7 +31,15 @@ function patientForMedicationEngine(expediente = {}) {
     ...noteDiagnoses(expediente.notas)
   ];
   if (patient.diagnostico) structuredDiagnoses.unshift(patient.diagnostico);
-  return { ...patient, diagnosticos: structuredDiagnoses };
+  return {
+    ...patient,
+    diagnosticos: structuredDiagnoses,
+    laboratorios: [
+      ...(Array.isArray(patient.laboratorios) ? patient.laboratorios : []),
+      ...(Array.isArray(expediente.laboratorios) ? expediente.laboratorios : []),
+      ...(Array.isArray(expediente.estudios) ? expediente.estudios : [])
+    ]
+  };
 }
 
 export function interpretPatientElectrocardiogram(expediente = {}) {

@@ -4,6 +4,7 @@ const COLLECTIONS = CLINICAL_RECORD_COLLECTIONS;
 const NOTE_COLLECTIONS = new Set(["notasMedicas", "notas", "notasClinicas"]);
 const NOTE_SOURCE_PRIORITY = Object.freeze({ usuarios: 0, pacientes: 1 });
 const NOTE_COLLECTION_PRIORITY = Object.freeze({ notasMedicas: 0, notasClinicas: 1, notas: 2 });
+const LABORATORY_COLLECTIONS = new Set(["laboratorios"]);
 
 function valueToIso(value) {
   if (value === null || value === undefined || value === "") return null;
@@ -32,7 +33,9 @@ async function readCollection(db, patientId, collectionName) {
   const uniqueRecords = [...unique.values()];
   const deduplicated = NOTE_COLLECTIONS.has(collectionName)
     ? deduplicateClinicalNotes(uniqueRecords)
-    : uniqueRecords;
+    : LABORATORY_COLLECTIONS.has(collectionName)
+      ? deduplicateLaboratoryRecords(uniqueRecords)
+      : uniqueRecords;
   return deduplicated.sort((a, b) => String(valueToIso(b.updatedAt || b.fecha || b.createdAt) || "").localeCompare(String(valueToIso(a.updatedAt || a.fecha || a.createdAt) || "")));
 }
 
@@ -64,8 +67,69 @@ function deduplicateClinicalNotes(records = []) {
   return [...unique.values()];
 }
 
+function normalizedLaboratoryPart(value = "") {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function laboratoryContentKey(record = {}) {
+  const analyte = record.analyteId || record.analito || record.analyte || record.nombreAnalito || record.parametro;
+  const value = record.valor ?? record.value ?? record.valorLaboratorio ?? record.resultadoLaboratorio;
+  if (!analyte || value === null || value === undefined || value === "") {
+    return `physical:${record._sourceRoot || "usuarios"}:${record.id || "sin-id"}`;
+  }
+  return [
+    "laboratory",
+    normalizedLaboratoryPart(analyte),
+    normalizedLaboratoryPart(record.muestra || record.specimen),
+    normalizedLaboratoryPart(value),
+    normalizedLaboratoryPart(record.unidad || record.unit),
+    valueToIso(record.fecha || record.measuredAt || record.fechaResultado || record.createdAt || record.updatedAt) || ""
+  ].join(":");
+}
+
+function deduplicateLaboratoryRecords(records = []) {
+  const unique = new Map();
+  records.forEach((record) => {
+    const key = laboratoryContentKey(record);
+    const current = unique.get(key);
+    const currentPriority = NOTE_SOURCE_PRIORITY[current?._sourceRoot] ?? 99;
+    const nextPriority = NOTE_SOURCE_PRIORITY[record._sourceRoot] ?? 99;
+    if (!current || nextPriority < currentPriority) unique.set(key, record);
+  });
+  return [...unique.values()];
+}
+
+function rootClinicalParameterRecords(patient = {}) {
+  const values = patient?.parametrosClinicos?.valores;
+  if (!values || typeof values !== "object" || Array.isArray(values)) return [];
+  return Object.entries(values).flatMap(([analyteId, entry]) => {
+    const record = entry && typeof entry === "object" ? entry : { valor: entry };
+    const value = record.valor ?? record.value;
+    if (value === null || value === undefined || value === "") return [];
+    return [{
+      id: `parametro-clinico-${analyteId}`,
+      ...record,
+      analyteId,
+      analito: record.analito || analyteId,
+      fecha: record.fecha || patient.parametrosClinicos.fechaMuestra || patient.parametrosClinicos.actualizadoEn || null,
+      _recordType: "laboratorios",
+      _sourceRoot: "usuarios",
+      _sourceContainer: "patientProfile.parametrosClinicos"
+    }];
+  });
+}
+
 async function buildPatientClinicalContext({ db, patientId, patient }) {
   const records = Object.fromEntries(await Promise.all(COLLECTIONS.map(async (collectionName) => [collectionName, await readCollection(db, patientId, collectionName)])));
+  records.laboratorios = deduplicateLaboratoryRecords([
+    ...rootClinicalParameterRecords(patient),
+    ...(records.laboratorios || [])
+  ]);
   const noteRecords = Object.values(records).flat().filter((record) => NOTE_COLLECTIONS.has(record._recordType));
   const retainedNoteIds = new Set(deduplicateClinicalNotes(noteRecords).map((record) => `${record._sourceRoot}:${record._recordType}:${record.id}`));
   Object.keys(records).forEach((collectionName) => {
@@ -81,4 +145,15 @@ async function buildPatientClinicalContext({ db, patientId, patient }) {
   };
 }
 
-module.exports = { buildPatientClinicalContext, valueToIso, COLLECTIONS, readCollection, readCollectionAtRoot, deduplicateClinicalNotes, noteContentKey };
+module.exports = {
+  buildPatientClinicalContext,
+  valueToIso,
+  COLLECTIONS,
+  readCollection,
+  readCollectionAtRoot,
+  deduplicateClinicalNotes,
+  noteContentKey,
+  deduplicateLaboratoryRecords,
+  laboratoryContentKey,
+  rootClinicalParameterRecords
+};

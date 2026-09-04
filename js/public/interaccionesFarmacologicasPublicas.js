@@ -3,7 +3,7 @@ import {
   buscarMedicamentosParaConsulta,
   crearSeleccionMedicamento,
   resumirAnalisisPublico
-} from "../services/interaccionesPublicas.js?v=20260811-pharmacology-files-consolidated-v1";
+} from "../services/interaccionesPublicas.js?v=20260904-parametros-colera-v2";
 import { registrarUsoConsultaInteracciones } from "../services/analyticsInteraccionesFarmacologicas.js";
 
 const SEVERIDAD_ORDEN = ["contraindicada", "alta", "moderada", "baja", "informativa"];

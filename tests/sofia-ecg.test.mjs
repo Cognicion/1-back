@@ -111,6 +111,17 @@ test("el adaptador reutiliza diagnósticos y el motor farmacológico unificado",
   assert.ok(result.context.medications.alerts.length > 0);
 });
 
+test("el adaptador entrega laboratorios del expediente al motor farmacológico", () => {
+  const result = interpretPatientElectrocardiogram({
+    paciente: { edad: 48, sexo: "masculino" },
+    estudios: [{ nombre: "ECG", resultado: "Ritmo sinusal. FC 72 lpm. QT 390 ms." }],
+    tratamientos: [{ medicamento: "Furosemida 40 mg", estado: "activo" }],
+    laboratorios: [{ analito: "Potasio", valor: 3.1, unidad: "mmol/L", rangoReferencia: "3.5 - 5.1", fecha: "2026-09-04" }]
+  });
+
+  assert.ok(result.context.medications.alerts.some((alerta) => /Potasio bajo/i.test(alerta.title || alerta.titulo || "")));
+});
+
 test("no calcula QTc desde un solo RR si el ritmo está documentado como irregular", () => {
   const result = buildPatientEcgInterpretation({
     expediente: {

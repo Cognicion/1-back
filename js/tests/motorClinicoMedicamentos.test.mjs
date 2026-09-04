@@ -57,7 +57,8 @@ resultado = evaluarMedicamentosPaciente({
   medicamentos: [{ medicamento: "Ácido valproico 500 mg" }]
 });
 assert.ok(tiene(resultado, "Valproato en embarazo"));
-assert.equal(resultado.indicador.estado, "bloqueo");
+assert.equal(resultado.indicador.estado, "alto");
+assert.equal(resultado.alertas.find((alerta) => /Valproato en embarazo/i.test(alerta.titulo))?.tipo, "precaucion_contextual");
 
 resultado = evaluarMedicamentosPaciente({
   medicamentos: [

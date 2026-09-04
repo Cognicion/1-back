@@ -366,6 +366,288 @@ body.pagina-laboratorio-farmacologia .farmaco-details {
   }
 }
 
+/* Parámetros clínicos: captura estructurada compartida con el motor farmacológico. */
+body.pagina-laboratorio-farmacologia .parametros-panel {
+  margin-top: 10px;
+}
+
+body.pagina-laboratorio-farmacologia .parametros-intro {
+  margin: 0 0 12px;
+  color: var(--gray-200);
+  line-height: 1.5;
+}
+
+body.pagina-laboratorio-farmacologia .parametros-meta {
+  display: grid;
+  grid-template-columns: minmax(180px, .35fr) minmax(320px, 1fr) auto;
+  align-items: end;
+  gap: 10px 14px;
+  margin-bottom: 12px;
+  padding: 11px;
+  border: 1px solid rgba(126, 182, 138, .16);
+  border-radius: 11px;
+  background: rgba(5, 7, 6, .28);
+}
+
+body.pagina-laboratorio-farmacologia .parametros-meta p {
+  align-self: center;
+  margin: 0;
+  color: var(--gray-200);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+body.pagina-laboratorio-farmacologia .parametros-grupos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+body.pagina-laboratorio-farmacologia .parametros-grupo {
+  min-width: 0;
+  margin: 0;
+  padding: 11px;
+  border: 1px solid rgba(126, 182, 138, .2);
+  border-radius: 12px;
+  background: rgba(14, 20, 17, .48);
+}
+
+body.pagina-laboratorio-farmacologia .parametros-grupo legend {
+  padding: 0 7px;
+  color: var(--ivory-50);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+body.pagina-laboratorio-farmacologia .parametros-grupo > p {
+  margin: 0 0 9px;
+  color: var(--gray-200);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+body.pagina-laboratorio-farmacologia .parametros-campos {
+  display: grid;
+  gap: 8px;
+}
+
+body.pagina-laboratorio-farmacologia .parametro-campo {
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid rgba(126, 182, 138, .14);
+  border-radius: 9px;
+  background: rgba(5, 7, 6, .34);
+}
+
+body.pagina-laboratorio-farmacologia .parametro-campo header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+body.pagina-laboratorio-farmacologia .parametro-campo header strong {
+  color: var(--white-950);
+  font-size: 12px;
+}
+
+body.pagina-laboratorio-farmacologia .parametro-campo header small {
+  color: var(--green-200);
+  font-size: 9.5px;
+  text-align: right;
+}
+
+body.pagina-laboratorio-farmacologia .parametro-campo-grid {
+  display: grid;
+  grid-template-columns: minmax(70px, .8fr) minmax(92px, 1fr);
+  gap: 6px;
+}
+
+body.pagina-laboratorio-farmacologia .parametro-campo-grid label {
+  font-size: 10px;
+}
+
+body.pagina-laboratorio-farmacologia .parametro-campo-grid input,
+body.pagina-laboratorio-farmacologia .parametro-campo-grid select {
+  min-height: 32px;
+  padding: 6px 7px;
+  font-size: 11px;
+}
+
+body.pagina-laboratorio-farmacologia .parametro-campo-grid .parametro-rango {
+  grid-column: 1 / -1;
+}
+
+body.pagina-laboratorio-farmacologia .parametros-grupo-nota {
+  margin: 9px 0 0 !important;
+  padding: 8px;
+  border-left: 3px solid rgba(103, 232, 249, .45);
+  background: rgba(37, 99, 235, .08);
+}
+
+body.pagina-laboratorio-farmacologia .parametros-resumen {
+  margin-top: 12px;
+  padding: 11px;
+  border: 1px solid rgba(126, 182, 138, .18);
+  border-radius: 12px;
+  background: rgba(5, 7, 6, .3);
+}
+
+body.pagina-laboratorio-farmacologia .parametros-resumen h3 {
+  margin: 0 0 9px;
+  color: var(--ivory-50);
+  font-size: 14px;
+}
+
+body.pagina-laboratorio-farmacologia .parametros-resueltos-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 7px;
+}
+
+body.pagina-laboratorio-farmacologia .parametro-resultado {
+  padding: 9px;
+  border: 1px solid rgba(190, 196, 188, .2);
+  border-radius: 9px;
+  background: rgba(14, 20, 17, .5);
+}
+
+body.pagina-laboratorio-farmacologia .parametro-resultado strong,
+body.pagina-laboratorio-farmacologia .parametro-resultado small {
+  display: block;
+}
+
+body.pagina-laboratorio-farmacologia .parametro-resultado strong {
+  color: var(--white-950);
+  font-size: 11px;
+}
+
+body.pagina-laboratorio-farmacologia .parametro-resultado p {
+  margin: 5px 0;
+  color: var(--white-950);
+  font-size: 16px;
+  font-weight: 900;
+}
+
+body.pagina-laboratorio-farmacologia .parametro-resultado small {
+  color: var(--gray-200);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+body.pagina-laboratorio-farmacologia .parametro-resultado.en-rango {
+  border-color: rgba(126, 182, 138, .35);
+}
+
+body.pagina-laboratorio-farmacologia .parametro-resultado.fuera-rango {
+  border-color: rgba(250, 204, 21, .48);
+  background: rgba(113, 63, 18, .17);
+}
+
+body.pagina-laboratorio-farmacologia .parametro-resultado.sin-rango {
+  border-style: dashed;
+}
+
+body.pagina-laboratorio-farmacologia .parametro-resultado.derivado {
+  border-color: rgba(103, 232, 249, .38);
+  background: rgba(37, 99, 235, .1);
+}
+
+body.pagina-laboratorio-farmacologia .parametro-resultado.derivado strong span {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 2px 5px;
+  border: 1px solid rgba(103, 232, 249, .3);
+  border-radius: 999px;
+  color: #a5f3fc;
+  font-size: 8px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+body.pagina-laboratorio-farmacologia .parametros-vacio,
+body.pagina-laboratorio-farmacologia .parametros-kdigo,
+body.pagina-laboratorio-farmacologia .parametros-inconsistencias p {
+  margin: 7px 0 0;
+  color: var(--gray-200);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+body.pagina-laboratorio-farmacologia .parametros-vacio {
+  margin: 0;
+}
+
+body.pagina-laboratorio-farmacologia .parametros-inconsistencias {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid rgba(248, 113, 113, .4);
+  border-radius: 9px;
+  background: rgba(127, 29, 29, .16);
+}
+
+body.pagina-laboratorio-farmacologia .farmaco-resumen.incompleta,
+body.pagina-laboratorio-farmacologia .farmaco-cobertura-incompleta {
+  border-color: rgba(250, 204, 21, .5);
+  background: linear-gradient(135deg, rgba(113, 63, 18, .2), rgba(5, 7, 6, .58));
+}
+
+body.pagina-laboratorio-farmacologia .farmaco-cobertura-incompleta {
+  padding: 11px 12px;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 10px;
+}
+
+body.pagina-laboratorio-farmacologia .farmaco-cobertura-incompleta strong {
+  color: #fde68a;
+}
+
+body.pagina-laboratorio-farmacologia .farmaco-cobertura-incompleta p {
+  margin: 6px 0 0;
+  color: var(--gray-200);
+  line-height: 1.45;
+}
+
+@media (max-width: 1100px) {
+  body.pagina-laboratorio-farmacologia .parametros-grupos {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  body.pagina-laboratorio-farmacologia .parametros-grupo:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  body.pagina-laboratorio-farmacologia .parametros-meta,
+  body.pagina-laboratorio-farmacologia .parametros-grupos {
+    grid-template-columns: 1fr;
+  }
+
+  body.pagina-laboratorio-farmacologia .parametros-grupo:last-child {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 420px) {
+  body.pagina-laboratorio-farmacologia .parametro-campo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.pagina-laboratorio-farmacologia .parametro-campo-grid .parametro-rango {
+    grid-column: auto;
+  }
+}
+
+html[data-theme="biocelular"] body.pagina-laboratorio-farmacologia .parametros-grupo,
+html[data-theme="biocelular"] body.pagina-laboratorio-farmacologia .parametro-campo,
+html[data-theme="biocelular"] body.pagina-laboratorio-farmacologia .parametros-resumen {
+  border-color: rgb(194 46 62 / 26%);
+  background: rgb(24 9 14 / 62%);
+}
+
 /* Paleta de superficie exclusiva de Biocelular; no se comparte con Claro u Oscuro. */
 html[data-theme="biocelular"] body.pagina-laboratorio-farmacologia .farmaco-header {
   border-color: rgb(186 43 59 / 26%);

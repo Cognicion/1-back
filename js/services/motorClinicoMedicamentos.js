@@ -4,13 +4,14 @@ import {
   REGLAS_INTERACCIONES_CLINICAS,
   REGLAS_MEDICAMENTO_DIAGNOSTICO,
   UMBRALES_RIESGO_ACUMULATIVO
-} from "../data/reglasClinicasMedicamentosExtendidas.js";
+} from "../data/reglasClinicasMedicamentosExtendidas.js?v=20260904-parametros-colera-v2";
 import {
   obtenerMedicamentoPorId,
   resolverMedicamentoCanonico
-} from "../data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
+} from "../data/catalogoFarmacologicoUnificado.js?v=20260904-parametros-colera-v2";
 import { detectarInteraccionesPorCitocromos } from "../data/citocromosFarmacologicos.js?v=20260811-pharmacology-files-consolidated-v1";
-import { CATALOGO_DIAGNOSTICOS } from "../data/catalogoDiagnosticos.js?v=20260816-cie10-cde-v1";
+import { CATALOGO_DIAGNOSTICOS } from "../data/catalogoDiagnosticos.js?v=20260904-parametros-colera-v2";
+import { resolverParametrosClinicosPaciente } from "./parametrosClinicosPaciente.js?v=20260904-parametros-colera-v2";
 
 const SEVERIDAD_ORDEN = {
   informativa: 1,
@@ -56,6 +57,15 @@ export function normalizarTextoClinico(valor = "") {
     .trim();
 }
 
+function contieneFraseClinicaCompleta(texto, patron) {
+  const palabrasTexto = normalizarTextoClinico(texto).match(/[\p{L}\p{N}]+/gu) || [];
+  const palabrasPatron = normalizarTextoClinico(patron).match(/[\p{L}\p{N}]+/gu) || [];
+  if (!palabrasTexto.length || !palabrasPatron.length || palabrasPatron.length > palabrasTexto.length) return false;
+  return palabrasTexto.some((_, inicio) =>
+    palabrasPatron.every((palabra, offset) => palabrasTexto[inicio + offset] === palabra)
+  );
+}
+
 function distanciaLevenshtein(a = "", b = "") {
   const aa = normalizarTextoClinico(a);
   const bb = normalizarTextoClinico(b);
@@ -76,7 +86,7 @@ function contieneConFuzzy(texto, patron) {
   const normalizado = normalizarTextoClinico(texto);
   const buscado = normalizarTextoClinico(patron);
   if (!normalizado || !buscado) return false;
-  if (normalizado.includes(buscado)) return true;
+  if (contieneFraseClinicaCompleta(normalizado, buscado)) return true;
   if (buscado.length < 8) return false;
   const palabras = normalizado.split(" ");
   const piezas = buscado.split(" ");
@@ -120,9 +130,18 @@ function normalizarCodigoDiagnostico(codigo = "") {
 function categoriasPorDiagnostico(diagnostico = {}) {
   const codigo = normalizarCodigoDiagnostico(diagnostico.codigo);
   if (!codigo) return [];
-  const registro = DIAGNOSTICOS_POR_CODIGO.get(codigo)
-    || DIAGNOSTICOS_POR_CODIGO.get(codigo.slice(0, 3));
-  return [...new Set(registro?.farmacologia?.categoriasRiesgo || [])];
+  const registros = [
+    DIAGNOSTICOS_POR_CODIGO.get(codigo),
+    DIAGNOSTICOS_POR_CODIGO.get(codigo.slice(0, 3))
+  ].filter(Boolean);
+  return [...new Set(registros.flatMap((registro) => registro?.farmacologia?.categoriasRiesgo || []))];
+}
+
+function codigoDiagnosticoEnTexto(texto = "") {
+  const coincidencia = String(texto || "").toUpperCase().match(
+    /(?:^|\s|\()([A-Z]\d{2}(?:\.\d{1,4})?|\d[A-Z][0-9A-Z]{2}(?:\.[0-9A-Z]{1,4})?)(?=\s|\)|-|$)/
+  );
+  return coincidencia?.[1] || "";
 }
 
 function patronNegado(texto, patron) {
@@ -194,28 +213,65 @@ export function normalizarMedicamentoClinico(medicamento) {
     : medicamento;
   const textoOriginal = textoMedicamento(medicamento) || resolucionCanonica?.originalText || resolucionCanonica?.medicationName || "";
   const texto = normalizarTextoClinico(textoOriginal);
+  const principiosDeclarados = medicamentoCanonico?.principiosActivos || [];
+  const principiosYComponentes = principiosDeclarados.flatMap((principio) => [
+    principio,
+    ...String(principio || "").split(/[+/]/).map((parte) => parte.trim()).filter(Boolean)
+  ]);
   const idsCanonicos = new Set([
     resolucionCanonica?.clinicalMedicationId,
-    ...(medicamentoCanonico?.principiosActivos || []).map((principio) => resolverMedicamentoCanonico(principio)?.clinicalMedicationId || normalizarTextoClinico(principio).replace(/\s+/g, "_"))
+    ...principiosYComponentes.map((principio) => resolverMedicamentoCanonico(principio)?.clinicalMedicationId || normalizarTextoClinico(principio).replace(/\s+/g, "_"))
   ].filter(Boolean));
-  const ingredientesDirectos = INGREDIENTES_MEDICAMENTOS.filter((ingrediente) =>
-    idsCanonicos.has(ingrediente.id) || ingrediente.sinonimos.some((sinonimo) => texto.includes(normalizarTextoClinico(sinonimo)))
-  );
-  const ingredientes = ingredientesDirectos.length
-    ? ingredientesDirectos
+  const ingredientesCanonicos = INGREDIENTES_MEDICAMENTOS.filter((ingrediente) => idsCanonicos.has(ingrediente.id));
+  const idsIngredientesCanonicos = new Set(ingredientesCanonicos.map((ingrediente) => ingrediente.id));
+  const ingredientesComponentesSinteticos = resolucionCanonica?.clinicalMedicationId
+    ? [...idsCanonicos]
+      .filter((id) => id !== resolucionCanonica.clinicalMedicationId && !idsIngredientesCanonicos.has(id))
+      .map((id) => obtenerMedicamentoPorId(id))
+      .filter(Boolean)
+      .map((componente) => ({
+        id: componente.id,
+        nombre: componente.nombre || componente.genericName || componente.id,
+        sinonimos: componente.sinonimos || [],
+        clases: componente.tagsClinicos || componente.clases || [],
+        riesgos: componente.riesgos || {},
+        componenteCanonico: true
+      }))
+    : [];
+  const ingredientesPorSinonimo = resolucionCanonica?.clinicalMedicationId
+    ? []
+    : INGREDIENTES_MEDICAMENTOS.filter((ingrediente) =>
+      ingrediente.sinonimos.some((sinonimo) => contieneFraseClinicaCompleta(texto, sinonimo))
+    );
+  const ingredientesPorFuzzy = resolucionCanonica?.clinicalMedicationId || ingredientesPorSinonimo.length
+    ? []
     : INGREDIENTES_MEDICAMENTOS.filter((ingrediente) =>
       ingrediente.sinonimos.some((sinonimo) => contieneConFuzzy(texto, sinonimo))
     );
-
-  if (!ingredientes.length && resolucionCanonica?.clinicalMedicationId) {
-    ingredientes.push({
+  const ingredienteCanonicoSintetico = resolucionCanonica?.clinicalMedicationId
+    ? {
       id: resolucionCanonica.clinicalMedicationId,
       nombre: resolucionCanonica.medicationName,
       sinonimos: medicamentoCanonico?.sinonimos || [],
       clases: medicamentoCanonico?.tagsClinicos || medicamentoCanonico?.clases || [],
-      riesgos: medicamentoCanonico?.riesgos || {}
-    });
-  }
+      riesgos: ingredientesCanonicos.length || ingredientesComponentesSinteticos.length ? {} : medicamentoCanonico?.riesgos || {},
+      identidadCanonica: true
+    }
+    : null;
+  const ingredientes = resolucionCanonica?.clinicalMedicationId
+    ? [
+      ...ingredientesCanonicos,
+      ...ingredientesComponentesSinteticos,
+      ...(ingredientesCanonicos.some((ingrediente) => ingrediente.id === resolucionCanonica.clinicalMedicationId)
+        ? []
+        : [ingredienteCanonicoSintetico])
+    ]
+    : ingredientesPorSinonimo.length
+      ? ingredientesPorSinonimo
+      : ingredientesPorFuzzy;
+  const coberturaIngredienteCompleta = resolucionCanonica?.clinicalMedicationId
+    ? ingredientesCanonicos.some((ingrediente) => ingrediente.id === resolucionCanonica.clinicalMedicationId)
+    : ingredientes.length > 0;
 
   const clases = new Set();
   const riesgos = {};
@@ -260,11 +316,14 @@ export function normalizarMedicamentoClinico(medicamento) {
     posologiaNormalizada: normalizarPosologiaMedicamento(medicamento, textoOriginal),
     ingredientes,
     ingredienteIds: ingredientes.map((ingrediente) => ingrediente.id),
-    nombresIngredientes: ingredientes.map((ingrediente) => ingrediente.nombre),
+    nombresIngredientes: resolucionCanonica?.medicationName
+      ? [resolucionCanonica.medicationName]
+      : ingredientes.map((ingrediente) => ingrediente.nombre),
     clases: [...clases],
     therapeuticClasses: [...clases],
     tags: [...clases],
     riesgos,
+    coberturaIngredienteCompleta,
     datosOriginales: medicamento
   };
 }
@@ -315,13 +374,13 @@ export function extraerDiagnosticosPaciente(paciente = {}) {
   return extraerDiagnosticosEstructuradosPaciente(paciente).map((diagnostico) => diagnostico.texto);
 }
 
-const ESTADOS_DIAGNOSTICO_INACTIVOS = new Set(["descartado", "se_descarta", "resuelto", "remisión", "remisión"]);
+const ESTADOS_DIAGNOSTICO_INACTIVOS = new Set(["descartado", "se_descarta", "resuelto", "remision", "antecedente"]);
 const ESTADOS_DIAGNOSTICO_PROBABLES = new Set(["probable", "a_descartar", "en_estudio", "diferencial"]);
 
 function normalizarEstadoDiagnostico(estado = "") {
   const texto = normalizarTextoClinico(estado).replace(/\s+/g, "_");
   if (!texto) return "confirmado";
-  if (/(descart|se_descarta|no_activo|resuelt|remisión)/.test(texto)) return texto.includes("descart") ? "descartado" : "resuelto";
+  if (/(descart|se_descarta|no_activo|resuelt|remision)/.test(texto)) return texto.includes("descart") ? "descartado" : "resuelto";
   if (/(probable|a_descartar|estudio|diferencial)/.test(texto)) return texto.includes("diferencial") ? "diferencial" : "probable";
   if (/(antecedente|historico|histórico)/.test(texto)) return "antecedente";
   if (/(seguimiento|activo|confirmado|se_agrega)/.test(texto)) return "confirmado";
@@ -332,12 +391,13 @@ function diagnosticoDesdeObjeto(item, origen = "expediente") {
   if (!item) return null;
   if (typeof item === "string" || typeof item === "number") {
     const texto = String(item).trim();
-    return texto ? { texto, estado: "confirmado", origen } : null;
+    return texto ? { texto, codigo: codigoDiagnosticoEnTexto(texto), estado: "confirmado", origen } : null;
   }
   if (typeof item !== "object") return null;
   const codigo = item.codigo || item.cie10 || item.cie11 || item.codigoCie10 || item.codigoCie11 || "";
   const nombre = item.nombre || item.diagnostico || item.descripcion || item.texto || item.label || item.visibleText || "";
-  const textoVisible = [codigo, nombre].filter(Boolean).join(" - ").trim();
+  const nombreYaIncluyeCodigo = codigo && normalizarTextoClinico(nombre).startsWith(normalizarTextoClinico(codigo));
+  const textoVisible = nombreYaIncluyeCodigo ? String(nombre).trim() : [codigo, nombre].filter(Boolean).join(" - ").trim();
   const texto = textoVisible || valoresProfundos(item).join(" ").trim();
   if (!texto) return null;
   return {
@@ -371,7 +431,10 @@ export function extraerDiagnosticosEstructuradosPaciente(paciente = {}) {
   });
   const vistos = new Set();
   return salida.filter((diagnostico) => {
-    const clave = `${normalizarTextoClinico(diagnostico.texto)}:${diagnostico.estado}`;
+    const codigo = normalizarCodigoDiagnostico(diagnostico.codigo);
+    const clave = codigo
+      ? `codigo:${codigo}:${diagnostico.estado}`
+      : `texto:${normalizarTextoClinico(diagnostico.texto)}:${diagnostico.estado}`;
     if (vistos.has(clave)) return false;
     vistos.add(clave);
     return true;
@@ -382,6 +445,15 @@ function numeroSeguro(valor) {
   if (valor === null || valor === undefined || String(valor).trim() === "") return null;
   const numero = Number(String(valor ?? "").replace(",", ".").replace(/[^\d.-]/g, ""));
   return Number.isFinite(numero) ? numero : null;
+}
+
+function booleanoClinico(valor) {
+  if (typeof valor === "boolean") return valor;
+  if (typeof valor === "number") return valor === 1;
+  const texto = normalizarTextoClinico(valor);
+  if (/^(si|true|1|activo|confirmado|embarazada|lactando)$/.test(texto)) return true;
+  if (/^(no|false|0|negado|ninguno|ninguna|no aplica)$/.test(texto)) return false;
+  return false;
 }
 
 function calcularEdadLocal(fechaNacimiento) {
@@ -397,25 +469,24 @@ function calcularEdadLocal(fechaNacimiento) {
 
 function extraerContextoDirectoPaciente(paciente = {}) {
   const textos = [];
+  const parametros = resolverParametrosClinicosPaciente(paciente);
   const edad = numeroSeguro(paciente.edad) ?? calcularEdadLocal(paciente.fechaNacimiento || paciente.fecha_nacimiento);
   const peso = numeroSeguro(paciente.peso || paciente.somatometria?.peso || paciente.signosVitales?.peso);
-  const eGFR = numeroSeguro(paciente.eGFR || paciente.egfr || paciente.tfg || paciente.laboratorio?.eGFR || paciente.laboratorio?.tfg);
-  const creatinina = numeroSeguro(paciente.creatinina || paciente.laboratorio?.creatinina);
+  const eGFR = parametros.valoresCanonicos.eGFR;
+  const creatinina = parametros.valoresCanonicos.creatininaMgDl;
   const childPugh = paciente.childPugh || paciente.child || paciente.funcionHepatica?.childPugh || "";
   const alergias = valoresProfundos([paciente.alergias, paciente.datosInstitucionales?.alergias]).join(" ");
-  const embarazo = Boolean(paciente.embarazo || paciente.gestacion || paciente.obstetricia?.embarazo);
-  const lactancia = Boolean(paciente.lactancia || paciente.obstetricia?.lactancia);
+  const embarazo = booleanoClinico(paciente.embarazo ?? paciente.gestacion ?? paciente.obstetricia?.embarazo);
+  const lactancia = booleanoClinico(paciente.lactancia ?? paciente.obstetricia?.lactancia);
   const consumo = valoresProfundos([paciente.consumoSustancias, paciente.habitos, paciente.sustancias]).join(" ");
 
   if (edad !== null && edad >= 65) textos.push("adulto mayor fragilidad");
-  if (eGFR !== null && eGFR < 60) textos.push("enfermedad renal cronica filtrado glomerular bajo");
-  if (creatinina !== null && creatinina > 1.4) textos.push("insuficiencia renal creatinina elevada");
   if (childPugh) textos.push(`hepatopatia cronica child pugh ${childPugh}`);
   if (embarazo) textos.push("embarazo");
   if (lactancia) textos.push("lactancia");
   if (/alcohol|etanol|bebida/i.test(consumo)) textos.push("consumo de alcohol");
 
-  return { edad, peso, eGFR, creatinina, childPugh, alergias, embarazo, lactancia, textos };
+  return { edad, peso, eGFR, creatinina, parametros, childPugh, alergias, embarazo, lactancia, textos };
 }
 
 function detectarChildPugh(textos = []) {
@@ -510,14 +581,26 @@ function reglaAplicaAMedicamento(regla, med) {
   return false;
 }
 
+function reglaAplicaAEstadoDiagnostico(regla, diagnostico = {}) {
+  const permitidos = Array.isArray(regla.estadosDiagnostico) ? regla.estadosDiagnostico : [];
+  return !permitidos.length || permitidos.includes(diagnostico.estado || "confirmado");
+}
+
 function severidadFinal(regla, contexto) {
   const child = contexto.modificadores?.childPugh;
   const escalada = child && regla.escalamiento?.childPugh?.[child];
   return escalada || regla.severidad || "moderada";
 }
 
+function resultadoParametroEsFinal(registro = {}) {
+  const estado = normalizarTextoClinico(registro.estadoResultado || "final");
+  return ["final", "validado", "definitivo", "completo", "completed"].includes(estado);
+}
+
 function crearAlerta(base) {
   const severidad = base.severidad || "moderada";
+  const datosParametros = base.datosParametros || [];
+  const contieneResultadoNoFinal = datosParametros.some((registro) => !resultadoParametroEsFinal(registro));
   const requiereJustificacion = Boolean(
     base.requiereJustificacion ||
     (Array.isArray(base.requiereJustificacionSi) && base.requiereJustificacionSi.includes(severidad))
@@ -529,19 +612,28 @@ function crearAlerta(base) {
     categoria: base.categoria || "",
     severidad,
     prioridad: SEVERIDAD_ORDEN[severidad] || 3,
-    titulo: base.titulo,
+    titulo: contieneResultadoNoFinal ? `${base.titulo} (resultado preliminar)` : base.titulo,
     medicamentos: base.medicamentos || [],
     presentacionesOriginales: base.presentacionesOriginales || [],
     diagnosticos: base.diagnosticos || [],
     mecanismo: base.mecanismo || "Mecanismo no especificado en la regla local",
     efecto: base.efecto || "",
     efectoClinico: base.efectoClinico || base.efecto || "",
-    recomendacion: base.recomendacion || "",
-    evidencia: base.evidencia || "regla_local",
-    confianza: base.confianza || (base.evidencia === "documentada_en_fuente_local" ? "alta" : "requiere validación clínica"),
-    fuentes: base.fuentes || [],
+    recomendacion: contieneResultadoNoFinal
+      ? `El resultado de laboratorio aún no es final: confirmarlo antes de una decisión farmacológica definitiva. ${base.recomendacion || ""}`.trim()
+      : base.recomendacion || "",
+    evidencia: contieneResultadoNoFinal
+      ? `${base.evidencia || "regla_local"}_resultado_no_final`
+      : base.evidencia || "regla_local",
+    confianza: contieneResultadoNoFinal
+      ? "baja hasta confirmación del resultado"
+      : base.confianza || (base.evidencia === "documentada_en_fuente_local" ? "alta" : "requiere validación clínica"),
+    fuentes: contieneResultadoNoFinal
+      ? [...new Set([...(base.fuentes || []), "Resultado preliminar/no final registrado en el expediente del paciente."])]
+      : base.fuentes || [],
     fechaFuente: base.fechaFuente || base.actualizado || "",
     parametrosVigilancia: base.parametrosVigilancia || [],
+    datosParametros,
     suprimeReglas: base.suprimeReglas || [],
     permiteOverride: base.permiteOverride !== false,
     requiereJustificacion,
@@ -654,7 +746,11 @@ function deduplicarMedicamentosParaAnalisis(medicamentosNormalizados = []) {
     }));
   });
 
-  return { medicamentosUnicos: medicamentosPorPrincipio, alertasDuplicidad };
+  return {
+    medicamentosUnicos,
+    medicamentosParaAnalisis: medicamentosPorPrincipio,
+    alertasDuplicidad
+  };
 }
 
 function nombresNormalizadosAlerta(...medicamentos) {
@@ -670,17 +766,31 @@ export function evaluarMedicamentoContraDiagnosticos(medicamentosNormalizados = 
     REGLAS_MEDICAMENTO_DIAGNOSTICO_UNIFICADAS.forEach((regla) => {
       if (!reglaAplicaAMedicamento(regla, med)) return;
       const diagnosticosCoincidentes = contextoDiagnostico.diagnosticos.filter((diagnostico) =>
-        diagnostico.categoria === regla.diagnosticoCategoria
+        diagnostico.categoria === regla.diagnosticoCategoria && reglaAplicaAEstadoDiagnostico(regla, diagnostico)
       );
       if (!diagnosticosCoincidentes.length) return;
       const severidad = severidadFinal(regla, contextoDiagnostico);
+      const ingredientesConFuenteEspecifica = Array.isArray(regla.ingredientesConFuenteEspecifica)
+        ? regla.ingredientesConFuenteEspecifica
+        : [];
+      const fuenteEspecificaPendiente = ingredientesConFuenteEspecifica.length > 0 &&
+        !ingredientesConFuenteEspecifica.some((ingrediente) => med.ingredienteIds.includes(ingrediente));
       alertas.push(crearAlerta({
         ...regla,
         id: `${regla.id}:${med.ingredienteIds.join("+") || med.id}:${diagnosticosCoincidentes.map((d) => d.id).join("+")}`,
         tipo: severidad === "critica" ? "contraindicacion" : "precaucion_contextual",
         severidad,
         medicamentos: [med.textoOriginal],
-        diagnosticos: diagnosticosCoincidentes.map((d) => d.nombre)
+        diagnosticos: diagnosticosCoincidentes.map((d) =>
+          d.estado && d.estado !== "confirmado" ? `${d.nombre} [${d.estado}]` : d.nombre
+        ),
+        evidencia: fuenteEspecificaPendiente
+          ? `${regla.evidencia || "regla_local"}_fuente_especifica_por_molecula_pendiente`
+          : regla.evidencia,
+        confianza: fuenteEspecificaPendiente ? "requiere validación por molécula" : regla.confianza,
+        fuentes: fuenteEspecificaPendiente
+          ? [...(regla.fuentes || []), `Fuente específica pendiente para ${med.nombresIngredientes?.join(" + ") || med.textoOriginal}.`]
+          : regla.fuentes
       }));
     });
   });
@@ -700,12 +810,12 @@ export function evaluarMedicamentoContraDiagnosticos(medicamentosNormalizados = 
 function evaluarAlergiasPaciente(medicamentosNormalizados = [], paciente = {}) {
   const contexto = extraerContextoDirectoPaciente(paciente);
   const alergias = normalizarTextoClinico(contexto.alergias);
-  if (!alergias || /negad|no conocida|sin alerg/.test(alergias)) return [];
+  if (!alergias || /^(?:alergias?\s+)?(?:negadas?|no conocidas?|sin alergias?(?: conocidas?)?)$/.test(alergias)) return [];
   const alertas = [];
   medicamentosNormalizados.forEach((med) => {
     const coincide = med.ingredientes.some((ingrediente) =>
       [ingrediente.nombre, ...(ingrediente.sinonimos || [])].some((patron) =>
-        alergias.includes(normalizarTextoClinico(patron))
+        contieneFraseClinicaCompleta(alergias, patron) && !patronNegado(contexto.alergias, patron)
       )
     );
     if (!coincide) return;
@@ -717,6 +827,8 @@ function evaluarAlergiasPaciente(medicamentosNormalizados = [], paciente = {}) {
       medicamentos: [med.textoOriginal],
       efecto: "El medicamento contiene un ingrediente que coincide con alergias registradas en datos generales.",
       recomendacion: "No guardar sin verificar alergia, gravedad, reacción previa y alternativa terapéutica.",
+      evidencia: "dato_documentado_en_expediente",
+      fuentes: ["Alergia registrada en el expediente del paciente; confirmar sustancia y reacción antes de prescribir."],
       permiteOverride: true,
       requiereJustificacion: true
     }));
@@ -724,42 +836,198 @@ function evaluarAlergiasPaciente(medicamentosNormalizados = [], paciente = {}) {
   return alertas;
 }
 
+function medicamentoRequiereRevisionRenal(med = {}) {
+  return med.clases.includes("gabapentinoide") ||
+    med.clases.includes("ieca") ||
+    med.clases.includes("ara2") ||
+    Number(med.riesgos.renal || 0) > 0 ||
+    Number(med.riesgos.potasio || 0) > 0;
+}
+
+function medicamentoConRiesgoSodioCargado(med = {}) {
+  return med.clases.includes("diuretico") ||
+    med.clases.includes("isrs") ||
+    med.clases.includes("irsn") ||
+    Number(med.riesgos.sodio || 0) > 0;
+}
+
+function reglaParametroAplicaAMedicamento(parametro = {}, med = {}) {
+  if (["creatinina", "eGFR", "uacr"].includes(parametro.id)) return medicamentoRequiereRevisionRenal(med);
+  if (parametro.id === "albumina" && parametro.estado === "bajo") return med.ingredienteIds.includes("fenitoina");
+  if (parametro.id === "sodio" && parametro.estado === "bajo") {
+    return medicamentoConRiesgoSodioCargado(med);
+  }
+  if (parametro.id === "potasio" && parametro.estado === "bajo") {
+    return med.clases.includes("diuretico") || Number(med.riesgos.potasio_bajo || 0) > 0 || Number(med.riesgos.qt || 0) > 0;
+  }
+  if (parametro.id === "potasio" && parametro.estado === "alto") {
+    return med.clases.some((clase) => ["ieca", "ara2", "inhibidor_renina", "ahorrador_potasio"].includes(clase)) || Number(med.riesgos.potasio || 0) > 0;
+  }
+  if (parametro.id === "magnesio" && parametro.estado === "bajo") {
+    return med.clases.includes("diuretico") || Number(med.riesgos.qt || 0) > 0;
+  }
+  return ["cloro", "bicarbonato", "calcio"].includes(parametro.id) &&
+    ["bajo", "alto"].includes(parametro.estado) &&
+    med.clases.includes("diuretico");
+}
+
 function evaluarContextoDirectoPaciente(medicamentosNormalizados = [], paciente = {}) {
   const contexto = extraerContextoDirectoPaciente(paciente);
+  const parametros = contexto.parametros;
   const alertas = [];
+  const registroCreatinina = parametros.porId.creatinina;
+  const categoriaEgfr = parametros.categorias.eGFR;
+  const categoriaUacr = parametros.categorias.uacr;
+  const funcionRenalReducida = contexto.eGFR !== null && contexto.eGFR < 60;
+  const creatininaAltaSegunLaboratorio = registroCreatinina?.estado === "alto";
+  const creatininaSinContextoSuficiente = Boolean(
+    registroCreatinina &&
+    registroCreatinina.estado === "no_clasificado" &&
+    contexto.eGFR === null
+  );
+
   medicamentosNormalizados.forEach((med) => {
-    if ((contexto.eGFR !== null && contexto.eGFR < 60) || (contexto.creatinina !== null && contexto.creatinina > 1.4)) {
-      const requiereRevisionRenal = med.clases.includes("gabapentinoide") ||
-        med.clases.includes("ieca") ||
-        med.clases.includes("ara2") ||
-        Number(med.riesgos.renal || 0) > 0 ||
-        Number(med.riesgos.potasio || 0) > 0;
+    if (funcionRenalReducida || creatininaAltaSegunLaboratorio || creatininaSinContextoSuficiente || ["A2", "A3"].includes(categoriaUacr?.id)) {
+      const requiereRevisionRenal = medicamentoRequiereRevisionRenal(med);
       if (requiereRevisionRenal) {
         alertas.push(crearAlerta({
           id: `funcion_renal:${med.ingredienteIds.join("+") || med.id}`,
           tipo: "precaucion_funcion_renal",
-          severidad: contexto.eGFR !== null && contexto.eGFR < 30 ? "alta" : "moderada",
-          titulo: "Función renal reducida: revisar medicamento",
+          severidad: ["G4", "G5"].includes(categoriaEgfr?.id) || categoriaUacr?.id === "A3"
+            ? "alta"
+            : creatininaSinContextoSuficiente && !funcionRenalReducida && !creatininaAltaSegunLaboratorio
+              ? "baja"
+              : "moderada",
+          titulo: creatininaSinContextoSuficiente && !funcionRenalReducida && !creatininaAltaSegunLaboratorio
+            ? "Creatinina sin eGFR/rango: evaluación renal incompleta"
+            : med.clases.includes("gabapentinoide")
+              ? "Gabapentinoide con función renal reducida"
+              : "Función renal reducida: revisar medicamento",
           medicamentos: [med.textoOriginal],
-          diagnosticos: ["Función renal reducida / eGFR bajo o creatinina elevada"],
-          efecto: "El medicamento puede requerir ajuste, monitorización o precaución adicional en función renal reducida.",
-          recomendacion: "Revisar eGFR, creatinina, potasio si aplica, dosis, intervalo y alternativas antes de interpretar seguridad.",
-          parametrosVigilancia: ["eGFR", "Creatinina", "Potasio si aplica", "Presión arterial si aplica"]
+          diagnosticos: [
+            funcionRenalReducida ? `eGFR ${contexto.eGFR} (${categoriaEgfr?.id || "categoría no disponible"})` : "",
+            creatininaAltaSegunLaboratorio ? "Creatinina por encima del intervalo reportado" : "",
+            creatininaSinContextoSuficiente ? `Creatinina ${registroCreatinina.valor} ${registroCreatinina.unidad} sin clasificación por rango` : "",
+            ["A2", "A3"].includes(categoriaUacr?.id) ? `UACR ${categoriaUacr.id}` : ""
+          ].filter(Boolean),
+          mecanismo: "La función renal y la albuminuria pueden modificar eliminación, exposición o tolerancia de medicamentos con dependencia o riesgo renal.",
+          efecto: creatininaSinContextoSuficiente && !funcionRenalReducida && !creatininaAltaSegunLaboratorio
+            ? "Hay una creatinina registrada, pero sin eGFR ni intervalo del laboratorio no debe inferirse automáticamente el grado de función renal o un ajuste de dosis."
+            : "El medicamento puede requerir ajuste, monitorización o precaución adicional. Una sola eGFR o UACR no establece por sí misma enfermedad renal crónica; deben confirmarse tendencia, persistencia y contexto.",
+          recomendacion: "Revisar eGFR, creatinina, UACR si está disponible, dosis, intervalo y ficha técnica específica. No ajustar automáticamente solo por esta alerta.",
+          parametrosVigilancia: ["eGFR", "Creatinina", "UACR", "Potasio si aplica", "Presión arterial si aplica"],
+          datosParametros: [parametros.porId.eGFR, registroCreatinina, parametros.porId.uacr].filter(Boolean),
+          evidencia: "clasificacion_kdigo_y_regla_farmacologica_local",
+          confianza: "moderada",
+          fuentes: [
+            "KDIGO 2024 Clinical Practice Guideline for CKD: categorías de eGFR y albuminuria, https://kdigo.org/guidelines/ckd-evaluation-and-management/",
+            "NIDDK, pruebas y evaluación de enfermedad renal, https://www.niddk.nih.gov/health-information/kidney-disease/chronic-kidney-disease-ckd/tests-diagnosis"
+          ]
         }));
       }
     }
-    if (contexto.peso !== null && contexto.peso < 45 && (med.clases.includes("depresor_snc") || med.clases.includes("antiepileptico"))) {
+  });
+
+  const reglasElectrolitos = [
+    {
+      parametroId: "sodio",
+      estados: ["bajo"],
+      aplica: medicamentoConRiesgoSodioCargado,
+      titulo: "Sodio bajo según el intervalo del laboratorio",
+      mecanismo: "Diuréticos y algunos psicofármacos pueden causar o agravar alteraciones del sodio, según molécula y contexto.",
+      efecto: "Puede aumentar el riesgo de síntomas neurológicos, caídas o descompensación hidroelectrolítica.",
+      vigilancia: ["Sodio", "Estado de hidratación", "Síntomas neurológicos", "Función renal"]
+    },
+    {
+      parametroId: "potasio",
+      estados: ["bajo"],
+      aplica: (med) => med.clases.includes("diuretico") || Number(med.riesgos.potasio_bajo || 0) > 0 || Number(med.riesgos.qt || 0) > 0,
+      titulo: "Potasio bajo con medicamentos sensibles a electrolitos",
+      mecanismo: "La depleción de potasio puede agravarse con algunos diuréticos y aumentar vulnerabilidad arrítmica con medicamentos que prolongan QT.",
+      efecto: "Puede aumentar debilidad, arritmias y riesgo de QT en personas susceptibles.",
+      vigilancia: ["Potasio", "Magnesio", "ECG/QTc si aplica", "Función renal"]
+    },
+    {
+      parametroId: "potasio",
+      estados: ["alto"],
+      aplica: (med) => med.clases.some((clase) => ["ieca", "ara2", "inhibidor_renina", "ahorrador_potasio"].includes(clase)) || Number(med.riesgos.potasio || 0) > 0,
+      titulo: "Potasio alto con medicamentos que pueden elevar potasio",
+      mecanismo: "El bloqueo del SRAA o la reducción de excreción renal de potasio puede agravar una elevación ya registrada.",
+      efecto: "Puede aumentar el riesgo de alteraciones de conducción o arritmias.",
+      vigilancia: ["Potasio", "Creatinina/eGFR", "ECG si está indicado"]
+    },
+    {
+      parametroId: "magnesio",
+      estados: ["bajo"],
+      aplica: (med) => med.clases.includes("diuretico") || Number(med.riesgos.qt || 0) > 0,
+      titulo: "Magnesio bajo con diurético o riesgo de QT",
+      mecanismo: "La pérdida de magnesio puede acompañar la diuresis y aumentar vulnerabilidad eléctrica ante medicamentos con señal de QT.",
+      efecto: "Puede favorecer arritmias o hacer más relevante una prolongación de QT.",
+      vigilancia: ["Magnesio", "Potasio", "Calcio", "ECG/QTc"]
+    },
+    ...["cloro", "bicarbonato", "calcio"].map((parametroId) => ({
+      parametroId,
+      estados: ["bajo", "alto"],
+      aplica: (med) => med.clases.includes("diuretico"),
+      titulo: `${parametroId[0].toUpperCase()}${parametroId.slice(1)} fuera del intervalo con diurético`,
+      mecanismo: "Los diuréticos pueden modificar volumen y electrolitos; la dirección y magnitud dependen de la molécula y el contexto.",
+      efecto: "El valor registrado requiere revisión conjunta con hidratación, función renal, síntomas y el resto del ionograma.",
+      vigilancia: [parametroId, "Estado de hidratación", "Creatinina/eGFR", "Ionograma completo"]
+    }))
+  ];
+
+  reglasElectrolitos.forEach((regla) => {
+    const registro = parametros.porId[regla.parametroId];
+    if (!registro || !regla.estados.includes(registro.estado)) return;
+    const implicados = medicamentosNormalizados.filter(regla.aplica);
+    if (!implicados.length) return;
+    const soloFurosemida = implicados.every((med) => med.ingredienteIds.includes("furosemida"));
+    const fuenteFarmacologica = soloFurosemida
+      ? "DailyMed, furosemide: advertencias sobre deshidratación, reducción de volumen y depleción electrolítica, https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=3fd02fb5-98a0-4eda-a0ec-41faabe04706"
+      : "Regla farmacológica local de clase; fuente específica por molécula pendiente.";
+    alertas.push(crearAlerta({
+      id: `parametro_${regla.parametroId}_${registro.estado}:${implicados.map((med) => med.id).sort().join("|")}`,
+      tipo: "precaucion_parametro_clinico",
+      severidad: "moderada",
+      titulo: regla.titulo,
+      medicamentos: nombresNormalizadosAlerta(...implicados),
+      presentacionesOriginales: presentacionesOriginalesAlerta(...implicados),
+      diagnosticos: [`${registro.etiqueta}: ${registro.valor} ${registro.unidad} (${registro.estado.replace("_", " ")})`],
+      mecanismo: regla.mecanismo,
+      efecto: regla.efecto,
+      recomendacion: "Confirmar muestra, unidad, fecha y rango del laboratorio; revisar causas clínicas y la ficha técnica de cada medicamento antes de ajustar.",
+      parametrosVigilancia: regla.vigilancia,
+      datosParametros: [registro],
+      evidencia: soloFurosemida
+        ? "dato_del_expediente_mas_ficha_tecnica_regulatoria"
+        : "dato_del_expediente_mas_regla_local_fuente_farmacologica_pendiente",
+      confianza: soloFurosemida ? "moderada" : "requiere validación por molécula",
+      fuentes: [registro.fuente || "Intervalo de referencia reportado por el laboratorio", fuenteFarmacologica]
+    }));
+  });
+
+  const albumina = parametros.porId.albumina;
+  if (albumina?.estado === "bajo") {
+    const fenitoinas = medicamentosNormalizados.filter((med) => med.ingredienteIds.includes("fenitoina"));
+    if (fenitoinas.length) {
       alertas.push(crearAlerta({
-        id: `peso_bajo:${med.id}`,
-        tipo: "precaucion_dosis",
-        severidad: "baja",
-        titulo: "Peso bajo: revisar dosis",
-        medicamentos: [med.textoOriginal],
-        efecto: "El peso registrado puede requerir ajuste de dosis o vigilancia de sedación/toxicidad.",
-        recomendacion: "Verificar dosis por kg cuando corresponda y registrar vigilancia clínica."
+        id: `fenitoina_albumina_baja:${fenitoinas.map((med) => med.id).sort().join("|")}`,
+        tipo: "precaucion_parametro_clinico",
+        severidad: "alta",
+        titulo: "Fenitoína con albúmina baja: interpretar concentración libre",
+        medicamentos: nombresNormalizadosAlerta(...fenitoinas),
+        diagnosticos: [`Albúmina ${albumina.valor} ${albumina.unidad}, baja según el intervalo registrado`],
+        mecanismo: "La hipoalbuminemia aumenta la fracción no unida de fenitoína; una concentración total puede subestimar la exposición farmacológicamente activa.",
+        efecto: "Puede existir toxicidad aunque la concentración total parezca habitual.",
+        recomendacion: "Valorar concentración de fenitoína no unida y correlacionar con signos clínicos; no ajustar automáticamente mediante una fórmula sin validar el contexto.",
+        parametrosVigilancia: ["Fenitoína no unida", "Albúmina", "Función renal", "Signos neurológicos de toxicidad"],
+        datosParametros: [albumina],
+        evidencia: "documentada_en_fuente_regulatoria",
+        confianza: "alta",
+        fuentes: ["FDA, Clinical Pharmacology Review: aumento de fracción no unida de fenitoína en hipoalbuminemia y recomendación de monitorizarla, https://www.fda.gov/media/103872/download"]
       }));
     }
-  });
+  }
   return alertas;
 }
 
@@ -767,6 +1035,12 @@ function cumpleLado(regla, med, sufijo) {
   const ingredientes = regla[`ingredientes${sufijo}`] || [];
   const clases = regla[`clases${sufijo}`] || [];
   return ingredientes.some((id) => med.ingredienteIds.includes(id)) || clases.some((clase) => med.clases.includes(clase));
+}
+
+function esContraindicacionAbsolutaDeCombinacion(regla = {}) {
+  if (regla.contraindicacionAbsoluta === true) return true;
+  const texto = normalizarTextoClinico([regla.id, regla.titulo, regla.evidencia, regla.recomendacion].filter(Boolean).join(" "));
+  return /contraindicad/.test(texto) && Array.isArray(regla.fuentes) && regla.fuentes.length > 0;
 }
 
 export function evaluarInteraccionesClinicas(medicamentosNormalizados = []) {
@@ -782,7 +1056,11 @@ export function evaluarInteraccionesClinicas(medicamentosNormalizados = []) {
         alertas.push(crearAlerta({
           ...regla,
           id: `${regla.id}:${[medA.textoNormalizado, medB.textoNormalizado].sort().join("|")}`,
-          tipo: regla.evidencia === "potencial" ? "interaccion_farmacocinetica_inferida" : "interaccion_medicamento_medicamento",
+          tipo: esContraindicacionAbsolutaDeCombinacion(regla)
+            ? "contraindicacion_absoluta_combinacion"
+            : regla.evidencia === "potencial"
+              ? "interaccion_farmacocinetica_inferida"
+              : "interaccion_medicamento_medicamento",
           medicamentos: nombresNormalizadosAlerta(medA, medB),
           presentacionesOriginales: presentacionesOriginalesAlerta(medA, medB)
         }));
@@ -916,16 +1194,28 @@ function validarBloqueosTecnicos(medicamentos = []) {
 function deduplicarAlertas(alertas = []) {
   const indice = new Map();
   alertas.forEach((alerta) => {
-    const clave = alerta.tipo === "precaucion_contextual" && alerta.diagnosticos?.length
-      ? `${alerta.tipo}:${alerta.titulo}:${alerta.efecto}:${(alerta.diagnosticos || []).join("+")}`
-      : alerta.id || `${alerta.titulo}:${(alerta.medicamentos || []).join("+")}:${(alerta.diagnosticos || []).join("+")}`;
+    const medicamentosClave = (alerta.medicamentos || []).map(normalizarTextoClinico).sort().join("|");
+    const clave = alerta.tipo?.includes("interaccion") && alerta.categoria
+      ? `interaccion:${alerta.categoria}:${medicamentosClave}`
+      : alerta.tipo === "precaucion_contextual" && alerta.diagnosticos?.length
+        ? `${alerta.tipo}:${alerta.titulo}:${alerta.efecto}:${(alerta.diagnosticos || []).join("+")}`
+        : alerta.id || `${alerta.titulo}:${(alerta.medicamentos || []).join("+")}:${(alerta.diagnosticos || []).join("+")}`;
     const existente = indice.get(clave);
     if (!existente) {
       indice.set(clave, alerta);
       return;
     }
+    const calidadFuente = (item) => (
+      (item.fuentes || []).filter((fuente) => /https?:\/\//i.test(fuente)).length * 4
+      + (/regulator|ficha_tecnica|contraindicacion_en_fuente/i.test(item.evidencia || "") ? 3 : 0)
+      + (item.mecanismo && !/no especificado/i.test(item.mecanismo) ? 1 : 0)
+    );
+    const preferida = (alerta.prioridad || 0) > (existente.prioridad || 0)
+      || ((alerta.prioridad || 0) === (existente.prioridad || 0) && calidadFuente(alerta) > calidadFuente(existente))
+      ? alerta
+      : existente;
     const fusionada = {
-      ...((alerta.prioridad || 0) > (existente.prioridad || 0) ? alerta : existente),
+      ...preferida,
       medicamentos: [...new Set([...(existente.medicamentos || []), ...(alerta.medicamentos || [])])],
       diagnosticos: [...new Set([...(existente.diagnosticos || []), ...(alerta.diagnosticos || [])])],
       fuentes: [...new Set([...(existente.fuentes || []), ...(alerta.fuentes || [])])],
@@ -936,13 +1226,181 @@ function deduplicarAlertas(alertas = []) {
   return [...indice.values()].sort((a, b) => (b.prioridad || 0) - (a.prioridad || 0));
 }
 
+function parametrosClinicosRelevantesParaCobertura(parametros = {}) {
+  const porId = parametros.porId || {};
+  const relevantes = new Map();
+  Object.values(porId)
+    .filter((registro) => ["bajo", "alto"].includes(registro.estado))
+    .forEach((registro) => relevantes.set(registro.id, registro));
+
+  if (parametros.valoresCanonicos?.eGFR !== null && parametros.valoresCanonicos?.eGFR < 60 && porId.eGFR) {
+    relevantes.set("eGFR", { ...porId.eGFR, id: "eGFR", estado: parametros.categorias?.eGFR?.id || "reducida" });
+  }
+  if (["A2", "A3"].includes(parametros.categorias?.uacr?.id) && porId.uacr) {
+    relevantes.set("uacr", { ...porId.uacr, id: "uacr", estado: parametros.categorias.uacr.id });
+  }
+  if (porId.creatinina?.estado === "no_clasificado" && parametros.valoresCanonicos?.eGFR === null) {
+    relevantes.set("creatinina", { ...porId.creatinina, id: "creatinina", estado: "contexto_incompleto" });
+  }
+  return [...relevantes.values()];
+}
+
+function requisitosParametrosPorMedicamento(medicamento = {}) {
+  const requisitos = new Map();
+  const agregar = (id, etiqueta, alternativas) => {
+    if (!requisitos.has(id)) requisitos.set(id, { id, etiqueta, alternativas });
+  };
+  const funcionRenal = () => agregar("funcion_renal", "Creatinina o eGFR", ["creatinina", "eGFR"]);
+
+  if (medicamento.clases.includes("diuretico")) {
+    funcionRenal();
+    agregar("sodio", "Sodio", ["sodio"]);
+    agregar("potasio", "Potasio", ["potasio"]);
+  }
+  if (medicamento.ingredienteIds.includes("litio")) {
+    funcionRenal();
+    agregar("sodio", "Sodio", ["sodio"]);
+  }
+  if (
+    medicamento.clases.some((clase) => ["ieca", "ara2", "inhibidor_renina", "ahorrador_potasio"].includes(clase)) ||
+    Number(medicamento.riesgos.potasio || 0) > 0
+  ) {
+    funcionRenal();
+    agregar("potasio", "Potasio", ["potasio"]);
+  }
+  if (medicamento.clases.includes("gabapentinoide") || Number(medicamento.riesgos.renal || 0) > 0) funcionRenal();
+  if (Number(medicamento.riesgos.qt || 0) >= 2) {
+    agregar("potasio", "Potasio", ["potasio"]);
+    agregar("magnesio", "Magnesio", ["magnesio"]);
+  }
+  if (medicamento.ingredienteIds.includes("fenitoina")) agregar("albumina", "Albúmina", ["albumina"]);
+
+  return [...requisitos.values()];
+}
+
+function parametroDisponibleParaCobertura(parametroId, parametros = {}) {
+  if (parametroId === "creatinina") {
+    const valor = parametros.valoresCanonicos?.creatininaMgDl;
+    return valor !== null && valor !== undefined && Number.isFinite(Number(valor));
+  }
+  if (parametroId === "eGFR") {
+    const valor = parametros.valoresCanonicos?.eGFR;
+    return valor !== null && valor !== undefined && Number.isFinite(Number(valor));
+  }
+  const valor = parametros.porId?.[parametroId]?.valor;
+  return valor !== null && valor !== undefined && Number.isFinite(Number(valor));
+}
+
+function calcularParametrosEsperados(medicamentosNormalizados = [], parametros = {}) {
+  const parametrosEsperados = medicamentosNormalizados.flatMap((medicamento) =>
+    requisitosParametrosPorMedicamento(medicamento).map((requisito) => ({
+      ...requisito,
+      medicamentoId: medicamento.id,
+      medicamento: medicamento.textoOriginal,
+      origen: "parámetros de vigilancia de reglas farmacológicas locales cargadas"
+    }))
+  );
+  const parametrosEsperadosAusentes = parametrosEsperados.filter((requisito) =>
+    !requisito.alternativas.some((parametroId) => parametroDisponibleParaCobertura(parametroId, parametros))
+  );
+  return { parametrosEsperados, parametrosEsperadosAusentes };
+}
+
+function calcularCoberturaReglas(medicamentosNormalizados = [], contextoDiagnostico = {}, parametros = {}) {
+  let paresMedicamentoMedicamento = 0;
+  let paresMedicamentoMedicamentoConRegla = 0;
+  for (let i = 0; i < medicamentosNormalizados.length; i += 1) {
+    for (let j = i + 1; j < medicamentosNormalizados.length; j += 1) {
+      paresMedicamentoMedicamento += 1;
+      if (evaluarInteraccionesClinicas([medicamentosNormalizados[i], medicamentosNormalizados[j]]).length) {
+        paresMedicamentoMedicamentoConRegla += 1;
+      }
+    }
+  }
+
+  const contextosDiagnosticos = [];
+  (contextoDiagnostico.diagnosticosActivos || []).forEach((diagnostico) => {
+    const resuelto = resolverDiagnosticosClinicos([diagnostico]);
+    const categorias = resuelto.categorias || [];
+    if (!categorias.length) {
+      contextosDiagnosticos.push({
+        categoria: "",
+        texto: diagnostico.texto || diagnostico.nombre || diagnostico.codigo || "Diagnóstico sin categoría farmacológica",
+        estado: diagnostico.estado || "confirmado"
+      });
+      return;
+    }
+    categorias.forEach((categoria) => contextosDiagnosticos.push({
+      categoria,
+      texto: diagnostico.texto || categoria,
+      estado: diagnostico.estado || "confirmado"
+    }));
+  });
+
+  let paresMedicamentoDiagnostico = 0;
+  let paresMedicamentoDiagnosticoConRegla = 0;
+  medicamentosNormalizados.forEach((medicamento) => {
+    contextosDiagnosticos.forEach((diagnostico) => {
+      paresMedicamentoDiagnostico += 1;
+      if (diagnostico.categoria && REGLAS_MEDICAMENTO_DIAGNOSTICO_UNIFICADAS.some((regla) =>
+        regla.diagnosticoCategoria === diagnostico.categoria &&
+        reglaAplicaAMedicamento(regla, medicamento) &&
+        reglaAplicaAEstadoDiagnostico(regla, diagnostico)
+      )) {
+        paresMedicamentoDiagnosticoConRegla += 1;
+      }
+    });
+  });
+
+  const parametrosRelevantes = parametrosClinicosRelevantesParaCobertura(parametros);
+  let paresMedicamentoParametro = 0;
+  let paresMedicamentoParametroConRegla = 0;
+  medicamentosNormalizados.forEach((medicamento) => {
+    parametrosRelevantes.forEach((parametro) => {
+      paresMedicamentoParametro += 1;
+      if (reglaParametroAplicaAMedicamento(parametro, medicamento)) paresMedicamentoParametroConRegla += 1;
+    });
+  });
+  const { parametrosEsperados, parametrosEsperadosAusentes } = calcularParametrosEsperados(medicamentosNormalizados, parametros);
+
+  return {
+    paresMedicamentoMedicamento,
+    paresMedicamentoMedicamentoConRegla,
+    paresMedicamentoMedicamentoSinRegla: Math.max(0, paresMedicamentoMedicamento - paresMedicamentoMedicamentoConRegla),
+    paresMedicamentoDiagnostico,
+    paresMedicamentoDiagnosticoConRegla,
+    paresMedicamentoDiagnosticoSinRegla: Math.max(0, paresMedicamentoDiagnostico - paresMedicamentoDiagnosticoConRegla),
+    diagnosticosSinCategoriaFarmacologica: contextosDiagnosticos.filter((diagnostico) => !diagnostico.categoria).length,
+    parametrosClinicosRelevantes: parametrosRelevantes.length,
+    hallazgosParametrosNoInterpretables: (parametros.hallazgos || []).filter((hallazgo) =>
+      ["dato_inconsistente", "dato_no_comparable", "dato_no_clasificable", "dato_preliminar"].includes(hallazgo.estado)
+    ).length,
+    parametrosEsperados,
+    parametrosEsperadosAusentes,
+    cantidadParametrosEsperados: parametrosEsperados.length,
+    cantidadParametrosEsperadosAusentes: parametrosEsperadosAusentes.length,
+    paresMedicamentoParametro,
+    paresMedicamentoParametroConRegla,
+    paresMedicamentoParametroSinRegla: Math.max(0, paresMedicamentoParametro - paresMedicamentoParametroConRegla)
+  };
+}
+
 export function obtenerIndicadorSeguridadMedicamento(alertas = [], cobertura = {}) {
   const max = Math.max(0, ...alertas.map((alerta) => alerta.prioridad || 0));
   if (max >= 5) return { estado: "bloqueo", etiqueta: "Riesgo crítico", clase: "critico" };
   if (max >= 4) return { estado: "alto", etiqueta: "Revisión obligatoria", clase: "alto" };
   if (max >= 3) return { estado: "precaucion", etiqueta: "Precaución", clase: "precaucion" };
   if (max >= 2) return { estado: "bajo", etiqueta: "Vigilancia", clase: "bajo" };
-  if (Number(cobertura.fuentePendiente || 0) > 0) {
+  if (
+    Number(cobertura.fuentePendiente || 0) > 0 ||
+    Number(cobertura.sinReglaIngrediente || 0) > 0 ||
+    Number(cobertura.fuentesContextoNoDisponibles || 0) > 0 ||
+    Number(cobertura.paresMedicamentoMedicamentoSinRegla || 0) > 0 ||
+    Number(cobertura.paresMedicamentoDiagnosticoSinRegla || 0) > 0 ||
+    Number(cobertura.paresMedicamentoParametroSinRegla || 0) > 0 ||
+    Number(cobertura.hallazgosParametrosNoInterpretables || 0) > 0 ||
+    Number(cobertura.cantidadParametrosEsperadosAusentes || 0) > 0
+  ) {
     return { estado: "datos_insuficientes", etiqueta: "Sin regla cargada para parte de la selección", clase: "precaucion" };
   }
   return { estado: "sin_alertas", etiqueta: "Sin alerta encontrada con la base actual", clase: "ok" };
@@ -950,6 +1408,7 @@ export function obtenerIndicadorSeguridadMedicamento(alertas = [], cobertura = {
 
 export function evaluarMedicamentosPaciente({ paciente = {}, medicamentos = [], medicamentoNuevo = null } = {}) {
   const listaMedicamentos = medicamentoNuevo ? [...medicamentos, medicamentoNuevo] : [...medicamentos];
+  const parametrosClinicos = resolverParametrosClinicosPaciente(paciente);
   const bloqueosTecnicos = validarBloqueosTecnicos(listaMedicamentos);
   if (bloqueosTecnicos.length) {
     return {
@@ -964,6 +1423,7 @@ export function evaluarMedicamentosPaciente({ paciente = {}, medicamentos = [], 
       bloqueosTecnicos,
       medicamentosNormalizados: [],
       diagnosticosDetectados: [],
+      parametrosClinicos,
       indicador: { estado: "bloqueo", etiqueta: "Bloqueo técnico", clase: "critico" }
     };
   }
@@ -971,30 +1431,49 @@ export function evaluarMedicamentosPaciente({ paciente = {}, medicamentos = [], 
   const medicamentosNormalizadosOriginales = listaMedicamentos
     .map(normalizarMedicamentoClinico)
     .filter((med) => med.textoOriginal);
-  const { medicamentosUnicos: medicamentosNormalizados, alertasDuplicidad } = deduplicarMedicamentosParaAnalisis(medicamentosNormalizadosOriginales);
+  const {
+    medicamentosUnicos: medicamentosNormalizados,
+    medicamentosParaAnalisis,
+    alertasDuplicidad
+  } = deduplicarMedicamentosParaAnalisis(medicamentosNormalizadosOriginales);
   const diagnosticosEstructurados = extraerDiagnosticosEstructuradosPaciente(paciente);
   const textosDiagnosticos = diagnosticosEstructurados.map((diagnostico) => diagnostico.texto);
   const contextoDiagnostico = resolverDiagnosticosClinicos(diagnosticosEstructurados);
+  const alertasMedicamentoDiagnostico = evaluarMedicamentoContraDiagnosticos(medicamentosParaAnalisis, contextoDiagnostico);
+  const alertasInteracciones = evaluarInteraccionesClinicas(medicamentosParaAnalisis);
   const alertas = deduplicarAlertas([
     ...alertasDuplicidad,
-    ...evaluarMedicamentoContraDiagnosticos(medicamentosNormalizados, contextoDiagnostico),
-    ...evaluarInteraccionesClinicas(medicamentosNormalizados),
-    ...evaluarInteraccionesMultifarmaco(medicamentosNormalizados),
-    ...evaluarRiesgosAcumulativos(medicamentosNormalizados),
-    ...evaluarAlergiasPaciente(medicamentosNormalizados, paciente),
-    ...evaluarContextoDirectoPaciente(medicamentosNormalizados, paciente)
+    ...alertasMedicamentoDiagnostico,
+    ...alertasInteracciones,
+    ...evaluarInteraccionesMultifarmaco(medicamentosParaAnalisis),
+    ...evaluarRiesgosAcumulativos(medicamentosParaAnalisis),
+    ...evaluarAlergiasPaciente(medicamentosParaAnalisis, paciente),
+    ...evaluarContextoDirectoPaciente(medicamentosParaAnalisis, paciente)
   ]);
   const cobertura = {
-    total: medicamentosNormalizados.length,
-    fuenteVerificada: medicamentosNormalizados.filter((med) => med.ingredienteIds.some((id) => obtenerMedicamentoPorId(id)?.estadoFuente === "verificada_local")).length,
-    fuentePendiente: medicamentosNormalizados.filter((med) => !med.ingredienteIds.some((id) => obtenerMedicamentoPorId(id)?.estadoFuente === "verificada_local")).length,
-    sinReglaIngrediente: medicamentosNormalizados.filter((med) => !med.ingredienteIds.length).length
+    total: medicamentosParaAnalisis.length,
+    prescripcionesDistintas: medicamentosNormalizados.length,
+    fuenteVerificada: medicamentosParaAnalisis.filter((med) =>
+      obtenerMedicamentoPorId(med.clinicalMedicationId || med.id)?.estadoFuente === "verificada_local"
+    ).length,
+    fuentePendiente: medicamentosParaAnalisis.filter((med) =>
+      obtenerMedicamentoPorId(med.clinicalMedicationId || med.id)?.estadoFuente !== "verificada_local"
+    ).length,
+    sinReglaIngrediente: medicamentosParaAnalisis.filter((med) => !med.coberturaIngredienteCompleta).length,
+    fuentesContextoNoDisponibles: Array.isArray(paciente.fuentesContextoFarmacologicoNoDisponibles)
+      ? paciente.fuentesContextoFarmacologicoNoDisponibles.length
+      : 0,
+    detalleFuentesContextoNoDisponibles: Array.isArray(paciente.fuentesContextoFarmacologicoNoDisponibles)
+      ? [...paciente.fuentesContextoFarmacologicoNoDisponibles]
+      : [],
+    ...calcularCoberturaReglas(medicamentosParaAnalisis, contextoDiagnostico, parametrosClinicos)
   };
 
   return {
     alertas,
     bloqueosTecnicos: [],
     medicamentosNormalizados,
+    principiosActivosNormalizados: medicamentosParaAnalisis,
     medicamentosOriginalesNormalizados: medicamentosNormalizadosOriginales,
     diagnosticosDetectados: contextoDiagnostico.diagnosticos,
     diagnosticosEvaluados: contextoDiagnostico.diagnosticosEvaluados || diagnosticosEstructurados,
@@ -1002,6 +1481,7 @@ export function evaluarMedicamentosPaciente({ paciente = {}, medicamentos = [], 
     diagnosticosProbables: contextoDiagnostico.diagnosticosProbables || [],
     textosDiagnosticosEvaluados: textosDiagnosticos,
     modificadores: contextoDiagnostico.modificadores,
+    parametrosClinicos,
     cobertura,
     metodologiaCargas: "Priorización interna cualitativa 0-3 por medicamento (0 sin señal cargada, 1 baja, 2 moderada, 3 alta), sumada solo para activar reglas locales. No es una escala clínica validada; cada alerta muestra mecanismo, vigilancia y fuente.",
     indicador: obtenerIndicadorSeguridadMedicamento(alertas, cobertura)

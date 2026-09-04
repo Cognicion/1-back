@@ -1,8 +1,8 @@
-import { buscarMedicamentos, normalizarNombreMedicamento } from "../data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
+import { buscarMedicamentos, normalizarNombreMedicamento } from "../data/catalogoFarmacologicoUnificado.js?v=20260904-parametros-colera-v2";
 import {
   evaluarInteraccionesClinicas,
   normalizarMedicamentoClinico
-} from "./motorClinicoMedicamentos.js?v=20260811-pharmacology-files-consolidated-v1";
+} from "./motorClinicoMedicamentos.js?v=20260904-parametros-colera-v2";
 
 const SEVERIDAD_PUBLICA = {
   critica: "contraindicada",

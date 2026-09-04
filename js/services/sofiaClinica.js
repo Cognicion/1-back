@@ -2,8 +2,9 @@ import { db } from "../firebase.js";
 import { obtenerHistorialNotas } from "./notas.js";
 import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
 import { normalizarTextoFrecuencia } from "../utils/frecuencias.js";
-import { CATALOGO_FARMACOLOGICO_OFICIAL } from "../data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
-import { evaluarMedicamentosPaciente } from "./motorClinicoMedicamentos.js?v=20260811-pharmacology-files-consolidated-v1";
+import { CATALOGO_FARMACOLOGICO_OFICIAL } from "../data/catalogoFarmacologicoUnificado.js?v=20260904-parametros-colera-v2";
+import { evaluarMedicamentosPaciente } from "./motorClinicoMedicamentos.js?v=20260904-parametros-colera-v2";
+import { resolverParametrosClinicosPaciente } from "./parametrosClinicosPaciente.js?v=20260904-parametros-colera-v2";
 import { listarPacientes } from "./usuarios.js?v=20260826-cuenta-profesional-gratuita-v1";
 import { collection, doc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -77,7 +78,13 @@ export async function cargarExpedientePacienteSofia(idPaciente) {
     notasRapidas,
     estudios: mezclarPorId([...estudiosUsuario, ...estudiosPaciente]),
     laboratorios: mezclarPorId([...laboratoriosUsuario, ...laboratoriosPaciente]),
-    escalas: mezclarPorId([...escalasUsuario, ...escalasPaciente])
+    escalas: mezclarPorId([...escalasUsuario, ...escalasPaciente]),
+    fuentesContextoFarmacologicoNoDisponibles: [
+      estudiosUsuario.fuenteNoDisponible,
+      estudiosPaciente.fuenteNoDisponible,
+      laboratoriosUsuario.fuenteNoDisponible,
+      laboratoriosPaciente.fuenteNoDisponible
+    ].filter(Boolean)
   };
 }
 
@@ -91,6 +98,8 @@ export function construirPacienteDigital(expediente) {
   const riesgos = estimarRiesgosClinicos(expediente);
   const protectores = detectarFactoresProtectores(textoClinico);
   const consumo = detectarConsumo(textoClinico);
+  const contextoFarmacologico = construirContextoFarmacologicoExpediente(expediente);
+  const parametrosClinicos = resolverParametrosClinicosPaciente(contextoFarmacologico);
 
   return {
     identificacion: {
@@ -105,6 +114,8 @@ export function construirPacienteDigital(expediente) {
     tratamientosActivos,
     escalas: expediente.escalas || [],
     estudios: expediente.estudios || [],
+    laboratorios: expediente.laboratorios || [],
+    parametrosClinicos,
     riesgos,
     protectores,
     consumo,
@@ -138,6 +149,17 @@ export function construirLineaTiempo(expediente) {
     if (t.fechaSuspension) agregarEvento(eventos, t.fechaSuspension, "Suspension", t.medicamento || "Medicamento", t.motivoSuspension || "Suspension registrada", "tratamiento", t.id);
   });
   (expediente.estudios || []).forEach((e) => agregarEvento(eventos, e.fecha || e.createdAt, "Estudio", e.nombre || e.tipo || "Estudio", e.resultado || e.resumen || "Sin resultado", "estudio", e.id));
+  resolverParametrosClinicosPaciente(construirContextoFarmacologicoExpediente(expediente)).lista.forEach((parametro) => {
+    agregarEvento(
+      eventos,
+      parametro.fecha,
+      "Parámetro clínico",
+      parametro.etiqueta,
+      `${parametro.valor} ${parametro.unidad}${parametro.estado !== "no_clasificado" ? ` · ${parametro.estado.replaceAll("_", " ")}` : ""}`,
+      "laboratorio",
+      parametro.id
+    );
+  });
   (expediente.escalas || []).forEach((e) => agregarEvento(eventos, e.fechaAplicacion || e.createdAt, "Escala", e.nombreEscala || e.nombre || "Escala", `${e.puntajeTotal ?? "--"} ${e.interpretacion || ""}`.trim(), "escala", e.id));
   (expediente.notasRapidas || []).forEach((n) => agregarEvento(eventos, n.fecha || n.createdAt, "Nota rapida", "Observacion breve", n.texto || n.nota || "Sin texto", "nota-rapida", n.id));
   return eventos.filter((evento) => evento.fechaOrden).sort((a, b) => b.fechaOrden - a.fechaOrden);
@@ -239,7 +261,7 @@ export function generarCriticaNota(textoNota, expediente = null) {
     hallazgos.push({ nivel: "alto", titulo: "Revise congruencia de riesgo", detalle: "La nota contiene terminos de riesgo junto con una posible negacion general. Conviene precisar ideacion, plan, intento, medios y factores protectores.", porQue: "Las notas de riesgo deben diferenciar negacion actual, antecedente, plan, acceso a medios e intervencion familiar." });
   }
   if (expediente) {
-    analizarInteraccionesMedicamentos(expediente.tratamientos || []).forEach((interaccion) => {
+    analizarInteraccionesMedicamentos(expediente.tratamientos || [], construirContextoFarmacologicoExpediente(expediente)).forEach((interaccion) => {
       if (["importante", "contraindicada"].includes(interaccion.severidad)) hallazgos.push({ nivel: "alto", titulo: `Interaccion a considerar: ${interaccion.medicamentos.join(" + ")}`, detalle: interaccion.consecuencia, porQue: interaccion.mecanismo });
     });
   }
@@ -261,8 +283,16 @@ export function estimarRiesgosClinicos(expediente) {
 
 export function generarAlertasInteligentes(expediente) {
   const alertas = [];
-  analizarInteraccionesMedicamentos(expediente?.tratamientos || []).forEach((interaccion) => {
-    if (interaccion.severidad !== "sin_interaccion") alertas.push({ nivel: interaccion.severidad, titulo: `Interaccion: ${interaccion.medicamentos.join(" + ")}`, detalle: interaccion.consecuencia, porQue: interaccion.mecanismo, accion: interaccion.conducta });
+  analizarInteraccionesMedicamentos(expediente?.tratamientos || [], construirContextoFarmacologicoExpediente(expediente)).forEach((interaccion) => {
+    if (interaccion.severidad === "sin_interaccion") return;
+    const esCobertura = interaccion.categoria === "cobertura_incompleta";
+    alertas.push({
+      nivel: interaccion.severidad,
+      titulo: esCobertura ? "Cobertura farmacológica incompleta" : `Interaccion: ${interaccion.medicamentos.join(" + ")}`,
+      detalle: interaccion.consecuencia,
+      porQue: interaccion.mecanismo,
+      accion: interaccion.conducta
+    });
   });
   generarRecomendacionesLaboratorio(expediente).forEach((rec) => {
     if (rec.prioridad !== "rutina") alertas.push({ nivel: rec.prioridad, titulo: `Monitorizacion sugerida: ${rec.estudio}`, detalle: rec.motivo, porQue: rec.relacion, accion: rec.periodicidad });
@@ -288,9 +318,9 @@ export function generarRecomendacionesLaboratorio(expediente) {
   return recs;
 }
 
-export function analizarInteraccionesMedicamentos(tratamientos = []) {
+export function analizarInteraccionesMedicamentos(tratamientos = [], paciente = {}) {
   const activos = tratamientos.filter((t) => estaActivo(t));
-  const resultado = evaluarMedicamentosPaciente({ medicamentos: activos });
+  const resultado = evaluarMedicamentosPaciente({ paciente, medicamentos: activos });
   const severidadSofia = {
     critica: "contraindicada",
     alta: "importante",
@@ -298,10 +328,11 @@ export function analizarInteraccionesMedicamentos(tratamientos = []) {
     baja: "baja",
     informativa: "informativa"
   };
-  return resultado.alertas
+  const salida = resultado.alertas
     .filter((alerta) => alerta.medicamentos?.length)
     .map((alerta) => ({
       id: alerta.id,
+      titulo: alerta.titulo,
       severidad: severidadSofia[alerta.severidad] || alerta.severidad,
       medicamentos: alerta.medicamentos,
       mecanismo: alerta.mecanismo,
@@ -309,6 +340,45 @@ export function analizarInteraccionesMedicamentos(tratamientos = []) {
       conducta: alerta.recomendacion,
       categoria: alerta.categoria || alerta.tipoInteraccion || alerta.tipo
     }));
+  const cobertura = resultado.cobertura || {};
+  const coberturaIncompleta = resultado.indicador?.estado === "datos_insuficientes" || [
+    cobertura.fuentePendiente,
+    cobertura.sinReglaIngrediente,
+    cobertura.fuentesContextoNoDisponibles,
+    cobertura.paresMedicamentoMedicamentoSinRegla,
+    cobertura.paresMedicamentoDiagnosticoSinRegla,
+    cobertura.paresMedicamentoParametroSinRegla,
+    cobertura.cantidadParametrosEsperadosAusentes,
+    cobertura.hallazgosParametrosNoInterpretables,
+    cobertura.diagnosticosSinCategoriaFarmacologica
+  ].some((valor) => Number(valor || 0) > 0);
+  if (coberturaIncompleta) {
+    const brechas = [
+      Number(cobertura.fuentePendiente || 0) > 0 ? `${cobertura.fuentePendiente} medicamento(s) con fuente pendiente` : "",
+      Number(cobertura.sinReglaIngrediente || 0) > 0 ? `${cobertura.sinReglaIngrediente} ingrediente(s) sin regla` : "",
+      Number(cobertura.fuentesContextoNoDisponibles || 0) > 0 ? `fuentes del expediente no disponibles: ${(cobertura.detalleFuentesContextoNoDisponibles || []).join(", ")}` : "",
+      Number(cobertura.paresMedicamentoMedicamentoSinRegla || 0) > 0 ? `${cobertura.paresMedicamentoMedicamentoSinRegla} par(es) medicamento-medicamento sin regla` : "",
+      Number(cobertura.paresMedicamentoDiagnosticoSinRegla || 0) > 0 ? `${cobertura.paresMedicamentoDiagnosticoSinRegla} par(es) medicamento-diagnóstico sin regla` : "",
+      Number(cobertura.paresMedicamentoParametroSinRegla || 0) > 0 ? `${cobertura.paresMedicamentoParametroSinRegla} par(es) medicamento-parámetro sin regla` : "",
+      Number(cobertura.cantidadParametrosEsperadosAusentes || 0) > 0
+        ? `${cobertura.cantidadParametrosEsperadosAusentes} parámetro(s) de vigilancia sin resultado (${(cobertura.parametrosEsperadosAusentes || []).map((item) => `${item.medicamento}: ${item.etiqueta}`).join(", ")})`
+        : "",
+      Number(cobertura.hallazgosParametrosNoInterpretables || 0) > 0 ? `${cobertura.hallazgosParametrosNoInterpretables} hallazgo(s) de parámetros no interpretable(s)` : "",
+      Number(cobertura.diagnosticosSinCategoriaFarmacologica || 0) > 0 ? `${cobertura.diagnosticosSinCategoriaFarmacologica} diagnóstico(s) sin categoría farmacológica` : ""
+    ].filter(Boolean);
+    salida.push({
+      id: "cobertura_farmacologica_incompleta",
+      titulo: "Cobertura farmacológica incompleta",
+      severidad: "datos_insuficientes",
+      medicamentos: [],
+      mecanismo: "La ausencia de una regla local no demuestra ausencia de interacción o riesgo.",
+      consecuencia: brechas.join("; ") || "Parte de la selección no cuenta con evidencia o reglas locales suficientes.",
+      conducta: "Revisar monografías y fuentes institucionales antes de interpretar la selección como segura.",
+      categoria: "cobertura_incompleta",
+      cobertura
+    });
+  }
+  return salida;
 }
 
 function pacienteVinculadoConUsuario(datos, uid) {
@@ -321,15 +391,17 @@ function pacienteVinculadoConUsuario(datos, uid) {
   return false;
 }
 
-async function leerSubcoleccionUsuario(idPaciente, nombre) { return leerColeccionConId(collection(db, "usuarios", idPaciente, nombre)); }
+async function leerSubcoleccionUsuario(idPaciente, nombre) {
+  return leerColeccionConId(collection(db, "usuarios", idPaciente, nombre), `usuarios/${nombre}`);
+}
 async function leerNotasClinicasSofia(idPaciente) {
   const historial = await obtenerHistorialNotas(idPaciente);
   return historial.docs.map((nota) => ({ id: nota.id, ...(nota.data?.() || {}) }));
 }
 async function leerSubcoleccionPaciente(idPaciente, nombre) {
-  try { return await leerColeccionConId(collection(db, "pacientes", idPaciente, nombre)); } catch { return []; }
+  return leerColeccionConId(collection(db, "pacientes", idPaciente, nombre), `pacientes/${nombre}`);
 }
-async function leerColeccionConId(ref) {
+async function leerColeccionConId(ref, fuente = "subcolección clínica") {
   try {
     const snap = await getDocs(ref);
     const docs = [];
@@ -339,7 +411,9 @@ async function leerColeccionConId(ref) {
     console.warn("SOFIA no pudo leer subcoleccion", {
       code: String(error?.code || error?.name || "unknown").slice(0, 80)
     });
-    return [];
+    const vacio = [];
+    vacio.fuenteNoDisponible = fuente;
+    return vacio;
   }
 }
 
@@ -448,6 +522,9 @@ function recolectarTextoClinico(expediente) {
   (expediente.notas || []).forEach((n) => partes.push(n.subjetivo, n.objetivo, n.analisis, n.plan, n.padecimientoActual, n.exploracionMental, n.comentarioClinico, n.texto));
   (expediente.notasRapidas || []).forEach((n) => partes.push(n.texto, n.nota));
   (expediente.estudios || []).forEach((e) => partes.push(e.resultado, e.resumen, e.observaciones));
+  resolverParametrosClinicosPaciente(construirContextoFarmacologicoExpediente(expediente)).lista.forEach((parametro) => {
+    partes.push(`${parametro.etiqueta} ${parametro.valor} ${parametro.unidad} ${parametro.estado}`);
+  });
   return partes.filter(Boolean).join("\n");
 }
 function detectarSintomasClinicos(textoOriginal) {
@@ -485,7 +562,28 @@ function extraerDatosFaltantes(expediente) {
   if (!(expediente?.tratamientos || []).length) faltantes.push("Tratamientos");
   if (!(expediente?.notas || []).length) faltantes.push("Notas clinicas");
   if (!(expediente?.escalas || []).length) faltantes.push("Escalas clinicas");
-  if (!(expediente?.estudios || []).length) faltantes.push("Estudios/laboratorios");
+  const parametros = resolverParametrosClinicosPaciente(construirContextoFarmacologicoExpediente(expediente));
+  if (!(expediente?.estudios || []).length && !(expediente?.laboratorios || []).length && !parametros.lista.length) faltantes.push("Estudios/laboratorios");
   if (!paciente.alergias) faltantes.push("Alergias");
   return faltantes;
+}
+
+export function construirContextoFarmacologicoExpediente(expediente = {}) {
+  const paciente = expediente?.paciente || expediente || {};
+  return {
+    ...paciente,
+    diagnosticos: [
+      ...(Array.isArray(paciente.diagnosticos) ? paciente.diagnosticos : [paciente.diagnosticos].filter(Boolean)),
+      ...extraerDiagnosticos(expediente)
+    ],
+    laboratorios: [
+      ...(Array.isArray(paciente.laboratorios) ? paciente.laboratorios : []),
+      ...(Array.isArray(expediente?.laboratorios) ? expediente.laboratorios : []),
+      ...(Array.isArray(expediente?.estudios) ? expediente.estudios : [])
+    ],
+    fuentesContextoFarmacologicoNoDisponibles: [
+      ...(Array.isArray(paciente.fuentesContextoFarmacologicoNoDisponibles) ? paciente.fuentesContextoFarmacologicoNoDisponibles : []),
+      ...(Array.isArray(expediente?.fuentesContextoFarmacologicoNoDisponibles) ? expediente.fuentesContextoFarmacologicoNoDisponibles : [])
+    ]
+  };
 }

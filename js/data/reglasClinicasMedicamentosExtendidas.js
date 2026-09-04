@@ -4,7 +4,7 @@ import {
   REGLAS_INTERACCIONES_CLINICAS as INTERACCIONES_BASE,
   REGLAS_MEDICAMENTO_DIAGNOSTICO as MED_DX_BASE,
   UMBRALES_RIESGO_ACUMULATIVO as UMBRALES_BASE
-} from "./reglasClinicasMedicamentos.js?v=20260811-pharmacology-files-consolidated-v1";
+} from "./reglasClinicasMedicamentos.js?v=20260904-parametros-colera-v2";
 import { REGLAS_INTERACCIONES_ISRS } from "./interaccionesISRS.js?v=20260811-pharmacology-files-consolidated-v1";
 import { REGLAS_INTERACCIONES_ANTIPSICOTICOS_TIPICOS } from "./interaccionesAntipsicoticosTipicos.js?v=20260811-pharmacology-files-consolidated-v1";
 
@@ -237,6 +237,7 @@ const MED_DX_EXTRA = [
     id: "diuretico_colera_perdidas",
     clase: "diuretico",
     diagnosticoCategoria: "perdidas_gastrointestinales",
+    estadosDiagnostico: ["confirmado", "probable"],
     severidad: "alta",
     titulo: "Cólera y diurético: riesgo de deshidratación y desequilibrio hidroelectrolítico",
     mecanismo: "El cólera puede producir pérdidas rápidas de agua y electrolitos por diarrea/vómito; un diurético añade pérdida renal de volumen y, según la molécula, de electrolitos.",
@@ -352,6 +353,7 @@ const INTERACCIONES_EXTRA = [
     clasesB: ["antiagregante", "anticoagulante"],
     severidad: "moderada",
     titulo: "ISRS/IRSN + antiagregante/anticoagulante",
+    categoria: "hemorragica",
     mecanismo: "Los serotoninergicos pueden disminuir captacion plaquetaria de serotonina y aumentar tendencia a sangrado; el riesgo se suma con antiagregantes o anticoagulantes.",
     efecto: "Aumenta riesgo de sangrado gastrointestinal u otros sangrados.",
     recomendacion: "Valorar indicacion, antecedente de sangrado, gastroproteccion si procede y vigilancia de sangrado; monitorizar INR si warfarina.",
@@ -478,7 +480,7 @@ const INTERACCIONES_EXTRA = [
   { id: "pde5_nitrato", clasesA: ["pde5"], clasesB: ["nitrato"], severidad: "critica", titulo: "Inhibidor PDE5 + nitrato", efecto: "Riesgo de hipotensión grave.", recomendacion: "Contraindicar combinación y documentar advertencia al paciente.", requiereJustificacion: true },
   { id: "betabloqueador_verapamilo_diltiazem", clasesA: ["betabloqueador", "betabloqueador_no_selectivo"], clasesB: ["calcioantagonista_no_dhp"], severidad: "alta", titulo: "Betabloqueador + verapamilo/diltiazem", efecto: "Aumenta riesgo de bradicardia, bloqueo AV e hipotensión.", recomendacion: "Evitar o monitorizar FC, PA y ECG si se justifica." },
   { id: "litio_ieca_ara", ingredientesA: ["litio"], clasesB: ["ieca", "ara2"], severidad: "alta", titulo: "Litio + IECA/ARA-II", efecto: "Puede aumentar niveles de litio y toxicidad renal/neurológica.", recomendacion: "Monitorizar litio, creatinina y estado de hidratación." },
-  { id: "litio_deshidratante", ingredientesA: ["litio"], clasesB: ["diuretico"], severidad: "alta", titulo: "Litio + diurético", efecto: "Puede elevar niveles de litio, especialmente con depleción de sodio o volumen.", recomendacion: "Evitar si es posible o monitorizar niveles y función renal." },
+  { id: "litio_deshidratante", ingredientesA: ["litio"], clasesB: ["diuretico"], severidad: "alta", titulo: "Litio + diurético", categoria: "renal_electrolitica", efecto: "Puede elevar niveles de litio, especialmente con depleción de sodio o volumen.", recomendacion: "Evitar si es posible o monitorizar niveles y función renal." },
   { id: "espironolactona_ieca_ara", clasesA: ["ahorrador_potasio"], clasesB: ["ieca", "ara2"], severidad: "alta", titulo: "Ahorrador de potasio + IECA/ARA-II", mecanismo: "Espironolactona reduce excrecion de potasio y el bloqueo SRAA reduce aldosterona; la combinacion aumenta hiperpotasemia y deterioro renal.", efecto: "Aumenta riesgo de hiperpotasemia y deterioro de funcion renal.", recomendacion: "Controlar potasio, creatinina y eGFR; evitar si K+ elevado o funcion renal inestable.", parametrosVigilancia: ["Potasio", "Creatinina", "eGFR", "Presion arterial"], evidencia: "documentada_en_etiquetado", confianza: "alta", fuentes: ["DailyMed: etiquetas de espironolactona e IECA/ARA-II advierten hiperpotasemia con farmacos que aumentan potasio o bloquean SRAA."] },
   { id: "metotrexato_trimethoprim", ingredientesA: ["metotrexato"], ingredientesB: ["trimetoprim"], severidad: "critica", titulo: "Metotrexato + trimetoprim/sulfametoxazol", efecto: "Riesgo de mielosupresión grave por efecto antifolato aditivo.", recomendacion: "Evitar combinación salvo indicación especializada.", requiereJustificacion: true },
   { id: "metotrexato_aine", ingredientesA: ["metotrexato"], clasesB: ["aine"], severidad: "alta", titulo: "Metotrexato + AINE", efecto: "Puede aumentar toxicidad de metotrexato, sobre todo con dosis altas o función renal reducida.", recomendacion: "Vigilar función renal, biometría hemática y signos de toxicidad." },
@@ -487,7 +489,7 @@ const INTERACCIONES_EXTRA = [
   { id: "rifampicina_anticonceptivo", ingredientesA: ["rifampicina"], clasesB: ["anticonceptivo_hormonal"], severidad: "alta", titulo: "Rifampicina + anticonceptivo hormonal", efecto: "Puede disminuir eficacia anticonceptiva.", recomendacion: "Indicar método alternativo/no hormonal durante y después del tratamiento." },
   { id: "amiodarona_digoxina", ingredientesA: ["amiodarona"], ingredientesB: ["digoxina"], severidad: "alta", titulo: "Amiodarona + digoxina", efecto: "Puede aumentar niveles de digoxina y bradicardia.", recomendacion: "Reducir dosis de digoxina según criterio clínico y monitorizar niveles/ECG." },
   { id: "warfarina_isrs", ingredientesA: ["warfarina"], clasesB: ["isrs", "irsn"], severidad: "moderada", titulo: "Warfarina + ISRS/IRSN", efecto: "Puede aumentar riesgo de sangrado por efecto plaquetario y/o interacciones metabólicas.", recomendacion: "Vigilar INR, sangrado y necesidad de gastroprotección." },
-  { id: "nsaid_isrs", clasesA: ["aine"], clasesB: ["isrs", "irsn"], severidad: "moderada", titulo: "AINE + ISRS/IRSN", mecanismo: "Los serotoninergicos pueden alterar funcion plaquetaria y los AINEs aumentan lesion/sangrado gastrointestinal.", efecto: "Aumenta riesgo de sangrado gastrointestinal.", recomendacion: "Evitar uso prolongado, valorar gastroproteccion y vigilar sangrado.", parametrosVigilancia: ["Melena/hematemesis", "Equimosis/sangrado", "Hemoglobina si riesgo", "Dolor epigastrico"], evidencia: "documentada_en_etiquetado", confianza: "moderada", fuentes: ["DailyMed: etiquetas de ISRS/IRSN advierten sangrado con AINEs/aspirina/anticoagulantes; etiquetas de AINEs advierten sangrado GI."] },
+  { id: "nsaid_isrs", clasesA: ["aine"], clasesB: ["isrs", "irsn"], severidad: "moderada", titulo: "AINE + ISRS/IRSN", categoria: "hemorragica", mecanismo: "Los serotoninergicos pueden alterar funcion plaquetaria y los AINEs aumentan lesion/sangrado gastrointestinal.", efecto: "Aumenta riesgo de sangrado gastrointestinal.", recomendacion: "Evitar uso prolongado, valorar gastroproteccion y vigilar sangrado.", parametrosVigilancia: ["Melena/hematemesis", "Equimosis/sangrado", "Hemoglobina si riesgo", "Dolor epigastrico"], evidencia: "documentada_en_etiquetado", confianza: "moderada", fuentes: ["DailyMed: etiquetas de ISRS/IRSN advierten sangrado con AINEs/aspirina/anticoagulantes; etiquetas de AINEs advierten sangrado GI."] },
   { id: "clozapina_depresor_snc", ingredientesA: ["clozapina"], clasesB: ["depresor_snc"], severidad: "moderada", titulo: "Clozapina + depresor del SNC", efecto: "Puede aumentar sedación, hipotensión y riesgo respiratorio.", recomendacion: "Ajustar dosis, vigilar estado de alerta y signos respiratorios." }
 ];
 

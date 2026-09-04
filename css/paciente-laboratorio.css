@@ -1795,3 +1795,328 @@ html[data-theme="biocelular"] body.pagina-expediente .lab-info-grid > .lab-card:
     border-bottom: 0;
   }
 }
+
+/* Parámetros clínicos estructurados del expediente. */
+.parametros-paciente-panel {
+  display: grid;
+  gap: 22px;
+}
+
+.parametros-paciente-panel .panel-header h2,
+.parametros-paciente-panel .panel-header p {
+  margin-top: 0;
+}
+
+.parametros-paciente-aviso {
+  display: grid;
+  gap: 4px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-subtle);
+  border-left: 4px solid var(--action-primary-bg);
+  border-radius: 12px;
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--surface-secondary) 88%, transparent);
+}
+
+.parametros-paciente-aviso strong {
+  color: var(--text-primary);
+}
+
+.parametros-paciente-grupos,
+.parametros-paciente-resultados {
+  display: grid;
+  gap: 18px;
+}
+
+.parametros-paciente-grupo {
+  min-width: 0;
+  margin: 0;
+  padding: 18px;
+  border: 1px solid var(--border-normal);
+  border-radius: 18px;
+  background: var(--surface-primary);
+}
+
+.parametros-paciente-grupo legend {
+  padding: 0 8px;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.parametros-paciente-grupo > p {
+  margin: 0 0 14px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.parametros-paciente-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.parametro-paciente-card {
+  display: grid;
+  gap: 13px;
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  background: var(--surface-secondary);
+}
+
+.parametro-paciente-card[data-parametro-editado="true"] {
+  border-color: var(--action-primary-bg);
+  box-shadow: inset 3px 0 0 var(--action-primary-bg);
+}
+
+.parametro-paciente-card header,
+.parametro-paciente-card footer,
+.parametros-paciente-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.parametro-paciente-card h4,
+.parametro-paciente-card p {
+  margin: 0;
+}
+
+.parametro-paciente-card h4 {
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.parametro-paciente-card p,
+.parametro-paciente-card footer,
+.parametro-paciente-origen {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.parametro-paciente-origen {
+  max-width: 44%;
+  text-align: right;
+}
+
+.parametro-paciente-campos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.parametro-paciente-campos label {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.parametro-paciente-campos input,
+.parametro-paciente-campos select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid var(--border-normal);
+  border-radius: 9px;
+  color: var(--text-primary);
+  background: var(--surface-primary);
+  font: inherit;
+  font-size: 13px;
+}
+
+.parametro-paciente-campos input:focus,
+.parametro-paciente-campos select:focus {
+  border-color: var(--action-primary-bg);
+  outline: 2px solid color-mix(in srgb, var(--action-primary-bg) 25%, transparent);
+  outline-offset: 1px;
+}
+
+.parametro-paciente-trazabilidad {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 10px;
+}
+
+.parametro-paciente-trazabilidad summary {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.parametro-paciente-trazabilidad[open] summary {
+  margin-bottom: 10px;
+}
+
+.parametro-paciente-derivado {
+  grid-template-columns: auto 1fr !important;
+  align-items: center;
+  align-self: end;
+  min-height: 36px;
+}
+
+.parametro-paciente-derivado input {
+  width: auto;
+  margin: 0;
+}
+
+.parametro-paciente-badge-derivado,
+.parametros-paciente-categorias span {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 3px 7px;
+  border: 1px solid var(--border-normal);
+  border-radius: 999px;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--action-primary-bg) 14%, var(--surface-primary));
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.parametros-paciente-resultados {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 18px;
+}
+
+.parametros-paciente-resultado {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--border-normal);
+  border-radius: 16px;
+  background: var(--surface-secondary);
+}
+
+.parametros-paciente-resultado h3 {
+  margin: 0 0 12px;
+  color: var(--text-primary);
+  font-size: 16px;
+}
+
+.parametros-paciente-salida {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.parametros-paciente-lista-derivados,
+.parametros-paciente-lista-revision,
+.parametros-paciente-hallazgos ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.parametros-paciente-lista-derivados > div,
+.parametros-paciente-lista-revision li {
+  display: grid;
+  gap: 4px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.parametros-paciente-lista-derivados > div:last-child,
+.parametros-paciente-lista-revision li:last-child {
+  border-bottom: 0;
+}
+
+.parametros-paciente-lista-derivados dt,
+.parametros-paciente-lista-derivados dd {
+  margin: 0;
+}
+
+.parametros-paciente-lista-derivados dt {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.parametros-paciente-lista-derivados dd {
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.parametros-paciente-categorias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.parametros-paciente-lista-revision li > strong,
+.parametros-paciente-hallazgos > strong {
+  color: var(--text-primary);
+}
+
+.parametros-paciente-lista-revision .estado-bajo,
+.parametros-paciente-lista-revision .estado-alto,
+.parametros-paciente-hallazgos {
+  padding-left: 10px;
+  border-left: 3px solid #c7772e;
+}
+
+.parametros-paciente-hallazgos {
+  margin-top: 12px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background: color-mix(in srgb, #c7772e 9%, transparent);
+}
+
+.parametros-paciente-hallazgos li {
+  margin-top: 6px;
+}
+
+.parametros-paciente-nota-clinica {
+  margin: 12px 0 0;
+}
+
+.parametros-paciente-acciones {
+  margin-top: 18px;
+}
+
+#estadoParametrosPaciente {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+@media (max-width: 980px) {
+  .parametros-paciente-grid,
+  .parametros-paciente-resultados {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .parametros-paciente-grupo,
+  .parametro-paciente-card,
+  .parametros-paciente-resultado {
+    padding: 12px;
+  }
+
+  .parametro-paciente-card header,
+  .parametro-paciente-card footer,
+  .parametros-paciente-acciones {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .parametro-paciente-origen {
+    max-width: none;
+    text-align: left;
+  }
+
+  .parametro-paciente-campos {
+    grid-template-columns: 1fr;
+  }
+
+}

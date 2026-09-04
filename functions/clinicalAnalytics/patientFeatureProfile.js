@@ -42,6 +42,18 @@ const COLLECTION_DOMAINS = Object.freeze({
   medicionesPediatricas: "vitals",
   eventos: "events"
 });
+const LAB_ANALYTE_NAMES = new Set([
+  "creatinina", "creatinina serica", "serum creatinine",
+  "egfr", "tfg", "filtrado glomerular", "tasa de filtrado glomerular",
+  "uacr", "acr urinaria", "relacion albumina creatinina urinaria",
+  "sodio", "na", "potasio", "cloro", "cloruro", "bicarbonato", "co2 total",
+  "magnesio", "calcio", "calcio total", "proteinas sericas", "proteinas totales",
+  "proteina total", "albumina", "albumina serica", "globulina", "globulinas", "globulinas sericas"
+]);
+const CORE_PHARMACOLOGY_ANALYTE_SEGMENTS = new Set([
+  "creatinina", "egfr", "uacr", "sodio", "potasio", "cloro", "bicarbonato", "magnesio", "calcio",
+  "proteinastotales", "proteinas_totales", "albumina", "albumina_serica", "globulinas"
+]);
 
 function normalizedText(value = "") {
   return String(value)
@@ -311,6 +323,14 @@ function safeFieldSegment(value) {
   return normalizedText(value).replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 48);
 }
 
+function profileFeaturePriority(feature = {}) {
+  const featureId = String(feature.featureId || "");
+  const analyteMatch = featureId.match(/^structured\.(?:laboratorios|estudios)\.analito_(.+?)_unidad_/);
+  if (analyteMatch && CORE_PHARMACOLOGY_ANALYTE_SEGMENTS.has(analyteMatch[1])) return 0;
+  if (analyteMatch) return 1;
+  return 2;
+}
+
 function collectStructuredPrimitives(value, path = [], result = [], depth = 0) {
   if (depth > 4 || result.length >= 800) return result;
   if (typeof value === "boolean") {
@@ -342,14 +362,29 @@ function addStructuredFieldFeatures(features, recordsByType = {}) {
   COLLECTIONS.forEach((collectionName) => {
     const records = Array.isArray(recordsByType[collectionName]) ? recordsByType[collectionName] : [];
     const fields = new Map();
-    records.forEach((record) => collectStructuredPrimitives(record).forEach((item) => {
-      if (!item.path) return;
-      if (!fields.has(item.path)) fields.set(item.path, []);
-      fields.get(item.path).push(item);
-    }));
-    [...fields.entries()]
-      .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]))
-      .slice(0, 40)
+    records.forEach((record) => {
+      const nombreAnalito = record.analyteId || record.analito || record.analyte || record.nombreAnalito || record.parametro || "";
+      const nombreEstudio = record.nombre || record.name || "";
+      const esLaboratorio = collectionName === "laboratorios" || Boolean(nombreAnalito) || (
+        collectionName === "estudios" && LAB_ANALYTE_NAMES.has(normalizedText(nombreEstudio))
+      );
+      const analito = safeFieldSegment(nombreAnalito || (esLaboratorio ? nombreEstudio : "sin_analito"));
+      const unidad = safeFieldSegment(record.unidad || record.unit || "sin_unidad");
+      const rutaBase = esLaboratorio ? [`analito_${analito}`, `unidad_${unidad}`] : [];
+      collectStructuredPrimitives(record, rutaBase).forEach((item) => {
+        if (!item.path) return;
+        if (!fields.has(item.path)) fields.set(item.path, []);
+        fields.get(item.path).push(item);
+      });
+    });
+    const camposOrdenados = [...fields.entries()]
+      .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
+    const camposAnaliticos = camposOrdenados.filter(([path]) => path.startsWith("analito_"));
+    const camposGenerales = camposOrdenados.filter(([path]) => !path.startsWith("analito_"));
+    const camposSeleccionados = collectionName === "laboratorios"
+      ? camposOrdenados
+      : [...camposAnaliticos, ...camposGenerales.slice(0, 40)];
+    camposSeleccionados
       .forEach(([path, items]) => {
         const baseId = `structured.${safeFieldSegment(collectionName)}.${path.replace(/\./g, "_")}`;
         const canonicalName = `${collectionName}_${path.replace(/\./g, "_")}`;
@@ -494,7 +529,7 @@ function buildPatientFeatureProfile({ variables = [], timeline = [], context = {
     lastObservedAt: monthBucket(pair.lastObservedAt)
   }));
   const orderedFeatures = [...features.values()]
-    .sort((a, b) => a.featureId.localeCompare(b.featureId))
+    .sort((a, b) => profileFeaturePriority(a) - profileFeaturePriority(b) || a.featureId.localeCompare(b.featureId))
     .slice(0, CLINICAL_PATTERN_MATRIX_CONFIG.maxProfileFeatures);
   return {
     scope: "patient_analytics_profile",

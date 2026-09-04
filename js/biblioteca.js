@@ -1,6 +1,6 @@
 import { auth } from "./firebase.js";
 import { obtenerUsuario } from "./services/usuarios.js";
-import { MEDICAMENTOS_MAESTROS, textoMedicamentoParaBusqueda } from "./data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
+import { MEDICAMENTOS_MAESTROS, textoMedicamentoParaBusqueda } from "./data/catalogoFarmacologicoUnificado.js?v=20260904-parametros-colera-v2";
 import { CITOCROMOS_FARMACOLOGICOS } from "./data/citocromosFarmacologicos.js?v=20260811-pharmacology-files-consolidated-v1";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { ROL_ENFERMERIA_SALUD_MENTAL } from "./utils/roles.js";
@@ -219,7 +219,7 @@ function usuarioPuedeUsarBiblioteca(user, usuario = {}) {
 
 const libraryRoot = document.querySelector("[data-library-root]");
 const datosBibliotecaListos = libraryRoot
-    ? import("./data/catalogoDiagnosticos.js?v=20260902-biblioteca-cie10-i-v1").then((diagnosticosModule) => {
+    ? import("./data/catalogoDiagnosticos.js?v=20260904-parametros-colera-v2").then((diagnosticosModule) => {
     DIAGNOSTICOS_VALIDOS = validarDiagnosticosBiblioteca(diagnosticosModule.CATALOGO_DIAGNOSTICOS);
     diagnosticosPorId = new Map(DIAGNOSTICOS_VALIDOS.map((diagnostico) => [diagnostico.id, diagnostico]));
     poblarCategoriasBiblioteca([]);

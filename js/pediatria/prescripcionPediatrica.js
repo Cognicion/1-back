@@ -5,7 +5,7 @@ import {
   normalizarMedicamento,
   normalizarNombreMedicamento,
   textoMedicamentoParaBusqueda
-} from "../data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
+} from "../data/catalogoFarmacologicoUnificado.js?v=20260904-parametros-colera-v2";
 import {
   normalizarConcentracionMgMl,
   normalizarPesoKg,

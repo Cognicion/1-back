@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <link rel="stylesheet" href="css/accesos-rapidos.css?v=1.899" data-estilos-accesos-rapidos>
-  <link rel="stylesheet" href="css/laboratorio-farmacologia.css?v=20260903-parametros-clinicos-v1">
+  <link rel="stylesheet" href="css/laboratorio-farmacologia.css?v=20260904-parametros-clinicos-v2">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
 <body class="pagina-laboratorio-farmacologia">
@@ -75,7 +75,20 @@
     <section class="farmaco-panel parametros-panel" aria-labelledby="farmacoParametrosTitulo">
       <div class="panel-heading"><span>Paso 3</span><h2 id="farmacoParametrosTitulo">Parámetros</h2></div>
       <p class="parametros-intro">Registra el valor, la unidad y el intervalo informado por el laboratorio. La clasificación respeta ese rango y no presupone valores de referencia.</p>
+      <div class="parametros-meta">
+        <label>
+          Fecha de la muestra (opcional)
+          <input id="farmacoParametrosFecha" type="date" aria-label="Fecha de la muestra de los parámetros clínicos">
+        </label>
+        <p>Los datos permanecen en esta simulación y se envían al mismo motor que evalúa medicamentos, diagnósticos y cargas acumulativas.</p>
+        <button id="limpiarParametrosFarmaco" type="button" class="ghost-action">Limpiar parámetros</button>
+      </div>
       <div id="farmacoParametrosClinicos" class="parametros-grupos"></div>
+      <section class="parametros-resumen" aria-labelledby="farmacoParametrosResumenTitulo">
+        <h3 id="farmacoParametrosResumenTitulo">Vista clínica de los parámetros capturados</h3>
+        <div id="farmacoParametrosResumen" aria-live="polite"></div>
+      </section>
+      <noscript>Activa JavaScript para capturar y analizar parámetros clínicos en esta simulación.</noscript>
     </section>
 
     <section class="farmaco-panel resultados-panel">
@@ -88,7 +101,7 @@
     </section>
   </main>
 
-  <script type="module" src="js/laboratorio-farmacologia.js?v=20260903-parametros-clinicos-v1"></script>
+  <script type="module" src="js/laboratorio-farmacologia.js?v=20260904-parametros-colera-v2"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>

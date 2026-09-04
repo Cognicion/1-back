@@ -9,12 +9,13 @@ import { createSofiaUnifiedClient } from "./sofia/sofiaUnifiedClient.js";
 import { applySofiaPageActions, collectSofiaPageState } from "./sofia/pageTools.js?v=20260821-patient-pattern-profile-v1";
 import { listenForSofiaPatternContext } from "./patient-patterns/patternSofiaBridge.js";
 import { renderEcgInterpretation } from "./sofia/electrocardiogram/ecgRenderer.js?v=20260821-sofia-ecg-v1";
-import { interpretPatientElectrocardiogram } from "./services/sofiaElectrocardiograma.js?v=20260821-sofia-ecg-v1";
+import { interpretPatientElectrocardiogram } from "./services/sofiaElectrocardiograma.js?v=20260904-parametros-colera-v2";
 import {
   analizarInteraccionesMedicamentos,
   cargarExpedientePacienteSofia,
   construirLineaTiempo,
   construirMapaRelaciones,
+  construirContextoFarmacologicoExpediente,
   construirPacienteDigital,
   generarAlertasInteligentes,
   generarCriticaNota,
@@ -22,7 +23,7 @@ import {
   generarRazonamientoClinico,
   generarRecomendacionesLaboratorio,
   obtenerBaseFarmacologicaInicial
-} from "./services/sofiaClinica.js?v=20260826-cuenta-profesional-gratuita-v1";
+} from "./services/sofiaClinica.js?v=20260904-parametros-colera-v2";
 
 aplicarAparienciaGuardada();
 
@@ -367,7 +368,10 @@ async function cargarPacienteSeleccionado(idPaciente) {
     const razonamiento = generarRazonamientoClinico(expedienteActual);
     const alertas = generarAlertasInteligentes(expedienteActual);
     const monitorizacion = generarRecomendacionesLaboratorio(expedienteActual);
-    const interacciones = analizarInteraccionesMedicamentos(expedienteActual.tratamientos || []);
+    const interacciones = analizarInteraccionesMedicamentos(
+      expedienteActual.tratamientos || [],
+      construirContextoFarmacologicoExpediente(expedienteActual)
+    );
     const electrocardiogram = interpretPatientElectrocardiogram(expedienteActual);
     panelContextActual = construirContextoHerramientasPagina({
       digital,
@@ -491,11 +495,19 @@ function renderStack(id, items) {
 }
 
 function renderFarmaco(expediente) {
-  const interacciones = analizarInteraccionesMedicamentos(expediente.tratamientos || []);
+  const interacciones = analizarInteraccionesMedicamentos(
+    expediente.tratamientos || [],
+    construirContextoFarmacologicoExpediente(expediente)
+  );
   const base = obtenerBaseFarmacologicaInicial();
   const activos = (expediente.tratamientos || []).filter((t) => t.medicamento).slice(0, 8);
   const tarjetas = [];
-  interacciones.forEach((i) => tarjetas.push({ titulo: i.medicamentos.join(" + "), nivel: i.severidad, detalle: i.consecuencia, accion: i.mecanismo }));
+  interacciones.forEach((i) => tarjetas.push({
+    titulo: i.titulo || i.medicamentos.join(" + "),
+    nivel: i.severidad,
+    detalle: i.consecuencia,
+    accion: i.mecanismo
+  }));
   activos.forEach((t) => {
     const ficha = base.find((f) => String(t.medicamento).toLowerCase().includes(f.clave));
     if (ficha) tarjetas.push({ titulo: ficha.nombre, nivel: ficha.clase, detalle: ficha.mecanismo, accion: `Monitorizacion: ${ficha.monitorizacion.join(", ")}` });
@@ -524,6 +536,17 @@ function construirContextoHerramientasPagina({ digital, narrativa, razonamiento,
       diagnoses: diagnosticos,
       symptoms: (digital.sintomas || []).slice(0, 20),
       treatments,
+      clinicalParameters: (digital.parametrosClinicos?.lista || []).slice(0, 20).map((parametro) => ({
+        analyteId: parametro.id,
+        value: parametro.valor,
+        unit: parametro.unidad || null,
+        referenceRange: parametro.rangoReferencia || null,
+        statusAgainstReportedRange: parametro.estado || null,
+        measuredAt: parametro.fecha || null,
+        provenance: parametro.procedencia || parametro.origen || null
+      })),
+      derivedClinicalParameters: Object.values(digital.parametrosClinicos?.derivados || {}).slice(0, 10),
+      clinicalParameterFindings: (digital.parametrosClinicos?.hallazgos || []).slice(0, 20),
       protectiveFactors: (digital.protectores || []).slice(0, 12),
       recordCoverage: digital.cobertura || null
     },
@@ -559,7 +582,8 @@ function construirContextoHerramientasPagina({ digital, narrativa, razonamiento,
     })),
     pharmacology: {
       activeTreatments: treatments,
-      interactions: (interacciones || []).slice(0, 20).map((item) => ({
+      coverage: (interacciones || []).find((item) => item.categoria === "cobertura_incompleta")?.cobertura || null,
+      interactions: (interacciones || []).filter((item) => item.categoria !== "cobertura_incompleta").slice(0, 20).map((item) => ({
         severity: item.severidad || null,
         medications: (item.medicamentos || []).slice(0, 8),
         mechanism: item.mecanismo || null,

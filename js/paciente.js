@@ -4,8 +4,8 @@ import {
   MEDICAMENTOS_MAESTROS,
   buscarMedicamentos,
   medicamentoPorTexto
-} from "./data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
-import { CIE10, CIE11 } from "./data/catalogoDiagnosticos.js?v=20260816-cie10-cde-v1";
+} from "./data/catalogoFarmacologicoUnificado.js?v=20260904-parametros-colera-v2";
+import { CIE10, CIE11 } from "./data/catalogoDiagnosticos.js?v=20260904-parametros-colera-v2";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import {
@@ -16,13 +16,13 @@ import {
 } from "./services/apuntesMedicoPersistence.js";
 import {
   detectarAlertasClinicasMedicamentos
-} from "./data/interaccionesFarmacologicas.js";
+} from "./data/interaccionesFarmacologicas.js?v=20260904-parametros-colera-v2";
 import {
   DEFINICIONES_PARAMETROS_CLINICOS,
   GRUPOS_PARAMETROS_CLINICOS,
   construirRegistroParametrosClinicos,
   resolverParametrosClinicosPaciente
-} from "./services/parametrosClinicosPaciente.js";
+} from "./services/parametrosClinicosPaciente.js?v=20260904-parametros-colera-v2";
 import {
   aplicarPermisosFormatosPagina,
   obtenerPermisosFormatosUsuario,
@@ -265,6 +265,13 @@ let tratamientosCacheCargado = false;
 let tratamientosCachePatientId = "";
 let tratamientosCargaToken = 0;
 let estudiosCache = [];
+let estudiosCachePatientId = "";
+let estudiosFarmacologicosAdicionalesCache = [];
+let estudiosFarmacologicosAdicionalesPatientId = "";
+let laboratoriosFarmacologicosCache = [];
+let laboratoriosFarmacologicosCacheCargado = false;
+let laboratoriosFarmacologicosCachePatientId = "";
+const fuentesContextoFarmacologicoNoDisponibles = new Set();
 let solicitudesImagenologiaCache = [];
 let escalasAsignadasCache = new Map();
 let escalasAsignablesPacienteCache = [];
@@ -279,13 +286,486 @@ let campoFechaIngresoModal = "fechaIngreso";
 let textoIndicacionesEditado = false;
 let apuntesMedicoPacienteCache = [];
 let guardandoApunteMedicoPacienteEnPaciente = false;
+let parametrosPacienteFormularioPacienteId = "";
+let parametrosPacienteGuardando = false;
 
 function construirContextoFarmacologicoPaciente(datos = datosPacienteActual || {}) {
   const laboratoriosExistentes = Array.isArray(datos?.laboratorios) ? datos.laboratorios : [];
-  return {
+  const patientId = String(uidPaciente || "");
+  const estudiosPacienteActual = [
+    ...(estudiosCachePatientId === patientId ? estudiosCache : []),
+    ...(estudiosFarmacologicosAdicionalesPatientId === patientId ? estudiosFarmacologicosAdicionalesCache : [])
+  ];
+  const laboratoriosPacienteActual = laboratoriosFarmacologicosCachePatientId === patientId
+    ? laboratoriosFarmacologicosCache
+    : [];
+  const contexto = {
     ...datos,
-    laboratorios: [...estudiosCache, ...laboratoriosExistentes]
+    laboratorios: [...estudiosPacienteActual, ...laboratoriosPacienteActual, ...laboratoriosExistentes],
+    fuentesContextoFarmacologicoNoDisponibles: [...fuentesContextoFarmacologicoNoDisponibles]
   };
+  return {
+    ...contexto,
+    parametrosClinicosResueltos: resolverParametrosClinicosPaciente(contexto)
+  };
+}
+
+function claveLaboratorioFarmacologico(registro = {}) {
+  const analito = registro.analyteId || registro.analito || registro.analyte || registro.nombreAnalito || registro.parametro || registro.nombre;
+  const valor = registro.valor ?? registro.value ?? registro.valorLaboratorio ?? registro.resultadoLaboratorio ?? registro.resultado;
+  if (!analito || valor === null || valor === undefined || valor === "") {
+    return `${registro._sourceRoot || "origen"}:${registro.id || "sin-id"}`;
+  }
+  const normalizar = (dato) => String(dato ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+  const fecha = registro.fecha || registro.measuredAt || registro.fechaResultado || registro.createdAt || registro.updatedAt || "";
+  return [analito, valor, registro.unidad || registro.unit, fecha].map(normalizar).join("|");
+}
+
+async function leerLaboratoriosFarmacologicosDesdeRaiz(patientId, sourceRoot) {
+  const fuente = `${sourceRoot}/laboratorios`;
+  try {
+    const snap = await getDocs(collection(db, sourceRoot, patientId, "laboratorios"));
+    fuentesContextoFarmacologicoNoDisponibles.delete(fuente);
+    return snap.docs.map((documento) => ({
+      id: documento.id,
+      ...documento.data(),
+      _sourceRoot: sourceRoot
+    }));
+  } catch (error) {
+    fuentesContextoFarmacologicoNoDisponibles.add(fuente);
+    console.warn(`[Parámetros] No se pudo leer la colección ${sourceRoot}/laboratorios.`, error?.code || error?.name || "unknown");
+    return [];
+  }
+}
+
+async function leerEstudiosFarmacologicosDesdeRaiz(patientId, sourceRoot) {
+  const fuente = `${sourceRoot}/estudios`;
+  try {
+    const snap = await getDocs(collection(db, sourceRoot, patientId, "estudios"));
+    fuentesContextoFarmacologicoNoDisponibles.delete(fuente);
+    return snap.docs.map((documento) => ({
+      id: documento.id,
+      ...documento.data(),
+      _sourceRoot: sourceRoot
+    }));
+  } catch (error) {
+    fuentesContextoFarmacologicoNoDisponibles.add(fuente);
+    console.warn(`[Parámetros] No se pudo leer la colección ${sourceRoot}/estudios.`, error?.code || error?.name || "unknown");
+    return [];
+  }
+}
+
+async function asegurarLaboratoriosFarmacologicosPaciente({ forzar = false } = {}) {
+  if (modoNuevoPacienteDraft()) {
+    laboratoriosFarmacologicosCache = [];
+    laboratoriosFarmacologicosCachePatientId = String(uidPaciente || "");
+    laboratoriosFarmacologicosCacheCargado = true;
+    return laboratoriosFarmacologicosCache;
+  }
+  const patientId = String(uidPaciente || "").trim();
+  if (!patientId) return [];
+  if (!forzar && laboratoriosFarmacologicosCacheCargado && laboratoriosFarmacologicosCachePatientId === patientId) {
+    return laboratoriosFarmacologicosCache;
+  }
+  const [usuarios, pacientes] = await Promise.all([
+    leerLaboratoriosFarmacologicosDesdeRaiz(patientId, "usuarios"),
+    leerLaboratoriosFarmacologicosDesdeRaiz(patientId, "pacientes")
+  ]);
+  if (patientId !== String(uidPaciente || "").trim()) return laboratoriosFarmacologicosCache;
+  const unicos = new Map();
+  [...usuarios, ...pacientes].forEach((registro) => {
+    const clave = claveLaboratorioFarmacologico(registro);
+    if (!unicos.has(clave)) unicos.set(clave, registro);
+  });
+  laboratoriosFarmacologicosCache = [...unicos.values()];
+  laboratoriosFarmacologicosCachePatientId = patientId;
+  laboratoriosFarmacologicosCacheCargado = true;
+  return laboratoriosFarmacologicosCache;
+}
+
+async function asegurarEstudiosFarmacologicosPaciente({ forzar = false } = {}) {
+  if (modoNuevoPacienteDraft()) {
+    estudiosCache = [];
+    estudiosCachePatientId = String(uidPaciente || "");
+    estudiosFarmacologicosAdicionalesCache = [];
+    estudiosFarmacologicosAdicionalesPatientId = String(uidPaciente || "");
+    return estudiosCache;
+  }
+  const patientId = String(uidPaciente || "").trim();
+  if (!patientId) return [];
+  if (!forzar && estudiosCachePatientId === patientId) return estudiosCache;
+  try {
+    const [registros, registrosAdicionales] = await Promise.all([
+      listarEstudios(patientId)
+        .then((items) => {
+          fuentesContextoFarmacologicoNoDisponibles.delete("usuarios/estudios");
+          return items;
+        })
+        .catch((error) => {
+          fuentesContextoFarmacologicoNoDisponibles.add("usuarios/estudios");
+          console.warn("[Parámetros] No se pudo leer la colección usuarios/estudios.", error?.code || error?.name || "unknown");
+          return [];
+        }),
+      leerEstudiosFarmacologicosDesdeRaiz(patientId, "pacientes")
+    ]);
+    if (patientId !== String(uidPaciente || "").trim()) return estudiosCache;
+    estudiosCache = Array.isArray(registros) ? registros : [];
+    estudiosCachePatientId = patientId;
+    const clavesPrincipales = new Set(estudiosCache.map(claveLaboratorioFarmacologico));
+    estudiosFarmacologicosAdicionalesCache = (Array.isArray(registrosAdicionales) ? registrosAdicionales : [])
+      .filter((registro) => !clavesPrincipales.has(claveLaboratorioFarmacologico(registro)));
+    estudiosFarmacologicosAdicionalesPatientId = patientId;
+    return estudiosCache;
+  } catch (error) {
+    fuentesContextoFarmacologicoNoDisponibles.add("usuarios/estudios");
+    if (patientId === String(uidPaciente || "").trim()) {
+      estudiosCache = [];
+      estudiosCachePatientId = patientId;
+      estudiosFarmacologicosAdicionalesCache = [];
+      estudiosFarmacologicosAdicionalesPatientId = patientId;
+    }
+    console.warn("[Parámetros] No se pudieron cargar los estudios para el contexto farmacológico.", error?.code || error?.name || "unknown");
+    return [];
+  }
+}
+
+function fechaParametroParaInput(valor = "") {
+  if (!valor) return "";
+  const fecha = typeof valor?.toDate === "function" ? valor.toDate() : new Date(valor);
+  return Number.isNaN(fecha.getTime()) ? String(valor).slice(0, 10) : fecha.toISOString().slice(0, 10);
+}
+
+function etiquetaEstadoParametro(estado = "") {
+  return ({
+    bajo: "Bajo según intervalo registrado",
+    alto: "Alto según intervalo registrado",
+    en_rango_registrado: "Dentro del intervalo registrado",
+    no_clasificado: "Sin clasificación: falta intervalo de referencia"
+  })[estado] || "Sin clasificación";
+}
+
+function etiquetaOrigenParametro(registro = {}) {
+  const origen = String(registro.origen || "");
+  if (origen.startsWith("campo:parametrosClinicos")) return "Registro canónico del expediente";
+  if (origen.startsWith("laboratorio_estructurado")) return "Resultado estructurado de estudios";
+  if (origen.startsWith("campo:")) return "Dato compatible existente";
+  return origen || "Sin resultado registrado";
+}
+
+function opcionesUnidadParametro(definicion, unidadActual = "") {
+  const unidades = [...new Set([...(definicion.unidades || []), unidadActual].filter(Boolean))];
+  return unidades.map((unidad) => `
+    <option value="${escaparHTML(unidad)}" ${unidad === unidadActual ? "selected" : ""}>${escaparHTML(unidad)}</option>
+  `).join("");
+}
+
+function renderizarCampoParametroPaciente(definicion, registro = null) {
+  const unidad = registro?.unidad || definicion.unidad || "";
+  const estado = registro ? etiquetaEstadoParametro(registro.estado) : "Sin resultado registrado";
+  return `
+    <article class="parametro-paciente-card" data-parametro-card="${escaparHTML(definicion.id)}" data-parametro-editado="false">
+      <header>
+        <div>
+          <h4>${escaparHTML(definicion.etiqueta)}</h4>
+          <p>Muestra: ${escaparHTML(registro?.muestra || definicion.muestra || "no especificada")}</p>
+        </div>
+        <span class="parametro-paciente-origen">${escaparHTML(etiquetaOrigenParametro(registro || {}))}</span>
+      </header>
+      <div class="parametro-paciente-campos">
+        <label>
+          Resultado
+          <input type="number" min="0" step="${escaparHTML(definicion.step || "any")}" inputmode="decimal"
+            data-parametro-id="${escaparHTML(definicion.id)}" data-parametro-campo="valor"
+            value="${registro ? escaparHTML(registro.valor) : ""}" aria-label="Resultado de ${escaparHTML(definicion.etiqueta)}">
+        </label>
+        <label>
+          Unidad
+          <select data-parametro-id="${escaparHTML(definicion.id)}" data-parametro-campo="unidad"
+            aria-label="Unidad de ${escaparHTML(definicion.etiqueta)}">
+            ${opcionesUnidadParametro(definicion, unidad)}
+          </select>
+        </label>
+        <label>
+          Intervalo de referencia
+          <input type="text" data-parametro-id="${escaparHTML(definicion.id)}" data-parametro-campo="rangoReferencia"
+            value="${escaparHTML(registro?.rangoReferencia || "")}" placeholder="Ej. 3.5 - 5.0"
+            aria-label="Intervalo de referencia de ${escaparHTML(definicion.etiqueta)}">
+        </label>
+        <label>
+          Fecha de muestra
+          <input type="date" data-parametro-id="${escaparHTML(definicion.id)}" data-parametro-campo="fecha"
+            value="${escaparHTML(fechaParametroParaInput(registro?.fecha))}"
+            aria-label="Fecha de muestra de ${escaparHTML(definicion.etiqueta)}">
+        </label>
+      </div>
+      <details class="parametro-paciente-trazabilidad">
+        <summary>Trazabilidad del resultado</summary>
+        <div class="parametro-paciente-campos">
+          <label>
+            Muestra
+            <input type="text" data-parametro-id="${escaparHTML(definicion.id)}" data-parametro-campo="muestra"
+              value="${escaparHTML(registro?.muestra || definicion.muestra || "")}" placeholder="Suero, plasma u orina">
+          </label>
+          <label>
+            Estado del resultado
+            <select data-parametro-id="${escaparHTML(definicion.id)}" data-parametro-campo="estadoResultado">
+              ${["final", "preliminar", "corregido"].map((estadoResultado) => `
+                <option value="${estadoResultado}" ${(registro?.estadoResultado || "final") === estadoResultado ? "selected" : ""}>${escaparHTML(estadoResultado)}</option>
+              `).join("")}
+            </select>
+          </label>
+          <label>
+            Método (opcional)
+            <input type="text" data-parametro-id="${escaparHTML(definicion.id)}" data-parametro-campo="metodo"
+              value="${escaparHTML(registro?.metodo || "")}" placeholder="Método del laboratorio">
+          </label>
+          <label>
+            Fórmula reportada (opcional)
+            <input type="text" data-parametro-id="${escaparHTML(definicion.id)}" data-parametro-campo="formula"
+              value="${escaparHTML(registro?.formula || "")}" placeholder="Ej. CKD-EPI">
+          </label>
+          <label>
+            Versión de fórmula (opcional)
+            <input type="text" data-parametro-id="${escaparHTML(definicion.id)}" data-parametro-campo="versionFormula"
+              value="${escaparHTML(registro?.versionFormula || "")}" placeholder="Versión informada por el laboratorio">
+          </label>
+          <label class="parametro-paciente-derivado">
+            <input type="checkbox" data-parametro-id="${escaparHTML(definicion.id)}" data-parametro-campo="derivado"
+              ${registro?.derivado || definicion.id === "eGFR" ? "checked" : ""}>
+            <span>Resultado derivado o estimado por la fuente</span>
+          </label>
+        </div>
+      </details>
+      <footer>
+        <span data-parametro-estado="${escaparHTML(definicion.id)}">${escaparHTML(estado)}</span>
+        ${registro?.derivado || definicion.id === "eGFR" ? '<strong class="parametro-paciente-badge-derivado">Derivado / estimado</strong>' : ""}
+      </footer>
+    </article>
+  `;
+}
+
+function controlParametroPaciente(parametroId, campo) {
+  return document.querySelector(`#parametrosPacienteFormulario [data-parametro-id="${parametroId}"][data-parametro-campo="${campo}"]`);
+}
+
+function entradaParametroDesdeFormulario(definicion) {
+  const controlValor = controlParametroPaciente(definicion.id, "valor");
+  const valor = String(controlValor?.value || "").trim();
+  if (!valor) return null;
+  return {
+    valor,
+    unidad: controlParametroPaciente(definicion.id, "unidad")?.value || definicion.unidad,
+    rangoReferencia: controlParametroPaciente(definicion.id, "rangoReferencia")?.value || "",
+    fecha: controlParametroPaciente(definicion.id, "fecha")?.value || "",
+    origen: "captura_manual",
+    procedencia: "expediente_paciente",
+    muestra: controlParametroPaciente(definicion.id, "muestra")?.value || definicion.muestra || "",
+    metodo: controlParametroPaciente(definicion.id, "metodo")?.value || "",
+    formula: controlParametroPaciente(definicion.id, "formula")?.value || "",
+    versionFormula: controlParametroPaciente(definicion.id, "versionFormula")?.value || "",
+    estadoResultado: controlParametroPaciente(definicion.id, "estadoResultado")?.value || "final",
+    derivado: Boolean(controlParametroPaciente(definicion.id, "derivado")?.checked)
+  };
+}
+
+function construirVistaParametrosDesdeFormulario() {
+  const entradas = {};
+  DEFINICIONES_PARAMETROS_CLINICOS.forEach((definicion) => {
+    const entrada = entradaParametroDesdeFormulario(definicion);
+    if (entrada) entradas[definicion.id] = entrada;
+  });
+  const registro = construirRegistroParametrosClinicos(entradas, {
+    origen: "vista_previa_expediente",
+    actualizadoEn: new Date().toISOString()
+  });
+  return resolverParametrosClinicosPaciente({ parametrosClinicos: registro });
+}
+
+function renderizarResultadosParametrosPaciente(resultado) {
+  const derivados = document.getElementById("parametrosPacienteDerivados");
+  const clasificacion = document.getElementById("parametrosPacienteClasificacion");
+  if (!derivados || !clasificacion) return;
+
+  const listaDerivados = Object.values(resultado.derivados || {});
+  derivados.innerHTML = listaDerivados.length ? `
+    <dl class="parametros-paciente-lista-derivados">
+      ${listaDerivados.map((item) => `
+        <div>
+          <dt>${escaparHTML(item.etiqueta)} <span class="parametro-paciente-badge-derivado">Derivado</span></dt>
+          <dd>${escaparHTML(item.valor)}${item.unidad ? ` ${escaparHTML(item.unidad)}` : ""}</dd>
+          <small>${escaparHTML(item.formula || "Cálculo derivado")}; no se almacena como resultado medido.</small>
+        </div>
+      `).join("")}
+    </dl>
+  ` : "Sin valores suficientes para calcular globulinas o relación A:G.";
+
+  const categorias = [
+    resultado.categorias?.eGFR ? `eGFR ${resultado.categorias.eGFR.id}: ${resultado.categorias.eGFR.etiqueta}` : "",
+    resultado.categorias?.uacr ? `UACR ${resultado.categorias.uacr.id}: ${resultado.categorias.uacr.etiqueta}` : ""
+  ].filter(Boolean);
+  const registros = resultado.lista || [];
+  const hallazgos = resultado.hallazgos || [];
+  clasificacion.innerHTML = registros.length ? `
+    ${categorias.length ? `<div class="parametros-paciente-categorias">${categorias.map((item) => `<span>${escaparHTML(item)}</span>`).join("")}</div>` : ""}
+    <ul class="parametros-paciente-lista-revision">
+      ${registros.map((registro) => `
+        <li class="estado-${escaparHTML(registro.estado)}">
+          <strong>${escaparHTML(registro.etiqueta)}</strong>
+          <span>${escaparHTML(registro.valor)} ${escaparHTML(registro.unidad || "")}</span>
+          <small>${escaparHTML(etiquetaEstadoParametro(registro.estado))}${registro.rangoReferencia ? ` · Intervalo ${escaparHTML(registro.rangoReferencia)}` : ""}</small>
+        </li>
+      `).join("")}
+    </ul>
+    ${hallazgos.length ? `
+      <div class="parametros-paciente-hallazgos">
+        <strong>Requiere revisión</strong>
+        <ul>${hallazgos.map((hallazgo) => `<li>${escaparHTML(hallazgo.titulo)}${hallazgo.recomendacion ? `: ${escaparHTML(hallazgo.recomendacion)}` : ""}</li>`).join("")}</ul>
+      </div>
+    ` : ""}
+    <p class="texto-suave parametros-paciente-nota-clinica">Una medición aislada no confirma enfermedad renal crónica. Interpreta eGFR, albuminuria, tendencia y contexto clínico en conjunto.</p>
+  ` : "Sin parámetros registrados.";
+
+  DEFINICIONES_PARAMETROS_CLINICOS.forEach((definicion) => {
+    const estado = document.querySelector(`[data-parametro-estado="${definicion.id}"]`);
+    const registro = resultado.porId?.[definicion.id];
+    if (estado) estado.textContent = registro ? etiquetaEstadoParametro(registro.estado) : "Sin resultado registrado";
+  });
+}
+
+function actualizarVistaPreviaParametrosPaciente() {
+  renderizarResultadosParametrosPaciente(construirVistaParametrosDesdeFormulario());
+}
+
+function marcarParametroPacienteEditado(parametroId) {
+  const tarjeta = document.querySelector(`[data-parametro-card="${parametroId}"]`);
+  if (tarjeta) tarjeta.dataset.parametroEditado = "true";
+  const estado = document.getElementById("estadoParametrosPaciente");
+  if (estado && !parametrosPacienteGuardando) estado.textContent = "Cambios sin guardar";
+  actualizarVistaPreviaParametrosPaciente();
+}
+
+function puedeEditarParametrosPaciente() {
+  return rolUsuarioActual !== "paciente";
+}
+
+function aplicarEdicionParametrosPaciente() {
+  const formulario = document.getElementById("formParametrosPaciente");
+  if (!formulario) return;
+  const editable = puedeEditarParametrosPaciente() && !parametrosPacienteGuardando;
+  formulario.querySelectorAll("input, select, button").forEach((control) => {
+    control.disabled = !editable;
+  });
+  const boton = document.getElementById("guardarParametrosPaciente");
+  if (boton) boton.hidden = !puedeEditarParametrosPaciente();
+}
+
+function renderizarFormularioParametrosPaciente(datos = datosPacienteActual || {}, { forzar = false } = {}) {
+  const contenedor = document.getElementById("parametrosPacienteFormulario");
+  if (!contenedor) return;
+  const pacienteId = String(uidPaciente || "paciente-actual");
+  if (!forzar && parametrosPacienteFormularioPacienteId === pacienteId && contenedor.childElementCount) return;
+
+  const resultado = resolverParametrosClinicosPaciente(construirContextoFarmacologicoPaciente(datos));
+  contenedor.innerHTML = GRUPOS_PARAMETROS_CLINICOS.map((grupo) => {
+    const definiciones = DEFINICIONES_PARAMETROS_CLINICOS.filter((definicion) => definicion.grupo === grupo.id);
+    return `
+      <fieldset class="parametros-paciente-grupo">
+        <legend>${escaparHTML(grupo.etiqueta)}</legend>
+        <p>${escaparHTML(grupo.descripcion)}</p>
+        <div class="parametros-paciente-grid">
+          ${definiciones.map((definicion) => renderizarCampoParametroPaciente(definicion, resultado.porId?.[definicion.id] || null)).join("")}
+        </div>
+      </fieldset>
+    `;
+  }).join("");
+  parametrosPacienteFormularioPacienteId = pacienteId;
+  contenedor.querySelectorAll("[data-parametro-id][data-parametro-campo]").forEach((control) => {
+    control.addEventListener("input", () => marcarParametroPacienteEditado(control.dataset.parametroId));
+    control.addEventListener("change", () => marcarParametroPacienteEditado(control.dataset.parametroId));
+  });
+  renderizarResultadosParametrosPaciente(resultado);
+  const estado = document.getElementById("estadoParametrosPaciente");
+  if (estado) estado.textContent = puedeEditarParametrosPaciente() ? "" : "Vista de solo lectura";
+  aplicarEdicionParametrosPaciente();
+}
+
+async function guardarParametrosClinicosPaciente(evento) {
+  evento?.preventDefault();
+  if (parametrosPacienteGuardando || !puedeEditarParametrosPaciente()) return;
+  const formulario = document.getElementById("formParametrosPaciente");
+  if (!formulario?.reportValidity()) return;
+  const tarjetasEditadas = [...document.querySelectorAll('[data-parametro-card][data-parametro-editado="true"]')];
+  const estado = document.getElementById("estadoParametrosPaciente");
+  if (!tarjetasEditadas.length) {
+    if (estado) estado.textContent = "No hay cambios por guardar";
+    return;
+  }
+
+  const previo = datosPacienteActual?.parametrosClinicos && typeof datosPacienteActual.parametrosClinicos === "object"
+    ? datosPacienteActual.parametrosClinicos
+    : {};
+  const valores = { ...(previo.valores || {}) };
+  const idsEditados = new Set(tarjetasEditadas.map((tarjeta) => tarjeta.dataset.parametroCard));
+  DEFINICIONES_PARAMETROS_CLINICOS.forEach((definicion) => {
+    if (!idsEditados.has(definicion.id)) return;
+    const entrada = entradaParametroDesdeFormulario(definicion);
+    if (!entrada) {
+      delete valores[definicion.id];
+      return;
+    }
+    const registroCampo = construirRegistroParametrosClinicos({ [definicion.id]: entrada }, {
+      origen: "captura_manual",
+      actualizadoEn: new Date().toISOString()
+    });
+    valores[definicion.id] = registroCampo.valores[definicion.id];
+  });
+
+  const actualizadoEn = new Date().toISOString();
+  const cabecera = construirRegistroParametrosClinicos({}, {
+    origen: "expediente_paciente",
+    actualizadoEn
+  });
+  const { derivados: _derivadosObsoletos, valores: _valoresPrevios, ...metadataPrevia } = previo;
+  const parametrosClinicos = {
+    ...metadataPrevia,
+    ...cabecera,
+    fechaMuestra: cabecera.fechaMuestra || previo.fechaMuestra || "",
+    valores,
+    actualizadoPorUid: auth.currentUser?.uid || "",
+    actualizadoPorRol: rolUsuarioActual || ""
+  };
+
+  parametrosPacienteGuardando = true;
+  if (estado) estado.textContent = "Guardando…";
+  aplicarEdicionParametrosPaciente();
+  try {
+    if (modoNuevoPacienteDraft()) {
+      const draft = asegurarEstructuraDraftClinico();
+      draft.datosPersonales.parametrosClinicos = parametrosClinicos;
+    } else {
+      await actualizarUsuario(uidPaciente, { parametrosClinicos });
+      await registrarAccionExpediente({
+        accion: "actualizar_parametros_clinicos",
+        descripcion: "Se actualizaron parámetros clínicos estructurados del expediente.",
+        detalles: {
+          versionEsquema: parametrosClinicos.versionEsquema,
+          parametrosModificados: idsEditados.size
+        }
+      }).catch((errorAuditoria) => {
+        console.warn("Los parámetros se guardaron, pero no se pudo registrar la auditoría.", errorAuditoria);
+      });
+    }
+    datosPacienteActual = { ...(datosPacienteActual || {}), parametrosClinicos };
+    parametrosPacienteFormularioPacienteId = "";
+    renderizarFormularioParametrosPaciente(datosPacienteActual, { forzar: true });
+    if (estado) estado.textContent = "Parámetros guardados";
+  } catch (error) {
+    console.error("No se pudieron guardar los parámetros clínicos.", error);
+    if (estado) estado.textContent = "No fue posible guardar los parámetros";
+  } finally {
+    parametrosPacienteGuardando = false;
+    aplicarEdicionParametrosPaciente();
+  }
 }
 
 function ponerPanelApuntesPacienteOcupado(ocupado) {
@@ -2652,6 +3132,7 @@ function ocultarSecciones() {
     "seccionIndicaciones",
     "seccionReceta",
     "seccionEstudios",
+    "seccionParametrosPaciente",
     "seccionNotasRapidas"
   ].forEach((id) => {
     const seccion = document.getElementById(id);
@@ -3507,6 +3988,10 @@ window.mostrarTratamiento = async function() {
   document.getElementById("seccionTratamiento").style.display = "block";
   document.getElementById("seccionIndicaciones").style.display = "block";
   mostrarAvisoFarmacologiaEnfermeriaSiCorresponde();
+  await Promise.all([
+    asegurarLaboratoriosFarmacologicosPaciente(),
+    asegurarEstudiosFarmacologicosPaciente()
+  ]);
   await cargarTratamientosPaciente();
   renderizarCatalogosIndicaciones();
   await cargarCatalogoMedicosFirmasIndicaciones();
@@ -3595,6 +4080,18 @@ window.mostrarEstudios = async function() {
   renderizarListaSolicitudEstudios();
   actualizarPreviewSolicitudEstudios();
   await cargarEstudiosPaciente();
+};
+
+window.mostrarParametrosPaciente = async function() {
+  ocultarSecciones();
+  const seccion = document.getElementById("seccionParametrosPaciente");
+  if (seccion) seccion.style.display = "block";
+  await Promise.all([
+    asegurarLaboratoriosFarmacologicosPaciente({ forzar: true }),
+    asegurarEstudiosFarmacologicosPaciente({ forzar: true })
+  ]);
+  parametrosPacienteFormularioPacienteId = "";
+  renderizarFormularioParametrosPaciente(datosPacienteActual || {});
 };
 
 window.mostrarNotasRapidas = async function() {
@@ -6996,9 +7493,35 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
   if (!contenedor) return;
 
   const interacciones = detectarInteraccionesFarmacologicas(medicamentos);
-  const evaluacionClinica = detectarAlertasClinicasMedicamentos(medicamentos, datosPacienteActual || {});
+  const evaluacionClinica = detectarAlertasClinicasMedicamentos(
+    medicamentos,
+    construirContextoFarmacologicoPaciente(datosPacienteActual || {})
+  );
   const alertasClinicas = evaluacionClinica.alertas || [];
+  const cobertura = evaluacionClinica.cobertura || {};
+  const coberturaIncompleta = evaluacionClinica.indicador?.estado === "datos_insuficientes"
+    || Number(cobertura.fuentePendiente || 0) > 0
+    || Number(cobertura.sinReglaIngrediente || 0) > 0
+    || Number(cobertura.fuentesContextoNoDisponibles || 0) > 0
+    || Number(cobertura.paresMedicamentoMedicamentoSinRegla || 0) > 0
+    || Number(cobertura.paresMedicamentoDiagnosticoSinRegla || 0) > 0
+    || Number(cobertura.paresMedicamentoParametroSinRegla || 0) > 0
+    || Number(cobertura.cantidadParametrosEsperadosAusentes || 0) > 0
+    || Number(cobertura.hallazgosParametrosNoInterpretables || 0) > 0;
+  const mensajeSinAlertasContextuales = coberturaIncompleta
+    ? "No es posible concluir ausencia de riesgo: faltan fuentes o reglas para parte de la selección."
+    : "No se detectaron alertas clínicas contextuales con las reglas locales actuales.";
   const tituloOrigen = origen === "indicaciones" ? "medicamentos activos vinculados a indicaciones" : "tratamientos activos";
+  const parametrosEvaluados = evaluacionClinica.parametrosClinicos?.lista || [];
+  const detallesCobertura = [
+    Number(cobertura.fuentesContextoNoDisponibles || 0) > 0 ? `Fuentes no disponibles: ${(cobertura.detalleFuentesContextoNoDisponibles || []).join(", ")}` : "",
+    Number(cobertura.cantidadParametrosEsperadosAusentes || 0) > 0
+      ? `Vigilancia sin dato: ${(cobertura.parametrosEsperadosAusentes || []).map((item) => `${item.medicamento}: ${item.etiqueta}`).join(", ")}`
+      : "",
+    Number(cobertura.paresMedicamentoMedicamentoSinRegla || 0) > 0 ? `${cobertura.paresMedicamentoMedicamentoSinRegla} par(es) medicamento–medicamento sin regla` : "",
+    Number(cobertura.paresMedicamentoDiagnosticoSinRegla || 0) > 0 ? `${cobertura.paresMedicamentoDiagnosticoSinRegla} par(es) medicamento–diagnóstico sin regla` : "",
+    Number(cobertura.paresMedicamentoParametroSinRegla || 0) > 0 ? `${cobertura.paresMedicamentoParametroSinRegla} par(es) medicamento–parámetro sin regla` : ""
+  ].filter(Boolean);
   const listaMedicamentos = medicamentos.length
     ? medicamentos.map((med) => `
       <li>
@@ -7026,8 +7549,15 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
     <p class="texto-suave">Revisin orientativa basada en los ${escaparHTML(tituloOrigen)}. Analizado a partir de ${escaparHTML(String(medicamentos.length))} medicamentos activos. No sustituye el juicio clnico ni la revisin de fuentes farmacolgicas institucionales.</p>
     <article class="interaccion-card severidad-${escaparHTML(evaluacionClinica.indicador?.clase || "ok")}">
           <strong>Indicador contextual: ${escaparHTML(evaluacionClinica.indicador?.etiqueta || "Sin alerta encontrada con la base actual")}</strong>
-      <p>${alertasClinicas.length ? "Se detectaron alertas por diagnsticos, comorbilidades, interacciones o carga acumulativa." : "No se detectaron alertas clnicas contextuales con las reglas locales actuales."}</p>
+      <p>${alertasClinicas.length ? "Se detectaron alertas por diagnósticos, comorbilidades, parámetros, interacciones o carga acumulativa." : escaparHTML(mensajeSinAlertasContextuales)}</p>
     </article>
+    ${detallesCobertura.length ? `
+      <article class="interaccion-card severidad-precaucion">
+        <strong>Cobertura clínica incompleta</strong>
+        <p>${escaparHTML(detallesCobertura.join("; "))}.</p>
+        <small>Un dato o una regla ausente no demuestra ausencia de riesgo.</small>
+      </article>
+    ` : ""}
     <div class="interacciones-medicamentos-revisados">
       <strong>Medicamentos revisados</strong>
       <ul>${listaMedicamentos}</ul>
@@ -7036,6 +7566,17 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
       <strong>Diagnosticos usados para contexto clinico</strong>
       <small>Categorias detectadas: ${categoriasDiagnosticas}</small>
       <ul>${contextoDiagnostico}</ul>
+    </div>
+    <div class="interacciones-medicamentos-revisados">
+      <strong>Parámetros clínicos usados para contexto farmacológico</strong>
+      ${parametrosEvaluados.length ? `
+        <ul>${parametrosEvaluados.map((parametro) => `
+          <li>
+            ${escaparHTML(parametro.etiqueta)}: ${escaparHTML(parametro.valor)} ${escaparHTML(parametro.unidad || "")}
+            <small>${escaparHTML(etiquetaEstadoParametro(parametro.estado))}${parametro.rangoReferencia ? ` · Intervalo ${escaparHTML(parametro.rangoReferencia)}` : ""}${parametro.estadoResultado && !["final", "validado", "definitivo", "completo", "completed"].includes(String(parametro.estadoResultado).toLowerCase()) ? ` · Resultado ${escaparHTML(parametro.estadoResultado)}` : ""}</small>
+          </li>
+        `).join("")}</ul>
+      ` : "<small>Sin creatinina, eGFR, UACR, electrolitos o proteínas séricas registrados.</small>"}
     </div>
     ${alertasClinicas.length ? `
       <div class="interacciones-lista">
@@ -7051,6 +7592,8 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
             ${alerta.diagnosticos?.length ? `<small>Contexto: ${alerta.diagnosticos.map((dx) => obtenerTextoDiagnosticoInteracciones(dx)).filter(Boolean).map((texto) => escaparHTML(texto)).join(", ")}</small>` : ""}
             <p>${escaparHTML(alerta.efecto)}</p>
             <small>${escaparHTML(alerta.recomendacion)}</small>
+            ${alerta.datosParametros?.length ? `<small>Parámetros implicados: ${alerta.datosParametros.map((parametro) => `${escaparHTML(parametro.etiqueta || parametro.id)} ${escaparHTML(parametro.valor)} ${escaparHTML(parametro.unidad || "")}`).join("; ")}</small>` : ""}
+            ${alerta.fuentes?.length ? `<small>Fuente: ${alerta.fuentes.map((fuente) => escaparHTML(fuente)).join(" · ")}</small>` : ""}
             ${alerta.requiereJustificacion ? "<small>Requiere justificacin clnica si se decide continuar.</small>" : ""}
           </article>
         `).join("")}
@@ -7072,6 +7615,11 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
           </article>
         `).join("")}
       </div>
+    ` : coberturaIncompleta ? `
+      <article class="interaccion-card severidad-precaucion">
+        <strong>Sin regla cargada para parte de la selección.</strong>
+        <p>No se muestra un cero concluyente. Revisa las fuentes pendientes y los pares medicamento–medicamento, medicamento–diagnóstico o medicamento–parámetro sin cobertura antes de decidir.</p>
+      </article>
     ` : `
       <article class="interaccion-card">
         <strong>Sin interacciones relevantes detectadas con las reglas locales.</strong>
@@ -7096,7 +7644,11 @@ async function abrirInteraccionesFarmacologicas(origen = "tratamiento") {
   if (contenedor) contenedor.innerHTML = "<p>Cargando revision de interacciones...</p>";
 
   try {
-    await asegurarTratamientosCache();
+    await Promise.all([
+      asegurarTratamientosCache(),
+      asegurarLaboratoriosFarmacologicosPaciente(),
+      asegurarEstudiosFarmacologicosPaciente()
+    ]);
   } catch (error) {
     console.error("[Interacciones] No se pudo cargar el tratamiento vigente:", error);
     cerrarInteraccionesFarmacologicas();
@@ -7111,17 +7663,9 @@ async function abrirInteraccionesFarmacologicas(origen = "tratamiento") {
     ? tratamientosSeleccionadosIndicacionesParaInteracciones()
     : tratamientosActivosParaInteracciones();
   console.debug("[Interacciones] Contexto de análisis", {
-    patientId: patientIdAlIniciar,
     totalTratamientosCargados: tratamientosCache.length,
     totalVigentes: obtenerTratamientosVigentesUnicos().length,
-    clavesMedicamentos: obtenerTratamientosVigentesUnicos().map(obtenerClaveMedicamentoTratamiento)
-  });
-  console.debug("[Interacciones] Medicamentos analizados", {
-    patientId: patientIdAlIniciar,
-    medicamentos: medicamentos.map((medicamento) => ({
-      id: medicamento.id || null,
-      nombreNormalizado: normalizarTextoBusqueda(medicamento.medicamento || "")
-    }))
+    totalAnalizados: medicamentos.length
   });
   renderizarInteraccionesFarmacologicas(medicamentos, origen);
 }
@@ -7919,6 +8463,10 @@ async function guardarTratamientoPaciente() {
     return;
   }
   if (!validarCambioTratamiento(datos)) return;
+  await Promise.all([
+    asegurarLaboratoriosFarmacologicosPaciente(),
+    asegurarEstudiosFarmacologicosPaciente()
+  ]);
   if (datos.cambioIndicacion === "se_suspende") {
     const continuarSuspension = confirm("Esta indicacion marcara el medicamento como suspendido. El registro permanecera en el historial. Deseas continuar?");
     if (!continuarSuspension) return;
@@ -7945,7 +8493,7 @@ async function guardarTratamientoPaciente() {
     : [...medicamentosPrevios, { ...datos, medicamento: datos.medicamento, indicacion: formatearIndicacionTratamiento(datos, false), dosisDia: datos.dosisTotalDia }];
   const evaluacionNuevo = detectarAlertasClinicasMedicamentos(
     medicamentosParaEvaluacion,
-    datosPacienteActual || {}
+    construirContextoFarmacologicoPaciente(datosPacienteActual || {})
   );
   const alertasImportantes = (evaluacionNuevo.alertas || []).filter((alerta) => (alerta.prioridad || 0) >= 4);
   if (alertasImportantes.length) {
@@ -8131,12 +8679,31 @@ function indicadorSeguridadTratamiento(tratamiento) {
       indicacion: formatearIndicacionTratamiento(tratamiento, false),
       dosisDia: tratamiento.dosisTotalDia || calcularDosisTotalDiaTratamiento(tratamiento).texto || ""
     }];
-  const evaluacion = detectarAlertasClinicasMedicamentos(lista, datosPacienteActual || {});
+  const evaluacion = detectarAlertasClinicasMedicamentos(
+    lista,
+    construirContextoFarmacologicoPaciente(datosPacienteActual || {})
+  );
   const nombre = (tratamiento.medicamento || "").toLowerCase();
   const alertasRelacionadas = (evaluacion.alertas || []).filter((alerta) =>
     !alerta.medicamentos?.length || alerta.medicamentos.some((med) => String(med || "").toLowerCase().includes(nombre) || nombre.includes(String(med || "").toLowerCase()))
   );
-  return alertasRelacionadas.length ? evaluacion.indicador : { estado: "sin_alertas", etiqueta: "Sin alerta encontrada con la base actual", clase: "ok" };
+  if (alertasRelacionadas.length) return evaluacion.indicador;
+  const cobertura = evaluacion.cobertura || {};
+  const coberturaIncompleta = evaluacion.indicador?.estado === "datos_insuficientes" || [
+    cobertura.fuentePendiente,
+    cobertura.sinReglaIngrediente,
+    cobertura.fuentesContextoNoDisponibles,
+    cobertura.paresMedicamentoMedicamentoSinRegla,
+    cobertura.paresMedicamentoDiagnosticoSinRegla,
+    cobertura.paresMedicamentoParametroSinRegla,
+    cobertura.cantidadParametrosEsperadosAusentes,
+    cobertura.hallazgosParametrosNoInterpretables,
+    cobertura.diagnosticosSinCategoriaFarmacologica
+  ].some((valor) => Number(valor || 0) > 0);
+  if (coberturaIncompleta) {
+    return { estado: "datos_insuficientes", etiqueta: "Sin regla cargada para parte de la selección", clase: "precaucion" };
+  }
+  return { estado: "sin_alertas", etiqueta: "Sin alerta encontrada con la base actual", clase: "ok" };
 }
 
 function vincularAccionesTratamientos() {
@@ -9688,7 +10255,7 @@ async function cargarEstudiosPaciente() {
   contenedor.textContent = "Cargando estudios...";
 
   try {
-    estudiosCache = await listarEstudios(uidPaciente);
+    estudiosCache = await asegurarEstudiosFarmacologicosPaciente({ forzar: true });
     try {
       solicitudesImagenologiaCache = await listarSolicitudesImagenologia(uidPaciente);
     } catch (error) {
@@ -9950,6 +10517,7 @@ document.getElementById("diagnosticoCatalogo")?.addEventListener("change", () =>
 document.getElementById("agregarDiagnosticoManual")?.addEventListener("click", agregarDiagnosticoManualPaciente);
 document.getElementById("crearCarpetaPaciente")?.addEventListener("click", () => asignarCarpetaPorNombre(valorCampo("nuevaCarpetaPaciente")));
 document.getElementById("asignarCarpetaPaciente")?.addEventListener("click", () => asignarCarpetaPorNombre(valorCampo("selectorCarpetasPaciente")));
+document.getElementById("formParametrosPaciente")?.addEventListener("submit", guardarParametrosClinicosPaciente);
 document.getElementById("guardarNotaFlotante")?.addEventListener("click", guardarNotaFlotantePaciente);
 document.getElementById("nuevaNotaFlotante")?.addEventListener("click", limpiarNotaFlotantePaciente);
 document.getElementById("cerrarAvisoNombrePaciente")?.addEventListener("click", () => {

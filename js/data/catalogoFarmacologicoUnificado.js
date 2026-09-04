@@ -9,7 +9,7 @@
  * Corte de datos: 2026-08-18.
  */
 
-import { REGLAS_INTERACCIONES_CLINICAS } from "./reglasClinicasMedicamentosExtendidas.js?v=20260818-clinical-extraction-v1";
+import { REGLAS_INTERACCIONES_CLINICAS } from "./reglasClinicasMedicamentosExtendidas.js?v=20260904-parametros-colera-v2";
 import { integrarAntibioticosRegulatorios } from "./antibioticosRegulatorios.js?v=20260822-fda-cofepris-v1";
 
 export const CATALOGO_FARMACOLOGICO_METADATA = Object.freeze({
@@ -59344,7 +59344,7 @@ const CATALOGO_FARMACOLOGICO_PREEXISTENTE = [
       {
         "id": "olanzapina-forma-farmaceutica-especificada-10-mg",
         "texto": "frasco ampula IM de 10 mg",
-        "via": "oral",
+        "via": "intramuscular",
         "forma": "forma farmacéutica especificada",
         "concentracion": "10 mg",
         "fuente": "catalogo_cognicion_preexistente",
@@ -73645,6 +73645,7 @@ const CATALOGO_FARMACOLOGICO_PREEXISTENTE = [
         "tipo": "guía de prescripción / fuente secundaria especializada",
         "confiabilidad": "alta para transcripción de la monografía local; requiere contraste con etiquetado vigente para decisiones clínicas",
         "paginasPdf": [
+          663,
           664,
           665,
           666,
@@ -73655,7 +73656,7 @@ const CATALOGO_FARMACOLOGICO_PREEXISTENTE = [
           671,
           672
         ],
-        "paginasImpresas": "646-654",
+        "paginasImpresas": "645-654",
         "secciones": [
           "Therapeutics",
           "Side Effects",
@@ -73684,6 +73685,7 @@ const CATALOGO_FARMACOLOGICO_PREEXISTENTE = [
           "tipo": "guía de prescripción / fuente secundaria especializada",
           "confiabilidad": "alta para transcripción de la monografía local; requiere contraste con etiquetado vigente para decisiones clínicas",
           "paginasPdf": [
+            663,
             664,
             665,
             666,
@@ -73694,7 +73696,7 @@ const CATALOGO_FARMACOLOGICO_PREEXISTENTE = [
             671,
             672
           ],
-          "paginasImpresas": "646-654",
+          "paginasImpresas": "645-654",
           "secciones": [
             "Therapeutics",
             "Side Effects",
@@ -73706,7 +73708,7 @@ const CATALOGO_FARMACOLOGICO_PREEXISTENTE = [
           ]
         }
       ],
-      "paginaSeccion": "PDF 664, 665, 666, 667, 668, 669, 670, 671, 672 / impresa 646-654: Therapeutics, Side Effects, Dosing and Use, Pharmacokinetics, Drug Interactions, Special Populations, Microspheres",
+      "paginaSeccion": "PDF 663, 664, 665, 666, 667, 668, 669, 670, 671, 672 / impresa 645-654: Therapeutics, Side Effects, Dosing and Use, Pharmacokinetics, Drug Interactions, Special Populations, Microspheres",
       "confianza": "alta para los campos transcritos; la vida media se presenta exactamente como la reporta esta edición"
     },
     "farmacologia": {
@@ -73787,6 +73789,7 @@ const CATALOGO_FARMACOLOGICO_PREEXISTENTE = [
           "tipo": "guía de prescripción / fuente secundaria especializada",
           "confiabilidad": "alta para transcripción de la monografía local; requiere contraste con etiquetado vigente para decisiones clínicas",
           "paginasPdf": [
+            663,
             664,
             665,
             666,
@@ -73797,7 +73800,7 @@ const CATALOGO_FARMACOLOGICO_PREEXISTENTE = [
             671,
             672
           ],
-          "paginasImpresas": "646-654",
+          "paginasImpresas": "645-654",
           "secciones": [
             "Therapeutics",
             "Side Effects",
@@ -89373,7 +89376,7 @@ const CATALOGO_FARMACOLOGICO_PREEXISTENTE = [
       {
         "id": "ziprasidona-forma-farmaceutica-especificada-20-mg",
         "texto": "frasco ampula IM de 20 mg",
-        "via": "oral",
+        "via": "intramuscular",
         "forma": "forma farmacéutica especificada",
         "concentracion": "20 mg",
         "fuente": "catalogo_cognicion_preexistente",
@@ -91119,11 +91122,51 @@ export const MEDICAMENTOS_AGRUPADOS_POR_CLASE = Object.freeze([...CATALOGO_FARMA
   return mapa;
 }, new Map()).entries()].map(([grupo, medicamentos]) => Object.freeze({ grupo, medicamentos: Object.freeze(medicamentos.sort((a, b) => a.nombre.localeCompare(b.nombre, "es"))) })).sort((a, b) => a.grupo.localeCompare(b.grupo, "es")));
 
+function datoFarmacologicoDocumentado(valor) {
+  const valores = Array.isArray(valor) ? valor : [valor];
+  return valores.some((item) => {
+    if (item === null || item === undefined || item === "") return false;
+    const texto = typeof item === "object" ? JSON.stringify(item) : String(item);
+    return texto.trim() !== "" && !/(fuente pendiente|dato no encontrado|no evaluad|no especificad|consultar ficha|por confirmar)/i.test(texto);
+  });
+}
+
+function fichaCumpleEsquemaFarmacologicoMinimo(medicamento = {}) {
+  const farmacologia = medicamento.farmacologia || {};
+  const fuente = medicamento.fuenteClinica || {};
+  return medicamento.estadoFuente === "verificada_local" &&
+    datoFarmacologicoDocumentado(medicamento.id) &&
+    datoFarmacologicoDocumentado(medicamento.nombre) &&
+    datoFarmacologicoDocumentado(medicamento.clasePrincipal) &&
+    datoFarmacologicoDocumentado(farmacologia.subclase) &&
+    datoFarmacologicoDocumentado(medicamento.indications) &&
+    datoFarmacologicoDocumentado(farmacologia.dosisHabitual || medicamento.dosisHabitual) &&
+    datoFarmacologicoDocumentado(farmacologia.rangoDosis) &&
+    datoFarmacologicoDocumentado(medicamento.vidaMedia) &&
+    datoFarmacologicoDocumentado(medicamento.metabolismo) &&
+    datoFarmacologicoDocumentado(medicamento.eliminacion || farmacologia.viaEliminacion) &&
+    datoFarmacologicoDocumentado(medicamento.cyp || farmacologia.cyp) &&
+    datoFarmacologicoDocumentado(medicamento.metabolitosActivos || farmacologia.metabolitosActivos) &&
+    datoFarmacologicoDocumentado(medicamento.contraindications || farmacologia.contraindicacionesAbsolutas) &&
+    datoFarmacologicoDocumentado(medicamento.precautions || farmacologia.precauciones) &&
+    datoFarmacologicoDocumentado(medicamento.adverseEffects || farmacologia.efectosAdversos) &&
+    datoFarmacologicoDocumentado(medicamento.monitoring || farmacologia.vigilancia) &&
+    datoFarmacologicoDocumentado(farmacologia.laboratorios) &&
+    datoFarmacologicoDocumentado(medicamento.interactions || farmacologia.interaccionesMedicamento) &&
+    datoFarmacologicoDocumentado(medicamento.interaccionesDiagnostico || farmacologia.interaccionesDiagnostico) &&
+    datoFarmacologicoDocumentado(fuente.fuentes || medicamento.fuentes) &&
+    datoFarmacologicoDocumentado(fuente.paginaSeccion || medicamento.paginaSeccion) &&
+    datoFarmacologicoDocumentado(fuente.confianza || medicamento.confianza);
+}
+
 export const COBERTURA_FARMACOLOGICA = Object.freeze({
   totalNormalizados: CATALOGO_FARMACOLOGICO_OFICIAL.length,
   conFuenteVerificada: CATALOGO_FARMACOLOGICO_OFICIAL.filter((medicamento) => medicamento.estadoFuente === "verificada_local").length,
-  datosCompletos: CATALOGO_FARMACOLOGICO_OFICIAL.filter((medicamento) => medicamento.estadoFuente === "verificada_local" && medicamento.presentaciones.length).length,
+  datosCompletos: CATALOGO_FARMACOLOGICO_OFICIAL.filter(fichaCumpleEsquemaFarmacologicoMinimo).length,
+  fuenteRegulatoriaParcial: CATALOGO_FARMACOLOGICO_OFICIAL.filter((medicamento) => medicamento.estadoFuente === "fuente_regulatoria_parcial").length,
+  fuentePendienteEstricta: CATALOGO_FARMACOLOGICO_OFICIAL.filter((medicamento) => medicamento.estadoFuente === "fuente_pendiente").length,
   fuentePendiente: CATALOGO_FARMACOLOGICO_OFICIAL.filter((medicamento) => medicamento.estadoFuente !== "verificada_local").length,
+  idsCompletos: CATALOGO_FARMACOLOGICO_OFICIAL.filter(fichaCumpleEsquemaFarmacologicoMinimo).map((medicamento) => medicamento.id),
   idsVerificados: CATALOGO_FARMACOLOGICO_OFICIAL.filter((medicamento) => medicamento.estadoFuente === "verificada_local").map((medicamento) => medicamento.id)
 });
 

@@ -3,7 +3,7 @@ import {
   evaluarMedicamentosPaciente,
   normalizarMedicamentoClinico,
   obtenerIndicadorSeguridadMedicamento
-} from "../services/motorClinicoMedicamentos.js?v=20260811-pharmacology-files-consolidated-v1";
+} from "../services/motorClinicoMedicamentos.js?v=20260904-parametros-colera-v2";
 
 // Metadata legacy conservada por compatibilidad documental. La detección
 // ejecutable usa el motor clínico común y el catálogo oficial.
@@ -195,6 +195,6 @@ export function detectarAlertasClinicasMedicamentos(medicamentos = [], paciente 
   const evaluacion = evaluarMedicamentosPaciente({ paciente, medicamentos });
   return {
     ...evaluacion,
-    indicador: obtenerIndicadorSeguridadMedicamento(evaluacion.alertas)
+    indicador: obtenerIndicadorSeguridadMedicamento(evaluacion.alertas, evaluacion.cobertura)
   };
 }

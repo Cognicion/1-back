@@ -1,10 +1,16 @@
-import { COBERTURA_FARMACOLOGICA, MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES, medicamentoPorTexto } from "./data/catalogoFarmacologicoUnificado.js?v=20260822-fda-cofepris-v1";
-import { CIE10 } from "./data/catalogoDiagnosticos.js?v=20260816-cie10-cde-v1";
+import { COBERTURA_FARMACOLOGICA, MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES, medicamentoPorTexto } from "./data/catalogoFarmacologicoUnificado.js?v=20260904-parametros-colera-v2";
+import { CIE10 } from "./data/catalogoDiagnosticos.js?v=20260904-parametros-colera-v2";
 import {
   evaluarMedicamentosPaciente,
   normalizarMedicamentoClinico,
   obtenerIndicadorSeguridadMedicamento
-} from "./services/motorClinicoMedicamentos.js?v=20260811-pharmacology-files-consolidated-v1";
+} from "./services/motorClinicoMedicamentos.js?v=20260904-parametros-colera-v2";
+import {
+  construirRegistroParametrosClinicos,
+  DEFINICIONES_PARAMETROS_CLINICOS,
+  GRUPOS_PARAMETROS_CLINICOS,
+  resolverParametrosClinicosPaciente
+} from "./services/parametrosClinicosPaciente.js?v=20260904-parametros-colera-v2";
 
 const seleccionados = [];
 const MENUS_ACTIVOS = [];
@@ -26,6 +32,198 @@ function textoVisible(valor = "") {
     .replace(/\u00c2\u00b7/g, "·").replace(/\u00c2\u00b2/g, "²")
     .replace(/\u00e2\u0080\u0093/g, "–").replace(/\u00e2\u0080\u0094/g, "—")
     .replace(/\u00e2\u0080\u009c/g, "“").replace(/\u00e2\u0080\u009d/g, "”").replace(/\u00e2\u0080\u0099/g, "’");
+}
+
+function idCampoParametro(parametroId, campo) {
+  return `farmacoParametro-${parametroId}-${campo}`;
+}
+
+function renderParametrosClinicos() {
+  const contenedor = $("farmacoParametrosClinicos");
+  if (!contenedor) return;
+
+  contenedor.innerHTML = GRUPOS_PARAMETROS_CLINICOS.map((grupo) => {
+    const definiciones = DEFINICIONES_PARAMETROS_CLINICOS.filter((definicion) => definicion.grupo === grupo.id);
+    const notaDerivados = grupo.id === "proteinasSericas"
+      ? '<p class="parametros-grupo-nota">Si no se registra globulinas, puede calcularse como proteínas totales − albúmina. La relación A/G también se muestra como derivada y nunca sustituye al resultado del laboratorio.</p>'
+      : "";
+    return `
+      <fieldset class="parametros-grupo" data-parametros-grupo="${escapar(grupo.id)}">
+        <legend>${escapar(grupo.etiqueta)}</legend>
+        <p>${escapar(grupo.descripcion)}</p>
+        <div class="parametros-campos">
+          ${definiciones.map((definicion) => `
+            <article class="parametro-campo" data-parametro-card="${escapar(definicion.id)}">
+              <header>
+                <strong>${escapar(definicion.etiqueta)}</strong>
+                <small>${escapar(definicion.muestra || "Muestra no especificada")}</small>
+              </header>
+              <div class="parametro-campo-grid">
+                <label>
+                  Valor
+                  <input
+                    id="${escapar(idCampoParametro(definicion.id, "valor"))}"
+                    data-parametro-id="${escapar(definicion.id)}"
+                    data-parametro-campo="valor"
+                    type="text"
+                    inputmode="decimal"
+                    autocomplete="off"
+                    placeholder="Resultado"
+                    aria-label="Valor de ${escapar(definicion.etiqueta)}">
+                </label>
+                <label>
+                  Unidad
+                  <select
+                    id="${escapar(idCampoParametro(definicion.id, "unidad"))}"
+                    data-parametro-id="${escapar(definicion.id)}"
+                    data-parametro-campo="unidad"
+                    aria-label="Unidad de ${escapar(definicion.etiqueta)}">
+                    ${(definicion.unidades || [definicion.unidad]).map((unidad) => `<option value="${escapar(unidad)}"${unidad === definicion.unidad ? " selected" : ""}>${escapar(unidad)}</option>`).join("")}
+                  </select>
+                </label>
+                <label class="parametro-rango">
+                  Intervalo del laboratorio
+                  <input
+                    id="${escapar(idCampoParametro(definicion.id, "rango"))}"
+                    data-parametro-id="${escapar(definicion.id)}"
+                    data-parametro-campo="rangoReferencia"
+                    type="text"
+                    inputmode="decimal"
+                    autocomplete="off"
+                    placeholder="Mínimo–máximo, &lt; o &gt;"
+                    aria-label="Intervalo de referencia informado para ${escapar(definicion.etiqueta)}">
+                </label>
+              </div>
+            </article>
+          `).join("")}
+        </div>
+        ${notaDerivados}
+      </fieldset>
+    `;
+  }).join("");
+
+  contenedor.addEventListener("input", actualizarResumenParametros);
+  contenedor.addEventListener("change", () => {
+    actualizarResumenParametros();
+    if (seleccionados.length) evaluar();
+  });
+}
+
+function parametrosClinicosDesdeFormulario() {
+  const fecha = $("farmacoParametrosFecha")?.value || "";
+  const valores = {};
+  DEFINICIONES_PARAMETROS_CLINICOS.forEach((definicion) => {
+    const valor = $(idCampoParametro(definicion.id, "valor"))?.value?.trim() || "";
+    if (!valor) return;
+    valores[definicion.id] = {
+      valor,
+      unidad: $(idCampoParametro(definicion.id, "unidad"))?.value || definicion.unidad,
+      rangoReferencia: $(idCampoParametro(definicion.id, "rango"))?.value?.trim() || "",
+      fecha,
+      origen: "captura_manual_simulacion",
+      procedencia: "laboratorio_farmacologia",
+      muestra: definicion.muestra,
+      estadoResultado: "final",
+      derivado: false
+    };
+  });
+  return construirRegistroParametrosClinicos(valores, {
+    fecha,
+    origen: "captura_manual_simulacion",
+    procedencia: "laboratorio_farmacologia"
+  });
+}
+
+function resolverParametrosFormulario() {
+  const parametrosClinicos = parametrosClinicosDesdeFormulario();
+  return {
+    parametrosClinicos,
+    resueltos: resolverParametrosClinicosPaciente({ parametrosClinicos })
+  };
+}
+
+function etiquetaEstadoParametro(estado = "") {
+  return {
+    bajo: "Por debajo del intervalo registrado",
+    alto: "Por encima del intervalo registrado",
+    en_rango_registrado: "Dentro del intervalo registrado",
+    dato_inconsistente: "Dato inconsistente"
+  }[estado] || "Sin clasificación: falta un intervalo interpretable";
+}
+
+function claseEstadoParametro(estado = "") {
+  if (estado === "alto" || estado === "bajo" || estado === "dato_inconsistente") return "fuera-rango";
+  if (estado === "en_rango_registrado") return "en-rango";
+  return "sin-rango";
+}
+
+function textoParametro(registro = {}) {
+  const valor = registro.valor ?? "";
+  const unidad = registro.unidad ? ` ${registro.unidad}` : "";
+  const rango = registro.rangoReferencia ? ` · intervalo: ${registro.rangoReferencia}` : "";
+  return `${registro.etiqueta || registro.analito || registro.id}: ${valor}${unidad}${rango}`;
+}
+
+function plantillaParametrosResueltos(parametros = {}, { mostrarVacio = true } = {}) {
+  const registros = parametros.lista || [];
+  const derivados = Object.values(parametros.derivados || {});
+  const categorias = parametros.categorias || {};
+  if (!registros.length && !derivados.length) {
+    return mostrarVacio
+      ? '<p class="parametros-vacio">Sin parámetros capturados. El motor no inferirá resultados ausentes.</p>'
+      : "";
+  }
+
+  const clasificacionKdigo = [
+    categorias.eGFR ? `eGFR ${categorias.eGFR.id}: ${categorias.eGFR.etiqueta}` : "",
+    categorias.uacr ? `UACR ${categorias.uacr.id}: ${categorias.uacr.etiqueta}` : ""
+  ].filter(Boolean);
+
+  return `
+    <div class="parametros-resueltos-lista">
+      ${registros.map((registro) => `
+        <article class="parametro-resultado ${claseEstadoParametro(registro.estado)}">
+          <strong>${escapar(registro.etiqueta)}</strong>
+          <p>${escapar(`${registro.valor}${registro.unidad ? ` ${registro.unidad}` : ""}`)}</p>
+          <small>${escapar(etiquetaEstadoParametro(registro.estado))}${registro.rangoReferencia ? ` · Intervalo: ${escapar(registro.rangoReferencia)}` : ""}</small>
+        </article>
+      `).join("")}
+      ${derivados.map((registro) => `
+        <article class="parametro-resultado derivado">
+          <strong>${escapar(registro.etiqueta)} <span>Derivado</span></strong>
+          <p>${escapar(`${registro.valor}${registro.unidad ? ` ${registro.unidad}` : ""}`)}</p>
+          <small>${escapar(registro.formula)} · Cálculo, no medición directa</small>
+        </article>
+      `).join("")}
+    </div>
+    ${clasificacionKdigo.length ? `<p class="parametros-kdigo"><b>Categorías KDIGO:</b> ${escapar(clasificacionKdigo.join(" · "))}. Una medición aislada no establece por sí sola enfermedad renal crónica.</p>` : ""}
+    ${(parametros.hallazgos || []).some((hallazgo) => ["dato_inconsistente", "dato_no_comparable", "dato_no_clasificable"].includes(hallazgo.estado)) ? `
+      <div class="parametros-inconsistencias" role="alert">
+        ${(parametros.hallazgos || []).filter((hallazgo) => ["dato_inconsistente", "dato_no_comparable", "dato_no_clasificable"].includes(hallazgo.estado)).map((hallazgo) => `<p><b>${escapar(hallazgo.titulo)}</b>${hallazgo.recomendacion ? ` · ${escapar(hallazgo.recomendacion)}` : ""}</p>`).join("")}
+      </div>
+    ` : ""}
+  `;
+}
+
+function actualizarResumenParametros() {
+  const salida = $("farmacoParametrosResumen");
+  if (!salida) return;
+  const { resueltos } = resolverParametrosFormulario();
+  salida.innerHTML = plantillaParametrosResueltos(resueltos);
+}
+
+function limpiarParametrosClinicos() {
+  document.querySelectorAll("#farmacoParametrosClinicos [data-parametro-campo]").forEach((campo) => {
+    if (campo.dataset.parametroCampo === "unidad") {
+      const definicion = DEFINICIONES_PARAMETROS_CLINICOS.find((item) => item.id === campo.dataset.parametroId);
+      campo.value = definicion?.unidad || campo.options?.[0]?.value || "";
+    } else {
+      campo.value = "";
+    }
+  });
+  if ($("farmacoParametrosFecha")) $("farmacoParametrosFecha").value = "";
+  actualizarResumenParametros();
+  if (seleccionados.length) evaluar();
 }
 
 function opcionesMedicamentos() {
@@ -129,17 +327,17 @@ function configurarMenuBuscable({ campoId, menuId, opciones, modo = "reemplazar"
 
 function pacienteSimulado() {
   const comorbilidades = $("farmacoComorbilidades")?.value || "";
+  const { parametrosClinicos } = resolverParametrosFormulario();
   return {
     edad: $("farmacoEdad")?.value || "",
     sexo: $("farmacoSexo")?.value || "",
-    eGFR: $("farmacoEGFR")?.value || "",
-    creatinina: $("farmacoCreatinina")?.value || "",
     alergias: $("farmacoAlergias")?.value || "",
     comorbilidades,
     diagnosticos: comorbilidades,
     antecedentes: comorbilidades,
     antecedentesMedicos: comorbilidades,
-    observaciones: comorbilidades
+    observaciones: comorbilidades,
+    parametrosClinicos
   };
 }
 
@@ -246,6 +444,39 @@ function severidadClase(severidad = "") {
   return "precaucion";
 }
 
+function claseIndicadorSeguridad(indicador = {}) {
+  if (indicador.estado === "datos_insuficientes") return "incompleta";
+  return severidadClase(indicador.clase || indicador.estado || "");
+}
+
+function brechasCobertura(cobertura = {}) {
+  return [
+    Number(cobertura.fuentePendiente || 0) > 0 ? `${cobertura.fuentePendiente} medicamento(s) con fuente pendiente` : "",
+    Number(cobertura.sinReglaIngrediente || 0) > 0 ? `${cobertura.sinReglaIngrediente} ingrediente(s) sin reglas cargadas` : "",
+    Number(cobertura.fuentesContextoNoDisponibles || 0) > 0 ? `No se pudieron leer: ${(cobertura.detalleFuentesContextoNoDisponibles || []).join(", ")}` : "",
+    Number(cobertura.paresMedicamentoMedicamentoSinRegla || 0) > 0 ? `${cobertura.paresMedicamentoMedicamentoSinRegla} par(es) medicamento-medicamento sin regla` : "",
+    Number(cobertura.paresMedicamentoDiagnosticoSinRegla || 0) > 0 ? `${cobertura.paresMedicamentoDiagnosticoSinRegla} par(es) medicamento-diagnóstico sin regla` : "",
+    Number(cobertura.paresMedicamentoParametroSinRegla || 0) > 0 ? `${cobertura.paresMedicamentoParametroSinRegla} par(es) medicamento-parámetro sin regla (${Number(cobertura.parametrosClinicosRelevantes || 0)} parámetro(s) clínicamente relevante(s))` : "",
+    Number(cobertura.cantidadParametrosEsperadosAusentes || 0) > 0
+      ? `${cobertura.cantidadParametrosEsperadosAusentes} parámetro(s) de vigilancia esperado(s) sin dato: ${(cobertura.parametrosEsperadosAusentes || []).map((item) => `${item.medicamento}: ${item.etiqueta}`).join(", ")}`
+      : "",
+    Number(cobertura.hallazgosParametrosNoInterpretables || 0) > 0 ? `${cobertura.hallazgosParametrosNoInterpretables} hallazgo(s) de parámetros no interpretable(s)` : "",
+    Number(cobertura.diagnosticosSinCategoriaFarmacologica || 0) > 0 ? `${cobertura.diagnosticosSinCategoriaFarmacologica} diagnóstico(s) sin categoría farmacológica` : ""
+  ].filter(Boolean);
+}
+
+function renderCoberturaIncompleta(cobertura = {}) {
+  const brechas = brechasCobertura(cobertura);
+  if (!brechas.length) return "";
+  return `
+    <article class="farmaco-cobertura-incompleta" role="status">
+      <strong>Cobertura clínica incompleta</strong>
+      <p>${escapar(brechas.join("; "))}.</p>
+      <p>La ausencia de una alerta no equivale a ausencia de riesgo para los pares sin regla o con fuente pendiente.</p>
+    </article>
+  `;
+}
+
 function renderAlerta(item, tipo = "alerta") {
   const etiquetaTipo = {
     interaccion: "Interacción medicamento-medicamento",
@@ -254,6 +485,7 @@ function renderAlerta(item, tipo = "alerta") {
     precaucion: "Precaución clínica",
     duplicidad: "Duplicidad terapéutica",
     acumulativo: "Efecto farmacodinámico acumulativo",
+    parametro: "Alerta medicamento-parámetro clínico",
     monitorizacion: "Ajuste o monitorización",
     dato_faltante: "Dato clínico faltante"
   }[tipo] || "Alerta clínica";
@@ -267,6 +499,7 @@ function renderAlerta(item, tipo = "alerta") {
       ${item.mecanismo ? `<p><b>Mecanismo:</b> ${escapar(textoVisible(item.mecanismo))}</p>` : ""}
       <p>${escapar(item.efecto || item.descripcion || "")}</p>
       ${item.recomendacion ? `<p><b>Recomendación:</b> ${escapar(item.recomendacion)}</p>` : ""}
+      ${item.datosParametros?.length ? `<p><b>Parámetros relacionados:</b> ${escapar(item.datosParametros.map(textoParametro).join("; "))}</p>` : ""}
       ${item.parametrosVigilancia?.length ? `<p><b>Vigilar:</b> ${escapar(item.parametrosVigilancia.join(", "))}</p>` : ""}
       ${item.fuentes?.length ? `<small>Fuente local: ${escapar(item.fuentes.join("; "))}</small>` : ""}
       <small>${escapar(etiquetaTipo)} · Severidad: ${escapar(item.severidad || "no especificada")} · Evidencia: ${escapar(textoVisible(item.evidencia || "no especificada"))} · Confianza: ${escapar(textoVisible(item.confianza || "no especificada"))}</small>
@@ -282,11 +515,13 @@ function clasificarAlertas(alertas = []) {
     precauciones: [],
     duplicidades: [],
     acumulativos: [],
+    parametros: [],
     monitorizacion: []
   };
 
   alertas.forEach((alerta) => {
-    if (alerta.tipo === "duplicidad_terapeutica") grupos.duplicidades.push(alerta);
+    if (alerta.tipo === "precaucion_parametro_clinico" || alerta.tipo === "precaucion_funcion_renal" || alerta.datosParametros?.length) grupos.parametros.push(alerta);
+    else if (alerta.tipo === "duplicidad_terapeutica") grupos.duplicidades.push(alerta);
     else if (alerta.tipo === "riesgo_acumulativo") grupos.acumulativos.push(alerta);
     else if (alerta.tipo?.includes("interaccion")) grupos.interacciones.push(alerta);
     else if (alerta.tipo?.includes("contraindicacion") && alerta.severidad === "critica") grupos.absolutas.push(alerta);
@@ -394,7 +629,8 @@ function datosFaltantes(paciente, evaluacion) {
   if (!textosDx.length) faltantes.push("Diagnósticos o comorbilidades registradas");
 
   const textoAlertas = (evaluacion.alertas || []).map((alerta) => `${alerta.titulo} ${alerta.efecto} ${alerta.recomendacion}`).join(" ");
-  if (/renal|creatinina|eGFR|filtrado/i.test(textoAlertas) && !paciente.eGFR && !paciente.creatinina) {
+  const parametros = evaluacion.parametrosClinicos || resolverParametrosClinicosPaciente(paciente);
+  if (/renal|creatinina|eGFR|filtrado/i.test(textoAlertas) && !parametros.porId?.eGFR && !parametros.porId?.creatinina) {
     faltantes.push("Función renal / creatinina / eGFR");
   }
   if (/hep[aá]t|child/i.test(textoAlertas) && !/child|hep[aá]t|cirrosis/i.test(paciente.comorbilidades || "")) {
@@ -410,13 +646,16 @@ function renderResumen(evaluacion, indicador, paciente) {
   const diagnosticosEvaluados = evaluacion.diagnosticosEvaluados || [];
   const diagnosticosActivos = evaluacion.diagnosticosActivos || [];
   const diagnosticosProbables = evaluacion.diagnosticosProbables || [];
-  const medicamentosUnicos = evaluacion.medicamentosNormalizados || [];
+  const medicamentosEvaluados = evaluacion.medicamentosNormalizados || [];
+  const medicamentosUnicos = evaluacion.principiosActivosNormalizados || medicamentosEvaluados;
+  const parametros = evaluacion.parametrosClinicos || resolverParametrosClinicosPaciente(paciente);
 
   return `
-    <article class="farmaco-resumen ${severidadClase(indicador.clase || "")}">
+    <article class="farmaco-resumen ${claseIndicadorSeguridad(indicador)}">
       <div>
-        <strong>Resumen de seguridad: ${escapar(indicador.etiqueta || "Revisión sin alertas críticas")}</strong>
-        <p>Catálogo activo: ${MEDICAMENTOS_MAESTROS.length} medicamentos y ${MEDICAMENTOS_PRESENTACIONES.length} presentaciones. Fuente verificada: ${COBERTURA_FARMACOLOGICA.conFuenteVerificada}; fuente pendiente: ${COBERTURA_FARMACOLOGICA.fuentePendiente}.</p>
+        <strong>Resumen de seguridad: ${escapar(indicador.etiqueta || "Resultado no disponible")}</strong>
+        ${indicador.estado === "datos_insuficientes" ? "<p><b>Datos insuficientes:</b> existen selecciones cuya evidencia o regla local no está cargada.</p>" : ""}
+        <p>Catálogo activo: ${MEDICAMENTOS_MAESTROS.length} medicamentos y ${MEDICAMENTOS_PRESENTACIONES.length} presentaciones. Fuente verificada: ${COBERTURA_FARMACOLOGICA.conFuenteVerificada}; fuente regulatoria parcial: ${COBERTURA_FARMACOLOGICA.fuenteRegulatoriaParcial}; fuente pendiente: ${COBERTURA_FARMACOLOGICA.fuentePendienteEstricta}; fichas completas frente al esquema mínimo: ${COBERTURA_FARMACOLOGICA.datosCompletos}.</p>
       </div>
       <dl>
         <div><dt>Principios activos únicos</dt><dd>${medicamentosUnicos.length}</dd></div>
@@ -425,6 +664,8 @@ function renderResumen(evaluacion, indicador, paciente) {
         <div><dt>Interacciones</dt><dd>${grupos.interacciones.length}</dd></div>
         <div><dt>Alertas diagnóstico</dt><dd>${grupos.diagnosticos.length}</dd></div>
         <div><dt>Contraindicaciones absolutas</dt><dd>${grupos.absolutas.length}</dd></div>
+        <div><dt>Alertas por parámetros</dt><dd>${grupos.parametros.length}</dd></div>
+        <div><dt>Parámetros analizados</dt><dd>${parametros.lista?.length || 0}</dd></div>
         <div><dt>Datos faltantes</dt><dd>${faltantes.length}</dd></div>
       </dl>
     </article>
@@ -434,7 +675,7 @@ function renderResumen(evaluacion, indicador, paciente) {
     </details>
     <details class="farmaco-details" open>
       <summary>Medicamentos evaluados</summary>
-      <ul>${medicamentosUnicos.map(renderFichaMedicamento).join("") || "<li>Sin medicamentos evaluados.</li>"}</ul>
+      <ul>${medicamentosEvaluados.map(renderFichaMedicamento).join("") || "<li>Sin medicamentos evaluados.</li>"}</ul>
     </details>
     <details class="farmaco-details">
       <summary>Diagnósticos y comorbilidades considerados</summary>
@@ -442,6 +683,10 @@ function renderResumen(evaluacion, indicador, paciente) {
         ? `<ul>${diagnosticosEvaluados.map((dx) => `<li>${escapar(dx.texto || dx.nombre)}${dx.codigo ? ` · ${escapar(dx.codigo)}` : ""}${dx.estado ? ` · ${escapar(dx.estado)}` : ""}${dx.origen ? ` · ${escapar(dx.origen)}` : ""}</li>`).join("")}</ul>`
         : `<p>No hay diagnósticos o comorbilidades disponibles para evaluar contraindicaciones y precauciones. El análisis actual solo incluye los medicamentos registrados.</p>`}
       ${diagnosticos.length ? `<p><b>Coincidencias clínicas activas:</b> ${escapar(diagnosticos.map((dx) => dx.nombre).join(", "))}</p>` : ""}
+    </details>
+    <details class="farmaco-details" open>
+      <summary>Parámetros clínicos analizados · ${parametros.lista?.length || 0}</summary>
+      ${plantillaParametrosResueltos(parametros)}
     </details>
     ${faltantes.length ? `<article class="interaccion-card precaucion"><strong>Evaluación incompleta por falta de datos</strong><p>${escapar(faltantes.join(", "))}</p><p>No se debe interpretar la ausencia de alertas como uso seguro si faltan datos clínicos.</p></article>` : ""}
   `;
@@ -459,18 +704,20 @@ function evaluar() {
   const evaluacion = evaluarMedicamentosPaciente({ paciente, medicamentos: lista });
   const indicador = obtenerIndicadorSeguridadMedicamento(evaluacion.alertas || [], evaluacion.cobertura || {});
   const grupos = clasificarAlertas(evaluacion.alertas || []);
-  const vacio = evaluacion.cobertura?.fuentePendiente || evaluacion.cobertura?.sinReglaIngrediente
+  const vacio = brechasCobertura(evaluacion.cobertura).length
     ? "Sin regla cargada para parte de la selección; fuente pendiente o dato insuficiente."
     : "Sin alerta encontrada con la base actual.";
   salida.innerHTML = [
     renderResumen(evaluacion, indicador, paciente),
+    renderCoberturaIncompleta(evaluacion.cobertura),
     renderSeccion("A. Interacciones medicamento-medicamento", grupos.interacciones, "interaccion", vacio),
     renderSeccion("B. Alertas medicamento-diagnóstico", grupos.diagnosticos, "diagnostico", vacio),
     renderSeccion("C. Contraindicaciones absolutas", grupos.absolutas, "contraindicacion", vacio),
     renderSeccion("D. Contraindicaciones relativas y precauciones", grupos.precauciones, "precaucion", vacio),
     renderSeccion("E. Duplicidades terapéuticas", grupos.duplicidades, "duplicidad", vacio),
     renderSeccion("F. Cargas acumulativas", grupos.acumulativos, "acumulativo", vacio),
-    renderSeccion("G. Ajustes y monitorización", grupos.monitorizacion, "monitorizacion", vacio)
+    renderSeccion("G. Alertas medicamento-parámetro clínico", grupos.parametros, "parametro", vacio),
+    renderSeccion("H. Ajustes y monitorización", grupos.monitorizacion, "monitorizacion", vacio)
   ].join("");
 }
 
@@ -483,9 +730,16 @@ function limpiar() {
 
 renderCatalogo();
 renderSeleccionados();
+renderParametrosClinicos();
+actualizarResumenParametros();
 $("agregarFarmaco")?.addEventListener("click", agregarMedicamento);
 $("evaluarFarmacos")?.addEventListener("click", evaluar);
 $("limpiarFarmacos")?.addEventListener("click", limpiar);
+$("limpiarParametrosFarmaco")?.addEventListener("click", limpiarParametrosClinicos);
+$("farmacoParametrosFecha")?.addEventListener("change", () => {
+  actualizarResumenParametros();
+  if (seleccionados.length) evaluar();
+});
 $("farmacoBuscador")?.addEventListener("keydown", (evento) => {
   if (evento.key === "Enter" && !$("farmacoCatalogoMenu")?.hidden) return;
   if (evento.key === "Enter") {

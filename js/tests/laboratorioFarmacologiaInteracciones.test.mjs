@@ -41,8 +41,9 @@ resultado = evaluarMedicamentosPaciente({
     { medicamento: "Acetaminofen 750 mg", indicacion: "cada 12 horas" }
   ]
 });
-assert.equal(resultado.medicamentosNormalizados.length, 1, "Mismo principio activo con posologias distintas debe agruparse para el analisis.");
-assert.equal(resultado.medicamentosNormalizados[0].prescripcionesRelacionadas.length, 2, "Las prescripciones originales deben conservarse bajo el principio activo normalizado.");
+assert.equal(resultado.medicamentosNormalizados.length, 2, "Las posologías distintas deben conservarse como prescripciones evaluadas distintas.");
+assert.equal(resultado.principiosActivosNormalizados.length, 1, "El principio activo debe agruparse una sola vez para interacciones y cargas.");
+assert.equal(resultado.principiosActivosNormalizados[0].prescripcionesRelacionadas.length, 2, "Las prescripciones originales deben conservarse bajo el principio activo normalizado.");
 assert.ok(tieneAlerta(resultado, "duplicidad terapeutica") || tieneAlerta(resultado, "duplicidad terap"), "Debe alertar duplicidad de principio activo.");
 
 resultado = evaluarMedicamentosPaciente({

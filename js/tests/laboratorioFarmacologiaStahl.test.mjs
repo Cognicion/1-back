@@ -126,8 +126,9 @@ test("caso critico: losartan + captopril + captopril 25 mg con I13", () => {
     ]
   });
   const texto = JSON.stringify(evaluacion.alertas);
-  assert.deepEqual(evaluacion.medicamentosNormalizados.map((med) => med.ingredienteIds[0]).sort(), ["captopril", "losartan"]);
-  assert.ok(evaluacion.medicamentosNormalizados.find((med) => med.ingredienteIds.includes("captopril")).prescripcionesRelacionadas.length >= 2);
+  assert.deepEqual(evaluacion.medicamentosNormalizados.map((med) => med.ingredienteIds[0]).sort(), ["captopril", "captopril", "losartan"]);
+  assert.deepEqual(evaluacion.principiosActivosNormalizados.map((med) => med.ingredienteIds[0]).sort(), ["captopril", "losartan"]);
+  assert.ok(evaluacion.principiosActivosNormalizados.find((med) => med.ingredienteIds.includes("captopril")).prescripcionesRelacionadas.length >= 2);
   assert.ok(/Bloqueo dual del SRAA/i.test(texto));
   assert.ok(/enfermedad renal|renal/i.test(texto));
   assert.match(texto, /Potasio/i);
