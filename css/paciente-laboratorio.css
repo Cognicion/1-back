@@ -1919,6 +1919,51 @@ html[data-theme="biocelular"] body.pagina-expediente .lab-info-grid > .lab-card:
   font-weight: 700;
 }
 
+.parametro-paciente-rango > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.editar-rango-parametro-paciente {
+  display: inline-grid;
+  place-items: center;
+  width: 21px;
+  min-width: 21px;
+  height: 21px;
+  padding: 0;
+  border: 1px solid var(--border-normal);
+  border-radius: 6px;
+  color: var(--accent-primary);
+  background: var(--surface-primary);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.editar-rango-parametro-paciente:hover,
+.editar-rango-parametro-paciente:focus-visible {
+  border-color: var(--accent-primary);
+  color: var(--action-primary-text);
+  background: var(--action-primary-bg);
+  outline: none;
+}
+
+.parametro-paciente-rango input[readonly] {
+  color: var(--text-secondary);
+  background: color-mix(in srgb, var(--surface-primary) 78%, transparent);
+  cursor: default;
+}
+
+.parametro-paciente-rango-nota {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
 .parametro-paciente-campos input,
 .parametro-paciente-campos select {
   box-sizing: border-box;

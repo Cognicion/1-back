@@ -1,8 +1,12 @@
 const FUENTE_NIDDK_RENAL = "NIDDK: Chronic Kidney Disease Tests & Diagnosis, https://www.niddk.nih.gov/health-information/kidney-disease/chronic-kidney-disease-ckd/tests-diagnosis";
 const FUENTE_KDIGO_RENAL = "KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of CKD, https://kdigo.org/guidelines/ckd-evaluation-and-management/";
 const FUENTE_MEDLINE_PROTEINAS = "MedlinePlus: Total Protein and Albumin/Globulin (A/G) Ratio, https://medlineplus.gov/lab-tests/total-protein-and-albumin-globulin-a-g-ratio/";
+const FUENTE_MEDLINE_PANEL_METABOLICO = "MedlinePlus: Comprehensive metabolic panel, https://medlineplus.gov/ency/article/003468.htm";
+const FUENTE_MAYO_ELECTROLITOS = "Mayo Clinic Laboratories: Electrolyte Panel, Serum, https://www.mayocliniclabs.com/test-catalog/overview/113632";
+const FUENTE_MAYO_MAGNESIO = "Mayo Clinic Laboratories: Magnesium, Serum, https://www.mayocliniclabs.com/test-catalog/overview/8448";
+const FUENTE_MAYO_RENAL = "Mayo Clinic Laboratories: Creatinine with Estimated Glomerular Filtration Rate, Serum, https://www.mayocliniclabs.com/test-catalog/overview/48216";
 
-export const VERSION_PARAMETROS_CLINICOS = "1.0.0";
+export const VERSION_PARAMETROS_CLINICOS = "1.1.0";
 
 export const GRUPOS_PARAMETROS_CLINICOS = Object.freeze([
   Object.freeze({
@@ -33,7 +37,12 @@ export const DEFINICIONES_PARAMETROS_CLINICOS = Object.freeze([
     step: "0.01",
     aliases: ["creatinina", "creatinina serica", "serum creatinine"],
     rutas: ["creatinina", "funcionRenal.creatinina", "laboratorio.creatinina", "parametrosClinicos.creatinina", "parametrosClinicos.valores.creatinina", "parametrosClinicos.funcionRenal.creatinina"],
-    fuente: FUENTE_NIDDK_RENAL
+    fuente: FUENTE_NIDDK_RENAL,
+    referenciasPredeterminadas: {
+      "mg/dL": { predeterminado: "0.6–1.3", masculino: "0.74–1.35", femenino: "0.59–1.04" },
+      "µmol/L": { predeterminado: "53–115", masculino: "65–119", femenino: "52–92" }
+    },
+    fuenteReferenciaPredeterminada: FUENTE_MAYO_RENAL
   }),
   Object.freeze({
     id: "eGFR",
@@ -45,7 +54,10 @@ export const DEFINICIONES_PARAMETROS_CLINICOS = Object.freeze([
     step: "1",
     aliases: ["egfr", "tfg", "filtrado glomerular", "tasa de filtrado glomerular"],
     rutas: ["eGFR", "egfr", "tfg", "funcionRenal.eGFR", "funcionRenal.egfr", "laboratorio.eGFR", "laboratorio.egfr", "laboratorio.tfg", "parametrosClinicos.eGFR", "parametrosClinicos.egfr", "parametrosClinicos.valores.eGFR", "parametrosClinicos.valores.egfr", "parametrosClinicos.funcionRenal.eGFR", "parametrosClinicos.funcionRenal.egfr"],
-    fuente: FUENTE_KDIGO_RENAL
+    fuente: FUENTE_KDIGO_RENAL,
+    referenciasPredeterminadas: { "mL/min/1.73 m²": { predeterminado: "≥60" } },
+    fuenteReferenciaPredeterminada: FUENTE_MAYO_RENAL,
+    notaReferenciaPredeterminada: "Umbral adulto de reporte; la categoría KDIGO y el contexto clínico siguen siendo necesarios."
   }),
   Object.freeze({
     id: "uacr",
@@ -57,7 +69,13 @@ export const DEFINICIONES_PARAMETROS_CLINICOS = Object.freeze([
     step: "0.1",
     aliases: ["uacr", "acr urinaria", "relacion albumina creatinina urinaria", "cociente albumina creatinina urinaria"],
     rutas: ["uacr", "albuminuria.uacr", "funcionRenal.uacr", "laboratorio.uacr", "parametrosClinicos.uacr", "parametrosClinicos.valores.uacr", "parametrosClinicos.funcionRenal.uacr"],
-    fuente: FUENTE_KDIGO_RENAL
+    fuente: FUENTE_KDIGO_RENAL,
+    referenciasPredeterminadas: {
+      "mg/g": { predeterminado: "<30" },
+      "mg/mmol": { predeterminado: "<3" }
+    },
+    fuenteReferenciaPredeterminada: FUENTE_KDIGO_RENAL,
+    notaReferenciaPredeterminada: "Umbral KDIGO A1; la confirmación requiere tendencia y contexto clínico."
   }),
   Object.freeze({
     id: "sodio",
@@ -68,7 +86,12 @@ export const DEFINICIONES_PARAMETROS_CLINICOS = Object.freeze([
     unidades: ["mmol/L", "mEq/L"],
     step: "0.1",
     aliases: ["sodio", "na", "na+"],
-    rutas: ["sodio", "electrolitos.sodio", "laboratorio.sodio", "parametrosClinicos.sodio", "parametrosClinicos.valores.sodio", "parametrosClinicos.electrolitos.sodio"]
+    rutas: ["sodio", "electrolitos.sodio", "laboratorio.sodio", "parametrosClinicos.sodio", "parametrosClinicos.valores.sodio", "parametrosClinicos.electrolitos.sodio"],
+    referenciasPredeterminadas: {
+      "mmol/L": { predeterminado: "135–145" },
+      "mEq/L": { predeterminado: "135–145" }
+    },
+    fuenteReferenciaPredeterminada: FUENTE_MAYO_ELECTROLITOS
   }),
   Object.freeze({
     id: "potasio",
@@ -79,7 +102,12 @@ export const DEFINICIONES_PARAMETROS_CLINICOS = Object.freeze([
     unidades: ["mmol/L", "mEq/L"],
     step: "0.1",
     aliases: ["potasio", "k", "k+"],
-    rutas: ["potasio", "electrolitos.potasio", "laboratorio.potasio", "parametrosClinicos.potasio", "parametrosClinicos.valores.potasio", "parametrosClinicos.electrolitos.potasio"]
+    rutas: ["potasio", "electrolitos.potasio", "laboratorio.potasio", "parametrosClinicos.potasio", "parametrosClinicos.valores.potasio", "parametrosClinicos.electrolitos.potasio"],
+    referenciasPredeterminadas: {
+      "mmol/L": { predeterminado: "3.6–5.2" },
+      "mEq/L": { predeterminado: "3.6–5.2" }
+    },
+    fuenteReferenciaPredeterminada: FUENTE_MAYO_ELECTROLITOS
   }),
   Object.freeze({
     id: "cloro",
@@ -90,7 +118,12 @@ export const DEFINICIONES_PARAMETROS_CLINICOS = Object.freeze([
     unidades: ["mmol/L", "mEq/L"],
     step: "0.1",
     aliases: ["cloro", "cloruro", "chloride", "cl"],
-    rutas: ["cloro", "cloruro", "electrolitos.cloro", "electrolitos.cloruro", "laboratorio.cloro", "parametrosClinicos.valores.cloro", "parametrosClinicos.electrolitos.cloro"]
+    rutas: ["cloro", "cloruro", "electrolitos.cloro", "electrolitos.cloruro", "laboratorio.cloro", "parametrosClinicos.valores.cloro", "parametrosClinicos.electrolitos.cloro"],
+    referenciasPredeterminadas: {
+      "mmol/L": { predeterminado: "98–107" },
+      "mEq/L": { predeterminado: "98–107" }
+    },
+    fuenteReferenciaPredeterminada: FUENTE_MAYO_ELECTROLITOS
   }),
   Object.freeze({
     id: "bicarbonato",
@@ -101,7 +134,12 @@ export const DEFINICIONES_PARAMETROS_CLINICOS = Object.freeze([
     unidades: ["mmol/L", "mEq/L"],
     step: "0.1",
     aliases: ["bicarbonato", "co2 total", "hco3", "hco3-"],
-    rutas: ["bicarbonato", "co2Total", "electrolitos.bicarbonato", "laboratorio.bicarbonato", "parametrosClinicos.valores.bicarbonato", "parametrosClinicos.electrolitos.bicarbonato"]
+    rutas: ["bicarbonato", "co2Total", "electrolitos.bicarbonato", "laboratorio.bicarbonato", "parametrosClinicos.valores.bicarbonato", "parametrosClinicos.electrolitos.bicarbonato"],
+    referenciasPredeterminadas: {
+      "mmol/L": { predeterminado: "22–29" },
+      "mEq/L": { predeterminado: "22–29" }
+    },
+    fuenteReferenciaPredeterminada: FUENTE_MAYO_ELECTROLITOS
   }),
   Object.freeze({
     id: "magnesio",
@@ -112,7 +150,13 @@ export const DEFINICIONES_PARAMETROS_CLINICOS = Object.freeze([
     unidades: ["mg/dL", "mmol/L"],
     step: "0.01",
     aliases: ["magnesio", "magnesium", "mg++"],
-    rutas: ["magnesio", "electrolitos.magnesio", "laboratorio.magnesio", "parametrosClinicos.valores.magnesio", "parametrosClinicos.electrolitos.magnesio"]
+    rutas: ["magnesio", "electrolitos.magnesio", "laboratorio.magnesio", "parametrosClinicos.valores.magnesio", "parametrosClinicos.electrolitos.magnesio"],
+    referenciasPredeterminadas: {
+      "mg/dL": { predeterminado: "1.7–2.3" },
+      "mmol/L": { predeterminado: "0.70–0.95" }
+    },
+    fuenteReferenciaPredeterminada: FUENTE_MAYO_MAGNESIO,
+    notaReferenciaPredeterminada: "El intervalo en mmol/L es la conversión del intervalo de mg/dL; confirmar siempre con el informe local."
   }),
   Object.freeze({
     id: "calcio",
@@ -123,7 +167,12 @@ export const DEFINICIONES_PARAMETROS_CLINICOS = Object.freeze([
     unidades: ["mg/dL", "mmol/L"],
     step: "0.01",
     aliases: ["calcio", "calcio total", "calcium", "ca++"],
-    rutas: ["calcio", "electrolitos.calcio", "laboratorio.calcio", "parametrosClinicos.valores.calcio", "parametrosClinicos.electrolitos.calcio"]
+    rutas: ["calcio", "electrolitos.calcio", "laboratorio.calcio", "parametrosClinicos.valores.calcio", "parametrosClinicos.electrolitos.calcio"],
+    referenciasPredeterminadas: {
+      "mg/dL": { predeterminado: "8.5–10.2" },
+      "mmol/L": { predeterminado: "2.13–2.55" }
+    },
+    fuenteReferenciaPredeterminada: FUENTE_MEDLINE_PANEL_METABOLICO
   }),
   Object.freeze({
     id: "proteinasTotales",
@@ -135,7 +184,12 @@ export const DEFINICIONES_PARAMETROS_CLINICOS = Object.freeze([
     step: "0.01",
     aliases: ["proteinas sericas", "proteinas totales", "proteina total", "total protein", "serum total protein"],
     rutas: ["proteinasSericas", "proteinasTotales", "laboratorio.proteinasTotales", "parametrosClinicos.proteinasTotales", "parametrosClinicos.valores.proteinasTotales", "parametrosClinicos.proteinasSericas.proteinasTotales"],
-    fuente: FUENTE_MEDLINE_PROTEINAS
+    fuente: FUENTE_MEDLINE_PROTEINAS,
+    referenciasPredeterminadas: {
+      "g/dL": { predeterminado: "6.0–8.3" },
+      "g/L": { predeterminado: "60–83" }
+    },
+    fuenteReferenciaPredeterminada: FUENTE_MEDLINE_PANEL_METABOLICO
   }),
   Object.freeze({
     id: "albumina",
@@ -147,7 +201,12 @@ export const DEFINICIONES_PARAMETROS_CLINICOS = Object.freeze([
     step: "0.01",
     aliases: ["albumina", "albumina serica", "serum albumin"],
     rutas: ["albumina", "albuminaSerica", "laboratorio.albumina", "parametrosClinicos.albumina", "parametrosClinicos.valores.albumina", "parametrosClinicos.proteinasSericas.albumina"],
-    fuente: FUENTE_MEDLINE_PROTEINAS
+    fuente: FUENTE_MEDLINE_PROTEINAS,
+    referenciasPredeterminadas: {
+      "g/dL": { predeterminado: "3.4–5.4" },
+      "g/L": { predeterminado: "34–54" }
+    },
+    fuenteReferenciaPredeterminada: FUENTE_MEDLINE_PANEL_METABOLICO
   }),
   Object.freeze({
     id: "globulinas",
@@ -159,9 +218,36 @@ export const DEFINICIONES_PARAMETROS_CLINICOS = Object.freeze([
     step: "0.01",
     aliases: ["globulina", "globulinas", "globulinas sericas", "serum globulin"],
     rutas: ["globulinas", "globulina", "laboratorio.globulinas", "parametrosClinicos.globulinas", "parametrosClinicos.valores.globulinas", "parametrosClinicos.proteinasSericas.globulinas"],
-    fuente: FUENTE_MEDLINE_PROTEINAS
+    fuente: FUENTE_MEDLINE_PROTEINAS,
+    fuenteReferenciaPredeterminada: FUENTE_MEDLINE_PROTEINAS,
+    notaReferenciaPredeterminada: "No se carga un intervalo estándar: las globulinas dependen del método y de las fracciones medidas; usa el intervalo del laboratorio."
   })
 ]);
+
+function normalizarSexoReferencia(valor = "") {
+  const texto = String(valor || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  if (["masculino", "hombre", "male", "m"].includes(texto)) return "masculino";
+  if (["femenino", "mujer", "female", "f"].includes(texto)) return "femenino";
+  return "";
+}
+
+export function obtenerReferenciaPredeterminadaParametro(definicionOId, { unidad = "", sexo = "" } = {}) {
+  const definicion = typeof definicionOId === "string"
+    ? DEFINICIONES_PARAMETROS_CLINICOS.find((item) => item.id === definicionOId)
+    : definicionOId;
+  if (!definicion) return { rangoReferencia: "", fuente: "", nota: "Parámetro no reconocido." };
+
+  const referencias = definicion.referenciasPredeterminadas || {};
+  const referenciaUnidad = referencias[unidad] || referencias[definicion.unidad] || null;
+  const sexoNormalizado = normalizarSexoReferencia(sexo);
+  const rangoReferencia = referenciaUnidad?.[sexoNormalizado] || referenciaUnidad?.predeterminado || "";
+  return {
+    rangoReferencia,
+    fuente: definicion.fuenteReferenciaPredeterminada || "Fuente pendiente para intervalo predeterminado",
+    nota: definicion.notaReferenciaPredeterminada || "Referencia orientativa para adultos; reemplázala por el intervalo del laboratorio que procesó la muestra.",
+    esPredeterminado: Boolean(rangoReferencia)
+  };
+}
 
 function textoNormalizado(valor = "") {
   return String(valor || "")
@@ -309,6 +395,8 @@ function registroNormalizado(definicion, entrada, origen = "expediente") {
     valorOriginal: String(valorOriginal),
     unidad,
     rangoReferencia,
+    origenRangoReferencia: String(objeto.origenRangoReferencia || objeto.rangeReferenceOrigin || "").trim(),
+    fuenteRangoReferencia: String(objeto.fuenteRangoReferencia || objeto.referenceRangeSource || "").trim(),
     limiteInferior: rangoParseado?.minimo ?? numeroSeguro(objeto.limiteInferior ?? objeto.minimo),
     limiteSuperior: rangoParseado?.maximo ?? numeroSeguro(objeto.limiteSuperior ?? objeto.maximo),
     estado: estadoParametro({ ...objeto, valor, rangoReferencia: rangoEntrada }),
@@ -597,6 +685,8 @@ export function construirRegistroParametrosClinicos(valores = {}, metadata = {})
       valor: numeroSeguro(objeto.valor ?? objeto.value),
       unidad: String(objeto.unidad || definicion.unidad),
       rangoReferencia: String(objeto.rangoReferencia || "").trim(),
+      origenRangoReferencia: String(objeto.origenRangoReferencia || "").trim(),
+      fuenteRangoReferencia: String(objeto.fuenteRangoReferencia || "").trim(),
       fecha: String(objeto.fecha || metadata.fecha || "").trim(),
       origen: String(objeto.origen || metadata.origen || "captura_manual").trim(),
       procedencia: String(objeto.procedencia || metadata.procedencia || objeto.origen || metadata.origen || "captura_manual").trim(),

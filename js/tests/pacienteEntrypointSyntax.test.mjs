@@ -38,7 +38,7 @@ assert.match(
   /cargarResumenClinicoFuenteDocxEnSegundoPlano\(uidPaciente, datos\)/,
   "el resumen DOCX debe cargarse despues de renderizar los datos principales"
 );
-  assert.match(html, /paciente\.js\?v=20260904-parametros-colera-v2/);
+  assert.match(html, /paciente\.js\?v=20260904-laboratorio-casos-parametros-v1/);
 assert.match(html, /No fue posible cargar el expediente\./);
 
 console.log("pacienteEntrypointSyntax tests passed");

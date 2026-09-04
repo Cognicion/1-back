@@ -21,8 +21,9 @@ import {
   DEFINICIONES_PARAMETROS_CLINICOS,
   GRUPOS_PARAMETROS_CLINICOS,
   construirRegistroParametrosClinicos,
+  obtenerReferenciaPredeterminadaParametro,
   resolverParametrosClinicosPaciente
-} from "./services/parametrosClinicosPaciente.js?v=20260904-parametros-colera-v2";
+} from "./services/parametrosClinicosPaciente.js?v=20260904-parametros-colera-v3";
 import {
   aplicarPermisosFormatosPagina,
   obtenerPermisosFormatosUsuario,
@@ -459,9 +460,35 @@ function opcionesUnidadParametro(definicion, unidadActual = "") {
   `).join("");
 }
 
-function renderizarCampoParametroPaciente(definicion, registro = null) {
+function referenciaPredeterminadaParametroPaciente(definicion, unidad = definicion.unidad, datos = datosPacienteActual || {}) {
+  const institucional = datos?.datosInstitucionales || {};
+  return obtenerReferenciaPredeterminadaParametro(definicion, {
+    unidad,
+    sexo: datos?.sexo || datos?.genero || institucional.sexo || institucional.genero || ""
+  });
+}
+
+function renderizarCampoParametroPaciente(definicion, registro = null, datos = datosPacienteActual || {}) {
   const unidad = registro?.unidad || definicion.unidad || "";
   const estado = registro ? etiquetaEstadoParametro(registro.estado) : "Sin resultado registrado";
+  const referencia = referenciaPredeterminadaParametroPaciente(definicion, unidad, datos);
+  const rangoReferencia = registro?.rangoReferencia || referencia.rangoReferencia || "";
+  const origenRegistro = registro?.origenRangoReferencia || "";
+  const origenRango = registro?.rangoReferencia
+    ? origenRegistro === "predeterminado" ? "predeterminado" : origenRegistro === "manual" ? "manual" : "laboratorio"
+    : referencia.rangoReferencia ? "predeterminado" : "sin_predeterminado";
+  const notaRango = origenRango === "laboratorio"
+    ? "Intervalo aportado por el laboratorio. Usa el lápiz solo para corregirlo conforme al informe."
+    : origenRango === "manual"
+      ? "Intervalo editado manualmente. Verifica que coincida con el informe del laboratorio."
+    : referencia.rangoReferencia
+      ? `Referencia adulta orientativa (${referencia.rangoReferencia}). ${referencia.nota}`
+      : referencia.nota;
+  const fuenteRango = origenRango === "laboratorio"
+    ? "Intervalo informado por el laboratorio"
+    : origenRango === "manual"
+      ? "Edición manual: fuente por verificar"
+    : referencia.fuente || "";
   return `
     <article class="parametro-paciente-card" data-parametro-card="${escaparHTML(definicion.id)}" data-parametro-editado="false">
       <header>
@@ -485,11 +512,12 @@ function renderizarCampoParametroPaciente(definicion, registro = null) {
             ${opcionesUnidadParametro(definicion, unidad)}
           </select>
         </label>
-        <label>
-          Intervalo de referencia
+        <label class="parametro-paciente-rango">
+          <span>Intervalo de referencia <button type="button" class="editar-rango-parametro-paciente" data-editar-rango-parametro="${escaparHTML(definicion.id)}" aria-label="Editar intervalo de ${escaparHTML(definicion.etiqueta)}" title="Editar intervalo">✎</button></span>
           <input type="text" data-parametro-id="${escaparHTML(definicion.id)}" data-parametro-campo="rangoReferencia"
-            value="${escaparHTML(registro?.rangoReferencia || "")}" placeholder="Ej. 3.5 - 5.0"
+            value="${escaparHTML(rangoReferencia)}" data-rango-origen="${origenRango}" readonly placeholder="Ej. 3.5 - 5.0"
             aria-label="Intervalo de referencia de ${escaparHTML(definicion.etiqueta)}">
+          <small class="parametro-paciente-rango-nota" data-parametro-rango-nota="${escaparHTML(definicion.id)}" title="${escaparHTML(fuenteRango)}">${escaparHTML(notaRango)}</small>
         </label>
         <label>
           Fecha de muestra
@@ -548,14 +576,55 @@ function controlParametroPaciente(parametroId, campo) {
   return document.querySelector(`#parametrosPacienteFormulario [data-parametro-id="${parametroId}"][data-parametro-campo="${campo}"]`);
 }
 
+function aplicarReferenciaPredeterminadaParametroPaciente(definicion, { forzar = false } = {}) {
+  const unidad = controlParametroPaciente(definicion.id, "unidad")?.value || definicion.unidad;
+  const rango = controlParametroPaciente(definicion.id, "rangoReferencia");
+  const nota = document.querySelector(`#parametrosPacienteFormulario [data-parametro-rango-nota="${definicion.id}"]`);
+  if (!rango) return;
+  const referencia = referenciaPredeterminadaParametroPaciente(definicion, unidad);
+  if (!forzar && rango.dataset.rangoOrigen === "laboratorio") {
+    if (nota) {
+      nota.textContent = "Intervalo aportado por el laboratorio. Usa el lápiz solo para corregirlo conforme al informe.";
+      nota.title = "Intervalo informado por el laboratorio";
+    }
+    return;
+  }
+  if (!forzar && rango.dataset.rangoOrigen === "manual") {
+    if (nota) {
+      nota.textContent = "Intervalo editado manualmente. Verifica que coincida con el informe del laboratorio.";
+      nota.title = "Edición manual: fuente por verificar";
+    }
+    return;
+  }
+  if (forzar || !rango.value.trim() || rango.dataset.rangoOrigen === "predeterminado") {
+    rango.value = referencia.rangoReferencia || "";
+    rango.dataset.rangoOrigen = referencia.rangoReferencia ? "predeterminado" : "sin_predeterminado";
+    rango.readOnly = true;
+  }
+  if (nota) {
+    nota.textContent = referencia.rangoReferencia
+      ? `Referencia adulta orientativa (${referencia.rangoReferencia}). ${referencia.nota}`
+      : referencia.nota;
+    nota.title = referencia.fuente || "";
+  }
+}
+
 function entradaParametroDesdeFormulario(definicion) {
   const controlValor = controlParametroPaciente(definicion.id, "valor");
   const valor = String(controlValor?.value || "").trim();
   if (!valor) return null;
+  const controlRango = controlParametroPaciente(definicion.id, "rangoReferencia");
+  const origenRangoReferencia = controlRango?.dataset.rangoOrigen || "sin_predeterminado";
+  const referencia = referenciaPredeterminadaParametroPaciente(
+    definicion,
+    controlParametroPaciente(definicion.id, "unidad")?.value || definicion.unidad
+  );
   return {
     valor,
     unidad: controlParametroPaciente(definicion.id, "unidad")?.value || definicion.unidad,
-    rangoReferencia: controlParametroPaciente(definicion.id, "rangoReferencia")?.value || "",
+    rangoReferencia: controlRango?.value || "",
+    origenRangoReferencia,
+    fuenteRangoReferencia: origenRangoReferencia === "predeterminado" ? referencia.fuente : origenRangoReferencia === "laboratorio" ? "Intervalo informado por el laboratorio" : "Edición manual: fuente por verificar",
     fecha: controlParametroPaciente(definicion.id, "fecha")?.value || "",
     origen: "captura_manual",
     procedencia: "expediente_paciente",
@@ -673,7 +742,7 @@ function renderizarFormularioParametrosPaciente(datos = datosPacienteActual || {
         <legend>${escaparHTML(grupo.etiqueta)}</legend>
         <p>${escaparHTML(grupo.descripcion)}</p>
         <div class="parametros-paciente-grid">
-          ${definiciones.map((definicion) => renderizarCampoParametroPaciente(definicion, resultado.porId?.[definicion.id] || null)).join("")}
+          ${definiciones.map((definicion) => renderizarCampoParametroPaciente(definicion, resultado.porId?.[definicion.id] || null, datos)).join("")}
         </div>
       </fieldset>
     `;
@@ -682,6 +751,32 @@ function renderizarFormularioParametrosPaciente(datos = datosPacienteActual || {
   contenedor.querySelectorAll("[data-parametro-id][data-parametro-campo]").forEach((control) => {
     control.addEventListener("input", () => marcarParametroPacienteEditado(control.dataset.parametroId));
     control.addEventListener("change", () => marcarParametroPacienteEditado(control.dataset.parametroId));
+  });
+  contenedor.addEventListener("click", (evento) => {
+    const boton = evento.target.closest("[data-editar-rango-parametro]");
+    if (!boton || !puedeEditarParametrosPaciente()) return;
+    const rango = controlParametroPaciente(boton.dataset.editarRangoParametro, "rangoReferencia");
+    if (!rango) return;
+    rango.readOnly = false;
+    rango.dataset.rangoOrigen = "manual";
+    rango.focus();
+    rango.select();
+  });
+  contenedor.addEventListener("input", (evento) => {
+    const campo = evento.target.closest('[data-parametro-campo="rangoReferencia"]');
+    if (campo && !campo.readOnly) campo.dataset.rangoOrigen = "manual";
+  });
+  contenedor.querySelectorAll('[data-parametro-campo="unidad"]').forEach((control) => {
+    control.addEventListener("change", () => {
+      const definicion = DEFINICIONES_PARAMETROS_CLINICOS.find((item) => item.id === control.dataset.parametroId);
+      if (!definicion) return;
+      const rango = controlParametroPaciente(definicion.id, "rangoReferencia");
+      if (rango?.dataset.rangoOrigen === "laboratorio") {
+        rango.value = "";
+        rango.dataset.rangoOrigen = "sin_predeterminado";
+      }
+      aplicarReferenciaPredeterminadaParametroPaciente(definicion);
+    });
   });
   renderizarResultadosParametrosPaciente(resultado);
   const estado = document.getElementById("estadoParametrosPaciente");

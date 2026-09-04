@@ -171,5 +171,7 @@
 // deployment marker: 2026-09-02-adhd-task-embed-cache-v2 (+0.001)
 // deployment marker: 2026-09-03-rehabilitacion-layout-continuo-v1 (+0.001)
 // deployment marker: 2026-09-04-parametros-colera-v2 (+0.001)
-export const APP_VERSION = "2.183";
+// deployment marker: 2026-09-04-laboratorio-casos-parametros-v1 (+0.001)
+// deployment marker: 2026-09-04-biblioteca-cie10-h-completa-v1 (+0.001)
+export const APP_VERSION = "2.185";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

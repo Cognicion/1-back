@@ -6,8 +6,21 @@ import {
   categoriaEgfr,
   categoriaUacr,
   construirRegistroParametrosClinicos,
+  obtenerReferenciaPredeterminadaParametro,
   resolverParametrosClinicosPaciente,
 } from "../js/services/parametrosClinicosPaciente.js";
+
+test("los intervalos predeterminados adultos conservan fuente y respetan las diferencias por sexo", () => {
+  const creatininaMasculina = obtenerReferenciaPredeterminadaParametro("creatinina", { unidad: "mg/dL", sexo: "masculino" });
+  const creatininaFemenina = obtenerReferenciaPredeterminadaParametro("creatinina", { unidad: "mg/dL", sexo: "femenino" });
+  const globulinas = obtenerReferenciaPredeterminadaParametro("globulinas", { unidad: "g/dL" });
+
+  assert.equal(creatininaMasculina.rangoReferencia, "0.74–1.35");
+  assert.equal(creatininaFemenina.rangoReferencia, "0.59–1.04");
+  assert.match(creatininaMasculina.fuente, /Mayo Clinic Laboratories/);
+  assert.equal(globulinas.rangoReferencia, "");
+  assert.match(globulinas.nota, /método y de las fracciones/i);
+});
 
 test("normaliza creatinina en µmol/L y eGFR desde campos directos", () => {
   const resultado = resolverParametrosClinicosPaciente({
@@ -274,6 +287,8 @@ test("construye un registro persistible, estable y sin parámetros desconocidos"
         valor: "1,15",
         unidad: "mg/dL",
         rangoReferencia: "0.6 - 1.2",
+        origenRangoReferencia: "laboratorio",
+        fuenteRangoReferencia: "Informe del laboratorio",
       },
       eGFR: 72,
       albumina: {
@@ -301,6 +316,8 @@ test("construye un registro persistible, estable y sin parámetros desconocidos"
       valor: registro.valores.creatinina.valor,
       unidad: registro.valores.creatinina.unidad,
       rangoReferencia: registro.valores.creatinina.rangoReferencia,
+      origenRangoReferencia: registro.valores.creatinina.origenRangoReferencia,
+      fuenteRangoReferencia: registro.valores.creatinina.fuenteRangoReferencia,
       fecha: registro.valores.creatinina.fecha,
       origen: registro.valores.creatinina.origen,
       muestra: registro.valores.creatinina.muestra,
@@ -310,6 +327,8 @@ test("construye un registro persistible, estable y sin parámetros desconocidos"
       valor: 1.15,
       unidad: "mg/dL",
       rangoReferencia: "0.6 - 1.2",
+      origenRangoReferencia: "laboratorio",
+      fuenteRangoReferencia: "Informe del laboratorio",
       fecha: "2026-09-01",
       origen: "captura_manual",
       muestra: "suero/plasma",

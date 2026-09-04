@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <link rel="stylesheet" href="css/accesos-rapidos.css?v=1.899" data-estilos-accesos-rapidos>
-  <link rel="stylesheet" href="css/laboratorio-farmacologia.css?v=20260904-parametros-clinicos-v2">
+  <link rel="stylesheet" href="css/laboratorio-farmacologia.css?v=20260904-laboratorio-casos-parametros-v1">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
 <body class="pagina-laboratorio-farmacologia">
@@ -34,13 +34,42 @@
     <section class="farmaco-hero">
       <span class="farmaco-kicker">Simulación clínica educativa</span>
       <h1>Laboratorio de Farmacología</h1>
-      <p>Selecciona medicamentos, agrega comorbilidades opcionales y revisa interacciones farmacológicas relevantes antes de prescribir.</p>
+      <p>Selecciona medicamentos y diagnósticos activos, o integra un expediente autorizado del Panel médico, para revisar interacciones farmacológicas relevantes antes de prescribir.</p>
       <small>Herramienta de apoyo clínico. No sustituye el juicio médico ni fuentes farmacológicas institucionales.</small>
     </section>
 
     <section class="farmaco-grid">
       <article class="farmaco-panel">
-        <div class="panel-heading"><span>Paso 1</span><h2>Paciente simulado</h2></div>
+        <div class="panel-heading"><span>Paso 1</span><h2>Paciente para análisis</h2></div>
+        <div class="farmaco-contexto-paciente">
+          <label>
+            Casos de ejemplo
+            <select id="farmacoCasoEjemplo" aria-label="Seleccionar caso de ejemplo">
+              <option value="">Selecciona un ejemplo educativo</option>
+              <option value="sano">Paciente sano · sin diagnósticos ni medicamentos</option>
+              <option value="antipsicoticos-hta">Antipsicóticos + hipertensión arterial</option>
+              <option value="tdah-hta">TDAH + hipertensión arterial</option>
+              <option value="colera-diuretico">Cólera activo + diurético</option>
+            </select>
+          </label>
+          <div class="farmaco-contexto-acciones">
+            <button id="cargarCasoEjemplo" type="button" class="ghost-action">Cargar ejemplo</button>
+            <button id="abrirPacientesPanelMedico" type="button">Integrar paciente del Panel médico</button>
+          </div>
+          <p id="farmacoContextoPaciente" class="farmaco-contexto-estado" role="status">Simulación local: no modifica expedientes.</p>
+        </div>
+        <section id="farmacoSelectorPacientesPanel" class="farmaco-selector-pacientes" hidden aria-labelledby="farmacoPacientesPanelTitulo">
+          <div>
+            <strong id="farmacoPacientesPanelTitulo">Pacientes autorizados del Panel médico</strong>
+            <small>Al cargar, se copian los datos a esta revisión; editar aquí no cambia el expediente.</small>
+          </div>
+          <label>
+            Buscar paciente
+            <input id="farmacoBuscarPacientePanel" type="search" autocomplete="off" placeholder="Nombre del paciente autorizado">
+          </label>
+          <div id="farmacoListaPacientesPanel" class="farmaco-lista-pacientes" aria-live="polite">Selecciona la opción para consultar tus pacientes autorizados.</div>
+          <button id="cerrarPacientesPanelMedico" type="button" class="ghost-action">Cerrar lista</button>
+        </section>
         <div class="form-grid">
           <label>Edad<input id="farmacoEdad" type="number" min="0" max="120" placeholder="Ej. 45"></label>
           <label>Sexo<select id="farmacoSexo"><option value="">No especificado</option><option value="femenino">Femenino</option><option value="masculino">Masculino</option><option value="otro">Otro</option></select></label>
@@ -49,11 +78,15 @@
             <input id="farmacoAlergias" autocomplete="off" placeholder="Buscar medicamento o grupo, ej. penicilina">
             <div id="farmacoAlergiasMenu" class="farmaco-search-menu" hidden></div>
           </label>
-          <label class="farmaco-search-field">
-            Comorbilidades
-            <textarea id="farmacoComorbilidades" autocomplete="off" placeholder="Busca por CIE-10 o escribe libremente, ej. I10 hipertensión"></textarea>
-            <div id="farmacoComorbilidadesMenu" class="farmaco-search-menu" hidden></div>
-          </label>
+          <div class="farmaco-diagnosticos-picker">
+            <label class="farmaco-search-field">
+              Diagnósticos activos
+              <input id="farmacoDiagnosticoBusqueda" autocomplete="off" placeholder="Busca por CIE-10/CIE-11, ej. I10 o A00.1">
+              <div id="farmacoDiagnosticosMenu" class="farmaco-search-menu" hidden></div>
+            </label>
+            <div id="farmacoDiagnosticosSeleccionados" class="farmaco-diagnosticos-seleccionados" aria-live="polite">Sin diagnósticos seleccionados.</div>
+            <input id="farmacoComorbilidades" type="hidden" value="">
+          </div>
         </div>
       </article>
 
@@ -101,7 +134,7 @@
     </section>
   </main>
 
-  <script type="module" src="js/laboratorio-farmacologia.js?v=20260904-parametros-colera-v2"></script>
+  <script type="module" src="js/laboratorio-farmacologia.js?v=20260904-laboratorio-casos-parametros-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>
