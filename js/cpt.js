@@ -11,8 +11,9 @@ import {
   normalizarConfigCpt
 } from "./cpt-core.js";
 const launchParameters = new URLSearchParams(globalThis.location?.search || "");
-const adhdTaskMode = launchParameters.get("adhd") === "1";
+const adhdTaskRequested = launchParameters.get("adhd") === "1";
 const embeddedTaskMode = document.documentElement.dataset.cognicionEmbed === "adhd-task";
+const adhdTaskMode = adhdTaskRequested && embeddedTaskMode;
 if (embeddedTaskMode) document.documentElement.dataset.cognicionEmbed = "adhd-task";
 let adhdTaskContext = null;
 let adhdTaskBridge = null;
@@ -25,7 +26,7 @@ if (adhdTaskMode) {
   try {
     const [{ parseExistingTaskContext }, { createAdhdTaskPageBridge }] = await Promise.all([
       import("./adhd/adapters/existingTaskAdapters.js"),
-      import("./adhd/integration/adhdTaskPageBridge.js")
+      import("./adhd/integration/adhdTaskPageBridge.js?v=20260902-adhd-task-embed-v2")
     ]);
     adhdTaskContext = parseExistingTaskContext();
     if (adhdTaskContext.taskId !== "cpt_x") throw new TypeError("El contexto TDAH no corresponde a CPT-X.");

@@ -17,12 +17,14 @@ const TASK_FILES = Object.freeze({
   "js/escucha-dicotica.js": "dichotic_listening"
 });
 
-test("cada tarea legacy activa el puente solo con adhd=1 y valida su identidad", async () => {
+test("cada tarea legacy activa el puente solo con solicitud y bootstrap autenticado", async () => {
   for (const [path, expectedTaskId] of Object.entries(TASK_FILES)) {
     const text = await source(path);
     assert.match(text, /parseExistingTaskContext/u, `${path} debe importar/usar el parser de contexto`);
     assert.match(text, /createAdhdTaskPageBridge/u, `${path} debe importar/usar el puente de pagina`);
     assert.match(text, /get\("adhd"\) === "1"/u, `${path} debe requerir adhd=1 de forma exacta`);
+    assert.match(text, /const adhdTaskMode = adhdTaskRequested[\s\S]{0,120}?cognicionEmbed|const adhdTaskMode = adhdTaskRequested && embedded(?:Adhd)?TaskMode/u,
+      `${path} debe exigir el modo embebido validado antes de omitir persistencia local`);
     assert.match(text, /if \(adhdTaskMode\) \{[\s\S]*?parseExistingTaskContext\(\)/u, `${path} no debe parsear el contexto fuera del modo TDAH`);
     assert.match(text, new RegExp(`context\\.taskId !== "${expectedTaskId}"|adhdTaskContext\\.taskId !== "${expectedTaskId}"`, "u"));
     assert.match(text, /onConfig\(launchConfig\)/u, `${path} debe consumir la configuracion entregada por el host`);

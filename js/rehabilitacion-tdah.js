@@ -42,7 +42,7 @@ import {
   buildExistingTaskUrl,
   createTaskLaunchContext
 } from "./adhd/adapters/existingTaskAdapters.js";
-import { createAdhdTaskBridgeHost } from "./adhd/integration/adhdTaskPageBridge.js";
+import { createAdhdTaskBridgeHost } from "./adhd/integration/adhdTaskPageBridge.js?v=20260902-adhd-task-embed-v2";
 import {
   archiveAdhdProgram,
   clearAdhdDraft,
@@ -96,7 +96,7 @@ import {
   setTaskDialog,
   showAdhdView,
   showToast
-} from "./adhd/ui/adhdProgramView.js";
+} from "./adhd/ui/adhdProgramView.js?v=20260902-adhd-task-embed-v2";
 import { renderLongitudinalChart } from "./adhd/ui/adhdLongitudinalChart.js";
 
 aplicarAparienciaGuardada();

@@ -1,7 +1,9 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const adhdTaskMode = new URLSearchParams(globalThis.location?.search || "").get("adhd") === "1";
+const adhdTaskRequested = new URLSearchParams(globalThis.location?.search || "").get("adhd") === "1";
+const adhdTaskMode = adhdTaskRequested
+  && document.documentElement.dataset.cognicionEmbed === "adhd-task";
 let adhdTaskContext = null;
 let adhdTaskBridge = null;
 let adhdResultPublished = false;
@@ -13,7 +15,7 @@ if (adhdTaskMode) {
   try {
     const [{ parseExistingTaskContext }, { createAdhdTaskPageBridge }] = await Promise.all([
       import("./adhd/adapters/existingTaskAdapters.js"),
-      import("./adhd/integration/adhdTaskPageBridge.js")
+      import("./adhd/integration/adhdTaskPageBridge.js?v=20260902-adhd-task-embed-v2")
     ]);
     adhdTaskContext = parseExistingTaskContext();
     if (adhdTaskContext.taskId !== "stroop") throw new TypeError("El contexto TDAH no corresponde a Stroop.");

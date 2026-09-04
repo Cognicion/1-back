@@ -24,7 +24,7 @@
     root.dataset.cognicionEmbed = "adhd-task";
     const embedStyles = document.createElement("link");
     embedStyles.rel = "stylesheet";
-    embedStyles.href = "css/adhd-task-embed.css?v=20260902-adhd-task-embed-v1";
+    embedStyles.href = "css/adhd-task-embed.css?v=20260902-adhd-task-embed-v2";
     embedStyles.dataset.adhdTaskEmbedStyles = "true";
     document.head.appendChild(embedStyles);
   }

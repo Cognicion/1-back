@@ -12,8 +12,9 @@ import {
 } from "./dichotic/dichotic-core.js";
 const DICHOTIC_ACTIVITY_ID = "escucha_dicotica_derecho";
 const launchParameters = new URLSearchParams(globalThis.location?.search || "");
-const adhdTaskMode = launchParameters.get("adhd") === "1";
+const adhdTaskRequested = launchParameters.get("adhd") === "1";
 const embeddedAdhdTaskMode = document.documentElement.dataset.cognicionEmbed === "adhd-task";
+const adhdTaskMode = adhdTaskRequested && embeddedAdhdTaskMode;
 if (embeddedAdhdTaskMode) document.documentElement.dataset.cognicionEmbed = "adhd-task";
 let adhdTaskContext = null;
 let adhdTaskBridge = null;
@@ -26,7 +27,7 @@ if (adhdTaskMode) {
   try {
     const [adapterModule, bridgeModule] = await Promise.all([
       import("./adhd/adapters/existingTaskAdapters.js"),
-      import("./adhd/integration/adhdTaskPageBridge.js")
+      import("./adhd/integration/adhdTaskPageBridge.js?v=20260902-adhd-task-embed-v2")
     ]);
     const { parseExistingTaskContext } = adapterModule;
     normalizeExistingTaskResult = adapterModule.normalizeExistingTaskResult;

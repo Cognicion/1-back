@@ -67,7 +67,7 @@ test("la entrada TDAH es separada y el runner nativo permanece lazy", () => {
 });
 
 test("todos los imports nombrados ADHD del controlador existen en sus módulos", () => {
-  const expression = /import\s*\{([^}]*)\}\s*from\s*"(\.\/adhd\/[^"?]+)";/gu;
+  const expression = /import\s*\{([^}]*)\}\s*from\s*"(\.\/adhd\/[^"?]+)(?:\?[^";]+)?";/gu;
   const imports = [...controller.matchAll(expression)];
   assert.ok(imports.length >= 10, "Se esperaban los módulos desacoplados del programa");
   imports.forEach((match) => {

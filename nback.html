@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="biocelular">
 <head>
-<script src="js/theme-preload.js?v=20260902-adhd-task-embed-v1"></script>
+<script src="js/theme-preload.js?v=20260902-adhd-task-embed-v2"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dual N-Back</title>
@@ -277,8 +277,8 @@ letter-spacing:1px;
 }
 </style>
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
-<link rel="stylesheet" href="css/nback-adhd-embed.css?v=20260902-adhd-task-embed-v1">
-<script type="module" src="js/services/themeBootstrap.js?v=20260902-adhd-task-embed-v1"></script>
+<link rel="stylesheet" href="css/nback-adhd-embed.css?v=20260902-adhd-task-embed-v2">
+<script type="module" src="js/services/themeBootstrap.js?v=20260902-adhd-task-embed-v2"></script>
 </head>
 
 <body>
@@ -966,12 +966,14 @@ actualizarGuardiaPracticaAdhd();
 </script>
 
 <script type="module">
-const adhdTaskMode = new URLSearchParams(window.location.search).get("adhd") === "1";
+const adhdTaskRequested = new URLSearchParams(window.location.search).get("adhd") === "1";
+const adhdTaskMode = adhdTaskRequested
+  && document.documentElement.dataset.cognicionEmbed === "adhd-task";
 if (adhdTaskMode) {
   try {
     const [{ parseExistingTaskContext }, { createAdhdTaskPageBridge }] = await Promise.all([
       import("./js/adhd/adapters/existingTaskAdapters.js"),
-      import("./js/adhd/integration/adhdTaskPageBridge.js")
+      import("./js/adhd/integration/adhdTaskPageBridge.js?v=20260902-adhd-task-embed-v2")
     ]);
     const context = parseExistingTaskContext();
     if (context.taskId !== "nback") throw new TypeError("El contexto TDAH no corresponde a N-Back.");
@@ -997,7 +999,7 @@ if (adhdTaskMode) {
 }
 </script>
 
-  <script type="module" src="js/components/accesosRapidos.js?v=20260902-adhd-task-embed-v1"></script>
-  <script type="module" src="js/reportes.js?v=20260902-adhd-task-embed-v1"></script>
+  <script type="module" src="js/components/accesosRapidos.js?v=20260902-adhd-task-embed-v2"></script>
+  <script type="module" src="js/reportes.js?v=20260902-adhd-task-embed-v2"></script>
 </body>
 </html>

@@ -2,8 +2,9 @@ import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { collection, doc, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const launchParameters = new URLSearchParams(globalThis.location?.search || "");
-const adhdTaskMode = launchParameters.get("adhd") === "1";
+const adhdTaskRequested = launchParameters.get("adhd") === "1";
 const embeddedTaskMode = document.documentElement.dataset.cognicionEmbed === "adhd-task";
+const adhdTaskMode = adhdTaskRequested && embeddedTaskMode;
 let adhdTaskContext = null;
 let adhdTaskBridge = null;
 let adhdResultPublished = false;
@@ -15,7 +16,7 @@ if (adhdTaskMode) {
   try {
     const [{ parseExistingTaskContext }, { createAdhdTaskPageBridge }] = await Promise.all([
       import("./adhd/adapters/existingTaskAdapters.js"),
-      import("./adhd/integration/adhdTaskPageBridge.js")
+      import("./adhd/integration/adhdTaskPageBridge.js?v=20260902-adhd-task-embed-v2")
     ]);
     adhdTaskContext = parseExistingTaskContext();
     if (adhdTaskContext.taskId !== "go_nogo") throw new TypeError("El contexto TDAH no corresponde a Go/No-Go.");
