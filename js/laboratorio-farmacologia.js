@@ -131,67 +131,79 @@ function renderParametrosClinicos() {
   contenedor.innerHTML = GRUPOS_PARAMETROS_CLINICOS.map((grupo) => {
     const definiciones = DEFINICIONES_PARAMETROS_CLINICOS.filter((definicion) => definicion.grupo === grupo.id);
     const notaDerivados = grupo.id === "proteinasSericas"
-      ? '<p class="parametros-grupo-nota">Si no se registra globulinas, puede calcularse como proteínas totales − albúmina. La relación A/G también se muestra como derivada y nunca sustituye al resultado del laboratorio.</p>'
+      ? '<p class="parametros-estudio-nota">Si no se registra globulinas, puede calcularse como proteínas totales − albúmina. La relación A/G también se muestra como derivada y nunca sustituye al resultado del laboratorio.</p>'
       : "";
     return `
-      <fieldset class="parametros-grupo" data-parametros-grupo="${escapar(grupo.id)}">
-        <legend>${escapar(grupo.etiqueta)}</legend>
-        <p>${escapar(grupo.descripcion)}</p>
-        <div class="parametros-campos">
-          ${definiciones.map((definicion) => {
-            const referencia = referenciaPredeterminadaFormulario(definicion);
-            return `
-            <article class="parametro-campo" data-parametro-card="${escapar(definicion.id)}">
-              <header>
-                <strong>${escapar(definicion.etiqueta)}</strong>
-                <small>${escapar(definicion.muestra || "Muestra no especificada")}</small>
-              </header>
-              <div class="parametro-campo-grid">
-                <label>
-                  Valor
-                  <input
-                    id="${escapar(idCampoParametro(definicion.id, "valor"))}"
-                    data-parametro-id="${escapar(definicion.id)}"
-                    data-parametro-campo="valor"
-                    type="text"
-                    inputmode="decimal"
-                    autocomplete="off"
-                    placeholder="Resultado"
-                    aria-label="Valor de ${escapar(definicion.etiqueta)}">
-                </label>
-                <label>
-                  Unidad
-                  <select
-                    id="${escapar(idCampoParametro(definicion.id, "unidad"))}"
-                    data-parametro-id="${escapar(definicion.id)}"
-                    data-parametro-campo="unidad"
-                    aria-label="Unidad de ${escapar(definicion.etiqueta)}">
-                    ${(definicion.unidades || [definicion.unidad]).map((unidad) => `<option value="${escapar(unidad)}"${unidad === definicion.unidad ? " selected" : ""}>${escapar(unidad)}</option>`).join("")}
-                  </select>
-                </label>
-                <label class="parametro-rango">
-                  <span>Intervalo de referencia <button type="button" class="editar-rango-parametro" data-editar-rango="${escapar(definicion.id)}" aria-label="Editar intervalo de ${escapar(definicion.etiqueta)}" title="Editar intervalo">✎</button></span>
-                  <input
-                    id="${escapar(idCampoParametro(definicion.id, "rango"))}"
-                    data-parametro-id="${escapar(definicion.id)}"
-                    data-parametro-campo="rangoReferencia"
-                    type="text"
-                    inputmode="decimal"
-                    autocomplete="off"
-                    value="${escapar(referencia.rangoReferencia || "")}"
-                    data-rango-origen="${referencia.rangoReferencia ? "predeterminado" : "sin_predeterminado"}"
-                    readonly
-                    placeholder="Mínimo–máximo, &lt; o &gt;"
-                    aria-label="Intervalo de referencia de ${escapar(definicion.etiqueta)}">
-                  <small id="${escapar(idCampoParametro(definicion.id, "notaRango"))}" class="parametro-rango-nota" title="${escapar(referencia.fuente || "")}">${escapar(referencia.rangoReferencia ? `Referencia adulta orientativa (${referencia.rangoReferencia}). ${referencia.nota}` : referencia.nota)}</small>
-                </label>
-              </div>
-            </article>
-          `;
-          }).join("")}
+      <details class="parametros-estudio" data-parametros-grupo="${escapar(grupo.id)}" open>
+        <summary>
+          <span>
+            <strong>${escapar(grupo.etiqueta)}</strong>
+            <small>${definiciones.length} pruebas</small>
+          </span>
+          <span class="parametros-estudio-resumen">Ver resultados</span>
+        </summary>
+        <p class="parametros-estudio-descripcion">${escapar(grupo.descripcion)}</p>
+        <div class="parametros-tabla-contenedor">
+          <table class="parametros-tabla" aria-label="${escapar(grupo.etiqueta)}">
+            <thead>
+              <tr><th scope="col">Prueba</th><th scope="col">Resultado</th><th scope="col">Unidad</th><th scope="col">Valores de referencia</th></tr>
+            </thead>
+            <tbody>
+              ${definiciones.map((definicion) => {
+                const referencia = referenciaPredeterminadaFormulario(definicion);
+                return `
+                  <tr data-parametro-fila="${escapar(definicion.id)}">
+                    <th scope="row">
+                      <strong>${escapar(definicion.etiqueta)}</strong>
+                      <small>${escapar(definicion.muestra || "Muestra no especificada")}</small>
+                    </th>
+                    <td>
+                      <input
+                        id="${escapar(idCampoParametro(definicion.id, "valor"))}"
+                        data-parametro-id="${escapar(definicion.id)}"
+                        data-parametro-campo="valor"
+                        type="text"
+                        inputmode="decimal"
+                        autocomplete="off"
+                        placeholder="—"
+                        aria-label="Resultado de ${escapar(definicion.etiqueta)}">
+                    </td>
+                    <td>
+                      <select
+                        id="${escapar(idCampoParametro(definicion.id, "unidad"))}"
+                        data-parametro-id="${escapar(definicion.id)}"
+                        data-parametro-campo="unidad"
+                        aria-label="Unidad de ${escapar(definicion.etiqueta)}"
+                        title="Unidad">
+                        ${(definicion.unidades || [definicion.unidad]).map((unidad) => `<option value="${escapar(unidad)}"${unidad === definicion.unidad ? " selected" : ""}>${escapar(unidad)}</option>`).join("")}
+                      </select>
+                    </td>
+                    <td class="parametro-rango">
+                      <div class="parametro-rango-control">
+                        <input
+                          id="${escapar(idCampoParametro(definicion.id, "rango"))}"
+                          data-parametro-id="${escapar(definicion.id)}"
+                          data-parametro-campo="rangoReferencia"
+                          type="text"
+                          inputmode="decimal"
+                          autocomplete="off"
+                          value="${escapar(referencia.rangoReferencia || "")}"
+                          data-rango-origen="${referencia.rangoReferencia ? "predeterminado" : "sin_predeterminado"}"
+                          readonly
+                          placeholder="—"
+                          aria-label="Intervalo de referencia de ${escapar(definicion.etiqueta)}">
+                        <button type="button" class="editar-rango-parametro" data-editar-rango="${escapar(definicion.id)}" aria-label="Editar intervalo de ${escapar(definicion.etiqueta)}" title="Editar intervalo">✎</button>
+                      </div>
+                      <small id="${escapar(idCampoParametro(definicion.id, "notaRango"))}" class="parametro-rango-nota" title="${escapar(referencia.fuente || "")}">${escapar(referencia.rangoReferencia ? `Referencia adulta orientativa (${referencia.rangoReferencia}). ${referencia.nota}` : referencia.nota)}</small>
+                    </td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
         </div>
         ${notaDerivados}
-      </fieldset>
+      </details>
     `;
   }).join("");
 
