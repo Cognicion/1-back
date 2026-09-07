@@ -24,7 +24,6 @@ import { obtenerUsuario } from "./services/usuarios.js";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { renderizarFotoPerfil, subirFotoPerfil } from "./services/profilePhotoService.js";
 import { isAdministrator, usuarioEsPersonalClinico } from "./utils/roles.js";
-import { executeAppointmentCommand, appointmentErrorCode } from "./services/appointmentCommandService.js";
 
 aplicarAparienciaGuardada();
 iniciarMonitoreoSesion("Configuracion - Apariencia");
@@ -37,48 +36,6 @@ let paletaClaraPendiente = paletaClaraGuardada;
 let biocellularPendiente = getBiocellularPreferences();
 let biocellularGuardado = { ...biocellularPendiente };
 let guardandoApariencia = false;
-const DIAS_JORNADA = [["monday", "Lunes"], ["tuesday", "Martes"], ["wednesday", "Miércoles"], ["thursday", "Jueves"], ["friday", "Viernes"], ["saturday", "Sábado"], ["sunday", "Domingo"]];
-
-function estadoDisponibilidad(texto) { const el = document.getElementById("estadoDisponibilidad"); if (el) el.textContent = texto; }
-function intervaloJornadaHtml(day, interval = { start: "09:00", end: "17:00" }) {
-  return `<div class="working-interval"><input type="time" data-start value="${interval.start}"><span>–</span><input type="time" data-end value="${interval.end}"><button type="button" data-remove-interval aria-label="Eliminar intervalo">×</button></div>`;
-}
-function renderizarJornada(schedule = {}) {
-  const root = document.getElementById("jornadaSemanal"); if (!root) return;
-  root.innerHTML = DIAS_JORNADA.map(([key, label]) => `<section class="schedule-day" data-day="${key}"><strong>${label}</strong><div class="working-intervals">${(schedule[key] || []).map((item) => intervaloJornadaHtml(key, item)).join("")}</div><button class="btn-secundario" type="button" data-add-interval>Agregar horario</button></section>`).join("");
-  root.querySelectorAll("[data-add-interval]").forEach((button) => button.addEventListener("click", () => { const container = button.closest(".schedule-day").querySelector(".working-intervals"); container.insertAdjacentHTML("beforeend", intervaloJornadaHtml()); const remove = container.lastElementChild.querySelector("[data-remove-interval]"); remove.addEventListener("click", () => remove.closest(".working-interval").remove()); }));
-  root.querySelectorAll("[data-remove-interval]").forEach((button) => button.addEventListener("click", () => button.closest(".working-interval").remove()));
-}
-function leerJornada() {
-  const weeklySchedule = {};
-  document.querySelectorAll(".schedule-day").forEach((day) => {
-    weeklySchedule[day.dataset.day] = [...day.querySelectorAll(".working-interval")].map((row) => ({ start: row.querySelector("[data-start]").value, end: row.querySelector("[data-end]").value }));
-  });
-  return weeklySchedule;
-}
-async function inicializarDisponibilidad(user) {
-  const perfil = await obtenerUsuario(user.uid); const rol = perfil?.rol || perfil?.role || "";
-  if (!perfil || (!isAdministrator(perfil) && !usuarioEsPersonalClinico(rol))) return;
-  document.getElementById("navDisponibilidad").hidden = false;
-  document.getElementById("disponibilidad").hidden = false;
-  try {
-    const result = await executeAppointmentCommand({ action: "availabilitySettings" });
-    const settings = result.settings || {};
-    document.getElementById("timezoneDisponibilidad").value = settings.timeZone || "";
-    document.getElementById("bookingEnabledDisponibilidad").checked = Boolean(settings.bookingEnabled);
-    renderizarJornada(settings.weeklySchedule || {});
-    estadoDisponibilidad(result.bookingReady ? "Disponible para reservas externas." : "Configura zona horaria y jornada antes de habilitar reservas externas.");
-  } catch (error) { renderizarJornada(); estadoDisponibilidad("Aún no hay una configuración de disponibilidad."); console.warn("[AGENDA][DISPONIBILIDAD] No se pudo cargar.", { code: appointmentErrorCode(error) }); }
-  document.getElementById("formDisponibilidad").addEventListener("submit", async (event) => {
-    event.preventDefault(); const button = document.getElementById("guardarDisponibilidad");
-    const settings = { timeZone: document.getElementById("timezoneDisponibilidad").value.trim(), bookingEnabled: document.getElementById("bookingEnabledDisponibilidad").checked, weeklySchedule: leerJornada(), slotDurationMinutes: 60, bufferBeforeMinutes: 0, bufferAfterMinutes: 0, minimumBookingNoticeMinutes: null, maximumBookingAdvanceDays: null, dateExceptions: [] };
-    button.disabled = true; estadoDisponibilidad("Guardando disponibilidad…");
-    try { const result = await executeAppointmentCommand({ action: "updateAvailabilitySettings", settings }); estadoDisponibilidad(result.bookingReady ? "Disponibilidad guardada y lista para reservas externas." : "Disponibilidad guardada. Falta una jornada válida para reservas externas."); }
-    catch (error) { const code = appointmentErrorCode(error); estadoDisponibilidad(code === "invalid-timezone" ? "La zona horaria debe ser un identificador IANA válido." : code.includes("working") || code.includes("schedule") ? "Revisa horarios: inicio antes de fin y sin solapamientos." : "No se pudo guardar la disponibilidad."); console.warn("[AGENDA][DISPONIBILIDAD] Guardado rechazado.", { code }); }
-    finally { button.disabled = false; }
-  }, { once: true });
-}
-
 function estado(texto) {
   const el = document.getElementById("estadoApariencia");
   if (el) el.textContent = texto;
@@ -342,9 +299,6 @@ onAuthStateChanged(auth, async (user) => {
   uidActual = user.uid;
   inicializarFotoPerfilConfiguracion(user).catch((error) => {
     console.error("No se pudo inicializar la fotografía de perfil.", error);
-  });
-  inicializarDisponibilidad(user).catch((error) => {
-    console.warn("[AGENDA][DISPONIBILIDAD] Inicialización pendiente.", { code: appointmentErrorCode(error) });
   });
   document.getElementById("verAvisoPrivacidad")?.addEventListener("click", (event) => abrirLegalModal(privacyNotice, event.currentTarget));
   document.getElementById("verConsentimientoBeta")?.addEventListener("click", (event) => abrirLegalModal(betaConsent, event.currentTarget));

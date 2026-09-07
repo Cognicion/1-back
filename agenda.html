@@ -34,10 +34,26 @@
     <div class="acciones">
       <button id="nuevoEvento" type="button">+ Nuevo evento</button>
       <button id="nuevaCita" type="button">Nueva cita</button>
+      <button id="abrirConfiguracionAgenda" type="button" class="boton-secundario">Configuración de agenda</button>
       <button id="mesAnterior">Mes anterior</button>
       <button id="mesActual">Hoy</button>
       <button id="mesSiguiente">Mes siguiente</button>
     </div>
+  </section>
+
+  <section id="configuracionAgenda" class="card agenda-settings" hidden>
+    <div class="agenda-settings-heading"><div><h2>Configuración de agenda</h2><p class="ayuda">Define disponibilidad profesional. Las reservas, confirmaciones, pagos e integraciones se configurarán aquí cuando sus funciones estén disponibles.</p></div><button id="cerrarConfiguracionAgenda" type="button" class="boton-secundario">Cerrar</button></div>
+    <section data-agenda-availability>
+      <h3>Disponibilidad</h3>
+      <form class="availability-settings">
+        <label>Zona horaria IANA <input data-timezone list="timezonesAgenda" placeholder="America/Mexico_City" autocomplete="off" required></label>
+        <datalist id="timezonesAgenda"><option value="America/Mexico_City"></option><option value="America/Tijuana"></option><option value="America/Cancun"></option></datalist>
+        <label class="checkline"><input data-booking-enabled type="checkbox"> Habilitar reservas externas cuando la jornada sea válida.</label>
+        <div data-weekly-schedule class="weekly-schedule" aria-live="polite"></div>
+        <div class="acciones"><button data-save-availability type="submit">Guardar disponibilidad</button></div>
+        <p data-availability-status class="ayuda" role="status">Cargando disponibilidad…</p>
+      </form>
+    </section>
   </section>
 
   <section class="grid-dos">
@@ -127,7 +143,7 @@
   </section>
 </main>
 
-<script type="module" src="js/agenda.js?v=20260907-agenda-transactional-v1"></script>
+<script type="module" src="js/agenda.js?v=20260907-agenda-settings-relocation-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>

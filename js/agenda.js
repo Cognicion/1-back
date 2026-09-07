@@ -6,6 +6,7 @@ import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { canUseMedicalAgenda } from "./utils/roles.js?v=20260719-admin-universal-modules";
 import { expandirEventosAgenda } from "./services/agendaRecurrence.js";
 import { executeAppointmentCommand, appointmentErrorCode, createRequestId } from "./services/appointmentCommandService.js";
+import { initializeAgendaAvailabilitySettings } from "./services/agendaAvailabilitySettings.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -25,7 +26,11 @@ onAuthStateChanged(auth, async (user) => {
   if (!usuario || !canUseMedicalAgenda(usuario)) { mostrarBloqueoAgenda("No tienes autorizacion para acceder a este servicio."); return; }
   medicoUid = user.uid; document.body.classList.remove("bloqueado");
   await cargarPacientes(); await cargarEventos(); actualizarCamposPorTipo();
+  initializeAgendaAvailabilitySettings($("configuracionAgenda").querySelector("[data-agenda-availability]")).catch((error) => console.warn("[AGENDA][DISPONIBILIDAD] Inicialización pendiente.", { code: appointmentErrorCode(error) }));
 });
+
+$("abrirConfiguracionAgenda").addEventListener("click", () => { const settings = $("configuracionAgenda"); settings.hidden = false; settings.scrollIntoView({ behavior: "smooth", block: "start" }); });
+$("cerrarConfiguracionAgenda").addEventListener("click", () => { $("configuracionAgenda").hidden = true; });
 
 async function cargarPacientes() {
   const select = $("pacienteCita");
