@@ -4,7 +4,7 @@ import {
   evaluarMedicamentosPaciente,
   normalizarMedicamentoClinico,
   obtenerIndicadorSeguridadMedicamento
-} from "./services/motorClinicoMedicamentos.js?v=20260904-parametros-colera-v2";
+} from "./services/motorClinicoMedicamentos.js?v=20260904-laboratorio-minimalista-somatometria-v1";
 import {
   construirRegistroParametrosClinicos,
   DEFINICIONES_PARAMETROS_CLINICOS,
@@ -18,6 +18,7 @@ import { listarTratamientos } from "./services/tratamientos.js";
 import { listarEstudios } from "./services/estudios.js";
 import { db } from "./firebase.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js?v=20260814-patient-alias-v1";
+import { calcularIMC } from "./utils/imc.js?v=20260904-laboratorio-minimalista-somatometria-v1";
 import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const seleccionados = [];
@@ -32,14 +33,33 @@ const CASOS_EJEMPLO = Object.freeze({
     etiqueta: "Paciente sano",
     edad: 30,
     sexo: "femenino",
+    peso: 62,
+    talla: 168,
+    fechaMuestra: "2026-09-04",
     alergias: "Sin alergias conocidas",
     diagnosticos: [],
-    medicamentos: []
+    medicamentos: [],
+    parametros: Object.freeze({
+      creatinina: 0.8,
+      eGFR: 105,
+      uacr: 8,
+      sodio: 140,
+      potasio: 4.2,
+      cloro: 102,
+      bicarbonato: 25,
+      magnesio: 2,
+      calcio: 9.4,
+      proteinasTotales: 7.2,
+      albumina: 4.2,
+      globulinas: 3
+    })
   }),
   "antipsicoticos-hta": Object.freeze({
     etiqueta: "Antipsicóticos + hipertensión arterial",
     edad: 46,
     sexo: "masculino",
+    peso: 92,
+    talla: 170,
     alergias: "Sin alergias conocidas",
     diagnosticos: [Object.freeze({ codigo: "I10", nombre: "Hipertensión esencial (primaria)", catalogo: "CIE-10", estado: "activo" })],
     medicamentos: ["Olanzapina", "Risperidona"]
@@ -48,6 +68,8 @@ const CASOS_EJEMPLO = Object.freeze({
     etiqueta: "TDAH + hipertensión arterial",
     edad: 25,
     sexo: "masculino",
+    peso: 75,
+    talla: 175,
     alergias: "Sin alergias conocidas",
     diagnosticos: [Object.freeze({ codigo: "I10", nombre: "Hipertensión esencial (primaria)", catalogo: "CIE-10", estado: "activo" })],
     medicamentos: ["Metilfenidato", "Atomoxetina"]
@@ -56,6 +78,8 @@ const CASOS_EJEMPLO = Object.freeze({
     etiqueta: "Cólera activo + diurético",
     edad: 40,
     sexo: "masculino",
+    peso: 68,
+    talla: 172,
     alergias: "Sin alergias conocidas",
     diagnosticos: [Object.freeze({ codigo: "A00.1", nombre: "Cólera debido a Vibrio cholerae O1, biotipo El Tor", catalogo: "CIE-10", estado: "activo" })],
     medicamentos: ["Furosemida"]
@@ -118,9 +142,9 @@ function aplicarReferenciaPredeterminadaFormulario(definicion, { forzar = false 
   }
   if (nota) {
     nota.textContent = referencia.rangoReferencia
-      ? `Referencia adulta orientativa (${referencia.rangoReferencia}). ${referencia.nota}`
+      ? "Referencia adulta orientativa; editable."
       : referencia.nota;
-    nota.title = referencia.fuente || "";
+    nota.title = [referencia.nota, referencia.fuente].filter(Boolean).join(" ");
   }
 }
 
@@ -477,15 +501,75 @@ function configurarMenuBuscable({ campoId, menuId, opciones, modo = "reemplazar"
   });
 }
 
+function numeroClinico(valor) {
+  if (valor === null || valor === undefined || String(valor).trim() === "") return null;
+  const numero = Number(String(valor).replace(",", ".").replace(/[^\d.-]/g, ""));
+  return Number.isFinite(numero) && numero > 0 ? numero : null;
+}
+
+function primerValorClinico(...valores) {
+  return valores.find((valor) => valor !== null && valor !== undefined && String(valor).trim() !== "") ?? "";
+}
+
+function pesoPacienteIntegrado(paciente = {}) {
+  return primerValorClinico(
+    paciente.peso,
+    paciente.signosVitales?.peso,
+    paciente.somatometria?.peso,
+    paciente.datosInstitucionales?.peso
+  );
+}
+
+function tallaPacienteIntegradoCm(paciente = {}) {
+  const talla = numeroClinico(primerValorClinico(
+    paciente.talla,
+    paciente.signosVitales?.talla,
+    paciente.somatometria?.talla,
+    paciente.datosInstitucionales?.talla
+  ));
+  if (talla === null) return "";
+  return Number((talla <= 3 ? talla * 100 : talla).toFixed(1));
+}
+
+function numeroSomatometriaFormulario(id) {
+  const campo = $(id);
+  if (campo?.validity?.rangeUnderflow || campo?.validity?.rangeOverflow) return null;
+  return numeroClinico(campo?.value);
+}
+
+function imcFormulario() {
+  const peso = numeroSomatometriaFormulario("farmacoPeso");
+  const tallaCm = numeroSomatometriaFormulario("farmacoTalla");
+  if (peso === null || tallaCm === null) return null;
+  return calcularIMC(peso, tallaCm / 100);
+}
+
+function actualizarImcFormulario() {
+  const salida = $("farmacoImc");
+  if (!salida) return;
+  const imc = imcFormulario();
+  salida.value = imc === null ? "—" : `${imc.toFixed(2)} kg/m²`;
+  salida.textContent = salida.value;
+  salida.dataset.disponible = imc === null ? "false" : "true";
+}
+
 function pacienteSimulado() {
   const pacienteBase = pacienteIntegradoPanel?.contexto || {};
   const diagnosticos = diagnosticosSeleccionados.map(diagnosticoParaMotor);
   const diagnosticosTexto = diagnosticos.map((diagnostico) => diagnostico.texto).filter(Boolean).join(", ");
   const { parametrosClinicos } = resolverParametrosFormulario();
+  const peso = numeroSomatometriaFormulario("farmacoPeso");
+  const talla = numeroSomatometriaFormulario("farmacoTalla");
+  const imc = imcFormulario();
+  const somatometria = { peso: peso ?? "", talla: talla ?? "", imc: imc ?? "" };
   return {
     ...pacienteBase,
     edad: $("farmacoEdad")?.value || pacienteBase.edad || "",
     sexo: $("farmacoSexo")?.value || pacienteBase.sexo || "",
+    ...somatometria,
+    somatometria: { ...pacienteBase.somatometria, ...somatometria },
+    signosVitales: { ...pacienteBase.signosVitales, ...somatometria },
+    datosInstitucionales: { ...pacienteBase.datosInstitucionales, ...somatometria },
     alergias: $("farmacoAlergias")?.value || pacienteBase.alergias || "",
     comorbilidades: diagnosticosTexto,
     diagnosticos,
@@ -646,6 +730,8 @@ async function construirContextoPacientePanel(pacienteResumen = {}) {
 }
 
 function aplicarParametrosPacienteIntegrado(contexto = {}) {
+  // El expediente no debe heredar unidades, intervalos editados ni fechas ficticias del caso anterior.
+  limpiarParametrosClinicos();
   const resueltos = resolverParametrosClinicosPaciente(contexto);
   DEFINICIONES_PARAMETROS_CLINICOS.forEach((definicion) => {
     const registro = resueltos.porId?.[definicion.id];
@@ -671,6 +757,31 @@ function aplicarParametrosPacienteIntegrado(contexto = {}) {
   actualizarResumenParametros();
 }
 
+function aplicarParametrosCasoEjemplo(parametros = {}, fechaMuestra = "") {
+  limpiarParametrosClinicos();
+  if ($("farmacoParametrosFecha")) $("farmacoParametrosFecha").value = fechaMuestra;
+  DEFINICIONES_PARAMETROS_CLINICOS.forEach((definicion) => {
+    const entrada = parametros[definicion.id];
+    if (entrada === null || entrada === undefined || String(entrada).trim() === "") return;
+    const registro = typeof entrada === "object" ? entrada : { valor: entrada };
+    const valor = $(idCampoParametro(definicion.id, "valor"));
+    const unidad = $(idCampoParametro(definicion.id, "unidad"));
+    const rango = $(idCampoParametro(definicion.id, "rango"));
+    if (valor) valor.value = registro.valor ?? "";
+    if (unidad && registro.unidad && [...unidad.options].some((opcion) => opcion.value === registro.unidad)) {
+      unidad.value = registro.unidad;
+    }
+    if (rango && registro.rangoReferencia) {
+      rango.value = registro.rangoReferencia;
+      rango.dataset.rangoOrigen = "ejemplo_educativo";
+      rango.readOnly = true;
+    } else {
+      aplicarReferenciaPredeterminadaFormulario(definicion);
+    }
+  });
+  actualizarResumenParametros();
+}
+
 function reemplazarMedicamentosSeleccionados(medicamentos = []) {
   seleccionados.splice(0, seleccionados.length, ...medicamentos.filter(Boolean));
   renderSeleccionados();
@@ -687,11 +798,17 @@ function cargarCasoEjemplo() {
   limpiarSeleccionPacienteIntegrado();
   if ($("farmacoEdad")) $("farmacoEdad").value = caso.edad || "";
   if ($("farmacoSexo")) $("farmacoSexo").value = caso.sexo || "";
+  if ($("farmacoPeso")) $("farmacoPeso").value = caso.peso || "";
+  if ($("farmacoTalla")) $("farmacoTalla").value = caso.talla || "";
   if ($("farmacoAlergias")) $("farmacoAlergias").value = caso.alergias || "";
+  actualizarImcFormulario();
   establecerDiagnosticosSeleccionados(caso.diagnosticos || []);
-  limpiarParametrosClinicos();
+  aplicarParametrosCasoEjemplo(caso.parametros || {}, caso.fechaMuestra || "");
   reemplazarMedicamentosSeleccionados((caso.medicamentos || []).map((medicamento, indice) => medicamentoDesdeTratamientoIntegrado({ medicamento }, indice)));
-  establecerEstadoContextoPaciente(`Ejemplo educativo cargado: ${caso.etiqueta}. No corresponde a una persona real.`, "ejemplo");
+  const detalleParametros = Object.keys(caso.parametros || {}).length
+    ? ` Se cargaron ${Object.keys(caso.parametros).length} resultados educativos; globulinas se conserva sin intervalo universal cuando el método no lo aporta.`
+    : "";
+  establecerEstadoContextoPaciente(`Ejemplo educativo cargado: ${caso.etiqueta}. No corresponde a una persona real.${detalleParametros}`, "ejemplo");
   evaluar();
 }
 
@@ -740,7 +857,10 @@ async function integrarPacientePanel(patientId = "") {
     };
     if ($("farmacoEdad")) $("farmacoEdad").value = obtenerEdadPacienteIntegrado(contexto);
     if ($("farmacoSexo")) $("farmacoSexo").value = obtenerSexoPacienteIntegrado(contexto);
+    if ($("farmacoPeso")) $("farmacoPeso").value = numeroClinico(pesoPacienteIntegrado(contexto)) ?? "";
+    if ($("farmacoTalla")) $("farmacoTalla").value = tallaPacienteIntegradoCm(contexto);
     if ($("farmacoAlergias")) $("farmacoAlergias").value = contexto.alergias || "";
+    actualizarImcFormulario();
     establecerDiagnosticosSeleccionados(diagnosticosDesdePacienteIntegrado(contexto));
     aplicarParametrosPacienteIntegrado(contexto);
     reemplazarMedicamentosSeleccionados(medicamentosDesdePacienteIntegrado(contexto, tratamientos));
@@ -1177,12 +1297,21 @@ function renderResumen(evaluacion, indicador, paciente) {
   const medicamentosEvaluados = evaluacion.medicamentosNormalizados || [];
   const medicamentosUnicos = evaluacion.principiosActivosNormalizados || medicamentosEvaluados;
   const parametros = evaluacion.parametrosClinicos || resolverParametrosClinicosPaciente(paciente);
+  const peso = numeroClinico(paciente.peso);
+  const tallaCm = numeroClinico(paciente.talla);
+  const imc = peso !== null && tallaCm !== null ? calcularIMC(peso, tallaCm / 100) : null;
+  const somatometria = [
+    peso !== null ? `${peso} kg` : "",
+    tallaCm !== null ? `${tallaCm} cm` : "",
+    imc !== null ? `IMC ${imc.toFixed(2)} kg/m²` : ""
+  ].filter(Boolean).join(" · ");
 
   return `
     <article class="farmaco-resumen ${claseIndicadorSeguridad(indicador)}">
       <div>
         <strong>Resumen de seguridad: ${escapar(indicador.etiqueta || "Resultado no disponible")}</strong>
         ${indicador.estado === "datos_insuficientes" ? "<p><b>Datos insuficientes:</b> existen selecciones cuya evidencia o regla local no está cargada.</p>" : ""}
+        ${somatometria ? `<p><b>Somatometría considerada:</b> ${escapar(somatometria)}. El IMC se usa como dato de cribado y no confirma por sí solo un diagnóstico.</p>` : ""}
         <p>Catálogo activo: ${MEDICAMENTOS_MAESTROS.length} medicamentos y ${MEDICAMENTOS_PRESENTACIONES.length} presentaciones. Fuente verificada: ${COBERTURA_FARMACOLOGICA.conFuenteVerificada}; fuente regulatoria parcial: ${COBERTURA_FARMACOLOGICA.fuenteRegulatoriaParcial}; fuente pendiente: ${COBERTURA_FARMACOLOGICA.fuentePendienteEstricta}; fichas completas frente al esquema mínimo: ${COBERTURA_FARMACOLOGICA.datosCompletos}.</p>
       </div>
       <dl>
@@ -1261,6 +1390,7 @@ renderSeleccionados();
 renderDiagnosticosSeleccionados();
 renderParametrosClinicos();
 actualizarResumenParametros();
+actualizarImcFormulario();
 $("agregarFarmaco")?.addEventListener("click", agregarMedicamento);
 $("evaluarFarmacos")?.addEventListener("click", evaluar);
 $("limpiarFarmacos")?.addEventListener("click", limpiar);
@@ -1282,6 +1412,12 @@ $("farmacoSexo")?.addEventListener("change", () => {
   DEFINICIONES_PARAMETROS_CLINICOS.forEach((definicion) => aplicarReferenciaPredeterminadaFormulario(definicion));
   actualizarResumenParametros();
   if (seleccionados.length) evaluar();
+});
+["farmacoEdad", "farmacoPeso", "farmacoTalla"].forEach((campoId) => {
+  $(campoId)?.addEventListener("input", () => {
+    actualizarImcFormulario();
+    if (seleccionados.length) evaluar();
+  });
 });
 $("farmacoBuscador")?.addEventListener("keydown", (evento) => {
   if (evento.key === "Enter" && !$("farmacoCatalogoMenu")?.hidden) return;

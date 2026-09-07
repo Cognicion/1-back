@@ -3,7 +3,7 @@ import { obtenerHistorialNotas } from "./notas.js";
 import { obtenerNombrePacienteParaMostrar } from "../utils/nombresPacientes.js";
 import { normalizarTextoFrecuencia } from "../utils/frecuencias.js";
 import { CATALOGO_FARMACOLOGICO_OFICIAL } from "../data/catalogoFarmacologicoUnificado.js?v=20260904-parametros-colera-v2";
-import { evaluarMedicamentosPaciente } from "./motorClinicoMedicamentos.js?v=20260904-parametros-colera-v2";
+import { evaluarMedicamentosPaciente } from "./motorClinicoMedicamentos.js?v=20260904-laboratorio-minimalista-somatometria-v1";
 import { resolverParametrosClinicosPaciente } from "./parametrosClinicosPaciente.js?v=20260904-parametros-colera-v2";
 import { listarPacientes } from "./usuarios.js?v=20260826-cuenta-profesional-gratuita-v1";
 import { collection, doc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";

@@ -3,7 +3,7 @@ import {
   evaluarMedicamentosPaciente,
   normalizarMedicamentoClinico,
   obtenerIndicadorSeguridadMedicamento
-} from "../services/motorClinicoMedicamentos.js?v=20260904-parametros-colera-v2";
+} from "../services/motorClinicoMedicamentos.js?v=20260904-laboratorio-minimalista-somatometria-v1";
 
 // Metadata legacy conservada por compatibilidad documental. La detección
 // ejecutable usa el motor clínico común y el catálogo oficial.

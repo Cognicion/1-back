@@ -4,6 +4,14 @@
       "collectionGroup": "agenda",
       "queryScope": "COLLECTION",
       "fields": [
+        { "fieldPath": "startAt", "order": "ASCENDING" },
+        { "fieldPath": "endAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "agenda",
+      "queryScope": "COLLECTION",
+      "fields": [
         {
           "fieldPath": "startDate",
           "order": "ASCENDING"

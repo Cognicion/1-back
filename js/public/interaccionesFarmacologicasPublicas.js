@@ -3,7 +3,7 @@ import {
   buscarMedicamentosParaConsulta,
   crearSeleccionMedicamento,
   resumirAnalisisPublico
-} from "../services/interaccionesPublicas.js?v=20260904-parametros-colera-v2";
+} from "../services/interaccionesPublicas.js?v=20260904-laboratorio-minimalista-somatometria-v1";
 import { registrarUsoConsultaInteracciones } from "../services/analyticsInteraccionesFarmacologicas.js";
 
 const SEVERIDAD_ORDEN = ["contraindicada", "alta", "moderada", "baja", "informativa"];

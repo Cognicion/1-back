@@ -9,7 +9,7 @@ import { createSofiaUnifiedClient } from "./sofia/sofiaUnifiedClient.js";
 import { applySofiaPageActions, collectSofiaPageState } from "./sofia/pageTools.js?v=20260821-patient-pattern-profile-v1";
 import { listenForSofiaPatternContext } from "./patient-patterns/patternSofiaBridge.js";
 import { renderEcgInterpretation } from "./sofia/electrocardiogram/ecgRenderer.js?v=20260821-sofia-ecg-v1";
-import { interpretPatientElectrocardiogram } from "./services/sofiaElectrocardiograma.js?v=20260904-parametros-colera-v2";
+import { interpretPatientElectrocardiogram } from "./services/sofiaElectrocardiograma.js?v=20260904-laboratorio-minimalista-somatometria-v1";
 import {
   analizarInteraccionesMedicamentos,
   cargarExpedientePacienteSofia,
@@ -23,7 +23,7 @@ import {
   generarRazonamientoClinico,
   generarRecomendacionesLaboratorio,
   obtenerBaseFarmacologicaInicial
-} from "./services/sofiaClinica.js?v=20260904-parametros-colera-v2";
+} from "./services/sofiaClinica.js?v=20260904-laboratorio-minimalista-somatometria-v1";
 
 aplicarAparienciaGuardada();
 

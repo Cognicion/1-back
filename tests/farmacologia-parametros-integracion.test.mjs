@@ -15,6 +15,46 @@ const porTitulo = (resultado, patron) => resultado.alertas.find((alerta) => patr
 const raiz = new URL("../", import.meta.url);
 const leer = (ruta) => readFile(new URL(ruta, raiz), "utf8");
 
+test("peso y talla en metros o centímetros producen la misma precaución, sin crear un diagnóstico", () => {
+  const medicamento = [{ medicamento: "Olanzapina" }];
+  for (const paciente of [
+    { edad: 46, peso: 92, talla: 170 },
+    { edad: 46, somatometria: { peso: 92, talla: 1.70 } },
+    { edad: 46, signosVitales: { peso: "92", talla: "1,70" } },
+    { datosInstitucionales: { edad: 46, peso: 92, talla: 170 } }
+  ]) {
+    const resultado = evaluar(paciente, medicamento);
+    const alerta = resultado.alertas.find((item) => item.categoria === "somatometria");
+    assert.ok(alerta);
+    assert.equal(alerta.tipo, "precaucion_parametro_clinico");
+    assert.match(alerta.diagnosticos.join(" "), /31\.83 kg\/m²/);
+    assert.ok(alerta.fuentes.some((fuente) => /Stahl/.test(fuente)));
+    assert.ok(alerta.fuentes.some((fuente) => /páginas PDF/.test(fuente)));
+    assert.equal(resultado.diagnosticosDetectados.some((dx) => dx.id === "obesidad"), false);
+    assert.deepEqual(detectarAlertasClinicasMedicamentos(medicamento, paciente).alertas
+      .find((item) => item.categoria === "somatometria"), alerta, "el expediente y el laboratorio aplican la misma regla");
+  }
+});
+
+test("el IMC aislado no modifica las alertas en menores, embarazo, datos incompletos o medicamento sin señal metabólica", () => {
+  for (const paciente of [
+    { edad: 12, peso: 92, talla: 170 },
+    { peso: 92, talla: 170 },
+    { edad: 46, peso: 62, talla: 168 },
+    { edad: 30, peso: 92, talla: 170, embarazo: true },
+    { edad: 46, peso: 92, imc: 31.83 },
+    { edad: 46, talla: 170, imc: 31.83 },
+    { edad: 46, peso: 0, talla: 170 },
+    { edad: 46, peso: -92, talla: 170 },
+    { edad: 46, peso: 92, talla: 0 }
+  ]) {
+    const resultado = evaluar(paciente, [{ medicamento: "Olanzapina" }]);
+    assert.equal(resultado.alertas.some((item) => item.categoria === "somatometria"), false);
+  }
+  assert.equal(evaluar({ edad: 46, peso: 92, talla: 170 }, [{ medicamento: "Paracetamol" }])
+    .alertas.some((item) => item.categoria === "somatometria"), false);
+});
+
 test("A00.1 + furosemida produce una precaución alta, trazable y no una contraindicación absoluta", () => {
   const resultado = evaluar(
     { diagnosticos: [{ codigo: "A00.1", nombre: "Cólera debido a Vibrio cholerae O1, biotipo El Tor" }] },

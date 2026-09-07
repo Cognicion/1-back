@@ -1154,7 +1154,25 @@ service cloud.firestore {
       // no debe convertirla en una colección legible por cualquier usuario autenticado.
       match /agenda/{eventoId} {
         allow read: if accountIsActive(uid) && (isSelf(uid) || isAdmin());
-        allow write: if accountIsActive(uid) && (isSelf(uid) || isAdmin());
+        function isAppointmentDocument(data) {
+          return data.get("type", "") == "appointment"
+            || (!data.keys().hasAny(["type"])
+              && data.keys().hasAny(["pacienteId", "pacienteNombre"]));
+        }
+        function legacyAgendaWritesEnabled() {
+          return !exists(/databases/$(database)/documents/appointmentControls/$(uid))
+            || get(/databases/$(database)/documents/appointmentControls/$(uid)).data.get("enabled", false) != true;
+        }
+        allow create: if accountIsActive(uid) && (isSelf(uid) || isAdmin())
+          && (legacyAgendaWritesEnabled() || !isAppointmentDocument(request.resource.data))
+          && !request.resource.data.keys().hasAny(["payment", "confirmation", "reminders"]);
+        allow update: if accountIsActive(uid) && (isSelf(uid) || isAdmin())
+          && (legacyAgendaWritesEnabled()
+            || (!isAppointmentDocument(resource.data)
+              && !isAppointmentDocument(request.resource.data)))
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(["payment", "confirmation", "reminders"]);
+        allow delete: if accountIsActive(uid) && (isSelf(uid) || isAdmin())
+          && (legacyAgendaWritesEnabled() || !isAppointmentDocument(resource.data));
       }
 
       // Perfiles derivados y revisiones clínicas: solo Cloud Functions/Admin SDK.

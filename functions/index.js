@@ -58,6 +58,32 @@ const {
 } = require("./accountSecurity/accountDeletion");
 const { isPatient } = require("./accountLinking/validation");
 
+let appointmentServicePromise = null;
+
+async function getAppointmentService() {
+  if (!appointmentServicePromise) {
+    appointmentServicePromise = import("./appointments/service.mjs")
+      .then(({ createAppointmentService }) => createAppointmentService({ db: adminDb }));
+  }
+  return appointmentServicePromise;
+}
+
+function appointmentHttpsError(error) {
+  if (error instanceof HttpsError) return error;
+  const appointmentCode = String(error?.code || "internal");
+  const statusByCode = {
+    unauthenticated: "unauthenticated",
+    "permission-denied": "permission-denied",
+    conflict: "aborted",
+    "idempotency-key-reused": "already-exists",
+    "not-found": "not-found",
+    "transactional-mode-disabled": "failed-precondition",
+    "agenda-read-limit": "resource-exhausted"
+  };
+  const status = statusByCode[appointmentCode] || (appointmentCode.startsWith("invalid-") || appointmentCode.includes("inconsistent") ? "invalid-argument" : "failed-precondition");
+  return new HttpsError(status, "No fue posible completar la operación de agenda.", { appointmentCode });
+}
+
 const ADMIN_UID = "NQ0CU5PSDBUgVrk56sjPEVhOs2D3";
 const TIPOS_COLABORADOR_VALIDOS = new Set(["colaborador", "destacado", "estrella"]);
 const ROLES_ADMIN_VALIDOS = new Set(["admin", "administrador", "superadmin", "adminprincipal", "administradorprincipal"]);
@@ -1157,3 +1183,39 @@ exports.listAuthorizedPatientIds = listAuthorizedPatientIds;
 exports.listProfessionalDirectory = listProfessionalDirectory;
 exports.registerProfessional = registerProfessional;
 exports.registerProfessionalWithCode = registerProfessionalWithCode;
+exports.manageAppointment = onCall({ region: "us-central1", timeoutSeconds: 60 }, conCuentaCallableActiva(async (request) => {
+  const data = request.data || {};
+  const action = String(data.action || "");
+  const handlers = {
+    create: "createAppointment",
+    update: "updateAppointment",
+    reschedule: "rescheduleAppointment",
+    confirm: "confirmAppointment",
+    cancel: "cancelAppointment",
+    complete: "completeAppointment",
+    availability: "getAvailability",
+    availabilitySettings: "getAvailabilitySettings",
+    updateAvailabilitySettings: "updateAvailabilitySettings"
+  };
+  if (!Object.prototype.hasOwnProperty.call(handlers, action)) {
+    throw new HttpsError("invalid-argument", "La operación de agenda no es válida.");
+  }
+  try {
+    const service = await getAppointmentService();
+    const payload = {
+      auth: request.auth,
+      doctorUid: request.auth.uid,
+      appointmentId: data.appointmentId,
+      requestId: data.requestId,
+      input: data.input || {},
+      candidate: data.candidate || {}
+    };
+    if (action === "availability") return await service.getAvailability({ auth: request.auth, doctorUid: request.auth.uid, candidate: payload.candidate });
+    if (action === "availabilitySettings") return await service.getAvailabilitySettings({ auth: request.auth, doctorUid: request.auth.uid });
+    if (action === "updateAvailabilitySettings") return await service.updateAvailabilitySettings({ auth: request.auth, doctorUid: request.auth.uid, settings: data.settings || {} });
+    return await service[handlers[action]](payload);
+  } catch (error) {
+    logger.warn("[AGENDA] Operación rechazada", { action, code: error?.code || error?.name || "internal" });
+    throw appointmentHttpsError(error);
+  }
+}));

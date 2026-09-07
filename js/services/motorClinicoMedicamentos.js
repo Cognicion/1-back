@@ -12,6 +12,7 @@ import {
 import { detectarInteraccionesPorCitocromos } from "../data/citocromosFarmacologicos.js?v=20260811-pharmacology-files-consolidated-v1";
 import { CATALOGO_DIAGNOSTICOS } from "../data/catalogoDiagnosticos.js?v=20260904-parametros-colera-v2";
 import { resolverParametrosClinicosPaciente } from "./parametrosClinicosPaciente.js?v=20260904-parametros-colera-v2";
+import { calcularIMC } from "../utils/imc.js?v=20260904-laboratorio-minimalista-somatometria-v1";
 
 const SEVERIDAD_ORDEN = {
   informativa: 1,
@@ -470,8 +471,12 @@ function calcularEdadLocal(fechaNacimiento) {
 function extraerContextoDirectoPaciente(paciente = {}) {
   const textos = [];
   const parametros = resolverParametrosClinicosPaciente(paciente);
-  const edad = numeroSeguro(paciente.edad) ?? calcularEdadLocal(paciente.fechaNacimiento || paciente.fecha_nacimiento);
-  const peso = numeroSeguro(paciente.peso || paciente.somatometria?.peso || paciente.signosVitales?.peso);
+  const edad = numeroSeguro(paciente.edad) ?? numeroSeguro(paciente.datosInstitucionales?.edad)
+    ?? calcularEdadLocal(paciente.fechaNacimiento || paciente.fecha_nacimiento || paciente.datosInstitucionales?.fechaNacimiento);
+  const peso = numeroSeguro(paciente.peso || paciente.signosVitales?.peso || paciente.somatometria?.peso || paciente.datosInstitucionales?.peso);
+  const tallaRegistrada = numeroSeguro(paciente.talla || paciente.signosVitales?.talla || paciente.somatometria?.talla || paciente.datosInstitucionales?.talla);
+  const tallaMetros = tallaRegistrada !== null && tallaRegistrada > 3 ? tallaRegistrada / 100 : tallaRegistrada;
+  const imc = calcularIMC(peso, tallaMetros);
   const eGFR = parametros.valoresCanonicos.eGFR;
   const creatinina = parametros.valoresCanonicos.creatininaMgDl;
   const childPugh = paciente.childPugh || paciente.child || paciente.funcionHepatica?.childPugh || "";
@@ -486,7 +491,14 @@ function extraerContextoDirectoPaciente(paciente = {}) {
   if (lactancia) textos.push("lactancia");
   if (/alcohol|etanol|bebida/i.test(consumo)) textos.push("consumo de alcohol");
 
-  return { edad, peso, eGFR, creatinina, parametros, childPugh, alergias, embarazo, lactancia, textos };
+  return { edad, peso, tallaMetros, imc, eGFR, creatinina, parametros, childPugh, alergias, embarazo, lactancia, textos };
+}
+
+function categoriaImcAdulto(imc) {
+  if (!Number.isFinite(imc) || imc <= 0) return null;
+  if (imc < 25) return null;
+  if (imc < 30) return { id: "sobrepeso", etiqueta: "sobrepeso como categoría de cribado" };
+  return { id: "obesidad", etiqueta: "obesidad como categoría de cribado" };
 }
 
 function detectarChildPugh(textos = []) {
@@ -875,6 +887,39 @@ function evaluarContextoDirectoPaciente(medicamentosNormalizados = [], paciente 
   const contexto = extraerContextoDirectoPaciente(paciente);
   const parametros = contexto.parametros;
   const alertas = [];
+  const categoriaImc = contexto.edad !== null && contexto.edad >= 18 && !contexto.embarazo
+    ? categoriaImcAdulto(contexto.imc) : null;
+  const medicamentosRiesgoMetabolico = medicamentosNormalizados.filter((med) =>
+    Number(med.riesgos?.metabolico || 0) > 0 || Number(med.riesgos?.glucosa || 0) > 0
+  );
+  if (categoriaImc && medicamentosRiesgoMetabolico.length) {
+    const fuentesMetabolicas = medicamentosRiesgoMetabolico.flatMap((med) => {
+      const ficha = obtenerMedicamentoPorId(med.clinicalMedicationId || med.id);
+      const fuentes = (ficha?.fuentes || []).map((fuente) => typeof fuente === "string" ? fuente
+        : [fuente.titulo, fuente.rutaLocal, fuente.paginasPdf?.length ? `páginas PDF ${fuente.paginasPdf.join(", ")}` : "", fuente.url].filter(Boolean).join("; "));
+      return fuentes.length ? fuentes : [`${med.nombresIngredientes?.join(" + ") || med.textoOriginal}: fuente farmacológica específica pendiente.`];
+    });
+    alertas.push(crearAlerta({
+      id: `somatometria_imc_${categoriaImc.id}:${medicamentosRiesgoMetabolico.map((med) => med.id).sort().join("|")}`,
+      tipo: "precaucion_parametro_clinico",
+      categoria: "somatometria",
+      severidad: "moderada",
+      titulo: "IMC de cribado elevado con medicamento de riesgo metabólico",
+      medicamentos: nombresNormalizadosAlerta(...medicamentosRiesgoMetabolico),
+      presentacionesOriginales: presentacionesOriginalesAlerta(...medicamentosRiesgoMetabolico),
+      diagnosticos: [`Hallazgo antropométrico, no diagnóstico aislado: IMC ${contexto.imc.toFixed(2)} kg/m² (${categoriaImc.etiqueta})`],
+      mecanismo: "La somatometría basal contextualiza la vigilancia de medicamentos cuya ficha normalizada contiene una señal metabólica o sobre glucosa.",
+      efecto: "El IMC es una medida de cribado: no confirma por sí solo un diagnóstico ni predice de forma individual la respuesta al medicamento.",
+      recomendacion: "Corroborar peso y talla, revisar tendencia ponderal y aplicar la vigilancia específica de cada medicamento; considerar presión arterial, glucosa/HbA1c y lípidos cuando su ficha o el contexto clínico lo indiquen.",
+      parametrosVigilancia: ["Peso", "Talla", "IMC", "Tendencia ponderal", "Presión arterial", "Glucosa/HbA1c y lípidos si aplica"],
+      evidencia: "regla_local_de_vigilancia_no_escala_validada_de_riesgo",
+      confianza: "moderada",
+      fuentes: [
+        "WHO, Obesity and overweight: definición y categorías de IMC en adultos; el IMC es una medida de cribado, https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight",
+        ...new Set(fuentesMetabolicas)
+      ]
+    }));
+  }
   const registroCreatinina = parametros.porId.creatinina;
   const categoriaEgfr = parametros.categorias.eGFR;
   const categoriaUacr = parametros.categorias.uacr;

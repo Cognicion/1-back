@@ -39,6 +39,10 @@
           <span class="config-nav-icon" aria-hidden="true">●</span>
           <span><strong>Foto de perfil</strong><small>Imagen profesional</small></span>
         </a>
+        <a id="navDisponibilidad" class="config-nav-link" href="#disponibilidad" hidden>
+          <span class="config-nav-icon" aria-hidden="true">◷</span>
+          <span><strong>Disponibilidad</strong><small>Zona horaria y jornada</small></span>
+        </a>
         <a class="config-nav-link" href="#legal">
           <span class="config-nav-icon" aria-hidden="true">✓</span>
           <span><strong>Legal</strong><small>Documentos y permisos</small></span>
@@ -110,6 +114,18 @@
       <p id="estadoApariencia" class="config-status">Cargando preferencia...</p>
     </section>
 
+    <section id="disponibilidad" class="config-card" aria-labelledby="tituloDisponibilidad" hidden>
+      <div class="config-section-heading"><span class="config-section-icon" aria-hidden="true">◷</span><div><span class="config-kicker">Agenda profesional</span><h2 id="tituloDisponibilidad">Disponibilidad</h2><p>La jornada se interpreta en la zona horaria del profesional.</p></div></div>
+      <form id="formDisponibilidad" class="availability-settings">
+        <label>Zona horaria IANA <input id="timezoneDisponibilidad" list="timezonesDisponibilidad" placeholder="America/Mexico_City" autocomplete="off" required></label>
+        <datalist id="timezonesDisponibilidad"><option value="America/Mexico_City"></option><option value="America/Tijuana"></option><option value="America/Cancun"></option></datalist>
+        <label class="checkbox-legal"><input id="bookingEnabledDisponibilidad" type="checkbox"><span>Habilitar reservas por canales externos cuando la jornada sea válida.</span></label>
+        <div id="jornadaSemanal" class="weekly-schedule" aria-live="polite"></div>
+        <div class="availability-actions"><button id="guardarDisponibilidad" class="btn-principal" type="submit">Guardar disponibilidad</button></div>
+        <p id="estadoDisponibilidad" class="config-status" role="status">Cargando disponibilidad…</p>
+      </form>
+    </section>
+
     <section id="foto-perfil" class="config-card config-profile-photo" aria-labelledby="tituloFotoPerfilConfiguracion" hidden>
       <div class="config-section-heading">
         <span class="config-section-icon" aria-hidden="true">●</span>
@@ -155,7 +171,7 @@
     </div>
   </main>
 
-  <script type="module" src="js/configuracion.js?v=20260811-profile-photo-storage-guard-v2"></script>
+  <script type="module" src="js/configuracion.js?v=20260907-agenda-timezone-schedule-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>

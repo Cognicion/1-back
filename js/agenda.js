@@ -4,13 +4,17 @@ import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
 import { obtenerNombrePacienteParaMostrar } from "./utils/nombresPacientes.js";
 import { canUseMedicalAgenda } from "./utils/roles.js?v=20260719-admin-universal-modules";
-import { expandirEventosAgenda, parsearFechaAgenda } from "./services/agendaRecurrence.js";
+import { expandirEventosAgenda } from "./services/agendaRecurrence.js";
+import { executeAppointmentCommand, appointmentErrorCode, createRequestId } from "./services/appointmentCommandService.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import { normalizarEvento, intervaloEvento } from "./services/appointmentService.js";
 
 const TIPO = { appointment: "Cita médica", event: "Evento", meeting: "Reunión", academic: "Actividad académica", shift: "Guardia", block: "Bloqueo / No disponible", vacation: "Vacaciones", other: "Otro" };
 const $ = (id) => document.getElementById(id);
 let medicoUid = null, pacientes = [], eventos = [], fechaCalendario = new Date();
+let operacionCitaActiva = false;
 const agendaRef = () => collection(db, "usuarios", medicoUid, "agenda");
 const form = $("formCita"), calendario = $("calendario"), lista = $("listaCitas");
 
@@ -53,16 +57,16 @@ async function cargarEventos() {
   eventos = [...documentos.values()].map(normalizarEvento); renderizarEventos(); renderizarCalendario();
   if (!exitosos.length) lista.textContent = "No se pudieron cargar los eventos. Revisa la consola y la configuración de Firestore.";
 }
-function normalizarEvento(raw) {
-  const antiguo = !raw.type && (raw.pacienteId !== undefined || raw.tipo !== undefined), type = raw.type || (antiguo ? "appointment" : "event");
-  const fecha = raw.startDate || raw.fecha || "";
-  return { ...raw, type, title: raw.title || (type === "appointment" ? raw.tipo || "Cita médica" : raw.nombre || TIPO[type] || "Evento"), startDate: fecha, endDate: raw.endDate || fecha, startTime: raw.startTime || raw.hora || "", endTime: raw.endTime || "", patientId: raw.patientId ?? raw.pacienteId ?? "", patientName: raw.patientName ?? raw.pacienteNombre ?? "", externalPatient: Boolean(raw.externalPatient || (raw.pacienteNombre && !raw.pacienteId)), status: raw.status || raw.estado || "programada", allDay: Boolean(raw.allDay), syncStatus: raw.syncStatus || "not_configured" };
-}
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault(); if (!medicoUid) return;
   const id = $("eventoId").value, datos = construirEvento(); if (!datos) return;
-  if (detectarBloqueo(datos) && datos.type === "appointment" && !confirm("Este horario está marcado como no disponible. ¿Deseas crear la cita de todos modos?")) return;
+  if (datos.type === "appointment") {
+    const anterior = id ? eventos.find((evento) => evento.id === id) : null;
+    const action = !id ? "create" : cambioHorarioCita(anterior, datos) ? "reschedule" : "update";
+    await ejecutarOperacionCita({ action, appointmentId: id, input: datosCitaParaServicio(datos, action), button: $("guardarEvento") });
+    return;
+  }
   if (id) { delete datos.createdAt; delete datos.fechaCreacion; delete datos.creadoPor; await updateDoc(doc(db, "usuarios", medicoUid, "agenda", id), datos); await registrarEventoAgenda("agenda_event_updated", "El medico actualizo un evento de agenda.", { detalles: { eventoId: id, type: datos.type } }); }
   else { const ref = await addDoc(agendaRef(), datos); await registrarEventoAgenda("agenda_event_created", "El medico creo un evento de agenda.", { pacienteUid: datos.patientId, pacienteNombre: datos.patientName, detalles: { eventoId: ref.id, type: datos.type } }); }
   limpiarFormulario(); await cargarEventos();
@@ -82,8 +86,8 @@ function construirEvento() {
 
 function renderizarEventos() {
   const ordenados = [...eventos].sort((a, b) => `${a.startDate} ${a.startTime}`.localeCompare(`${b.startDate} ${b.startTime}`));
-  lista.innerHTML = ordenados.length ? ordenados.slice(0, 12).map((e) => `<article class="cita tipo-${e.type}"><h3>${escaparHTML(e.title)}</h3><p><strong>${escaparHTML(e.startDate)}${e.allDay ? " · Todo el día" : ` ${escaparHTML(e.startTime)}`}</strong> · ${escaparHTML(TIPO[e.type] || "Evento")}</p>${e.patientName ? `<p>Paciente: ${escaparHTML(e.patientName)}${e.externalPatient ? " · No registrado" : ""}</p>` : ""}${e.description || e.notas ? `<p>${escaparHTML(e.description || e.notas)}</p>` : ""}<p>Estado: ${escaparHTML(e.status)}</p><div class="acciones"><button data-editar="${e.id}">Editar</button>${e.type === "appointment" && e.patientId ? `<button data-ver-paciente="${e.patientId}">Ver paciente</button>` : ""}${e.type === "appointment" && e.status !== "atendida" ? `<button data-completar="${e.id}">Marcar atendida</button>` : ""}<button data-eliminar="${e.id}">Eliminar</button></div></article>`).join("") : "Aún no hay eventos en este rango.";
-  lista.querySelectorAll("[data-editar]").forEach((b) => b.addEventListener("click", () => editarEvento(b.dataset.editar))); lista.querySelectorAll("[data-completar]").forEach((b) => b.addEventListener("click", () => marcarAtendida(b.dataset.completar))); lista.querySelectorAll("[data-eliminar]").forEach((b) => b.addEventListener("click", () => eliminarEvento(b.dataset.eliminar))); lista.querySelectorAll("[data-ver-paciente]").forEach((b) => b.addEventListener("click", () => { window.location.href = `paciente.html?id=${encodeURIComponent(b.dataset.verPaciente)}`; }));
+  lista.innerHTML = ordenados.length ? ordenados.slice(0, 12).map((e) => `<article class="cita tipo-${e.type}"><h3>${escaparHTML(e.title)}</h3><p><strong>${escaparHTML(e.startDate)}${e.allDay ? " · Todo el día" : ` ${escaparHTML(e.startTime)}`}</strong> · ${escaparHTML(TIPO[e.type] || "Evento")}</p>${e.patientName ? `<p>Paciente: ${escaparHTML(e.patientName)}${e.externalPatient ? " · No registrado" : ""}</p>` : ""}${e.description || e.notas ? `<p>${escaparHTML(e.description || e.notas)}</p>` : ""}<p>Estado: ${escaparHTML(e.status)}</p><div class="acciones"><button data-editar="${e.id}">Editar</button>${e.type === "appointment" && e.patientId ? `<button data-ver-paciente="${e.patientId}">Ver paciente</button>` : ""}${e.type === "appointment" && e.status === "programada" && e.confirmation?.status !== "confirmed" ? `<button data-confirmar="${e.id}">Confirmar</button>` : ""}${e.type === "appointment" && e.status === "programada" ? `<button data-completar="${e.id}">Marcar atendida</button><button data-cancelar="${e.id}">Cancelar cita</button>` : ""}${e.type !== "appointment" ? `<button data-eliminar="${e.id}">Eliminar</button>` : ""}</div></article>`).join("") : "Aún no hay eventos en este rango.";
+  lista.querySelectorAll("[data-editar]").forEach((b) => b.addEventListener("click", () => editarEvento(b.dataset.editar))); lista.querySelectorAll("[data-completar]").forEach((b) => b.addEventListener("click", () => marcarAtendida(b.dataset.completar, b))); lista.querySelectorAll("[data-confirmar]").forEach((b) => b.addEventListener("click", () => confirmarCita(b.dataset.confirmar, b))); lista.querySelectorAll("[data-cancelar]").forEach((b) => b.addEventListener("click", () => cancelarCita(b.dataset.cancelar, b))); lista.querySelectorAll("[data-eliminar]").forEach((b) => b.addEventListener("click", () => eliminarEvento(b.dataset.eliminar))); lista.querySelectorAll("[data-ver-paciente]").forEach((b) => b.addEventListener("click", () => { window.location.href = `paciente.html?id=${encodeURIComponent(b.dataset.verPaciente)}`; }));
 }
 function renderizarCalendario() {
   const anio = fechaCalendario.getFullYear(), mes = fechaCalendario.getMonth(), primerDia = new Date(anio, mes, 1), totalDias = new Date(anio, mes + 1, 0).getDate(), inicio = primerDia.getDay();
@@ -94,22 +98,60 @@ function renderizarCalendario() {
   calendario.innerHTML = html.join(""); calendario.querySelectorAll(".dia[data-fecha]").forEach((d) => d.addEventListener("click", (e) => { if (!e.target.closest("[data-evento]")) abrirNuevoEvento(d.dataset.fecha); })); calendario.querySelectorAll("[data-evento]").forEach((e) => e.addEventListener("click", (ev) => { ev.stopPropagation(); editarEvento(e.dataset.evento); }));
 }
 function abrirNuevoEvento(fecha = aFecha(new Date()), tipo = "event") { limpiarFormulario(); $("fechaCita").value = fecha; $("tipoEvento").value = tipo; actualizarCamposPorTipo(); form.scrollIntoView({ behavior: "smooth", block: "start" }); $("tituloEvento").focus(); }
-function editarEvento(id) { const e = eventos.find((x) => x.id === id); if (!e) return; abrirNuevoEvento(e.startDate, e.type); $("eventoId").value = e.id; $("eventoEstado").value = e.status || "programada"; $("googleCalendarEventId").value = e.googleCalendarEventId || ""; $("tituloFormulario").textContent = "Editar evento"; $("tituloEvento").value = e.title; $("pacienteCita").value = e.patientId || ""; $("pacienteNombreExterno").value = e.externalPatient ? e.patientName : ""; $("pacienteTelefonoExterno").value = e.patientPhone || ""; $("pacienteCorreoExterno").value = e.patientEmail || ""; $("horaCita").value = e.startTime; $("horaFinEvento").value = e.endTime || ""; $("duracionEvento").value = e.durationMinutes || 60; $("todoElDia").checked = e.allDay; $("fechaFinEvento").value = e.endDate !== e.startDate ? e.endDate : ""; $("ubicacionEvento").value = e.ubicacion || ""; $("notasCita").value = e.description || e.notas || ""; $("recurrenciaEvento").value = e.recurrence || ""; actualizarCamposPorTipo(); $("cancelarEdicion").classList.remove("oculto"); form.scrollIntoView({ behavior: "smooth", block: "start" }); }
-async function marcarAtendida(id) { await updateDoc(doc(db, "usuarios", medicoUid, "agenda", id), { estado: "atendida", status: "atendida", fechaAtencion: new Date().toISOString(), updatedAt: new Date().toISOString() }); await registrarEventoAgenda("marcar_cita_atendida", "El medico marco una cita como atendida.", { detalles: { eventoId: id } }); await cargarEventos(); }
+function editarEvento(id) { const e = eventos.find((x) => x.id === id); if (!e) return; abrirNuevoEvento(e.startDate, e.type); $("eventoId").value = e.id; $("eventoEstado").value = e.status || "programada"; $("googleCalendarEventId").value = e.googleCalendarEventId || ""; $("tituloFormulario").textContent = "Editar evento"; $("tituloEvento").value = e.title; $("pacienteCita").value = e.patientId || ""; $("pacienteNombreExterno").value = e.externalPatient ? e.patientName : ""; $("pacienteTelefonoExterno").value = e.patientPhone || ""; $("pacienteCorreoExterno").value = e.patientEmail || ""; $("horaCita").value = e.startTime; $("horaFinEvento").value = e.endTime || ""; $("duracionEvento").value = e.durationMinutes || 60; $("todoElDia").checked = e.allDay; $("fechaFinEvento").value = e.endDate !== e.startDate ? e.endDate : ""; $("ubicacionEvento").value = e.ubicacion || ""; $("recordatorioCita").value = e.recordatorio || ""; $("seguimientoCita").value = e.seguimiento || ""; $("notasCita").value = e.description || e.notas || ""; $("recurrenciaEvento").value = e.recurrence || ""; actualizarCamposPorTipo(); $("cancelarEdicion").classList.remove("oculto"); form.scrollIntoView({ behavior: "smooth", block: "start" }); }
+async function marcarAtendida(id, button) { await ejecutarOperacionCita({ action: "complete", appointmentId: id, button }); }
+async function confirmarCita(id, button) { await ejecutarOperacionCita({ action: "confirm", appointmentId: id, button }); }
+async function cancelarCita(id, button) { if (confirm("¿Cancelar esta cita?")) await ejecutarOperacionCita({ action: "cancel", appointmentId: id, button }); }
 async function eliminarEvento(id) { if (!confirm("¿Eliminar este evento?")) return; await deleteDoc(doc(db, "usuarios", medicoUid, "agenda", id)); await registrarEventoAgenda("agenda_event_deleted", "El medico elimino un evento de agenda.", { detalles: { eventoId: id } }); await cargarEventos(); }
+const CAMPOS_CITA_SERVICIO = ["startDate", "startTime", "endDate", "endTime", "durationMinutes", "patientId", "patientName", "patientPhone", "patientEmail", "description", "notas", "ubicacion", "recordatorio", "seguimiento", "recurrence", "googleCalendarEventId"];
+const CAMPOS_HORARIO_CITA = ["startDate", "startTime", "endDate", "endTime", "durationMinutes", "recurrence"];
+function datosCitaParaServicio(datos, action = "create") { const campos = action === "update" ? CAMPOS_CITA_SERVICIO.filter((campo) => !CAMPOS_HORARIO_CITA.includes(campo)) : CAMPOS_CITA_SERVICIO; return Object.fromEntries(campos.map((campo) => [campo, datos[campo] ?? ""])); }
+function cambioHorarioCita(anterior, datos) { return CAMPOS_HORARIO_CITA.some((campo) => String(anterior?.[campo] ?? "") !== String(datos[campo] ?? "")); }
+function etiquetaOperacionCita(action) { return ({ create: "Guardando…", update: "Guardando…", reschedule: "Reprogramando…", confirm: "Confirmando…", cancel: "Cancelando…", complete: "Actualizando…" })[action] || "Guardando…"; }
+function mensajeErrorCita(error) {
+  const code = appointmentErrorCode(error);
+  const mensajes = {
+    conflict: "Ese horario acaba de dejar de estar disponible. La Agenda se actualizó.",
+    "permission-denied": "No tienes autorización para modificar esta cita.",
+    unauthenticated: "Tu sesión expiró. Inicia sesión nuevamente.",
+    "idempotency-key-reused": "Esta solicitud ya fue procesada. Revisa la Agenda actualizada.",
+    "payment-not-verified": "La cita requiere un pago verificado antes de confirmarse.",
+    "terminal-appointment": "La cita ya no admite esta operación. Revisa su estado actual.",
+    "not-found": "La cita ya no existe o fue modificada desde otra sesión.",
+    "recurrence-horizon-exceeded": "No fue posible verificar con seguridad esta recurrencia. Revisa la serie.",
+    "recurrence-horizon-incomplete": "No fue posible validar la recurrencia completa.",
+    "agenda-read-limit": "La agenda requiere revisión antes de registrar más citas.",
+    "invalid-interval": "La fecha, hora o duración de la cita no son válidas.",
+    "invalid-duration": "La duración de la cita no es válida.",
+    "invalid-input": "La información de la cita no es válida.",
+    "invalid-state": "La cita cambió de estado. La Agenda se actualizó."
+  };
+  console.warn("Agenda: operación de cita rechazada.", { action: error?.details?.action || "", code });
+  return mensajes[code] || "No fue posible completar la operación. Revisa la Agenda e inténtalo de nuevo.";
+}
+async function ejecutarOperacionCita({ action, appointmentId = "", input = {}, button = null }) {
+  if (operacionCitaActiva) return;
+  operacionCitaActiva = true;
+  const boton = button || $("guardarEvento");
+  const textoOriginal = boton?.textContent || "";
+  if (boton) { boton.disabled = true; boton.textContent = etiquetaOperacionCita(action); }
+  try {
+    console.debug("[AGENDA_TRACE] ui→adapter", { action, hasAppointment: Boolean(appointmentId) });
+    await executeAppointmentCommand({ action, appointmentId, input, requestId: createRequestId(`agenda_${action}`) });
+    limpiarFormulario();
+    await cargarEventos();
+    console.debug("[AGENDA_TRACE] firestore→ui", { action, outcome: "refreshed" });
+  } catch (error) {
+    alert(mensajeErrorCita(error));
+    await cargarEventos();
+    console.debug("[AGENDA_TRACE] firestore→ui:error", { action, code: appointmentErrorCode(error) });
+  } finally {
+    operacionCitaActiva = false;
+    if (boton?.isConnected) { boton.disabled = false; boton.textContent = textoOriginal; }
+  }
+}
 function limpiarFormulario() { form.reset(); $("eventoId").value = ""; $("googleCalendarEventId").value = ""; $("eventoEstado").value = ""; $("horaCita").disabled = false; $("tituloFormulario").textContent = "Nuevo evento"; $("duracionEvento").value = 60; $("fechaCita").value = aFecha(new Date()); $("cancelarEdicion").classList.add("oculto"); actualizarCamposPorTipo(); }
 function actualizarCamposPorTipo() { const esCita = $("tipoEvento").value === "appointment", externo = !$("pacienteCita").value, actual = $("eventoId").value ? eventos.find((e) => e.id === $("eventoId").value) : null; $("campoPaciente").classList.toggle("oculto", !esCita); $("campoPacienteExterno").classList.toggle("oculto", !esCita || !externo); $("datosPacienteExterno").classList.toggle("oculto", !esCita || !externo); $("ayudaVinculacion").classList.toggle("oculto", !esCita || !actual?.externalPatient); $("campoTitulo").classList.toggle("oculto", esCita); }
-function intervaloEvento(evento) {
-  const startDate = evento.startDate || evento.fecha, endDate = evento.endDate || startDate;
-  if (!parsearFechaAgenda(startDate) || !parsearFechaAgenda(endDate)) return null;
-  const startTime = evento.allDay || !evento.startTime ? "00:00:00" : `${evento.startTime}:00`;
-  const start = new Date(`${startDate}T${startTime}`).getTime();
-  let end;
-  if (evento.allDay || !evento.startTime || (!evento.endTime && !evento.durationMinutes)) end = new Date(`${endDate}T23:59:59`).getTime();
-  else if (evento.endTime) end = new Date(`${endDate}T${evento.endTime}:00`).getTime();
-  else end = start + Number(evento.durationMinutes || 60) * 60 * 1000;
-  return [start, Math.max(start, end)];
-}
 function detectarBloqueo(datos) {
   const visible = rangoVisible();
   return expandirEventosAgenda(eventos, visible.inicio, visible.fin).filter((e) => ["block", "vacation"].includes(e.type)).some((bloqueo) => {

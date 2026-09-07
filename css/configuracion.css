@@ -906,6 +906,17 @@ html[data-theme="light"] .modo-interfaz-opcion.activo {
   color: var(--config-text) !important;
 }
 
+.availability-settings { display: grid; gap: 16px; }
+.availability-settings > label:not(.checkbox-legal) { display: grid; gap: 6px; font-weight: 700; }
+.availability-settings input { max-width: 360px; }
+.weekly-schedule { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.schedule-day { padding: 12px; border: 1px solid var(--config-border); border-radius: 12px; display: grid; gap: 8px; }
+.working-intervals { display: grid; gap: 6px; }
+.working-interval { display: flex; align-items: center; gap: 6px; }
+.working-interval input { min-width: 0; max-width: 118px; }
+.working-interval button { border: 0; border-radius: 50%; width: 26px; height: 26px; color: var(--config-text); background: transparent; cursor: pointer; font-size: 1.15rem; }
+.availability-actions { display: flex; gap: 10px; }
+
 @media (max-width: 940px) {
   .paletas-claras-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -913,4 +924,5 @@ html[data-theme="light"] .modo-interfaz-opcion.activo {
 @media (max-width: 520px) {
   .paleta-clara-settings { padding: 16px; }
   .paletas-claras-grid { grid-template-columns: 1fr; }
+  .weekly-schedule { grid-template-columns: 1fr; }
 }

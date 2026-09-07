@@ -16,7 +16,7 @@ import {
 } from "./services/apuntesMedicoPersistence.js";
 import {
   detectarAlertasClinicasMedicamentos
-} from "./data/interaccionesFarmacologicas.js?v=20260904-parametros-colera-v2";
+} from "./data/interaccionesFarmacologicas.js?v=20260904-laboratorio-minimalista-somatometria-v1";
 import {
   DEFINICIONES_PARAMETROS_CLINICOS,
   GRUPOS_PARAMETROS_CLINICOS,

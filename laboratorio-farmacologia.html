@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/theme/cognicion-theme.css">
   <link rel="stylesheet" href="css/accesos-rapidos.css?v=1.899" data-estilos-accesos-rapidos>
-  <link rel="stylesheet" href="css/laboratorio-farmacologia.css?v=20260904-parametros-tablas-desplegables-v1">
+  <link rel="stylesheet" href="css/laboratorio-farmacologia.css?v=20260904-laboratorio-minimalista-somatometria-v1">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
 <body class="pagina-laboratorio-farmacologia">
@@ -73,6 +73,13 @@
         <div class="form-grid">
           <label>Edad<input id="farmacoEdad" type="number" min="0" max="120" placeholder="Ej. 45"></label>
           <label>Sexo<select id="farmacoSexo"><option value="">No especificado</option><option value="femenino">Femenino</option><option value="masculino">Masculino</option><option value="otro">Otro</option></select></label>
+          <label><span>Peso <small>kg</small></span><input id="farmacoPeso" type="number" min="0.1" max="700" step="0.1" inputmode="decimal" placeholder="Ej. 70"></label>
+          <label><span>Talla <small>cm</small></span><input id="farmacoTalla" type="number" min="30" max="260" step="0.1" inputmode="decimal" placeholder="Ej. 170"></label>
+          <div class="farmaco-imc" aria-live="polite">
+            <span>IMC calculado</span>
+            <output id="farmacoImc">—</output>
+            <small>Dato de cribado; no establece un diagnóstico por sí solo.</small>
+          </div>
           <label class="farmaco-search-field">
             Alergias
             <input id="farmacoAlergias" autocomplete="off" placeholder="Buscar medicamento o grupo, ej. penicilina">
@@ -107,7 +114,7 @@
 
     <section class="farmaco-panel parametros-panel" aria-labelledby="farmacoParametrosTitulo">
       <div class="panel-heading"><span>Paso 3</span><h2 id="farmacoParametrosTitulo">Parámetros</h2></div>
-      <p class="parametros-intro">Registra el valor, la unidad y el intervalo informado por el laboratorio. La clasificación respeta ese rango y no presupone valores de referencia.</p>
+      <p class="parametros-intro">Registra los resultados. Los intervalos adultos son orientativos; edítalos con el lápiz según el informe de tu laboratorio.</p>
       <div class="parametros-meta">
         <label>
           Fecha de la muestra (opcional)
@@ -134,7 +141,7 @@
     </section>
   </main>
 
-  <script type="module" src="js/laboratorio-farmacologia.js?v=20260904-parametros-tablas-desplegables-v1"></script>
+  <script type="module" src="js/laboratorio-farmacologia.js?v=20260904-laboratorio-minimalista-somatometria-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>
