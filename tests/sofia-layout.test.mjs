@@ -12,7 +12,7 @@ test("el análisis de SOFÍA usa todo el ancho y no estira los paneles vecinos",
     read("css/clinical-analysis.css")
   ]);
 
-  assert.match(html, /css\/sofia\.css\?v=20260831-sofia-admin-policy-v1/);
+  assert.match(html, /css\/sofia\.css\?v=20260908-sofia-admin-analysis-v1/);
   assert.match(html, /css\/clinical-analysis\.css\?v=20260828-sofia-report-layout-v1/);
   assert.match(sofiaCss, /\.sofia-grid\s*\{[^}]*align-items:\s*start/s);
   assert.match(sofiaCss, /\.sofia-panel\s*\{[^}]*background:\s*transparent/s);
@@ -56,7 +56,17 @@ test("SOFÍA separa acceso general admin de contexto clínico individual", async
   assert.match(script, /canUseSofiaPatientContext\(perfil\)/);
   assert.match(script, /patientId:\s*puedeUsarContextoPaciente\s*\?/);
   assert.match(script, /capabilities:\s*\["chat"\]/);
-  assert.match(css, /\.sofia-mode-admin \.sofia-grid > \.sofia-panel:not\(\.chat-panel\)\s*\{\s*display:\s*none/);
+  assert.match(html, /data-sofia-admin-panel hidden/);
+  assert.match(html, /id="resumenAdminSofia"/);
+  assert.match(html, /id="matricesAdminSofia"/);
+  assert.match(html, /id="hallazgosAdminSofia"/);
+  assert.match(html, /id="relacionesAdminSofia"/);
+  assert.match(html, /js\/sofia\.js\?v=20260908-sofia-admin-analysis-v1/);
+  assert.match(script, /httpsCallable\(functions, "getClinicalKnowledgeAdmin"\)/);
+  assert.match(script, /formatAdminProbability\(probability\)/);
+  assert.match(script, /scope:\s*"GLOBAL_DEIDENTIFIED"/);
+  assert.match(css, /\.sofia-mode-admin \.sofia-grid > \.sofia-panel:not\(\.chat-panel\):not\(\.sofia-admin-panel\)\s*\{\s*display:\s*none/);
+  assert.match(css, /\.sofia-mode-admin \.sofia-admin-panel:not\(\[hidden\]\)\s*\{\s*display:\s*block/);
 });
 
 test("la navegación admin delega clics y se registra antes de cargar conocimiento", async () => {

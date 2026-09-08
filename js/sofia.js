@@ -1,6 +1,7 @@
-import { auth, db } from "./firebase.js";
+import { auth, db, obtenerFunctions } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 import { aplicarAparienciaGuardada } from "./services/apariencia.js";
 import { canAccessSofia, canUseSofiaPatientContext, isAdministrator } from "./utils/roles.js";
 import { emitSofiaState } from "./sofia-mascota/mascotaEvents.js";
@@ -66,10 +67,173 @@ function aplicarModoAccesoSofia(perfil = {}) {
   const adminLink = document.querySelector("[data-sofia-admin-link]");
   if (adminLink) adminLink.hidden = !admin;
   const bienvenida = document.getElementById("mensajeBienvenidaSofia");
+  document.querySelectorAll("[data-sofia-admin-panel]").forEach((panel) => {
+    panel.hidden = !adminPuro;
+  });
   if (adminPuro && bienvenida) {
     bienvenida.textContent = "Hola. Soy SOFÍA en modo administrativo. Puedo ayudarte con conocimiento agregado, matrices y relaciones globales, sin acceder a expedientes ni contexto clínico individual.";
   }
+  const titulo = document.getElementById("tituloSofia");
+  const descripcion = document.getElementById("descripcionSofia");
+  if (adminPuro && titulo && descripcion) {
+    titulo.textContent = "SOFÍA · análisis administrativo";
+    descripcion.textContent = "Consulta conocimiento agregado, matrices y relaciones semánticas desidentificadas. Esta vista no accede a expedientes individuales.";
+  }
   return { admin, adminPuro, patientContext: puedeUsarContextoPaciente };
+}
+
+function renderAdminMetrics(container, metrics = []) {
+  if (!container) return;
+  container.classList.remove("empty-state");
+  container.replaceChildren(...metrics.map(([label, value]) => {
+    const card = document.createElement("div");
+    card.className = "metric-card";
+    const title = document.createElement("small");
+    title.textContent = label;
+    const amount = document.createElement("strong");
+    amount.textContent = String(value ?? 0);
+    card.append(title, amount);
+    return card;
+  }));
+}
+
+function renderAdminRows(container, rows = [], emptyMessage) {
+  if (!container) return;
+  container.replaceChildren();
+  if (!rows.length) {
+    container.classList.add("empty-state");
+    container.textContent = emptyMessage;
+    return;
+  }
+  container.classList.remove("empty-state");
+  rows.forEach(({ title, detail, meta = "" }) => {
+    const row = document.createElement("article");
+    row.className = "mini-card";
+    const heading = document.createElement("div");
+    const strong = document.createElement("strong");
+    strong.textContent = title;
+    const small = document.createElement("small");
+    small.textContent = meta;
+    heading.append(strong, small);
+    const paragraph = document.createElement("p");
+    paragraph.textContent = detail;
+    row.append(heading, paragraph);
+    container.appendChild(row);
+  });
+}
+
+function matrixLabel(key = "") {
+  return ({
+    mixed: "Variables clínicas, documentales y operativas",
+    documentation: "Presencia y documentación",
+    temporal: "Secuencias temporales"
+  })[key] || String(key || "Matriz").replaceAll("_", " ");
+}
+
+function embeddingStatusLabel(value = "") {
+  return ({
+    ready: "Disponible",
+    pending_vector_index: "Índice vectorial en construcción",
+    degraded: "Disponible con incidencias",
+    not_initialized: "No inicializado"
+  })[value] || "Estado no determinado";
+}
+
+function formatAdminDate(value) {
+  if (!value) return "Sin fecha registrada";
+  const monthBucket = String(value).match(/^(\d{4})-(\d{2})$/);
+  if (monthBucket) return `${monthBucket[2]}/${monthBucket[1]}`;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString("es-MX");
+}
+
+function formatAdminProbability(item = {}) {
+  const numerator = Number(item.numerator) || 0;
+  const denominator = Number(item.denominator) || 0;
+  if (item.insufficientEvidence || !denominator) return `Evidencia insuficiente (${numerator}/${denominator})`;
+  const probability = Number(item.probability);
+  const percentage = Number.isFinite(probability)
+    ? `${(probability * 100).toLocaleString("es-MX", { maximumFractionDigits: 1 })} %`
+    : "Probabilidad no calculada";
+  return `${percentage} (n=${numerator}/${denominator})`;
+}
+
+function renderAnalisisAdministrativoSofia(data = {}) {
+  const matrices = data.matrices && typeof data.matrices === "object" ? data.matrices : {};
+  const matrixEntries = Object.entries(matrices).filter(([, matrix]) => matrix && typeof matrix === "object");
+  const associationCount = matrixEntries.reduce((total, [, matrix]) => total + (Array.isArray(matrix.associations) ? matrix.associations.length : 0), 0);
+  const embedding = data.embeddingKnowledge || {};
+  const embeddingStatus = embedding.status || {};
+
+  renderAdminMetrics(document.getElementById("resumenAdminSofia"), [
+    ["Variables registradas", data.variables?.length || 0],
+    ["Patrones acumulados", data.patterns?.length || 0],
+    ["Probabilidades empíricas", data.probabilities?.length || 0],
+    ["Fuentes metodológicas", data.evidence?.length || 0],
+    ["Matrices", matrixEntries.length],
+    ["Asociaciones mostradas", associationCount]
+  ]);
+
+  const matrixState = data.matrixStatus || {};
+  renderAdminRows(document.getElementById("matricesAdminSofia"), [
+    {
+      title: matrixState.stale ? "Matrices desactualizadas" : "Matrices vigentes",
+      detail: matrixState.generatedAt
+        ? `Última generación: ${formatAdminDate(matrixState.generatedAt)}.`
+        : "Todavía no existe una generación registrada.",
+      meta: `${matrixState.cohortSize || 0} perfiles desidentificados`
+    },
+    ...matrixEntries.map(([key, matrix]) => ({
+      title: matrixLabel(key),
+      detail: `${matrix.associations?.length || 0} asociaciones disponibles para revisión.`,
+      meta: "Exploratorio"
+    }))
+  ], "No hay matrices agregadas disponibles.");
+
+  const patterns = Array.isArray(data.patterns) ? data.patterns : [];
+  const probabilities = Array.isArray(data.probabilities) ? data.probabilities : [];
+  renderAdminRows(document.getElementById("hallazgosAdminSofia"), [
+    ...patterns.slice(0, 5).map((pattern) => ({
+      title: (pattern.variableLabels || []).join(" → ") || "Patrón agregado",
+      detail: `Soporte acumulado: ${pattern.supportCount || 0} observaciones. Primera: ${formatAdminDate(pattern.firstObservedAt)}. Última: ${formatAdminDate(pattern.lastObservedAt)}.`,
+      meta: pattern.patternTypeLabel || "Patrón exploratorio"
+    })),
+    ...probabilities.slice(0, 5).map((probability) => ({
+      title: `${probability.eventLabel || "Evento"} | condición: ${probability.conditionLabel || "No especificada"}`,
+      detail: formatAdminProbability(probability),
+      meta: probability.evidenceStatusLabel || "Resultado empírico"
+    }))
+  ], "No hay patrones ni probabilidades agregadas disponibles.");
+
+  const semanticRelations = Array.isArray(embedding.relations) ? embedding.relations : [];
+  renderAdminRows(document.getElementById("relacionesAdminSofia"), [
+    {
+      title: "Estado del índice semántico",
+      detail: `${embeddingStatus.indexedRecords || 0} archivos y ${embeddingStatus.indexedFragments || 0} fragmentos desidentificados.`,
+      meta: embeddingStatusLabel(embeddingStatus.relationIndexStatus || embeddingStatus.status)
+    },
+    ...semanticRelations.slice(0, 5).map((relation) => ({
+      title: `${relation.sourceLabelA || "Fuente A"} ↔ ${relation.sourceLabelB || "Fuente B"}`,
+      detail: relation.possibleInterpretationEs || `${relation.relationCount || 0} coincidencias agregadas.`,
+      meta: `${relation.patientPairCount || 0} pares desidentificados`
+    }))
+  ], "El índice semántico todavía no contiene relaciones agregadas.");
+}
+
+async function cargarAnalisisAdministrativoSofia() {
+  try {
+    const functions = await obtenerFunctions();
+    const response = await httpsCallable(functions, "getClinicalKnowledgeAdmin")({ limit: 100 });
+    renderAnalisisAdministrativoSofia(response.data || {});
+    console.debug("[SOFÍA][SOURCE]", { panel: "admin-analytics", source: "BACKEND_CANONICAL", scope: "GLOBAL_DEIDENTIFIED" });
+  } catch (error) {
+    renderAdminRows(document.getElementById("matricesAdminSofia"), [], "No se pudieron cargar las matrices agregadas.");
+    renderAdminRows(document.getElementById("hallazgosAdminSofia"), [], "No se pudieron cargar los patrones y probabilidades agregadas.");
+    renderAdminRows(document.getElementById("relacionesAdminSofia"), [], "No se pudieron cargar las relaciones semánticas.");
+    const summary = document.getElementById("resumenAdminSofia");
+    if (summary) summary.textContent = "No se pudo cargar el conocimiento agregado.";
+    console.debug("[SOFÍA][ADMIN_ANALYTICS_ERROR]", { code: String(error?.code || error?.name || "unknown").slice(0, 120) });
+  }
 }
 
 function agregarMensaje(texto, tipo, claseExtra = "") {
@@ -181,6 +345,7 @@ onAuthStateChanged(auth, async (user) => {
       if (formSofia) formSofia.style.display = "flex";
       if (buscarPacienteSofia) buscarPacienteSofia.disabled = true;
       if (recargarSofia) recargarSofia.disabled = true;
+      void cargarAnalisisAdministrativoSofia();
       return;
     }
     estadoAcceso.textContent = "Acceso concedido. SOFIA v2 trabaja en modo explicable y no modifica el expediente.";

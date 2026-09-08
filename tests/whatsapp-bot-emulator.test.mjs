@@ -221,6 +221,41 @@ test('settings persists real configuration and stop; rejects missing auth and ad
   const stopped=await call({auth,data:{action:'stop'}});assert.equal(stopped.settings.enabled,false);
 });
 
+test('admin verifies and idempotently reconciles only an exact pilot channel without disclosing identities',async()=>{
+  await db.doc(`usuarios/${uid}`).set({rol:'medico',roles:['admin','medico'],cedulaProfesional:'synthetic'}, {merge:true});
+  await db.doc('whatsappBotConfig/channel').set({...ids,enabled:true,pilot:true,graphVersion:'v23.0',professionalIds:[uid],allowedSubjects:[subject]});
+  await db.doc(`appointmentControls/${uid}`).delete();
+  await db.doc(`whatsappBotProfessionals/${uid}`).delete();
+  const call=createSettings({db,identityKey:()=>identity}),auth={uid,token:{}};
+  const expected={professionalUid:uid,pilotPhone:phone,phoneNumberId:ids.phoneNumberId,wabaId:ids.wabaId,graphVersion:'v23.0'};
+  const availability={timeZone:'America/Mexico_City',bookingEnabled:true,weeklySchedule:Object.fromEntries(['sunday','monday','tuesday','wednesday','thursday','friday','saturday'].map(day=>[day,[{start:'00:00',end:'23:59'}]]))};
+  const service={id:'consulta_qa',label:'Consulta QA',durationMinutes:60};
+  await assert.rejects(()=>call({data:{action:'verifyExpectedChannel',expected}}),{code:'unauthenticated'});
+  await db.doc(`usuarios/${uid}`).set({rol:'medico',roles:['medico']}, {merge:true});
+  await assert.rejects(()=>call({auth,data:{action:'verifyExpectedChannel',expected}}),{code:'permission-denied'});
+  await db.doc(`usuarios/${uid}`).set({rol:'medico',roles:['admin','medico'],cedulaProfesional:'synthetic'}, {merge:true});
+  const verified=await call({auth,data:{action:'verifyExpectedChannel',expected}});
+  assert.equal(verified.matchesExpectedChannel,true);assert.equal(verified.authorizedRecipientCount,1);
+  assert.doesNotMatch(JSON.stringify(verified),new RegExp(`${phone}|${ids.phoneNumberId}|${ids.wabaId}|${subject}`));
+  for(const mismatch of [{...expected,wabaId:'1111111111'},{...expected,phoneNumberId:'1111111111'}]){
+    const result=await call({auth,data:{action:'verifyExpectedChannel',expected:mismatch}});assert.equal(result.conflictingConfiguration,true);assert.equal(result.matchesExpectedChannel,false);
+  }
+  await db.doc('whatsappBotConfig/channel').update({professionalIds:[uid,'another_doctor']});
+  assert.equal((await call({auth,data:{action:'verifyExpectedChannel',expected}})).conflictingConfiguration,true);
+  await db.doc('whatsappBotConfig/channel').update({professionalIds:[uid],allowedSubjects:[subject,subject2]});
+  assert.equal((await call({auth,data:{action:'verifyExpectedChannel',expected}})).conflictingConfiguration,true);
+  await db.doc('whatsappBotConfig/channel').update({allowedSubjects:[subject],enabled:false});
+  const first=await call({auth,data:{action:'reconcilePilot',expected,availability,service}});
+  assert.equal(first.reconciled,true);assert.equal(first.remindersEnabled,false);assert.equal(first.paymentsEnabled,false);
+  assert.equal((await db.doc('whatsappBotConfig/channel').get()).data().enabled,true);
+  const control=(await db.doc(`appointmentControls/${uid}`).get()).data();
+  assert.equal(control.policy.bookingEnabled,true);assert.equal(control.policy.timeZone,'America/Mexico_City');
+  const professional=(await db.doc(`whatsappBotProfessionals/${uid}`).get()).data();
+  assert.deepEqual(professional.services,[service]);assert.equal(professional.enabled,true);assert.equal(professional.reminders.enabled,false);
+  const second=await call({auth,data:{action:'reconcilePilot',expected,availability,service}});
+  assert.equal(second.reconciled,true);assert.equal((await db.doc('whatsappBotConfig/channel').get()).data().allowedSubjects.length,1);assert.equal((await db.doc('whatsappBotConfig/channel').get()).data().professionalIds.length,1);
+});
+
 test('existing appointment requires explicit professional binding; later consent schedules once',async()=>{
   const service=createAppointmentService({db,timestamp:()=>Timestamp.fromMillis(clock)});
   const {appointmentId}=await service.createAppointment({auth:{uid,token:{}},doctorUid:uid,requestId:'web-created',input:{startDate:'2030-01-10',startTime:'09:00',durationMinutes:60,patientName:'Ficticio'}});

@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SOFIA Clinica | Cognicion Labs</title>
   <link rel="icon" href="assets/favicon-cognicion.png" />
-  <link rel="stylesheet" href="css/sofia.css?v=20260831-sofia-admin-policy-v1" />
+  <link rel="stylesheet" href="css/sofia.css?v=20260908-sofia-admin-analysis-v1" />
   <link rel="stylesheet" href="./css/sofia-mascota.css?v=20260831-sofia-admin-policy-v1" />
   <link rel="stylesheet" href="./css/clinical-analysis.css?v=20260828-sofia-report-layout-v1" />
   <link rel="stylesheet" href="./css/patient-pattern-detector.css?v=20260821-patient-pattern-profile-v1" />
@@ -30,8 +30,8 @@
   <main class="sofia-shell">
     <section class="sofia-hero">
       <p class="eyebrow">COGNICION LABS / SOFIA V2</p>
-      <h1>Paciente digital y razonamiento clinico explicable</h1>
-      <p class="subtitle">SOFIA integra expediente, notas, escalas, tratamientos y estudios para organizar informacion clinica. No modifica el expediente y toda sugerencia requiere juicio profesional.</p>
+      <h1 id="tituloSofia">Paciente digital y razonamiento clinico explicable</h1>
+      <p class="subtitle" id="descripcionSofia">SOFIA integra expediente, notas, escalas, tratamientos y estudios para organizar informacion clinica. No modifica el expediente y toda sugerencia requiere juicio profesional.</p>
       <div id="estadoAcceso" class="status">Verificando acceso...</div>
       <div class="control-row">
         <div class="sofia-patient-picker">
@@ -56,6 +56,26 @@
     </section>
 
     <section class="sofia-grid" id="panelesSofia" aria-live="polite">
+      <article class="sofia-panel span-2 sofia-admin-panel" data-sofia-admin-panel hidden>
+        <div class="panel-title"><span>Conocimiento agregado</span><small>Datos globales desidentificados</small></div>
+        <div id="resumenAdminSofia" class="metric-grid empty-state" aria-live="polite">Cargando resumen agregado…</div>
+      </article>
+
+      <article class="sofia-panel span-2 sofia-admin-panel" data-sofia-admin-panel hidden>
+        <div class="panel-title"><span>Matrices globales</span><small>Asociaciones exploratorias, no causalidad</small></div>
+        <div id="matricesAdminSofia" class="stack-list empty-state" aria-live="polite">Cargando matrices…</div>
+      </article>
+
+      <article class="sofia-panel span-2 sofia-admin-panel" data-sofia-admin-panel hidden>
+        <div class="panel-title"><span>Patrones y probabilidades agregadas</span><small>Frecuencias empíricas desidentificadas</small></div>
+        <div id="hallazgosAdminSofia" class="stack-list empty-state" aria-live="polite">Cargando hallazgos…</div>
+      </article>
+
+      <article class="sofia-panel span-2 sofia-admin-panel" data-sofia-admin-panel hidden>
+        <div class="panel-title"><span>Relaciones semánticas globales</span><small>Índice desidentificado</small></div>
+        <div id="relacionesAdminSofia" class="stack-list empty-state" aria-live="polite">Cargando relaciones…</div>
+      </article>
+
       <article class="sofia-panel span-2">
         <div class="panel-title"><span>Paciente Digital</span><small>Gemelo clinico no editable</small></div>
         <div id="pacienteDigitalSofia" class="metric-grid empty-state">Selecciona un paciente.</div>
@@ -137,7 +157,7 @@
     </section>
   </main>
 
-  <script type="module" src="js/sofia.js?v=20260908-treatment-card-safety-v1"></script>
+  <script type="module" src="js/sofia.js?v=20260908-sofia-admin-analysis-v1"></script>
   <script type="module" src="./js/sofia-mascota-loader.js"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
