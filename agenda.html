@@ -1,74 +1,54 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="biocelular">
 <head>
-<script src="js/theme-preload.js?v=2.115-navbar-unica-v2"></script>
 <meta charset="UTF-8">
+<script src="js/theme-preload.js?v=2.115-navbar-unica-v2"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agenda | Cognicion</title>
+<title>Agenda | COGNICIÓN</title>
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-<link rel="stylesheet" href="css/agenda.css">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
+<link rel="stylesheet" href="css/agenda.css?v=2.194">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
-<body class="bloqueado">
-<header class="header">
-  <div class="marca">
-    <img src="assets/favicon-cognicion.png" alt="Cognicion">
-    <div>
-      <h1>Agenda clinica</h1>
-      <p>Calendario, citas, recordatorios y seguimiento de pacientes.</p>
-    </div>
+<body class="agenda-page bloqueado">
+<header class="agenda-brand"><a href="dashboard.html"><img src="assets/favicon-cognicion.png" alt=""> COGNICIÓN</a><nav><a href="medico.html">Panel médico</a></nav></header>
+<main id="agendaWorkspace" class="agenda-workspace">
+  <div class="agenda-toolbar">
+    <button id="alternarSidebar" class="icon-button" aria-label="Mostrar u ocultar barra lateral" aria-controls="agendaSidebar" aria-expanded="true">☰</button>
+    <h1>Agenda</h1><button id="mesActual">Hoy</button>
+    <div class="agenda-arrows"><button id="mesAnterior" class="icon-button" aria-label="Periodo anterior">‹</button><button id="mesSiguiente" class="icon-button" aria-label="Periodo siguiente">›</button></div>
+    <h2 id="tituloMes" aria-live="polite">Calendario</h2>
+    <label class="view-picker"><span class="sr-only">Vista del calendario</span><select id="vistaAgenda"><option value="day">Día</option><option value="week">Semana</option><option value="month">Mes</option><option value="list">Lista</option></select></label>
+    <button id="abrirConfiguracionAgenda" class="icon-button" aria-label="Configuración de agenda" title="Configuración de agenda">⚙</button>
   </div>
-  <nav>
-    <button onclick="window.location.href='dashboard.html'">Inicio</button>
-    <button onclick="window.location.href='medico.html'">Panel medico</button>
-  </nav>
-</header>
-
-<main class="layout">
-  <section class="card agenda-hero">
-    <div>
-      <h2 id="tituloMes">Calendario</h2>
-      <p class="ayuda">Agenda consultas, eventos profesionales y periodos de disponibilidad.</p>
-    </div>
-    <div class="acciones">
-      <button id="nuevoEvento" type="button">+ Nuevo evento</button>
-      <button id="nuevaCita" type="button">Nueva cita</button>
-      <button id="abrirConfiguracionAgenda" type="button" class="boton-secundario">Configuración de agenda</button>
-      <button id="mesAnterior">Mes anterior</button>
-      <button id="mesActual">Hoy</button>
-      <button id="mesSiguiente">Mes siguiente</button>
-    </div>
-  </section>
-
-  <section id="configuracionAgenda" class="card agenda-settings" hidden>
-    <div class="agenda-settings-heading"><div><h2>Configuración de agenda</h2><p class="ayuda">Define disponibilidad profesional. Las reservas, confirmaciones, pagos e integraciones se configurarán aquí cuando sus funciones estén disponibles.</p></div><button id="cerrarConfiguracionAgenda" type="button" class="boton-secundario">Cerrar</button></div>
-    <section data-agenda-availability>
-      <h3>Disponibilidad</h3>
-      <form class="availability-settings">
-        <label>Zona horaria IANA <input data-timezone list="timezonesAgenda" placeholder="America/Mexico_City" autocomplete="off" required></label>
-        <datalist id="timezonesAgenda"><option value="America/Mexico_City"></option><option value="America/Tijuana"></option><option value="America/Cancun"></option></datalist>
-        <label class="checkline"><input data-booking-enabled type="checkbox"> Habilitar reservas externas cuando la jornada sea válida.</label>
-        <div data-weekly-schedule class="weekly-schedule" aria-live="polite"></div>
-        <div class="acciones"><button data-save-availability type="submit">Guardar disponibilidad</button></div>
-        <p data-availability-status class="ayuda" role="status">Cargando disponibilidad…</p>
-      </form>
+  <div class="agenda-body">
+    <aside id="agendaSidebar" class="agenda-sidebar" aria-label="Navegación y filtros">
+      <div class="create-actions"><button id="nuevoEvento" class="primary">＋ Crear</button><button id="nuevaCita" class="text-button">Nueva cita</button></div>
+      <div class="mini-heading"><strong id="miniMes"></strong><button id="miniAnterior" aria-label="Mes anterior en mini calendario">‹</button><button id="miniSiguiente" aria-label="Mes siguiente en mini calendario">›</button></div>
+      <div id="miniCalendario" class="mini-calendar" aria-label="Elegir fecha"></div>
+      <fieldset class="agenda-filters"><legend>Mostrar</legend>
+        <label><input type="checkbox" data-filter-group="appointment" checked><span class="type-dot group-appointment"></span>Citas</label>
+        <label><input type="checkbox" data-filter-group="event" checked><span class="type-dot group-event"></span>Eventos</label>
+        <label><input type="checkbox" data-filter-group="shift" checked><span class="type-dot group-shift"></span>Guardias</label>
+        <label><input type="checkbox" data-filter-group="block" checked><span class="type-dot group-block"></span>Bloqueos</label>
+        <label><input type="checkbox" data-filter-group="vacation" checked><span class="type-dot group-vacation"></span>Vacaciones</label>
+      </fieldset>
+      <p id="zonaAgenda" class="agenda-zone">America/Mexico_City</p>
+      <p id="estadoJornada" class="agenda-hint" role="status">Consultando jornada…</p>
+      <p class="agenda-hint">Los filtros sólo cambian lo que ves. La disponibilidad se valida al guardar.</p>
+    </aside>
+    <button id="cerrarSidebar" class="sidebar-scrim" aria-label="Cerrar barra lateral" hidden></button>
+    <section class="calendar-surface" aria-label="Calendario de trabajo">
+      <div id="estadoCalendario" class="calendar-status" role="status">Cargando calendario…</div>
+      <button id="reintentarAgenda" class="text-button" hidden>Reintentar carga</button>
+      <div id="calendario" class="calendar-scroll" tabindex="-1"></div>
     </section>
-    <section data-google-calendar-integration class="agenda-integration">
-      <h3>Integraciones</h3>
-      <p class="ayuda">Conecta Google Calendar de forma segura. En esta fase no se sincronizan citas ni disponibilidad.</p>
-      <p data-google-calendar-status class="ayuda" role="status">Comprobando conexión…</p>
-      <div class="acciones">
-        <button data-google-calendar-connect type="button">Conectar Google Calendar</button>
-        <button data-google-calendar-disconnect type="button" class="boton-secundario oculto">Desconectar Google Calendar</button>
-      </div>
-    </section>
-  </section>
-
-  <section class="grid-dos">
-    <div class="card">
-      <h2 id="tituloFormulario">Nuevo evento</h2>
-      <form id="formCita" class="formulario">
+  </div>
+</main>
+<dialog id="editorAgenda" class="agenda-dialog event-editor" aria-labelledby="tituloFormulario">
+  <div class="dialog-heading"><h2 id="tituloFormulario">Nuevo evento</h2><button id="cerrarEditorAgenda" class="icon-button" aria-label="Cerrar editor">×</button></div>
+  <p id="zonaEditor" class="agenda-hint"></p><p id="alcanceRecurrencia" class="agenda-notice" hidden>Se editará el documento original de la recurrencia. El servicio no ofrece cambios independientes por ocurrencia.</p>
+  <form id="formCita" class="event-form">
         <input id="eventoId" type="hidden">
         <input id="googleCalendarEventId" type="hidden">
         <input id="eventoEstado" type="hidden">
@@ -108,16 +88,16 @@
           <input id="horaFinEvento" type="time" lang="en-GB" step="60">
         </label>
         <label>Duración (minutos)
-          <input id="duracionEvento" type="number" min="1" step="5" value="60">
+          <input id="duracionEvento" type="number" min="1" step="1" value="60">
         </label>
         <label class="checkline"><input id="todoElDia" type="checkbox"> Todo el día</label>
         <label>Finaliza (opcional para varios días)
           <input id="fechaFinEvento" type="date">
         </label>
-        <label>Ubicación (opcional)
+        <label>Ubicación / modalidad (opcional)
           <input id="ubicacionEvento">
         </label>
-        <label>Recordatorio
+        <details class="campo-amplio"><summary>Más detalles</summary><div class="subcampos"><label>Recordatorio (anotación)
           <input id="recordatorioCita" placeholder="Ej. confirmar 24 h antes">
         </label>
         <label>Seguimiento
@@ -126,7 +106,7 @@
         <label class="campo-amplio">Notas
           <textarea id="notasCita" placeholder="Objetivo clinico o indicaciones breves"></textarea>
         </label>
-        <label class="campo-amplio">Recurrencia (opcional)
+        </div></details><label class="campo-amplio">Recurrencia (opcional)
           <select id="recurrenciaEvento">
             <option value="">No se repite</option>
             <option value="weekly">Cada semana</option>
@@ -134,26 +114,33 @@
             <option value="monthly">Cada mes</option>
           </select>
         </label>
-        <div class="acciones campo-amplio">
-          <button type="submit" id="guardarEvento">Guardar evento</button>
-          <button type="button" id="cancelarEdicion" class="boton-secundario oculto">Cancelar</button>
+        <p id="estadoEditor" class="agenda-notice campo-amplio" role="status"></p><div class="dialog-actions campo-amplio">
+          <button type="submit" id="guardarEvento" class="primary">Guardar evento</button>
+          <button type="button" id="cancelarEdicion" >Cerrar</button>
         </div>
       </form>
-    </div>
-
-    <div class="card">
-      <h2>Próximos eventos</h2>
-      <div id="listaCitas" class="lista-citas">Cargando agenda...</div>
-    </div>
+</dialog>
+<dialog id="detalleAgenda" class="agenda-dialog event-detail" aria-labelledby="tituloDetalle"><div class="dialog-heading"><h2 id="tituloDetalle">Detalle del evento</h2><button id="cerrarDetalleAgenda" class="icon-button" aria-label="Cerrar detalle">×</button></div><div id="contenidoDetalle"></div></dialog>
+<dialog id="configuracionAgenda" class="agenda-dialog agenda-settings" aria-labelledby="tituloConfiguracion">
+  <div class="dialog-heading"><h2 id="tituloConfiguracion">Configuración de agenda</h2><button id="cerrarConfiguracionAgenda" class="icon-button" aria-label="Cerrar configuración">×</button></div>
+  <nav class="settings-navigation" aria-label="Apartados de configuración"><button data-settings-section="availability" aria-pressed="true">Disponibilidad</button><button data-settings-section="integrations" aria-pressed="false">Integraciones</button></nav>
+  <section data-settings-content="availability" data-agenda-availability>
+    <h3>Jornada de trabajo</h3><form class="availability-settings">
+      <label>Zona horaria IANA<input data-timezone list="timezonesAgenda" placeholder="America/Mexico_City" autocomplete="off" required></label>
+      <datalist id="timezonesAgenda"><option value="America/Mexico_City"></option><option value="America/Tijuana"></option><option value="America/Cancun"></option></datalist>
+      <label class="checkline"><input data-booking-enabled type="checkbox">Habilitar reservas externas con una jornada válida</label>
+      <div data-weekly-schedule class="weekly-schedule"></div>
+      <div class="dialog-actions"><button data-reload-availability type="button">Recargar</button><button data-save-availability type="submit" class="primary">Guardar disponibilidad</button></div>
+      <p data-availability-status class="agenda-hint" role="status">Cargando disponibilidad…</p>
+    </form>
   </section>
-
-  <section class="card">
-    <div id="calendario" class="calendario"></div>
+  <section data-settings-content="integrations" data-google-calendar-integration hidden>
+    <h3>Integraciones</h3><div class="integration-row"><div><strong>Google Calendar</strong><p data-google-calendar-status role="status">Comprobando conexión…</p></div><div class="integration-actions"><button data-google-calendar-connect type="button">Conectar Google Calendar</button><button data-google-calendar-disconnect type="button" class="oculto">Desconectar Google Calendar</button></div></div>
+    <p class="agenda-hint">La conexión OAuth no sincroniza eventos ni consulta disponibilidad externa.</p>
   </section>
-</main>
-
-<script type="module" src="js/agenda.js?v=2.193-google-calendar-oauth-v1"></script>
-  <script type="module" src="js/components/accesosRapidos.js"></script>
-  <script type="module" src="js/reportes.js"></script>
+</dialog>
+<script type="module" src="js/agenda.js?v=2.194-workspace"></script>
+<script type="module" src="js/components/accesosRapidos.js"></script>
+<script type="module" src="js/reportes.js"></script>
 </body>
 </html>
