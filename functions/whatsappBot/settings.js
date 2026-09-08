@@ -108,7 +108,10 @@ function createSettings({db,identityKey,transport}) {
       // A privileged account may verify a channel, but may only reconcile its own
       // professional settings. This prevents an admin token from becoming a
       // cross-professional configuration primitive.
-      if(expected.professionalUid!==uid || !isProfessional(profile))reject('permission-denied');
+      // Match Appointment Service's own-account authorization: a persisted
+      // administrator is accepted even when its sole role is administrative.
+      // The admin guard above remains mandatory for this channel operation.
+      if(expected.professionalUid!==uid)reject('permission-denied');
       const service=expectedService(data.service);
       const rawAvailability=pilotAvailability(data.availability);
       const { normalizeAvailabilitySettings }=await appointmentDomain;

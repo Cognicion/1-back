@@ -222,7 +222,7 @@ test('settings persists real configuration and stop; rejects missing auth and ad
 });
 
 test('admin verifies and idempotently reconciles only an exact pilot channel without disclosing identities',async()=>{
-  await db.doc(`usuarios/${uid}`).set({rol:'medico',roles:['admin','medico'],cedulaProfesional:'synthetic'}, {merge:true});
+  await db.doc(`usuarios/${uid}`).set({rol:'admin',cedulaProfesional:'synthetic'});
   await db.doc('whatsappBotConfig/channel').set({...ids,enabled:true,pilot:true,graphVersion:'v23.0',professionalIds:[uid],allowedSubjects:[subject]});
   await db.doc(`appointmentControls/${uid}`).delete();
   await db.doc(`whatsappBotProfessionals/${uid}`).delete();
@@ -233,7 +233,9 @@ test('admin verifies and idempotently reconciles only an exact pilot channel wit
   await assert.rejects(()=>call({data:{action:'verifyExpectedChannel',expected}}),{code:'unauthenticated'});
   await db.doc(`usuarios/${uid}`).set({rol:'medico',roles:['medico']}, {merge:true});
   await assert.rejects(()=>call({auth,data:{action:'verifyExpectedChannel',expected}}),{code:'permission-denied'});
-  await db.doc(`usuarios/${uid}`).set({rol:'medico',roles:['admin','medico'],cedulaProfesional:'synthetic'}, {merge:true});
+  await assert.rejects(()=>call({auth,data:{action:'reconcilePilot',expected,availability,service}}),{code:'permission-denied'});
+  await db.doc(`usuarios/${uid}`).set({rol:'admin',cedulaProfesional:'synthetic'});
+  await assert.rejects(()=>call({auth,data:{action:'reconcilePilot',expected:{...expected,professionalUid:'other_doctor'},availability,service}}),{code:'permission-denied'});
   const verified=await call({auth,data:{action:'verifyExpectedChannel',expected}});
   assert.equal(verified.matchesExpectedChannel,true);assert.equal(verified.authorizedRecipientCount,1);
   assert.doesNotMatch(JSON.stringify(verified),new RegExp(`${phone}|${ids.phoneNumberId}|${ids.wabaId}|${subject}`));
