@@ -2,8 +2,9 @@ import {
   evaluarInteraccionesClinicas,
   evaluarMedicamentosPaciente,
   normalizarMedicamentoClinico,
-  obtenerIndicadorSeguridadMedicamento
-} from "../services/motorClinicoMedicamentos.js?v=20260904-laboratorio-minimalista-somatometria-v1";
+  obtenerIndicadorSeguridadMedicamento,
+  obtenerIndicadorSeguridadMedicamentoIndividual
+} from "../services/motorClinicoMedicamentos.js?v=20260908-treatment-card-safety-v1";
 
 // Metadata legacy conservada por compatibilidad documental. La detección
 // ejecutable usa el motor clínico común y el catálogo oficial.
@@ -198,3 +199,5 @@ export function detectarAlertasClinicasMedicamentos(medicamentos = [], paciente 
     indicador: obtenerIndicadorSeguridadMedicamento(evaluacion.alertas, evaluacion.cobertura)
   };
 }
+
+export { obtenerIndicadorSeguridadMedicamentoIndividual };

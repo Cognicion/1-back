@@ -151,6 +151,8 @@ body.agenda-page .agenda-dialog :is(input:not([type=checkbox]):not([type=hidden]
 body.agenda-page .campo-amplio { grid-column: 1/-1; }
 body.agenda-page .event-form .checkline, body.agenda-page .availability-settings .checkline { display: flex; flex-direction: row; align-items: center; gap: 8px; }
 body.agenda-page .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 12px; }
+body.agenda-page [data-whatsapp-settings] .dialog-actions { flex-wrap: wrap; }
+body.agenda-page [data-whatsapp-settings] .dialog-actions button { flex: 1 1 140px; white-space: normal; }
 body.agenda-page .event-form details { border-top: 1px solid var(--agenda-line); padding-top: 12px; }
 body.agenda-page .event-form summary { cursor: pointer; color: var(--agenda-muted); padding-bottom: 8px; }
 body.agenda-page .agenda-notice { font-size: 13px; color: var(--agenda-muted); }

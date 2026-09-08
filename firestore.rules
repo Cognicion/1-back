@@ -1674,6 +1674,17 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    match /whatsappBotConfig/{document=**} { allow read, write: if false; }
+    match /whatsappBotProfessionals/{document=**} { allow read, write: if false; }
+    match /whatsappBotJobs/{document=**} { allow read, write: if false; }
+    match /whatsappBotSessions/{document=**} { allow read, write: if false; }
+    match /whatsappBotRecipients/{document=**} { allow read, write: if false; }
+    match /whatsappBotBindings/{document=**} { allow read, write: if false; }
+    match /whatsappBotOutbox/{document=**} { allow read, write: if false; }
+    match /whatsappBotMessageIds/{document=**} { allow read, write: if false; }
+    match /whatsappBotRate/{document=**} { allow read, write: if false; }
+    match /whatsappBotAppointmentOwners/{document=**} { allow read, write: if false; }
+
     /*
      * REPORTES
      */

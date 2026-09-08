@@ -4,7 +4,7 @@ import {
   evaluarMedicamentosPaciente,
   normalizarMedicamentoClinico,
   obtenerIndicadorSeguridadMedicamento
-} from "./services/motorClinicoMedicamentos.js?v=20260904-laboratorio-minimalista-somatometria-v1";
+} from "./services/motorClinicoMedicamentos.js?v=20260908-treatment-card-safety-v1";
 import {
   construirRegistroParametrosClinicos,
   DEFINICIONES_PARAMETROS_CLINICOS,
@@ -1362,7 +1362,7 @@ function evaluar() {
   const indicador = obtenerIndicadorSeguridadMedicamento(evaluacion.alertas || [], evaluacion.cobertura || {});
   const grupos = clasificarAlertas(evaluacion.alertas || []);
   const vacio = brechasCobertura(evaluacion.cobertura).length
-    ? "Sin regla cargada para parte de la selección; fuente pendiente o dato insuficiente."
+    ? "Cobertura farmacológica incompleta: revisa fuentes, datos y pares sin regla específica."
     : "Sin alerta encontrada con la base actual.";
   salida.innerHTML = [
     renderResumen(evaluacion, indicador, paciente),

@@ -70,7 +70,7 @@ function diagnoseLayout(host) {
     console.debug("[BIOCELULAR LOGIN] background", style.backgroundColor);
     console.debug("[BIOCELULAR LOGIN] pointerEvents", style.pointerEvents);
     if (host.dataset.diagnostic === "true") login.style.outline = "4px solid #39ff88";
-  } else {
+  } else if (document.body.dataset.page === "login" || /\/login\.html$/u.test(location.pathname)) {
     console.warn("[BIOCELULAR LOGIN] Elemento no encontrado");
   }
   if (outlined.length) {

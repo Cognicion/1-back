@@ -156,6 +156,20 @@
           }
         }
       ]
+    },
+    {
+      "collectionGroup": "whatsappBotJobs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "state",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dueAt",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": [
@@ -205,6 +219,68 @@
     {
       "collectionGroup": "telemetryBlocks",
       "fieldPath": "sequence",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "whatsappBotJobs",
+      "fieldPath": "expiresAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "collectionGroup": "whatsappBotJobs",
+      "fieldPath": "encrypted",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "whatsappBotSessions",
+      "fieldPath": "expiresAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "collectionGroup": "whatsappBotSessions",
+      "fieldPath": "encrypted",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "whatsappBotOutbox",
+      "fieldPath": "expiresAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "collectionGroup": "whatsappBotOutbox",
+      "fieldPath": "encrypted",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "whatsappBotRecipients",
+      "fieldPath": "expiresAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "collectionGroup": "whatsappBotMessageIds",
+      "fieldPath": "expiresAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "collectionGroup": "whatsappBotAppointmentOwners",
+      "fieldPath": "expiresAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "collectionGroup": "whatsappBotRecipients",
+      "fieldPath": "phone",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "whatsappBotAppointmentBindings",
+      "fieldPath": "expiresAt",
+      "ttl": true,
       "indexes": []
     }
   ]

@@ -60,10 +60,11 @@ test("los consumidores farmacológicos del expediente reciben estudios y paráme
 
 test("cobertura incompleta no se representa como indicador verde ni como cero concluyente", async () => {
   const js = await leer("js/paciente.js");
-  assert.match(js, /evaluacion\.indicador\?\.estado === "datos_insuficientes"/);
+  assert.match(js, /evaluacionClinica\.indicador\?\.estado === "datos_insuficientes"/);
+  assert.match(js, /obtenerIndicadorSeguridadMedicamentoIndividual/);
   assert.match(js, /cobertura\.cantidadParametrosEsperadosAusentes/);
   assert.match(js, /cobertura\.fuentesContextoNoDisponibles/);
-  assert.match(js, /Sin regla cargada para parte de la selección/);
+  assert.match(js, /Sin regla específica para uno o más pares/);
   assert.match(js, /No se muestra un cero concluyente/);
 });
 

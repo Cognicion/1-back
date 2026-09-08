@@ -69,18 +69,25 @@ export function getOccurrences(evento, visibleStart, visibleEnd, { maxOccurrence
   }
 
   const result = [];
+  // A virtual occurrence is a civil projection of its source rule, not a
+  // persisted appointment. In particular, source startAt/endAt identify the
+  // anchor only and must never be copied to a later occurrence.
+  const { startAt: _sourceStartAt, endAt: _sourceEndAt, temporalModel: _sourceTemporalModel, ...virtualSource } = evento;
   for (let index = 0; index < maxOccurrences && occurrence <= rangeEnd; index += 1) {
     const occurrenceDate = fechaAgenda(occurrence);
     const occurrenceEnd = fechaAgenda(sumarDiasAgenda(occurrence, duration));
     if (occurrenceEnd >= visibleStart && occurrenceDate <= visibleEnd) {
       result.push({
-        ...evento,
+        ...virtualSource,
         id: `${evento.id}::${occurrenceDate}`,
         parentEventId: evento.id,
         occurrenceDate,
         isVirtualOccurrence: true,
+        temporalModel: 'virtual-occurrence',
+        sourceTemporalModel: _sourceStartAt !== undefined && _sourceEndAt !== undefined ? 'modern-instant' : 'legacy-civil',
         startDate: occurrenceDate,
-        endDate: occurrenceEnd
+        endDate: occurrenceEnd,
+        ...(evento.fecha !== undefined ? { fecha: occurrenceDate } : {})
       });
     }
     occurrence = interval === "weekly"

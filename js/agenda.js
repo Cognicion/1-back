@@ -8,7 +8,8 @@ import { executeAppointmentCommand, appointmentErrorCode, createRequestId } from
 import { createAgendaWorkspace } from "./agenda/workspace.js";
 import { addDays, addMonths, todayInZone, DEFAULT_TIME_ZONE } from "./agenda/visualModel.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { agendaReadDiagnostic } from "./services/agendaReadDiagnostics.js";
 
 import { normalizarEvento } from "./services/appointmentService.js";
 
@@ -18,7 +19,7 @@ let medicoUid = null, pacientes = [], eventos = [];
 let operacionCitaActiva = false;
 let authGeneration = 0, readGeneration = 0, disposed = false;
 let availabilityInitialResult, availabilityResult = null, availabilityState = "loading", availabilityCleanup;
-let settingsInitialization = null, googleInitialization = null, googleCleanup = null;
+let settingsInitialization = null, googleInitialization = null, googleCleanup = null, botInitialization = null;
 let settingsAbort = new AbortController();
 let requestRetry = null;
 let editingOriginal = null;
@@ -63,6 +64,7 @@ const stopAuth = onAuthStateChanged(auth, async (user) => {
   googleCleanup?.();
   settingsInitialization = null;
   googleInitialization = null;
+  botInitialization = null;
   availabilityResult = null;
   availabilityInitialResult = undefined;
   availabilityState = "loading";
@@ -106,6 +108,14 @@ function aplicarDisponibilidad(result) {
 
 async function abrirApartadoConfiguracion(section) {
   if (!medicoUid || disposed) return;
+  if (section === "whatsapp") {
+    const generation = authGeneration;
+    botInitialization ||= import("./services/agendaWhatsAppSettings.js").then(({ initializeWhatsAppSettings }) => {
+      if (!disposed && generation === authGeneration) return initializeWhatsAppSettings($("configuracionAgenda").querySelector("[data-whatsapp-settings]"), { signal: settingsAbort.signal });
+    }).catch(() => { botInitialization = null; });
+    await botInitialization;
+    return;
+  }
   if (section === "integrations") {
     googleInitialization ||= inicializarIntegracionGoogleCalendar();
     await googleInitialization;
@@ -221,7 +231,7 @@ async function cargarEventos({ force = false, range = workspace.range } = {}) {
     // shares these results and never introduces one query per day or event.
     request = Promise.allSettled([
       Promise.resolve().then(() => getDocs(query(collection(db, "usuarios", uid, "agenda"), where("fecha", ">=", inicio), where("fecha", "<=", fin)))),
-      Promise.resolve().then(() => getDocs(query(collection(db, "usuarios", uid, "agenda"), where("startDate", "<=", fin), where("endDate", ">=", inicio)))),
+      Promise.resolve().then(() => getDocs(query(collection(db, "usuarios", uid, "agenda"), where("startDate", "<=", fin), where("endDate", ">=", inicio), orderBy("startDate", "asc"), orderBy("endDate", "asc")))),
       Promise.resolve().then(() => getDocs(query(collection(db, "usuarios", uid, "agenda"), where("recurrence", "in", ["weekly", "biweekly", "monthly"]))))
     ]);
     pendingReads.set(key, request);
@@ -230,7 +240,7 @@ async function cargarEventos({ force = false, range = workspace.range } = {}) {
   if (pendingReads.get(key) === request) pendingReads.delete(key);
   if (disposed || generation !== readGeneration || uid !== medicoUid) return;
   const rejected = resultados.filter((item) => item.status === "rejected");
-  rejected.forEach((item) => console.warn("[AGENDA] Lectura incompleta.", { code: String(item.reason?.code || "internal") }));
+  resultados.forEach((item, index) => { if (item.status === "rejected") console.warn("[AGENDA] Lectura incompleta.", agendaReadDiagnostic(item.reason, index)); });
   const fulfilled = resultados.filter((item) => item.status === "fulfilled");
   const documents = new Map(rejected.length ? eventos.map((event) => [event.id, event]) : []);
   fulfilled.flatMap((item) => item.value.docs).forEach((snapshot) => documents.set(snapshot.id, { ...snapshot.data(), id: snapshot.id }));

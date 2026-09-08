@@ -220,7 +220,7 @@ test("deployment contract: public onRequest, us-central1, bound secrets, reused 
   assert.deepEqual(webhook.__endpoint.httpsTrigger.invoker, ["public"]);
   assert.deepEqual(webhook.__endpoint.secretEnvironmentVariables.map((s) => s.key).sort(), ["META_APP_SECRET", "WHATSAPP_WEBHOOK_VERIFY_TOKEN"]);
   const index = readFileSync(require.resolve("../index.js"), "utf8");
-  assert.match(index, /exports\.whatsappWebhook = createWhatsAppWebhook\(\{ db: adminDb, logger \}\)/);
+  assert.match(index, /exports\.whatsappWebhook = createWhatsAppWebhook\(\{ db: adminDb, logger, prepareWork: whatsappBot\.prepareWork, ingressSecrets: whatsappBot\.ingressSecrets \}\)/);
   for (const file of ["security", "parser", "store", "handler", "index"]) {
     const source = readFileSync(require.resolve(`../whatsappWebhook/${file}.js`), "utf8");
     assert.doesNotMatch(source, /initializeApp\(|onCall\(|fetch\(|graph\.facebook|AppointmentService|openai|sofia/i);

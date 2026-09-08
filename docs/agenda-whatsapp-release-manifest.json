@@ -1,0 +1,74 @@
+{
+  "head": "6223c45eaa60affd8bf0db57924e65f128c5bce1",
+  "version": "2.197",
+  "recordedAt": "2026-09-08T11:27:39.574Z",
+  "files": {
+    ".gitignore": "a74711360897f2fc5a0023eaf5902169bb505554d90272b94d4809455a9f6b14",
+    "agenda.html": "e339d1fe7a817bc9e03a2a79775e3bb0dc73d84a24638db626cc4da618a9425e",
+    "css/agenda.css": "255c70e3167c04d60bbad933ba2ca65fd2490167580b89f80b5465903185c5d3",
+    "firestore.indexes.json": "0e22a5e6ae3c0c7b4f7253fd4cf4b5b238e89423321b30ba52348b23f5de4b5b",
+    "firestore.rules": "e9a86dfdd6e27df0bba487ef2741d3c3a4a0c5e7c1e07ac9864300879bc4517b",
+    "functions/appointments/domain.mjs": "5f83b814fdc1a765d865a843cd08aa9372cd9f6395383d3df4c5c86e1a632ec0",
+    "functions/appointments/recurrence.mjs": "3f8e432a2dfdfeac817a8ef245caee20f53ce127cd3ea8b598a99006ba2b82fe",
+    "functions/appointments/service.mjs": "9d5d87397cce97d15427a85ea0ea05e73b0f1f487d467efcee14da57082492f0",
+    "functions/index.js": "3b3d484eb1f0d6dc50e14246770c2dfc5a701c3380177f64533db5f04b6db863",
+    "functions/test/whatsappWebhook.test.js": "202e9b9f7d8667680ae64a2043142e03a67f72ef1dd232b298c5702d18ed5607",
+    "functions/whatsappBot/appointments.mjs": "f9ccf8a4476e1b80469edd6a72c3261e6c5bf089fc3b37b4309bbb881dc451d2",
+    "functions/whatsappBot/config.js": "485ad2e1b6ea6add24a6b05f0df5ff04dad006f21f8647021e4dba4964ecd051",
+    "functions/whatsappBot/crypto.js": "0522b6b449a0d9f7480ad4d20bffbe17895b1f1b5e5032a93d6c0db7492e603a",
+    "functions/whatsappBot/index.js": "c31b4ee21797288cf92b7b214677f852590a81f786cd08dd7b838f1a6da0143f",
+    "functions/whatsappBot/ingress.js": "fbd2073c41f5bfb430e6281e1bf8e2f6518d6aa17dd206823a5cfca1b9caf717",
+    "functions/whatsappBot/machine.js": "7eef3bcc042f3ad10b8de4b5207496f11efae1004d3af0c9d93ce8af018fe3fd",
+    "functions/whatsappBot/settings.js": "7c379a5a9a196dc9cabb9ab5f4fec55fac0c29b5d8817b5c18890ddeda3f5793",
+    "functions/whatsappBot/transport.js": "8c046a017c674c78106cc3e1b9204cc1fc2f5e242e99cb6552f3a3720c72dfbc",
+    "functions/whatsappBot/worker.js": "b4d7ca0b1a9abcb851a358e3ba081bd2a22607003091d41c8aa3bf5bab3fa5df",
+    "functions/whatsappWebhook/handler.js": "5f8b99f60abdf370d34690ca11bd80ad803fc0e66843da5c3d43adcc77ab877a",
+    "functions/whatsappWebhook/index.js": "d18d7a14d559f293250559b9b28baed94d8641821dd84916646ca749ce377989",
+    "functions/whatsappWebhook/store.js": "97810542df1e13c378288e57e9beab914c1c658ad9e1577535314190fd9fb4de",
+    "js/agenda.js": "2cca3a74c68e9551c33eed51b78e6b6eed535e235fbe3989e5bc88f862715af7",
+    "js/agenda/visualModel.js": "372cdc27148f1db63f8ace0055f5d5322fd5712341635b97c9317eab11537623",
+    "js/config/appVersion.js": "9b8a605adec12567d4513abd1a07e4e5febdf3120bc14af671886ad1e38d7e70",
+    "js/services/agendaReadDiagnostics.js": "29bf03ced01d1a9b68274de876efdcb69ed54e0ab0e87c118993c5935755ac73",
+    "js/services/agendaWhatsAppSettings.js": "07c506a904cbd64e62072cc89c80c3be6ea280138deed53d2d8f69571562fab8",
+    "js/themes/biocellularThemeController.js": "63d8f75dae0b37425d725973221b1c2fad08235aa8b61c96d54c4d73b10824da",
+    "scripts/audit-agenda-release.cjs": "a535e61fe61044daa173d98cb11dd33c91dca7199574dad235c0dc0e217b68db",
+    "scripts/check-agenda-bot-release.cjs": "d411d5804c33a1aab5bb372ad972d6c3bae5ecf47d15e7f983fc31b1cef8c5c1",
+    "scripts/qa-agenda-visual.cjs": "c59a95be9ab938ef42a378d002c2afe0a770b636bd98ccb5391a8524a5850ae3",
+    "scripts/run-agenda-whatsapp-tests.cjs": "02e2b570d4e3b94b023b49fc802cad4c346343b6577c56a47540b2244bb38c40",
+    "scripts/test-agenda-whatsapp.ps1": "af5d1c24e1653e6b68d1ab2edee20def8190871caf33f6737933aef00972d90c",
+    "tests/agenda-browser-emulator.test.mjs": "d1344bb0ec488b91ded5746a2e8f9d56078227af6832bb49966d465b48a9af01",
+    "tests/appointment-emulator.test.mjs": "0621838bff2caa2e86e29fb6368f8b7684b0eee0cbe78b67c3beebde0c1aabc2",
+    "tests/appointment-modern-recurrence.test.mjs": "bd5b06c997f93b921a3f1b07c0a67abd20e4999f3f71bc9e8d9756f395b59434",
+    "tests/whatsapp-bot-emulator.test.mjs": "b317f492cb01d2ca1eab74cf5941e1928d3e16a12e51c9991bad6785cf8ce3c2",
+    "tests/whatsapp-bot-settings-ui.test.mjs": "72276c077f7d2f9b323052210d2fc9a2cb7479d606b2e75de1b53a7611a4b0af",
+    "tests/whatsapp-bot-transport.test.mjs": "38d86367e5ff051c58d0acd62e138462897975e1819b44eefcda72ab59303777",
+    "tests/whatsapp-bot-deployment.test.mjs": "7b17869a9677bb734ade0fadb51c5fd545223a509633a3ff1b0dfc856337448a",
+    "scripts/agenda-bot-release-ops.cjs": "30a0825856977833aabba699c176dfc6d56ae1b08d403cc43bf67a6a0f531955"
+  },
+  "amendments": [
+    {
+      "at": "2026-09-08T13:37:47.915Z",
+      "reason": "Authorized localized deployment repair: supported us-central1 runtime, Firestore event source remains northamerica-south1. SDK endpoint contract tested. Read-only/stop release helper added.",
+      "changes": {
+        "functions/whatsappBot/index.js": {
+          "before": "10252c8d966bc7fad2c5aa4b8f952cf2972bc2898cf064fa2001ada92ca4ef5b",
+          "after": "c31b4ee21797288cf92b7b214677f852590a81f786cd08dd7b838f1a6da0143f"
+        }
+      },
+      "addedFiles": [
+        "tests/whatsapp-bot-deployment.test.mjs",
+        "scripts/agenda-bot-release-ops.cjs"
+      ]
+    },
+    {
+      "at": "2026-09-08T13:46:00.301Z",
+      "reason": "Reviewed read-only post-deploy checks: require six ACTIVE Functions and test anonymous denial of three private endpoints.",
+      "changes": {
+        "scripts/agenda-bot-release-ops.cjs": {
+          "before": "a7eb21b1529c5ed4cea88d089db7f62247cda1d3f16540f0fa420bd174e4dab1",
+          "after": "30a0825856977833aabba699c176dfc6d56ae1b08d403cc43bf67a6a0f531955"
+        }
+      }
+    }
+  ]
+}

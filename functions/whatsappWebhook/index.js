@@ -6,19 +6,19 @@ const { createEventStore } = require("./store");
 const WHATSAPP_WEBHOOK_VERIFY_TOKEN = defineSecret("WHATSAPP_WEBHOOK_VERIFY_TOKEN");
 const META_APP_SECRET = defineSecret("META_APP_SECRET");
 
-function createWhatsAppWebhook({ db, logger }) {
+function createWhatsAppWebhook({ db, logger, prepareWork = null, ingressSecrets = [] }) {
   return onRequest({
     region: "us-central1",
     invoker: "public",
     cors: false,
-    secrets: [WHATSAPP_WEBHOOK_VERIFY_TOKEN, META_APP_SECRET],
+    secrets: [WHATSAPP_WEBHOOK_VERIFY_TOKEN, META_APP_SECRET, ...ingressSecrets],
     timeoutSeconds: 15,
     memory: "256MiB",
     maxInstances: 5
   }, createWebhookHandler({
     getVerifyToken: () => WHATSAPP_WEBHOOK_VERIFY_TOKEN.value(),
     getAppSecret: () => META_APP_SECRET.value(),
-    recordEvents: createEventStore({ db }),
+    recordEvents: createEventStore({ db, prepareWork }),
     logger
   }));
 }

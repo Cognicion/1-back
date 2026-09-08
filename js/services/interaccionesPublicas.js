@@ -2,7 +2,7 @@ import { buscarMedicamentos, normalizarNombreMedicamento } from "../data/catalog
 import {
   evaluarInteraccionesClinicas,
   normalizarMedicamentoClinico
-} from "./motorClinicoMedicamentos.js?v=20260904-laboratorio-minimalista-somatometria-v1";
+} from "./motorClinicoMedicamentos.js?v=20260908-treatment-card-safety-v1";
 
 const SEVERIDAD_PUBLICA = {
   critica: "contraindicada",

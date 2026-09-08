@@ -403,7 +403,7 @@ async function cargarModuloClinicoNuevoPaciente() {
   actualizarDatosPersonalesDraftNuevo();
   await asegurarMarkupClinicoNuevoPaciente();
   if (!moduloClinicoNuevoPacientePromise) {
-    moduloClinicoNuevoPacientePromise = import("./paciente.js?v=20260904-laboratorio-minimalista-somatometria-v1");
+    moduloClinicoNuevoPacientePromise = import("./paciente.js?v=20260908-treatment-card-safety-v1");
   }
   await moduloClinicoNuevoPacientePromise;
   window.inicializarPacienteClinicoDraft?.({

@@ -83,20 +83,20 @@ function timestampMillis(value) {
   return NaN;
 }
 function projectedInterval(event, timeZone) {
-  if (temporalRepresentation(event) !== "modern-instant") return intervaloEvento(event, { civil: true });
-  let startAt = timestampMillis(event.startAt), endAt = timestampMillis(event.endAt);
-  if (event.isVirtualOccurrence) {
-    // The shared expander intentionally keeps the source fields. Its inherited
-    // absolute timestamps still belong to the anchor, not to this occurrence.
-    // Reuse the domain conversion in the source IANA zone, only in this view.
-    if (!event.timeZone) throw new RangeError("recurrence-timezone-required");
+  if (event.isVirtualOccurrence && (event.sourceTemporalModel === 'modern-instant' || temporalRepresentation(event) === 'modern-instant')) {
+    if (!event.timeZone) throw new RangeError('recurrence-timezone-required');
+    // Virtual occurrences have civil fields for their own date. Rebuild their
+    // interval in the source IANA zone; old expanders may still include anchor
+    // instants, but those never represent this virtual occurrence.
     const candidate = { ...event, recurrence: null, fecha: event.startDate, hora: event.startTime };
     delete candidate.startAt;
     delete candidate.endAt;
     const interval = canonicalAppointmentInterval(candidate, { timeZone: event.timeZone });
     if (!interval) throw new RangeError("recurrence-timezone-required");
-    ({ startAt, endAt } = interval);
+    return [zonedCivilMillis(interval.startAt, timeZone), zonedCivilMillis(interval.endAt, timeZone)];
   }
+  if (temporalRepresentation(event) !== "modern-instant") return intervaloEvento(event, { civil: true });
+  const startAt = timestampMillis(event.startAt), endAt = timestampMillis(event.endAt);
   return [zonedCivilMillis(startAt, timeZone), zonedCivilMillis(endAt, timeZone)];
 }
 function invalidSegment(event, range, reason) {

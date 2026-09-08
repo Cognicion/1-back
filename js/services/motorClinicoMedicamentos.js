@@ -270,9 +270,10 @@ export function normalizarMedicamentoClinico(medicamento) {
     : ingredientesPorSinonimo.length
       ? ingredientesPorSinonimo
       : ingredientesPorFuzzy;
-  const coberturaIngredienteCompleta = resolucionCanonica?.clinicalMedicationId
-    ? ingredientesCanonicos.some((ingrediente) => ingrediente.id === resolucionCanonica.clinicalMedicationId)
-    : ingredientes.length > 0;
+  // Una identidad resuelta en el catálogo oficial ya tiene cobertura de
+  // ingrediente. INGREDIENTES_MEDICAMENTOS es una capa de reglas legacy y no
+  // debe convertirse en un segundo catálogo obligatorio para reconocerla.
+  const coberturaIngredienteCompleta = Boolean(resolucionCanonica?.clinicalMedicationId) || ingredientes.length > 0;
 
   const clases = new Set();
   const riesgos = {};
@@ -1436,19 +1437,109 @@ export function obtenerIndicadorSeguridadMedicamento(alertas = [], cobertura = {
   if (max >= 4) return { estado: "alto", etiqueta: "Revisión obligatoria", clase: "alto" };
   if (max >= 3) return { estado: "precaucion", etiqueta: "Precaución", clase: "precaucion" };
   if (max >= 2) return { estado: "bajo", etiqueta: "Vigilancia", clase: "bajo" };
+  if (Number(cobertura.fuentePendiente || 0) > 0) {
+    return { estado: "datos_insuficientes", etiqueta: "Fuente farmacológica pendiente", clase: "precaucion" };
+  }
+  if (Number(cobertura.sinReglaIngrediente || 0) > 0) {
+    return { estado: "datos_insuficientes", etiqueta: "Medicamento no resuelto en el catálogo", clase: "precaucion" };
+  }
+  if (Number(cobertura.fuentesContextoNoDisponibles || 0) > 0) {
+    return { estado: "datos_insuficientes", etiqueta: "Contexto clínico incompleto", clase: "precaucion" };
+  }
+  if (Number(cobertura.hallazgosParametrosNoInterpretables || 0) > 0) {
+    return { estado: "datos_insuficientes", etiqueta: "Dato clínico no interpretable", clase: "precaucion" };
+  }
+  if (Number(cobertura.cantidadParametrosEsperadosAusentes || 0) > 0) {
+    return { estado: "datos_insuficientes", etiqueta: "Vigilancia clínica incompleta", clase: "precaucion" };
+  }
   if (
-    Number(cobertura.fuentePendiente || 0) > 0 ||
-    Number(cobertura.sinReglaIngrediente || 0) > 0 ||
-    Number(cobertura.fuentesContextoNoDisponibles || 0) > 0 ||
     Number(cobertura.paresMedicamentoMedicamentoSinRegla || 0) > 0 ||
     Number(cobertura.paresMedicamentoDiagnosticoSinRegla || 0) > 0 ||
-    Number(cobertura.paresMedicamentoParametroSinRegla || 0) > 0 ||
-    Number(cobertura.hallazgosParametrosNoInterpretables || 0) > 0 ||
-    Number(cobertura.cantidadParametrosEsperadosAusentes || 0) > 0
+    Number(cobertura.paresMedicamentoParametroSinRegla || 0) > 0
   ) {
-    return { estado: "datos_insuficientes", etiqueta: "Sin regla cargada para parte de la selección", clase: "precaucion" };
+    return { estado: "datos_insuficientes", etiqueta: "Sin regla específica para uno o más pares", clase: "precaucion" };
   }
   return { estado: "sin_alertas", etiqueta: "Sin alerta encontrada con la base actual", clase: "ok" };
+}
+
+function idsClinicosNormalizados(medicamento) {
+  const normalizado = medicamento?.ingredienteIds
+    ? medicamento
+    : normalizarMedicamentoClinico(medicamento);
+  return {
+    normalizado,
+    ids: new Set([
+      normalizado.clinicalMedicationId,
+      normalizado.id,
+      ...(normalizado.ingredienteIds || [])
+    ].filter(Boolean))
+  };
+}
+
+export function alertaCorrespondeAMedicamento(alerta = {}, medicamento = {}) {
+  const { ids } = idsClinicosNormalizados(medicamento);
+  if (!ids.size) return false;
+  const implicados = Array.isArray(alerta.medicamentos) ? alerta.medicamentos.filter(Boolean) : [];
+  if (!implicados.length) return alerta.tipo === "bloqueo_tecnico";
+  return implicados.some((implicado) => {
+    const normalizado = normalizarMedicamentoClinico(implicado);
+    return [
+      normalizado.clinicalMedicationId,
+      normalizado.id,
+      ...(normalizado.ingredienteIds || [])
+    ].filter(Boolean).some((id) => ids.has(id));
+  });
+}
+
+export function obtenerIndicadorSeguridadMedicamentoIndividual({ medicamento = {}, alertas = [], cobertura = {} } = {}) {
+  const { normalizado, ids } = idsClinicosNormalizados(medicamento);
+  const alertasRelacionadas = alertas.filter((alerta) => alertaCorrespondeAMedicamento(alerta, normalizado));
+  if (alertasRelacionadas.length) {
+    return {
+      ...obtenerIndicadorSeguridadMedicamento(alertasRelacionadas, {}),
+      alertasRelacionadas
+    };
+  }
+
+  const medicamentoCatalogo = obtenerMedicamentoPorId(normalizado.clinicalMedicationId || normalizado.id);
+  if (!medicamentoCatalogo || !normalizado.coberturaIngredienteCompleta) {
+    return {
+      estado: "datos_insuficientes",
+      etiqueta: "Medicamento no resuelto en el catálogo",
+      clase: "precaucion",
+      alertasRelacionadas: []
+    };
+  }
+
+  if (medicamentoCatalogo.estadoFuente !== "verificada_local") {
+    return {
+      estado: "fuente_pendiente",
+      etiqueta: "Fuente farmacológica pendiente",
+      clase: "precaucion",
+      alertasRelacionadas: []
+    };
+  }
+
+  const parametrosPendientes = (cobertura.parametrosEsperadosAusentes || []).filter((requisito) =>
+    ids.has(requisito.medicamentoId) ||
+    alertaCorrespondeAMedicamento({ medicamentos: [requisito.medicamento] }, normalizado)
+  );
+  if (parametrosPendientes.length) {
+    return {
+      estado: "vigilancia_incompleta",
+      etiqueta: "Vigilancia clínica incompleta",
+      clase: "precaucion",
+      alertasRelacionadas: [],
+      parametrosPendientes
+    };
+  }
+
+  return {
+    estado: "sin_alertas",
+    etiqueta: "Sin alerta encontrada con la base actual",
+    clase: "ok",
+    alertasRelacionadas: []
+  };
 }
 
 export function evaluarMedicamentosPaciente({ paciente = {}, medicamentos = [], medicamentoNuevo = null } = {}) {

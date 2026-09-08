@@ -39,19 +39,20 @@ function createWebhookHandler({ getVerifyToken, getAppSecret, recordEvents, logg
     if (!verifySignature(rawBody, request.headers?.["x-hub-signature-256"], appSecret)) {
       return response.status(403).send("Forbidden");
     }
-    let events;
+    let events, payload;
     try {
       // Firebase Request.rawBody contains the original Buffer. Never serialize
       // request.body to authenticate or parse an authenticated request.
-      events = parseWebhookPayload(JSON.parse(rawBody.toString("utf8")), now());
+      payload = JSON.parse(rawBody.toString("utf8"));
+      events = parseWebhookPayload(payload, now());
     } catch (error) {
       return response.status(error instanceof PayloadLimitError ? 413 : 400).send("Invalid payload");
     }
     let results;
     try {
-      // Only a bounded atomic receipt write precedes ACK. No external API,
-      // media download, AI, appointment action or post-response work here.
-      results = await recordEvents(events);
+      // Bounded KMS encryption and atomic receipt/job persistence precede ACK.
+      // No outgoing message, appointment action or post-response work here.
+      results = await recordEvents(events, payload);
     } catch {
       log({ eventType: "storage.unavailable", hasMessage: false, messageType: null, timestamp: now(), deduplicated: false });
       // Never acknowledge a receipt lost to Firestore failure; allow redelivery.

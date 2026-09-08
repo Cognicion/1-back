@@ -181,5 +181,8 @@
 // deployment marker: 2026-09-07-agenda-settings-relocation-v1 (+0.001)
 // deployment marker: 2026-09-08-whatsapp-reception-webhook-v1 (+0.001)
 // deployment marker: 2026-09-08-agenda-workspace-v1 (+0.001)
-export const APP_VERSION = "2.194";
+// deployment marker: 2026-09-08-agenda-modern-recurrence-v1 (+0.001)
+// deployment marker: 2026-09-08-agenda-whatsapp-administrative-pilot-v1 (2.196)
+// deployment marker: 2026-09-08-treatment-card-safety-v1 (+0.001)
+export const APP_VERSION = "2.197";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

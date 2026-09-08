@@ -1193,7 +1193,9 @@ exports.googleCalendarConnect = googleCalendarHandlers.connect;
 exports.googleCalendarOAuthCallback = googleCalendarHandlers.callback;
 exports.getGoogleCalendarConnectionStatus = googleCalendarHandlers.status;
 exports.disconnectGoogleCalendar = googleCalendarHandlers.disconnect;
-exports.whatsappWebhook = createWhatsAppWebhook({ db: adminDb, logger });
+const whatsappBot = require('./whatsappBot').createBotRuntime({ db: adminDb, credential: admin.app().options.credential });
+Object.assign(exports, whatsappBot.exports);
+exports.whatsappWebhook = createWhatsAppWebhook({ db: adminDb, logger, prepareWork: whatsappBot.prepareWork, ingressSecrets: whatsappBot.ingressSecrets });
 exports.manageAppointment = onCall({ region: "us-central1", timeoutSeconds: 60 }, conCuentaCallableActiva(async (request) => {
   const data = request.data || {};
   const action = String(data.action || "");

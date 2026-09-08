@@ -163,6 +163,15 @@ test('recurring monthly appointment is created through the transaction and retai
   const { appointmentId } = await create('monthly', { startDate: '2026-01-31', endDate: '2026-01-31', recurrence: 'monthly' });
   assert.equal((await db.doc(`usuarios/${doctorUid}/agenda/${appointmentId}`).get()).data().recurrence, 'monthly');
 });
+test('modern recurrent create and reschedule use later virtual intervals transactionally', async () => {
+  const series = await create('modern-weekly', { startDate: '2026-01-05', endDate: '2026-01-05', startTime: '09:00', recurrence: 'weekly' });
+  await assert.rejects(() => create('later-overlap', { startDate: '2026-01-12', endDate: '2026-01-12', startTime: '09:00' }), { code: 'conflict' });
+  await create('later-adjacent', { startDate: '2026-01-12', endDate: '2026-01-12', startTime: '10:00' });
+  await service.rescheduleAppointment(request('reschedule-weekly', { appointmentId: series.appointmentId, input: { startDate: '2026-01-05', endDate: '2026-01-05', startTime: '11:00', durationMinutes: 60, recurrence: 'weekly' } }));
+  const saved = (await db.doc(`usuarios/${doctorUid}/agenda/${series.appointmentId}`).get()).data();
+  assert.equal(saved.startTime, '11:00');
+  assert.equal(saved.temporalModel, 'modern-instant');
+});
 test('administrative read refuses inconsistent historical payment', async () => {
   await db.doc(`usuarios/${doctorUid}/agenda/inconsistent`).set({ type: 'appointment', payment: { required: false, type: 'none', status: 'paid', amount: null, currency: 'MXN', paidAt: 'synthetic' } });
   await assert.rejects(() => service.getAppointment({ auth, doctorUid, appointmentId: 'inconsistent' }), { code: 'inconsistent-payment' });

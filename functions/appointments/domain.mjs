@@ -204,11 +204,12 @@ function candidateBusyInterval(item, policy) {
   }
   return interval;
 }
-function expandedRelevantEvents(events, rangeStart, rangeEnd, excludeId) {
+function expandedRelevantEvents(events, rangeStart, rangeEnd, excludeId, policy) {
   const result = [];
   for (const item of events.map(normalizarEvento)) {
     if (item.id === excludeId || item.status === 'cancelada' || !(['appointment', 'block', 'vacation'].includes(item.type) || item.blocksAvailability === true)) continue;
     if (item.recurrence && !['weekly', 'biweekly', 'monthly'].includes(item.recurrence)) fail('unsupported-recurrence');
+    if (item.type === 'appointment' && temporalRepresentation(item) === 'modern-instant') canonicalAppointmentInterval(item, policy);
     if (item.recurrence) result.push(...getOccurrences(item, rangeStart, rangeEnd));
     else result.push(item);
   }
@@ -244,6 +245,8 @@ export function getAvailability({ candidate, events = [], policy = {}, complete 
   // or working-hours policy. This explicit compatibility mode preserves those
   // semantics while refusing to pretend that an unconfigured schedule exists.
   if (e.recurrence) {
+    // Validate the real anchor before projecting away its canonical instants.
+    canonicalAppointmentInterval(e, policy);
     // A new unbounded series cannot be proven conflict-free forever. Validate a
     // finite booking horizon; every later request is evaluated in its own window.
     const horizonDays = Number(policy?.maximumBookingAdvanceDays || 366);
@@ -288,7 +291,7 @@ export function getAvailability({ candidate, events = [], policy = {}, complete 
     if (zonedStart < Number(now) + settings.minimumBookingNoticeMinutes * 60000) return { available: false, reason: 'minimum-booking-notice' };
   }
   if (events.map(normalizarEvento).some((item) => item.recurrence && !['weekly', 'biweekly', 'monthly'].includes(item.recurrence))) return { available: false, reason: 'unsupported-recurrence' };
-  const relevant = expandedRelevantEvents(events, e.startDate, dateForCivilInstant(interval[1]), excludeId);
+  const relevant = expandedRelevantEvents(events, e.startDate, dateForCivilInstant(interval[1]), excludeId, policy);
   for (const item of relevant) {
     const existingInterval = candidateBusyInterval(item, policy);
     if (!existingInterval || existingInterval[1] <= existingInterval[0] || item.endDate < item.startDate) return { available: false, reason: 'invalid-existing-data' };
@@ -315,7 +318,10 @@ function getAvailabilitySlots({ events, policy, complete, excludeId, externalBus
   // Build the busy index once per requested window. Calling getAvailability for
   // every candidate with the complete event list turns an eight-slot day into
   // eight complete scans of the agenda.
-  const occupied = expandedRelevantEvents(events, rangeStart, rangeEnd, excludeId).map((event) => candidateBusyInterval(event, { ...policy, ...settings })).filter(Boolean);
+  const relevant = expandedRelevantEvents(events, rangeStart, rangeEnd, excludeId, policy);
+  if (relevant.some(event => event.timeZone && event.timeZone !== settings.timeZone)) return { available: false, reason: 'timezone-mismatch', slots: [] };
+  const occupied = relevant.map((event) => candidateBusyInterval(event, { ...policy, ...settings }));
+  if (occupied.some(interval => !interval || interval[1] <= interval[0])) return { available: false, reason: 'invalid-existing-data', slots: [] };
   const external = normalizedExternalBusy(externalBusyIntervals);
   const slots = [];
   for (let day = civilDay(rangeStart); day <= civilDay(rangeEnd); day += DAY_MS) {

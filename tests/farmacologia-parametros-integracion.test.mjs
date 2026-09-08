@@ -415,11 +415,11 @@ test("combinaciones contraindicadas con fuente se separan de las interacciones g
   assert.ok(absoluta.fuentes.length > 0);
 });
 
-test("un medicamento canónico sin regla directa conserva identidad y declara cobertura incompleta", () => {
+test("un medicamento canónico conserva identidad sin depender del registro legacy de ingredientes", () => {
   const resultado = evaluar({}, [{ medicamento: "Apomorfina" }]);
 
   assert.deepEqual(resultado.medicamentosNormalizados[0].ingredienteIds, ["apomorfina"]);
-  assert.equal(resultado.cobertura.sinReglaIngrediente, 1);
+  assert.equal(resultado.cobertura.sinReglaIngrediente, 0);
   assert.equal(resultado.indicador.estado, "datos_insuficientes");
 });
 

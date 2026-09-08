@@ -74,3 +74,4 @@ functions/.env.*
 # Local-only secret overrides and artifacts for the WhatsApp emulator tests
 functions/.secret.local
 /.tmp/whatsapp-tests/
+/.tmp/bot-tests/

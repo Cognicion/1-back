@@ -15,8 +15,9 @@ import {
   esErrorConexionApunte
 } from "./services/apuntesMedicoPersistence.js";
 import {
-  detectarAlertasClinicasMedicamentos
-} from "./data/interaccionesFarmacologicas.js?v=20260904-laboratorio-minimalista-somatometria-v1";
+  detectarAlertasClinicasMedicamentos,
+  obtenerIndicadorSeguridadMedicamentoIndividual
+} from "./data/interaccionesFarmacologicas.js?v=20260908-treatment-card-safety-v1";
 import {
   DEFINICIONES_PARAMETROS_CLINICOS,
   GRUPOS_PARAMETROS_CLINICOS,
@@ -7609,6 +7610,8 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
   const tituloOrigen = origen === "indicaciones" ? "medicamentos activos vinculados a indicaciones" : "tratamientos activos";
   const parametrosEvaluados = evaluacionClinica.parametrosClinicos?.lista || [];
   const detallesCobertura = [
+    Number(cobertura.fuentePendiente || 0) > 0 ? `${cobertura.fuentePendiente} medicamento(s) con fuente farmacológica pendiente` : "",
+    Number(cobertura.sinReglaIngrediente || 0) > 0 ? `${cobertura.sinReglaIngrediente} medicamento(s) sin identidad farmacológica resoluble` : "",
     Number(cobertura.fuentesContextoNoDisponibles || 0) > 0 ? `Fuentes no disponibles: ${(cobertura.detalleFuentesContextoNoDisponibles || []).join(", ")}` : "",
     Number(cobertura.cantidadParametrosEsperadosAusentes || 0) > 0
       ? `Vigilancia sin dato: ${(cobertura.parametrosEsperadosAusentes || []).map((item) => `${item.medicamento}: ${item.etiqueta}`).join(", ")}`
@@ -7712,7 +7715,7 @@ function renderizarInteraccionesFarmacologicas(medicamentos = [], origen = "trat
       </div>
     ` : coberturaIncompleta ? `
       <article class="interaccion-card severidad-precaucion">
-        <strong>Sin regla cargada para parte de la selección.</strong>
+        <strong>Sin regla específica para uno o más pares.</strong>
         <p>No se muestra un cero concluyente. Revisa las fuentes pendientes y los pares medicamento–medicamento, medicamento–diagnóstico o medicamento–parámetro sin cobertura antes de decidir.</p>
       </article>
     ` : `
@@ -8731,7 +8734,7 @@ function renderizarTratamiento(t) {
   const dosisTotalDia = obtenerDosisDiariaTratamiento(tratamiento);
   const indicador = indicadorSeguridadTratamiento(tratamiento);
   const alertaHTML = indicador.estado !== "sin_alertas"
-    ? `<button type="button" class="med-alerta-badge med-alerta-${escaparHTML(indicador.clase)}" title="${escaparHTML(indicador.etiqueta)}" data-ver-interacciones>? ${escaparHTML(indicador.etiqueta)}</button>`
+    ? `<button type="button" class="med-alerta-badge med-alerta-${escaparHTML(indicador.clase)}" title="${escaparHTML(indicador.etiqueta)}" data-ver-interacciones>${escaparHTML(indicador.etiqueta)}</button>`
     : "";
   const fechaSuspension = t.fechaSuspension || t["fechaSuspensi?n"] || "";
   const motivoSuspension = t.motivoSuspension || t["motivoSuspensi?n"] || "";
@@ -8778,27 +8781,11 @@ function indicadorSeguridadTratamiento(tratamiento) {
     lista,
     construirContextoFarmacologicoPaciente(datosPacienteActual || {})
   );
-  const nombre = (tratamiento.medicamento || "").toLowerCase();
-  const alertasRelacionadas = (evaluacion.alertas || []).filter((alerta) =>
-    !alerta.medicamentos?.length || alerta.medicamentos.some((med) => String(med || "").toLowerCase().includes(nombre) || nombre.includes(String(med || "").toLowerCase()))
-  );
-  if (alertasRelacionadas.length) return evaluacion.indicador;
-  const cobertura = evaluacion.cobertura || {};
-  const coberturaIncompleta = evaluacion.indicador?.estado === "datos_insuficientes" || [
-    cobertura.fuentePendiente,
-    cobertura.sinReglaIngrediente,
-    cobertura.fuentesContextoNoDisponibles,
-    cobertura.paresMedicamentoMedicamentoSinRegla,
-    cobertura.paresMedicamentoDiagnosticoSinRegla,
-    cobertura.paresMedicamentoParametroSinRegla,
-    cobertura.cantidadParametrosEsperadosAusentes,
-    cobertura.hallazgosParametrosNoInterpretables,
-    cobertura.diagnosticosSinCategoriaFarmacologica
-  ].some((valor) => Number(valor || 0) > 0);
-  if (coberturaIncompleta) {
-    return { estado: "datos_insuficientes", etiqueta: "Sin regla cargada para parte de la selección", clase: "precaucion" };
-  }
-  return { estado: "sin_alertas", etiqueta: "Sin alerta encontrada con la base actual", clase: "ok" };
+  return obtenerIndicadorSeguridadMedicamentoIndividual({
+    medicamento: tratamiento,
+    alertas: evaluacion.alertas || [],
+    cobertura: evaluacion.cobertura || {}
+  });
 }
 
 function vincularAccionesTratamientos() {

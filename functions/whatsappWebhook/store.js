@@ -13,8 +13,8 @@ function eventIdHash(event) {
   return createHash("sha256").update(JSON.stringify(["whatsapp", event.eventType, event.messageId])).digest("hex");
 }
 
-function createEventStore({ db }) {
-  return async function recordEvents(events) {
+function createEventStore({ db, prepareWork = null }) {
+  return async function recordEvents(events, payload) {
     if (events.length > MAX_EVENTS) throw new Error("webhook-event-limit");
     const unique = new Map();
     for (const event of events) {
@@ -23,6 +23,7 @@ function createEventStore({ db }) {
     }
     if (!unique.size) return events.map(() => ({ recorded: false, deduplicated: false, eventIdHash: null }));
     const entries = [...unique];
+    const work = prepareWork ? await prepareWork(entries, payload) : new Map();
     const existing = await db.runTransaction(async (tx) => {
       const refs = entries.map(([key]) => db.collection(COLLECTION).doc(key));
       const snapshots = await tx.getAll(...refs);
@@ -41,6 +42,9 @@ function createEventStore({ db }) {
           messageType: event.messageType,
           receivedAt: Timestamp.fromMillis(event.receivedAt)
         });
+        // Receipt and encrypted work become durable in the SAME transaction.
+        // Historical receipts never acquire jobs on replay.
+        if (work.has(key)) tx.create(db.doc(`whatsappBotJobs/${key}`), work.get(key));
       });
       return found;
     }, { maxAttempts: 3 });

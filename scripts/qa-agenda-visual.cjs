@@ -29,8 +29,8 @@ const fixtures = [
   ...Array.from({length:6}, (_, i) => ({ id:`fixture-overflow-${i}`,type:'event',title:`Evento de prueba ${i+1}`,startDate:'2026-09-14',endDate:'2026-09-14',startTime:`${String(9+i).padStart(2,'0')}:00`,durationMinutes:45,status:'programada' }))
 ];
 const settings = { timeZone:'America/Mexico_City', bookingEnabled:false, weeklySchedule:Object.fromEntries(['monday','tuesday','wednesday','thursday','friday'].map(day=>[day,[{start:'09:00',end:'17:00'}]])) };
-const firebaseMock = `export const auth={currentUser:{uid:'fixture-doctor'}}; export const db={}; export const functions={};`;
-const storeMock = `export const collection=(...x)=>x;export const doc=(...x)=>x;export const query=(...x)=>x;export const where=(...x)=>x;
+const firebaseMock = `export const auth={currentUser:{uid:'fixture-doctor'}}; export const db={}; export const functions={}; export const obtenerFunctions=async()=>functions;`;
+const storeMock = `export const collection=(...x)=>x;export const doc=(...x)=>x;export const query=(...x)=>x;export const where=(...x)=>x;export const orderBy=(...x)=>x;
 export async function getDocs(query){globalThis.__agendaReads++;if(globalThis.__agendaReadError)throw {code:'unavailable'};
 const clauses=Array.isArray(query)?query.slice(1):[];const snapshot=structuredClone(globalThis.__agendaFixtures).filter(value=>clauses.every(([field,op,limit])=>op==='in'?limit.includes(value[field]):op==='>='?value[field]>=limit:op==='<='?value[field]<=limit:true));
 const delay=globalThis.__agendaReadDelay||0;if(delay)await new Promise(resolve=>setTimeout(resolve,delay));return {docs:snapshot.map(value=>({id:value.id,data:()=>({...value})}))};}
@@ -71,6 +71,7 @@ for (const [url, source] of [...mocks, ['firebase-firestore-mock', storeMock]]) 
         if(js!==undefined){await route.fulfill({contentType:'text/javascript',body:js});return;}
         if(u.hostname==='www.gstatic.com'&&u.pathname.endsWith('/firebase-auth.js')){await route.fulfill({contentType:'text/javascript',body:`export const onAuthStateChanged=(auth,cb)=>{setTimeout(()=>cb({uid:'fixture-doctor'}),0);return ()=>{}};`});return;}
         if(u.hostname==='www.gstatic.com'&&u.pathname.endsWith('/firebase-firestore.js')){await route.fulfill({contentType:'text/javascript',body:storeMock});return;}
+        if(u.hostname==='www.gstatic.com'&&u.pathname.endsWith('/firebase-functions.js')){await route.fulfill({contentType:'text/javascript',body:`export const httpsCallable=()=>async data=>{globalThis.__botCalls=(globalThis.__botCalls||[]).concat(data.action);if(data.action==='save')globalThis.__botSettings=data.settings;if(data.action==='stop'&&globalThis.__botSettings)globalThis.__botSettings.enabled=false;return {data:{settings:globalThis.__botSettings||null,admin:false,channel:{configured:false,enabled:false,authorizedRecipientCount:0},templateStatus:'NOT_CONFIGURED'}};};`});return;}
         if(u.origin!==origin){blocked.push(u.hostname);await route.abort('blockedbyclient');return;}
         await route.continue();
       });
@@ -89,6 +90,20 @@ for (const [url, source] of [...mocks, ['firebase-firestore-mock', storeMock]]) 
       let scenarios=[];
       if(!errors.length&&phase==='after'&&((size.width===1440&&theme==='dark')||(size.width===390&&theme==='light'))){
         scenarios=await require('./qa-agenda-scenarios.cjs')(page,{size,output});
+        const name='WhatsApp settings lazy load, explicit unavailable configuration and stop control';
+        try{
+          await page.locator('#abrirConfiguracionAgenda').click();
+          await page.locator('[data-settings-section="whatsapp"]').click();
+          await page.waitForFunction(()=>document.querySelector('[data-bot-status]').textContent.includes('sin configurar'));
+          await page.locator('[data-bot-stop]').click();
+          await page.waitForFunction(()=>globalThis.__botCalls?.includes('stop'));
+          if(await page.locator('[data-whatsapp-settings] .dialog-actions').evaluate(el=>el.scrollWidth>el.clientWidth+1))throw Error('WhatsApp actions overflow');
+          await page.screenshot({path:path.join(output,`${size.width}-${theme}-whatsapp-settings.png`)});
+          await page.locator('[data-bot-status]').scrollIntoViewIfNeeded();
+          await page.screenshot({path:path.join(output,`${size.width}-${theme}-whatsapp-status.png`)});
+          await page.locator('#cerrarConfiguracionAgenda').click();
+          scenarios.push({name,result:'PASS'});
+        }catch(error){scenarios.push({name,result:'FAIL',error:error.message.slice(0,1000)});}
       }
       if(!errors.length&&phase==='after'&&size.equivalentReflow){
         const name='200% equivalent viewport reflow keeps navigation, editor and settings operable';
