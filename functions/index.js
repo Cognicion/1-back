@@ -57,6 +57,8 @@ const {
   promoteAccountDeletionPreflight
 } = require("./accountSecurity/accountDeletion");
 const { isPatient } = require("./accountLinking/validation");
+const { createGoogleCalendarHandlers } = require("./googleCalendarOAuth");
+const { createWhatsAppWebhook } = require("./whatsappWebhook");
 
 let appointmentServicePromise = null;
 
@@ -1183,6 +1185,15 @@ exports.listAuthorizedPatientIds = listAuthorizedPatientIds;
 exports.listProfessionalDirectory = listProfessionalDirectory;
 exports.registerProfessional = registerProfessional;
 exports.registerProfessionalWithCode = registerProfessionalWithCode;
+const googleCalendarHandlers = createGoogleCalendarHandlers({
+  db: adminDb,
+  credential: admin.app().options.credential
+});
+exports.googleCalendarConnect = googleCalendarHandlers.connect;
+exports.googleCalendarOAuthCallback = googleCalendarHandlers.callback;
+exports.getGoogleCalendarConnectionStatus = googleCalendarHandlers.status;
+exports.disconnectGoogleCalendar = googleCalendarHandlers.disconnect;
+exports.whatsappWebhook = createWhatsAppWebhook({ db: adminDb, logger });
 exports.manageAppointment = onCall({ region: "us-central1", timeoutSeconds: 60 }, conCuentaCallableActiva(async (request) => {
   const data = request.data || {};
   const action = String(data.action || "");

@@ -54,6 +54,15 @@
         <p data-availability-status class="ayuda" role="status">Cargando disponibilidad…</p>
       </form>
     </section>
+    <section data-google-calendar-integration class="agenda-integration">
+      <h3>Integraciones</h3>
+      <p class="ayuda">Conecta Google Calendar de forma segura. En esta fase no se sincronizan citas ni disponibilidad.</p>
+      <p data-google-calendar-status class="ayuda" role="status">Comprobando conexión…</p>
+      <div class="acciones">
+        <button data-google-calendar-connect type="button">Conectar Google Calendar</button>
+        <button data-google-calendar-disconnect type="button" class="boton-secundario oculto">Desconectar Google Calendar</button>
+      </div>
+    </section>
   </section>
 
   <section class="grid-dos">
@@ -143,7 +152,7 @@
   </section>
 </main>
 
-<script type="module" src="js/agenda.js?v=20260907-agenda-settings-relocation-v1"></script>
+<script type="module" src="js/agenda.js?v=2.193-google-calendar-oauth-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>

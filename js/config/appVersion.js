@@ -179,5 +179,6 @@
 // deployment marker: 2026-09-07-agenda-timezone-schedule-v1 (+0.001)
 // deployment marker: 2026-09-07-agenda-canonical-instants-v1 (+0.001)
 // deployment marker: 2026-09-07-agenda-settings-relocation-v1 (+0.001)
-export const APP_VERSION = "2.192";
+// deployment marker: 2026-09-08-whatsapp-reception-webhook-v1 (+0.001)
+export const APP_VERSION = "2.193";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

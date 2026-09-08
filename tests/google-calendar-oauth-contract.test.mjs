@@ -1,0 +1,32 @@
+import assert from "node:assert/strict";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+const oauth = require("../functions/googleCalendarOAuth.js");
+const source = await (await import("node:fs/promises")).readFile(new URL("../functions/googleCalendarOAuth.js", import.meta.url), "utf8");
+
+assert.equal(oauth.REDIRECT_URI, "https://us-central1-cognicion-57052.cloudfunctions.net/googleCalendarOAuthCallback");
+const state = "state_without_identity_123";
+const verifier = "verifier_for_pkce_test";
+const url = new URL(oauth.buildAuthorizationUrl({ clientId: "client-id", state, codeVerifier: verifier }));
+assert.equal(url.origin, "https://accounts.google.com");
+assert.equal(url.searchParams.get("redirect_uri"), oauth.REDIRECT_URI);
+assert.equal(url.searchParams.get("response_type"), "code");
+assert.equal(url.searchParams.get("access_type"), "offline");
+assert.equal(url.searchParams.get("code_challenge_method"), "S256");
+assert.equal(url.searchParams.get("state"), state);
+assert.ok(url.searchParams.get("scope").includes("calendar.freebusy"));
+assert.ok(url.searchParams.get("scope").includes("calendar.events"));
+assert.ok(url.searchParams.get("code_challenge"));
+assert.equal(url.searchParams.get("state").includes("uid"), false);
+assert.equal(oauth.hashState(state).length, 64);
+assert.notEqual(oauth.pkceChallenge(verifier), verifier);
+const expiresAt = { toMillis: () => 2_000 };
+assert.equal(oauth.isStateUsable({ expiresAt, usedAt: null }, 1_999), true);
+assert.equal(oauth.isStateUsable({ expiresAt, usedAt: null }, 2_000), false);
+assert.equal(oauth.isStateUsable({ expiresAt, usedAt: { seconds: 1 } }, 1), false);
+assert.match(source, /codeVerifierEncrypted/);
+assert.match(source, /encryptedRefreshToken/);
+assert.match(source, /googleCalendarConnections/);
+assert.doesNotMatch(source, /console\.(log|debug).*token/i);
+console.log("google-calendar-oauth-contract.test.mjs OK");

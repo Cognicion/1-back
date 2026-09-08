@@ -7,6 +7,7 @@ import { canUseMedicalAgenda } from "./utils/roles.js?v=20260719-admin-universal
 import { expandirEventosAgenda } from "./services/agendaRecurrence.js";
 import { executeAppointmentCommand, appointmentErrorCode, createRequestId } from "./services/appointmentCommandService.js";
 import { initializeAgendaAvailabilitySettings } from "./services/agendaAvailabilitySettings.js";
+import { iniciarConexionGoogleCalendar, obtenerEstadoGoogleCalendar, desconectarGoogleCalendar } from "./services/googleCalendarService.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -27,10 +28,32 @@ onAuthStateChanged(auth, async (user) => {
   medicoUid = user.uid; document.body.classList.remove("bloqueado");
   await cargarPacientes(); await cargarEventos(); actualizarCamposPorTipo();
   initializeAgendaAvailabilitySettings($("configuracionAgenda").querySelector("[data-agenda-availability]")).catch((error) => console.warn("[AGENDA][DISPONIBILIDAD] Inicialización pendiente.", { code: appointmentErrorCode(error) }));
+  inicializarIntegracionGoogleCalendar();
 });
 
 $("abrirConfiguracionAgenda").addEventListener("click", () => { const settings = $("configuracionAgenda"); settings.hidden = false; settings.scrollIntoView({ behavior: "smooth", block: "start" }); });
 $("cerrarConfiguracionAgenda").addEventListener("click", () => { $("configuracionAgenda").hidden = true; });
+
+async function inicializarIntegracionGoogleCalendar() {
+  const root = $("configuracionAgenda").querySelector("[data-google-calendar-integration]");
+  if (!root || root.dataset.ready === "true") return;
+  root.dataset.ready = "true";
+  const status = root.querySelector("[data-google-calendar-status]");
+  const connect = root.querySelector("[data-google-calendar-connect]");
+  const disconnect = root.querySelector("[data-google-calendar-disconnect]");
+  const render = (data) => {
+    const connected = data?.connected === true;
+    status.textContent = connected ? "Google Calendar conectado." : data?.status === "reauthorization_required" ? "Google Calendar requiere reconexión." : "Google Calendar no conectado.";
+    connect.classList.toggle("oculto", connected); disconnect.classList.toggle("oculto", !connected);
+  };
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("googleCalendar") === "connected") status.textContent = "Conexión completada. Verificando estado…";
+  if (params.get("googleCalendar") === "error") status.textContent = params.get("reason") === "access_denied" ? "Conexión cancelada." : "No se pudo conectar Google Calendar.";
+  if (params.has("googleCalendar")) window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.hash || "#configuracionAgenda"}`);
+  connect.addEventListener("click", async () => { connect.disabled = true; status.textContent = "Conectando…"; try { await iniciarConexionGoogleCalendar(); } catch (error) { status.textContent = "No se pudo iniciar la conexión."; console.warn("[AGENDA][GOOGLE_CALENDAR] Inicio rechazado.", { code: String(error?.code || "internal") }); connect.disabled = false; } });
+  disconnect.addEventListener("click", async () => { disconnect.disabled = true; status.textContent = "Desconectando…"; try { await desconectarGoogleCalendar(); render({ connected: false, status: "not_connected" }); } catch (error) { status.textContent = "No se pudo desconectar Google Calendar."; console.warn("[AGENDA][GOOGLE_CALENDAR] Desconexión rechazada.", { code: String(error?.code || "internal") }); } finally { disconnect.disabled = false; } });
+  try { render(await obtenerEstadoGoogleCalendar()); } catch (error) { status.textContent = "No se pudo consultar el estado de Google Calendar."; console.warn("[AGENDA][GOOGLE_CALENDAR] Estado no disponible.", { code: String(error?.code || "internal") }); }
+}
 
 async function cargarPacientes() {
   const select = $("pacienteCita");

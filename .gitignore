@@ -67,3 +67,10 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# Firebase Functions environment files
+functions/.env.*
+
+# Local-only secret overrides and artifacts for the WhatsApp emulator tests
+functions/.secret.local
+/.tmp/whatsapp-tests/

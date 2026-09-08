@@ -1660,6 +1660,20 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Credenciales y sesiones OAuth solo son accesibles mediante Admin SDK.
+    match /googleCalendarOAuthStates/{stateId} {
+      allow read, write: if false;
+    }
+
+    match /googleCalendarConnections/{uid} {
+      allow read, write: if false;
+    }
+
+    // Recibos técnicos de WhatsApp: incluso clientes admin tienen acceso denegado.
+    match /whatsappWebhookEvents/{document=**} {
+      allow read, write: if false;
+    }
+
     /*
      * REPORTES
      */
