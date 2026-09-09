@@ -20,7 +20,7 @@ const {createSettings}=require('../functions/whatsappBot/settings');
 if(!/^127\.0\.0\.1:\d+$/.test(process.env.FIRESTORE_EMULATOR_HOST||''))throw Error('Local emulator required; production prohibited');
 const projectId='demo-cognicion-bot';
 const app=initializeApp({projectId},'bot-tests'),db=getFirestore(app);
-const uid='doctor_bot',phone='5215550000001',phone2='5215550000002',identity='synthetic-key-32-bytes-for-tests-only',signing='synthetic-hmac';
+const uid='doctor_bot',uid2='doctor_two',phone='5215550000001',phone2='5215550000002',identity='synthetic-key-32-bytes-for-tests-only',signing='synthetic-hmac';
 const ids={phoneNumberId:'1234567890',wabaId:'9876543210'};
 const subject=subjectId(identity,ids.phoneNumberId,phone),subject2=subjectId(identity,ids.phoneNumberId,phone2);
 const channel={...ids,subject};
@@ -63,6 +63,15 @@ async function review(date='2030-01-08') {
   let r=await say('hola');r=await choose(r,'agendar');r=await choose(r,'Consulta');r=await say(date);r=await say('',r.content.choices[0].id);r=await say('Persona Ficticia');return choose(r,'Autorizar');
 }
 async function book(date) {const r=await review(date);const result=await choose(r,'Confirmar operación');assert.match(result.content.text,/Cita guardada/);return (await db.collection(`usuarios/${uid}/agenda`).get()).docs[0].id;}
+async function enableProduction({second=false}={}) {
+  await db.doc('whatsappBotConfig/channel').set({...ids,enabled:true,mode:'production',pilot:false,graphVersion:'v23.0',officialNumberSuffix:'8280',assetVerified:true,subscribed:true});
+  await db.doc(`whatsappBotProfessionals/${uid}`).set({enabled:true,label:'Aldo García',displayName:'Dr. Aldo García',specialty:'Psiquiatría',slug:'aldo-garcia',aliases:['Doctor Aldo'],services:[{id:'consulta',label:'Consulta',durationMinutes:60,modality:'En línea'}],reminders:{enabled:false,advanceMinutes:1440,startHour:0,endHour:24,onlyUnconfirmed:false,template:null}});
+  if(second) {
+    await db.doc(`usuarios/${uid2}`).set({rol:'medico'});
+    await db.doc(`appointmentControls/${uid2}`).set({enabled:true,revision:0,policy});
+    await db.doc(`whatsappBotProfessionals/${uid2}`).set({enabled:true,label:'Ana García',displayName:'Dra. Ana García',specialty:'Psicología',slug:'ana-garcia',aliases:['Doctora Ana'],services:[{id:'consulta_ana',label:'Consulta Ana',durationMinutes:60,modality:'Presencial'}],reminders:{enabled:false,advanceMinutes:1440,startHour:0,endHour:24,onlyUnconfirmed:false,template:null}});
+  }
+}
 
 test('signed webhook, durable encryption, conversation and persisted external appointment',async()=>{
   const id=await book();const a=(await db.doc(`usuarios/${uid}/agenda/${id}`).get()).data();
@@ -134,6 +143,12 @@ test('ambiguous yes, old buttons, expired buttons and out of order messages do n
   clock+=16*60000;r=await say('',r.content.choices[0].id);assert.match(r.content.text,/venció/);
   const old=await receive({text:'cancelar',at:clock-60000});await worker.process(old.key);assert.equal((await db.doc(`whatsappBotJobs/${old.key}`).get()).data().code,'out-of-order');
   assert.equal((await db.collection(`usuarios/${uid}/agenda`).get()).size,0);
+});
+test('per-recipient abuse limit blocks excess inbound work without reply',async()=>{
+  await db.doc(`whatsappBotRate/inbound_${subject}`).set({minuteStartedAt:clock,minuteCount:30,day:'2030-01-07',dayCount:30,expiresAt:Timestamp.fromMillis(clock+86400000)});
+  const incoming=await receive({text:'hola'});await worker.process(incoming.key);
+  const job=(await db.doc(`whatsappBotJobs/${incoming.key}`).get()).data();assert.equal(job.state,'blocked');assert.equal(job.code,'recipient-rate-limit');
+  assert.equal((await db.doc(`whatsappBotOutbox/${hash('out:'+incoming.key)}`).get()).exists,false);
 });
 test('two authorized subjects competing for one slot: one winner, adjacency free',async()=>{
   await say('hola');await say('hola','',{from:phone2});
@@ -355,6 +370,61 @@ test('existing appointment requires explicit professional binding; later consent
   assert.equal((await appointments.list(channel,uid))[0].id,appointmentId);
   let r=await say('recordatorios');await choose(r,'Autorizar');r=await say('recordatorios');await choose(r,'Autorizar');
   assert.equal((await db.collection('whatsappBotJobs').where('kind','==','reminder').get()).size,1);
+});
+test('production channel accepts a valid unlisted sender and keeps identity encrypted',async()=>{
+  await enableProduction();
+  const openPhone='5215550000099',openSubject=subjectId(identity,ids.phoneNumberId,openPhone);
+  const incoming=await receive({text:'hola',from:openPhone});
+  assert.equal((await db.doc(`whatsappBotJobs/${incoming.key}`).get()).data().state,'pending');
+  await worker.process(incoming.key);
+  const response=await cipher.open((await db.doc(`whatsappBotOutbox/${hash('out:'+incoming.key)}`).get()).data().encrypted,hash('out:'+incoming.key));
+  assert.match(response.content.text,/Sofía/);
+  const recipient=(await db.doc(`whatsappBotRecipients/${openSubject}`).get()).data();
+  assert.equal(recipient.phoneNumberId,ids.phoneNumberId);assert.ok(recipient.phone.ciphertext);
+  assert.doesNotMatch(JSON.stringify(recipient),new RegExp(openPhone));
+});
+test('production directory resolves one professional and asks on ambiguous surname',async()=>{
+  await enableProduction({second:true});
+  let response=await say('agendar García');
+  assert.match(response.content.text,/más de una coincidencia/);
+  assert.deepEqual(response.content.choices.map(item=>item.title).sort(),['Dr. Aldo García','Dra. Ana García']);
+  response=await say('agendar Doctora Ana');
+  assert.match(response.content.text,/Dra\. Ana García/);assert.ok(response.content.choices.some(item=>item.title==='Consulta Ana'));
+  const session=await cipher.open((await db.doc(`whatsappBotSessions/${subject}`).get()).data().encrypted,subject);
+  assert.equal(session.doctorUid,uid2);
+});
+test('production booking writes only the selected professional agenda',async()=>{
+  await enableProduction({second:true});
+  let response=await say('agendar Ana García');response=await choose(response,'Consulta Ana');response=await say('2030-01-08');response=await say('',response.content.choices[0].id);response=await say('Persona Ficticia');response=await choose(response,'No autorizar');response=await choose(response,'Confirmar operación');
+  assert.match(response.content.text,/Cita guardada/);
+  assert.equal((await db.collection(`usuarios/${uid2}/agenda`).get()).size,1);
+  assert.equal((await db.collection(`usuarios/${uid}/agenda`).get()).size,0);
+});
+test('human handoff and emergency signal stop critical automation and create technical metrics',async()=>{
+  await enableProduction();
+  let response=await say('Quiero hablar con alguien');
+  assert.match(response.content.text,/(atención|equipo) humano/);
+  let recipient=(await db.doc(`whatsappBotRecipients/${subject}`).get()).data();assert.equal(recipient.handoff.active,true);assert.equal(recipient.handoff.reason,'user-request');
+  response=await say('agendar');assert.match(response.content.text,/solicitud de atención humana/);assert.equal((await db.collection(`usuarios/${uid}/agenda`).get()).size,0);
+  await db.doc(`usuarios/${uid}`).set({rol:'admin'});
+  const settingsCall=createSettings({db,identityKey:()=>identity,cipher}),auth={uid,token:{}};
+  const queue=await settingsCall({auth,data:{action:'listHandoffs'}});assert.equal(queue.tickets.length,1);assert.equal(queue.tickets[0].numberSuffix,'0001');assert.equal(queue.tickets[0].reason,'user-request');
+  await settingsCall({auth,data:{action:'resolveHandoff',subject,confirm:true}});
+  response=await say('Estoy pensando en suicidarme');assert.match(response.content.text,/servicios de emergencia/);
+  recipient=(await db.doc(`whatsappBotRecipients/${subject}`).get()).data();assert.equal(recipient.handoff.reason,'emergency-signal');
+  const metrics=(await db.doc('whatsappBotRate/metrics_20300107').get()).data();assert.ok(metrics.events.handoff_requested>=2);assert.equal(metrics.events.emergency_signal,1);
+  assert.doesNotMatch(JSON.stringify(metrics),/suicid|521555/i);
+});
+test('production channel configuration is accepted only after exact Meta asset inspection',async()=>{
+  await db.doc(`usuarios/${uid}`).set({rol:'admin'});
+  const target={enabled:true,mode:'production',...ids,graphVersion:'v23.0',officialNumberSuffix:'8280'};
+  let suffix='0000',subscribed=false;
+  const call=createSettings({db,identityKey:()=>identity,transport:{inspectChannel:async()=>({verified:true,numberSuffix:suffix,verifiedName:'COGNICIÓN',platformType:'CLOUD_API',phoneStatus:'CONNECTED',subscribed})}}),auth={uid,token:{}};
+  await assert.rejects(()=>call({auth,data:{action:'configureChannel',channel:target}}),{code:'failed-precondition'});
+  suffix='8280';await assert.rejects(()=>call({auth,data:{action:'configureChannel',channel:target}}),{code:'failed-precondition'});
+  subscribed=true;const configured=await call({auth,data:{action:'configureChannel',channel:target}});
+  assert.equal(configured.channel.mode,'production');assert.equal(configured.channel.numberSuffix,'8280');assert.equal(configured.channel.assetVerified,true);
+  const stored=(await db.doc('whatsappBotConfig/channel').get()).data();assert.equal(stored.pilot,false);assert.equal(stored.officialNumberSuffix,'8280');assert.equal('allowedSubjects' in stored,false);assert.equal('professionalIds' in stored,false);
 });
 test('ciphertext bound to purpose cannot decrypt in another session',async()=>{
   const encrypted=await cipher.seal({name:'Synthetic'},'first');await assert.rejects(()=>cipher.open(encrypted,'second'));

@@ -18,7 +18,7 @@ const uid = 'doctor_google_sync';
 const appointmentId = 'appointment_qa';
 const scopes = ['https://www.googleapis.com/auth/calendar.freebusy', 'https://www.googleapis.com/auth/calendar.events'];
 const response = (status, body = {}) => ({ ok: status >= 200 && status < 300, status, json: async () => body });
-let env, clock, events, inserts, mode, runtime;
+let env, clock, events, inserts, mode, runtime, watches, inboundCalls;
 const now = () => clock;
 
 function appointment(start = '2026-09-09T15:00:00.000Z', status = 'programada') {
@@ -35,13 +35,18 @@ async function jobFor(data, suffix = '') {
 test.before(async () => { env = await initializeTestEnvironment({ projectId }); });
 test.beforeEach(async () => {
   await env.clearFirestore();
-  clock = Date.parse('2026-09-08T20:00:00.000Z'); events = new Map(); inserts = 0; mode = 'ok';
+  clock = Date.parse('2026-09-08T20:00:00.000Z'); events = new Map(); inserts = 0; watches = new Map(); inboundCalls = []; mode = 'ok';
   await db.doc(`usuarios/${uid}`).set({ rol: 'medico' });
   await db.doc(`googleCalendarConnections/${uid}`).set({ encryptedRefreshToken: Buffer.from('ciphertext').toString('base64'), connectionStatus: 'connected', selectedCalendarId: 'primary', scopes, integration: { enabled: true, useForAvailability: true, mirrorAppointments: true } });
   const fetchImpl = async (url, options = {}) => {
     if (url.includes('cloudkms.googleapis.com')) return response(200, { plaintext: Buffer.from('refresh').toString('base64') });
     if (url.includes('oauth2.googleapis.com')) return mode === 'invalid_grant' ? response(400, { error: 'invalid_grant' }) : response(200, { access_token: 'calendar-access', expires_in: 3600 });
     if (url.endsWith('/freeBusy')) return response(200, { calendars: { primary: { busy: [] } } });
+    if (options.method === 'POST' && url.endsWith('/events/watch')) {
+      const body = JSON.parse(options.body); watches.set(body.id, body); return response(200, { resourceId: `resource-${body.id}`, expiration: String(clock + 86400000) });
+    }
+    if (options.method === 'POST' && url.endsWith('/channels/stop')) return response(204);
+    if (options.method === 'GET' && url.includes('/events?')) return response(200, { items: [], nextSyncToken: 'sync-token' });
     const eventMatch = url.match(/\/events\/([^/?]+)$/);
     if (mode === 'rate-limit') return response(429, { error: { errors: [{ reason: 'rateLimitExceeded' }] } });
     if (options.method === 'POST' && url.endsWith('/events')) {
@@ -61,13 +66,16 @@ test.beforeEach(async () => {
     }
     throw Error(`unexpected-request:${options.method}:${url}`);
   };
-  runtime = createGoogleCalendarRuntime({ db, credential: { getAccessToken: async () => ({ access_token: 'kms-access' }) }, fetchImpl, now });
+  runtime = createGoogleCalendarRuntime({ db, credential: { getAccessToken: async () => ({ access_token: 'kms-access' }) }, fetchImpl, now, appointmentService: async () => ({
+    rescheduleAppointment: async input => { inboundCalls.push({ action: 'reschedule', input }); },
+    cancelAppointment: async input => { inboundCalls.push({ action: 'cancel', input }); }
+  }) });
 });
 test.after(async () => { await env.cleanup(); await deleteApp(app); });
 
 test('each professional changes only their own integration preferences', async () => {
   const result = await runtime.exports.updateGoogleCalendarSettings.run({ auth: { uid, token: {} }, data: { useForAvailability: true, mirrorAppointments: false } });
-  assert.deepEqual(result.integration, { enabled: true, useForAvailability: true, mirrorAppointments: false });
+  assert.deepEqual(result.integration, { enabled: true, useForAvailability: true, mirrorAppointments: false, allowGoogleReschedule: false, allowGoogleCancel: false });
   const saved = (await db.doc(`googleCalendarConnections/${uid}`).get()).data();
   assert.deepEqual(saved.integration, result.integration);
   await assert.rejects(() => runtime.exports.updateGoogleCalendarSettings.run({ auth: null, data: { useForAvailability: true, mirrorAppointments: true } }), error => error.code === 'unauthenticated');
@@ -90,6 +98,16 @@ test('create and duplicate jobs produce one minimal Google event', async () => {
   for (const forbidden of ['Synthetic private name', 'patientPhone', 'notas']) assert.equal(serialized.includes(forbidden), false);
   const link = (await db.collection('googleCalendarAppointmentLinks').limit(1).get()).docs[0].data();
   assert.equal(link.syncState, 'synced');
+});
+
+test('non-appointment Agenda events never enter the clinical Google projection queue', async () => {
+  const eventId = 'agenda_event_not_appointment';
+  const data = { type: 'event', status: 'programada', startDate: '2026-09-09', startTime: '09:00', endDate: '2026-09-09', endTime: '10:00', title: 'QA event' };
+  await db.doc(`usuarios/${uid}/agenda/${eventId}`).set(data);
+  const after = await db.doc(`usuarios/${uid}/agenda/${eventId}`).get();
+  await runtime.test.enqueueAppointmentChange({ params: { doctorUid: uid, appointmentId: eventId }, data: { after, before: { exists: false } } });
+  assert.equal((await db.collection('googleCalendarSyncJobs').get()).empty, true);
+  assert.equal((await db.collection('googleCalendarAppointmentLinks').get()).empty, true);
 });
 
 test('reschedule updates the same event and cancellation removes it', async () => {
@@ -143,4 +161,32 @@ test('invalid_grant marks both connection and job for reauthorization', async ()
   await runtime.test.processJob(id);
   assert.equal((await db.doc(`googleCalendarConnections/${uid}`).get()).data().connectionStatus, 'reauthorization_required');
   assert.equal((await db.doc(`googleCalendarSyncJobs/${id}`).get()).data().state, 'reauthorization_required');
+});
+
+test('a linked Google move requests one authorized reschedule and ignores its echoed version', async () => {
+  const data = appointment();
+  await db.doc(`usuarios/${uid}/agenda/${appointmentId}`).set(data);
+  await runtime.test.processJob(await jobFor(data));
+  const linkDocument = (await db.collection('googleCalendarAppointmentLinks').limit(1).get()).docs[0];
+  const link = linkDocument.data();
+  const job = { professionalUid: uid, calendarId: 'primary' };
+  const moved = {
+    id: link.googleEventId,
+    updated: '2026-09-09T18:00:00.000Z',
+    etag: 'google-move',
+    start: { dateTime: '2026-09-09T17:00:00.000Z' },
+    end: { dateTime: '2026-09-09T18:00:00.000Z' },
+    extendedProperties: { private: { cognicionAppointmentId: appointmentId } }
+  };
+  await runtime.test.applyInboundEvent(job, moved, {}, { enabled: true, allowGoogleReschedule: true, allowGoogleCancel: false });
+  assert.equal(inboundCalls.length, 1);
+  assert.equal(inboundCalls[0].input.integration.googleEventId, link.googleEventId);
+  await linkDocument.ref.set({ lastGoogleEtag: 'google-move' }, { merge: true });
+  await runtime.test.applyInboundEvent(job, moved, {}, { enabled: true, allowGoogleReschedule: true, allowGoogleCancel: false });
+  assert.equal(inboundCalls.length, 1);
+});
+
+test('manual Google events never create an appointment mutation', async () => {
+  await runtime.test.applyInboundEvent({ professionalUid: uid, calendarId: 'primary' }, { id: 'manual', start: { dateTime: '2026-09-09T17:00:00.000Z' }, end: { dateTime: '2026-09-09T18:00:00.000Z' } }, {}, { enabled: true, allowGoogleReschedule: true });
+  assert.equal(inboundCalls.length, 0);
 });

@@ -2,7 +2,7 @@ import { createAppointmentService } from '../appointments/service.mjs';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const { Timestamp } = require('firebase-admin/firestore');
-const { channelReady, professionalReady, hash, safeId } = require('./config');
+const { channelReady, professionalReady, directoryEntryReady, isPilotChannel, channelAllowsSubject, channelAllowsProfessional, hash, safeId } = require('./config');
 const deny = code => { const e = Error(code); e.code = code; throw e; };
 export function createChannelAppointments({ db, now = Date.now, externalAvailabilityProvider = null }) {
   const authorizeChannel = async ({ tx, channel, doctorUid, action, appointmentId }) => {
@@ -17,9 +17,11 @@ export function createChannelAppointments({ db, now = Date.now, externalAvailabi
     // explicitly configured QA pilot may also use its persisted administrator
     // identity; channel/professional/recipient bindings below still scope every
     // operation to this one pilot.
-    const profileAuthorized = isProfessional(profile) || (c?.pilot === true && isAdmin(profile));
+    const pilot = isPilotChannel(c);
+    const profileAuthorized = isProfessional(profile) || (pilot && isAdmin(profile));
+    const configuredProfessional = pilot ? professionalReady(p) : directoryEntryReady(p);
     if (!profile || !profileAuthorized || deleting) deny('permission-denied');
-    if (!channelReady(c) || !professionalReady(p) || !c.professionalIds.includes(doctorUid) || !c.allowedSubjects?.includes(channel.subject) || c.phoneNumberId !== channel.phoneNumberId || c.wabaId !== channel.wabaId || !r || r.phoneNumberId !== c.phoneNumberId) deny('permission-denied');
+    if (!channelReady(c) || !configuredProfessional || !channelAllowsProfessional(c,doctorUid) || !channelAllowsSubject(c,channel.subject) || c.phoneNumberId !== channel.phoneNumberId || c.wabaId !== channel.wabaId || !r || r.phoneNumberId !== c.phoneNumberId || r.handoff?.active) deny('permission-denied');
     if (appointmentId) {
       if (!safeId(appointmentId)) deny('permission-denied');
       const binding = (await tx.get(db.doc(`whatsappBotBindings/${channel.subject}/whatsappBotAppointmentBindings/${appointmentId}`))).data();

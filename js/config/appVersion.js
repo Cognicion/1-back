@@ -193,5 +193,6 @@
 // deployment marker: 2026-09-08-google-calendar-operational-v1 (+0.001)
 // deployment marker: 2026-09-09-registro-datos-v1 (+0.001)
 // deployment marker: 2026-09-08-navbar-global-agenda-v1 (+0.001)
-export const APP_VERSION = "2.206";
+// deployment marker: 2026-09-09-whatsapp-oficial-multiprofesional-v1 (+0.001)
+export const APP_VERSION = "2.208";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

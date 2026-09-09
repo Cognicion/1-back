@@ -184,6 +184,20 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "googleCalendarWatchChannels",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "renewAt",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": [
@@ -301,6 +315,11 @@
       "collectionGroup": "googleCalendarSyncJobs",
       "fieldPath": "expiresAt",
       "ttl": true,
+      "indexes": []
+    },
+    {
+      "collectionGroup": "googleCalendarWatchChannels",
+      "fieldPath": "channelToken",
       "indexes": []
     }
   ]

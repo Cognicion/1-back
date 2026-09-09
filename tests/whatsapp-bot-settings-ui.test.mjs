@@ -22,7 +22,7 @@ test('actual WhatsApp settings controller: save, stop, template check, failure a
         return {...window.result,templateStatus:data.action==='checkTemplate'?'REJECTED':'not_checked'};
       }});
     },source);
-    await page.fill('[name="label"]','Profesional ficticio');await page.check('[name="enabled"]');
+    await page.fill('[name="label"]','Profesional ficticio');await page.fill('[name="displayName"]','Dra. Profesional Ficticia');await page.fill('[name="specialty"]','Psiquiatría');await page.fill('[name="slug"]','profesional-ficticia');await page.check('[name="enabled"]');
     await page.locator('[data-bot-form] button[type="submit"]').click();
     assert.equal(await page.evaluate(()=>window.calls.at(-1).settings.enabled),true);
     await page.click('[data-bot-stop]');assert.equal(await page.locator('[name="enabled"]').isChecked(),false);

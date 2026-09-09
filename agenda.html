@@ -147,18 +147,23 @@
   <section data-settings-content="whatsapp" data-whatsapp-settings hidden>
     <h3>WhatsApp administrativo</h3><p data-bot-status role="status">Consultando configuración…</p>
     <form data-bot-form class="availability-settings">
-      <label class="checkline"><input name="enabled" type="checkbox">Habilitar bot para mi agenda (piloto)</label>
-      <label>Nombre público del profesional<input name="label" maxlength="24" required></label>
+      <label class="checkline"><input name="enabled" type="checkbox">Mostrar mi agenda en el bot oficial</label>
+      <label>Nombre corto para botones<input name="label" maxlength="24" required></label>
+      <label>Nombre público completo<input name="displayName" maxlength="80" required></label>
+      <div class="integration-row"><label>Especialidad<input name="specialty" maxlength="80" required></label><label>Identificador público (slug)<input name="slug" maxlength="64" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="nombre-apellido" required></label></div>
+      <label>Alias de búsqueda, separados por coma<input name="aliases" maxlength="400" placeholder="Dra. Apellido, nombre habitual"></label>
+      <label>Ubicación o indicación administrativa pública<input name="location" maxlength="160"></label>
+      <label class="checkline"><input name="acceptsNewPatients" type="checkbox" checked>Acepto nuevas reservas por WhatsApp</label>
       <div data-bot-services></div><button data-bot-add type="button">Añadir servicio / modalidad</button>
       <label class="checkline"><input name="reminders" type="checkbox">Recordatorios con consentimiento</label>
       <label>Anticipación en minutos<input name="advance" type="number" min="5" max="10080" required></label>
       <div class="integration-row"><label>Notificar desde (hora local)<input name="start" type="number" min="0" max="23" required></label><label>Hasta (hora local)<input name="end" type="number" min="1" max="24" required></label></div>
       <label class="checkline"><input name="unconfirmed" type="checkbox">Recordar sólo citas sin confirmar</label>
       <label>Nombre exacto de plantilla aprobada<input name="template" pattern="[a-z0-9_]{1,128}"></label><label>Idioma de plantilla<input name="language" placeholder="es_MX" required></label>
-      <p class="agenda-hint">Fuera de las 24 horas de atención se exige una plantilla aprobada vigente. Google Calendar externo no se considera. Pago no configurado: las modalidades con pago obligatorio no pueden reservarse.</p>
+      <p class="agenda-hint">Los horarios provienen exclusivamente de Agenda; si Google Calendar está conectado para disponibilidad, también se respeta. Fuera de la ventana de atención se exige una plantilla aprobada. Pago no configurado: no se muestran modalidades con pago obligatorio.</p>
       <div class="dialog-actions"><button type="submit">Guardar</button><button data-bot-stop type="button">Detener mi automatización</button><button data-bot-reload type="button">Recargar estado</button><button data-bot-template type="button">Comprobar plantilla guardada en Meta</button></div>
     </form>
-    <details><summary>Vincular una cita existente a un destinatario piloto</summary>
+    <details><summary>Vincular una cita existente a su destinatario</summary>
       <form data-bot-link class="availability-settings">
         <p class="agenda-hint">Autoriza solamente la cita indicada de tu agenda. No busca expedientes por teléfono. Las nuevas reservas del bot se vinculan automáticamente.</p>
         <label>ID de la cita de tu agenda<input name="appointmentId" required pattern="[A-Za-z0-9_-]{1,160}" autocomplete="off"></label>
@@ -167,20 +172,23 @@
         <button type="submit">Autorizar vinculación</button>
       </form>
     </details>
-    <details data-bot-admin hidden><summary>Administración del canal piloto</summary>
+    <details data-bot-admin hidden><summary>Administración del canal oficial</summary>
       <button data-bot-stop-channel type="button">Detener toda la automatización del canal</button>
+      <div class="integration-row"><div><strong>Solicitudes de atención humana</strong><p class="agenda-hint">Muestra únicamente motivo administrativo, hora y últimos cuatro dígitos; no expone texto ni identidad completa.</p></div><button data-bot-handoffs type="button">Actualizar solicitudes</button></div><div data-bot-handoff-list></div>
       <form data-bot-channel class="availability-settings">
         <label class="checkline"><input name="channelEnabled" type="checkbox">Habilitar canal (desmarcar para detener todo)</label>
+        <label>Modo<select name="mode"><option value="production">Producción oficial</option><option value="pilot">Piloto restringido</option></select></label>
         <label>Phone Number ID<input name="phoneId" inputmode="numeric" pattern="[0-9]{5,30}" required></label><label>WABA ID<input name="wabaId" inputmode="numeric" pattern="[0-9]{5,30}" required></label>
         <label>Versión Graph API vigente<input name="graphVersion" pattern="v[0-9]{2}\.0" required></label>
-        <label>UID de profesionales autorizados (separados por coma)<input name="professionals" required autocomplete="off"></label>
-        <label>Teléfonos piloto autorizados, país y número sin + (máximo 10)<input name="phones" autocomplete="off" required></label>
-        <p class="agenda-hint">Guardar sustituye la lista piloto completa. Las credenciales se configuran exclusivamente en Secret Manager.</p><button type="submit">Guardar canal piloto</button>
+        <label data-production-channel>Últimos 4 dígitos del número oficial<input name="numberSuffix" inputmode="numeric" pattern="[0-9]{4}" value="8280"></label>
+        <label data-pilot-channel hidden>UID de profesionales autorizados (separados por coma)<input name="professionals" autocomplete="off"></label>
+        <label data-pilot-channel hidden>Teléfonos piloto autorizados, país y número sin + (máximo 10)<input name="phones" autocomplete="off"></label>
+        <p class="agenda-hint">Producción sólo puede guardarse si Meta confirma que el Phone Number ID pertenece al WABA, termina en los cuatro dígitos indicados, usa Cloud API y está conectado. Las credenciales permanecen en Secret Manager.</p><div class="dialog-actions"><button data-bot-inspect type="button">Verificar activos en Meta</button><button type="submit">Guardar canal verificado</button></div>
       </form>
     </details>
   </section>
 </dialog>
-<script type="module" src="js/agenda.js?v=2.206"></script>
+<script type="module" src="js/agenda.js?v=2.208"></script>
 <script type="module" src="js/components/accesosRapidos.js"></script>
 <script type="module" src="js/reportes.js"></script>
 </body>

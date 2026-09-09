@@ -68,7 +68,12 @@ let googleCalendarRuntime = null;
 async function getAppointmentService() {
   if (!appointmentServicePromise) {
     appointmentServicePromise = import("./appointments/service.mjs")
-      .then(({ createAppointmentService }) => createAppointmentService({ db: adminDb, externalAvailabilityProvider: googleCalendarRuntime?.availabilityProvider || null }));
+      .then(({ createAppointmentService }) => createAppointmentService({
+        db: adminDb,
+        externalAvailabilityProvider: googleCalendarRuntime?.availabilityProvider || null,
+        authorizeIntegration: (...args) => googleCalendarRuntime?.authorizeIntegration?.(...args),
+        onIntegrationMutation: (...args) => googleCalendarRuntime?.onIntegrationMutation?.(...args)
+      }));
   }
   return appointmentServicePromise;
 }
@@ -1192,16 +1197,18 @@ exports.completePendingAuthUserProfile = membershipAdministrationFunctions.compl
 exports.deletePendingAuthUser = membershipAdministrationFunctions.deletePendingAuthUser;
 exports.listAdminAuthUsers = membershipAdministrationFunctions.listAdminAuthUsers;
 exports.setUserMembership = membershipAdministrationFunctions.setUserMembership;
+googleCalendarRuntime = createGoogleCalendarRuntime({ db: adminDb, credential: admin.app().options.credential, appointmentService: getAppointmentService });
+Object.assign(exports, googleCalendarRuntime.exports);
 const googleCalendarHandlers = createGoogleCalendarHandlers({
   db: adminDb,
-  credential: admin.app().options.credential
+  credential: admin.app().options.credential,
+  onConnected: googleCalendarRuntime.onConnected,
+  onDisconnect: googleCalendarRuntime.stopWatches
 });
 exports.googleCalendarConnect = googleCalendarHandlers.connect;
 exports.googleCalendarOAuthCallback = googleCalendarHandlers.callback;
 exports.getGoogleCalendarConnectionStatus = googleCalendarHandlers.status;
 exports.disconnectGoogleCalendar = googleCalendarHandlers.disconnect;
-googleCalendarRuntime = createGoogleCalendarRuntime({ db: adminDb, credential: admin.app().options.credential });
-Object.assign(exports, googleCalendarRuntime.exports);
 const whatsappBot = require('./whatsappBot').createBotRuntime({ db: adminDb, credential: admin.app().options.credential, externalAvailabilityProvider: googleCalendarRuntime.availabilityProvider, googleCalendarSecrets: googleCalendarRuntime.secrets });
 Object.assign(exports, whatsappBot.exports);
 exports.whatsappWebhook = createWhatsAppWebhook({ db: adminDb, logger, prepareWork: whatsappBot.prepareWork, ingressSecrets: whatsappBot.ingressSecrets });

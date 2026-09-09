@@ -30,3 +30,17 @@ test('timeout has uncertain outcome and missing credential prevents request',asy
   assert.equal((await createTransport({accessToken:()=> 'fake',fetchImpl:async()=>{throw Error('timeout');}}).send(input)).state,'uncertain');
   assert.equal((await createTransport({accessToken:()=> '',fetchImpl:async()=>assert.fail('must not fetch')}).send(input)).state,'blocked_credential');
 });
+test('Meta asset inspection proves WABA membership, Cloud API, suffix and subscription without exposing token',async()=>{
+  const fetchImpl=async url=>{
+    if(url.includes('/phone_numbers?'))return {ok:true,json:async()=>({data:[{id:channel.phoneNumberId,display_phone_number:'+52 669 245 8280',verified_name:'COGNICIÓN',quality_rating:'GREEN',code_verification_status:'VERIFIED',platform_type:'CLOUD_API',name_status:'APPROVED',status:'CONNECTED'}]})};
+    if(url.includes('/subscribed_apps?'))return {ok:true,json:async()=>({data:[{id:'app'}]})};
+    return {ok:true,json:async()=>({id:channel.wabaId,name:'COGNICIÓN',account_review_status:'APPROVED',business_verification_status:'verified',ownership_type:'SELF'})};
+  };
+  const result=await createTransport({accessToken:()=> 'fake-token',fetchImpl}).inspectChannel(channel);
+  assert.equal(result.verified,true);assert.equal(result.numberSuffix,'8280');assert.equal(result.platformType,'CLOUD_API');assert.equal(result.subscribed,true);assert.doesNotMatch(JSON.stringify(result),/fake-token/);
+});
+test('Meta asset inspection fails closed when phone does not belong to WABA',async()=>{
+  const fetchImpl=async url=>url.includes('/phone_numbers?')?{ok:true,json:async()=>({data:[]})}:{ok:true,json:async()=>({data:[]})};
+  const result=await createTransport({accessToken:()=> 'fake-token',fetchImpl}).inspectChannel(channel);
+  assert.equal(result.verified,false);assert.equal(result.code,'PHONE_NOT_IN_WABA');
+});

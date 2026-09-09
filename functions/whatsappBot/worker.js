@@ -1,6 +1,7 @@
 const { Timestamp, FieldValue } = require('firebase-admin/firestore');
 const { randomUUID } = require('node:crypto');
-const { channelReady, professionalReady, hash } = require('./config');
+const { channelReady, professionalReady, channelAllowsSubject, channelAllowsProfessional, hash } = require('./config');
+const { loadDirectory } = require('./directory');
 const { transition, fullDate } = require('./machine');
 const HOUR = 3600000;
 const SEND_PACING_MS = 1000;
@@ -30,7 +31,7 @@ function createWorker({ db, cipher, appointments, transport, now = Date.now, hoo
     const message=await cipher.open(j.encrypted,id);
     const ref=db.doc(`whatsappBotSessions/${j.subject}`);
     const recipientRef=db.doc(`whatsappBotRecipients/${j.subject}`);
-    const previous=await db.runTransaction(async tx=>{
+    const leaseResult=await db.runTransaction(async tx=>{
       const snap=await tx.get(ref); let s=snap.data();
       // Preserve the state that authorized a mutation until that exact job has
       // recovered its transaction receipt and durably committed its response.
@@ -40,28 +41,32 @@ function createWorker({ db, cipher, appointments, transport, now = Date.now, hoo
         s=null; // failed/expired predecessor: old buttons cannot authorize again
       }
       if(s?.leaseUntil>now() && s.lease!==j.lease) throw Error('session-busy');
+      const rateRef=db.doc(`whatsappBotRate/inbound_${j.subject}`), rate=(await tx.get(rateRef)).data()||{};
+      const minuteStart=now()-Number(rate.minuteStartedAt||0)<60000?Number(rate.minuteStartedAt):now();
+      const day=new Date(now()).toISOString().slice(0,10), sameDay=rate.day===day;
+      const minuteCount=(minuteStart===rate.minuteStartedAt?Number(rate.minuteCount||0):0)+1;
+      const dayCount=(sameDay?Number(rate.dayCount||0):0)+1;
+      if(minuteCount>30||dayCount>500)return {rateLimited:true,session:s};
+      tx.set(rateRef,{minuteStartedAt:minuteStart,minuteCount,day,dayCount,expiresAt:ts(now()+2*86400000)});
       tx.set(ref,{...(s||{}),pendingJob:id,lease:j.lease,leaseUntil:now()+300000,expiresAt:ts(now()+HOUR)});
-      return s;
+      return {rateLimited:false,session:s};
     });
+    if(leaseResult.rateLimited){await finish(id,'blocked','recipient-rate-limit');return;}
+    const previous=leaseResult.session;
     try {
       if(previous?.lastAt>message.at) {await finish(id,'done','out-of-order');return;}
       const state = previous?.encrypted && previous.expiresAt.toMillis()>now() ? await cipher.open(previous.encrypted,j.subject) : {};
       const phone=await cipher.seal({phone:message.phone},j.subject);
       await recipientRef.set({phoneNumberId:c.phoneNumberId,phone,lastInboundAt:Math.max(previous?.lastAt||0,message.at),expiresAt:ts(now()+120*86400000)},{merge:true});
       const recipient=(await recipientRef.get()).data();
-      const professionals={};
-      for(const uid of c.professionalIds) {
-        const p=(await db.doc(`whatsappBotProfessionals/${uid}`).get()).data();
-        const control=(await db.doc(`appointmentControls/${uid}`).get()).data();
-        professionals[uid]=p?{...p,timeZone:control?.policy?.timeZone}:{};
-      }
+      const professionals=await loadDirectory({db,channel:c});
       const channel={subject:j.subject,phoneNumberId:c.phoneNumberId,wabaId:c.wabaId};
       const result=await transition({session:state,message,jobId:id,channel:c,recipient,professionals,now:now(),api:{
         list:uid=>appointments.list(channel,uid),
         slots:(uid,date,durationMinutes,excludeId)=>appointments.service.getChannelSlots({channel,doctorUid:uid,date,durationMinutes,excludeId:excludeId||null}),
         consent:async allowed=>{
           await recipientRef.set({consent:allowed,optOut:!allowed,consentAt:ts(now())},{merge:true});
-          if(allowed)for(const uid of c.professionalIds)if(professionalReady(professionals[uid]))await appointments.scheduleReminders(channel,uid);
+          if(allowed)for(const uid of Object.keys(professionals))if(professionalReady(professionals[uid]))await appointments.scheduleReminders(channel,uid);
         },
         perform:(action,uid,key,input,appointmentId)=>appointments.perform(action,channel,uid,key,input,appointmentId)
       }});
@@ -71,8 +76,21 @@ function createWorker({ db, cipher, appointments, transport, now = Date.now, hoo
       const response=await cipher.seal({phone:message.phone,content:result.content,lastInboundAt:message.at},out);
       await db.runTransaction(async tx=>{
         const current=(await tx.get(ref)).data(), work=(await tx.get(jobRef(id))).data();
+        const metricReceipt=db.doc(`whatsappBotRate/event_${id}`), metricSeen=(await tx.get(metricReceipt)).exists;
         if(current.lease!==j.lease || work.lease!==j.lease) throw Error('lease-lost');
         tx.set(ref,{encrypted,lastAt:message.at,lease:null,leaseUntil:0,expiresAt:ts(now()+HOUR)});
+        if(result.recipientPatch) {
+          const patch={...result.recipientPatch};
+          if(patch.handoff?.requestedAt)patch.handoff={...patch.handoff,requestedAt:ts(patch.handoff.requestedAt)};
+          tx.set(recipientRef,patch,{merge:true});
+        }
+        if(!metricSeen) {
+          const names=[...new Set(['inbound_processed',...(result.events||[])].filter(name=>/^[a-z_]{1,40}$/.test(name)))];
+          const increments=Object.fromEntries(names.map(name=>[name,FieldValue.increment(1)]));
+          const day=new Date(now()).toISOString().slice(0,10).replaceAll('-','');
+          tx.set(db.doc(`whatsappBotRate/metrics_${day}`),{events:increments,updatedAt:ts(now())},{merge:true});
+          tx.create(metricReceipt,{events:names,expiresAt:ts(now()+30*86400000)});
+        }
         await enqueueResponse(tx,id,j,response,{doctorUid:result.session.doctorUid||null});
         tx.update(jobRef(id),{state:'done',encrypted:FieldValue.delete()});
       });
@@ -85,7 +103,7 @@ function createWorker({ db, cipher, appointments, transport, now = Date.now, hoo
     const recipient=(await db.doc(`whatsappBotRecipients/${j.subject}`).get()).data();
     const binding=(await db.doc(`whatsappBotBindings/${j.subject}/whatsappBotAppointmentBindings/${j.appointmentId}`).get()).data();
     const appointment=(await db.doc(`usuarios/${j.doctorUid}/agenda/${j.appointmentId}`).get()).data();
-    if(!professionalReady(p)||!p.reminders?.enabled||!recipient?.consent||recipient.optOut||binding?.doctorUid!==j.doctorUid||binding.expiresAt.toMillis()<=now()||!c.professionalIds.includes(j.doctorUid)||!c.allowedSubjects.includes(j.subject)||appointment?.status!=='programada'||appointment.startAt?.toMillis()!==j.expectedStart||j.expectedStart<=now()) return null;
+    if(!professionalReady(p)||!p.reminders?.enabled||!recipient?.consent||recipient.optOut||recipient.handoff?.active||binding?.doctorUid!==j.doctorUid||binding.expiresAt.toMillis()<=now()||!channelAllowsProfessional(c,j.doctorUid)||!channelAllowsSubject(c,j.subject)||appointment?.status!=='programada'||appointment.startAt?.toMillis()!==j.expectedStart||j.expectedStart<=now()) return null;
     if(appointment.confirmation?.status==='confirmed' && p.reminders.onlyUnconfirmed) return null;
     const hour=Number(new Intl.DateTimeFormat('en-US',{timeZone:appointment.timeZone,hour:'2-digit',hourCycle:'h23'}).format(now()));
     return {p,recipient,appointment,quiet:hour<p.reminders.startHour||hour>=p.reminders.endHour};
@@ -113,8 +131,8 @@ function createWorker({ db, cipher, appointments, transport, now = Date.now, hoo
   async function send(id,j,c) {
     const ref=db.doc(`whatsappBotOutbox/${j.outboxId}`), out=(await ref.get()).data();
     if(!out || ['accepted','sent','delivered','read','failed','uncertain'].includes(out.state)) {await finish(id,out?.state==='uncertain'?'uncertain':'done');return;}
-    if(!c.allowedSubjects?.includes(j.subject)){await finish(id,'blocked','recipient-not-authorized');return;}
-    if(out.doctorUid && (!c.professionalIds.includes(out.doctorUid) || !professionalReady((await db.doc(`whatsappBotProfessionals/${out.doctorUid}`).get()).data()))){await finish(id,'blocked','professional-disabled');return;}
+    if(!channelAllowsSubject(c,j.subject)){await finish(id,'blocked','recipient-not-authorized');return;}
+    if(out.doctorUid && (!channelAllowsProfessional(c,out.doctorUid) || !professionalReady((await db.doc(`whatsappBotProfessionals/${out.doctorUid}`).get()).data()))){await finish(id,'blocked','professional-disabled');return;}
     if(out.reminder){const ctx=await reminderContext({...j,...out.reminder},c);if(!ctx){await finish(id,'cancelled');return;}if(ctx.quiet){await jobRef(id).update({state:'pending',dueAt:now()+HOUR,attempts:0});return;}}
     const data=await cipher.open(out.encrypted,j.outboxId);
     if(!data.content.template && now()-data.lastInboundAt>=24*HOUR){await finish(id,'blocked','window-expired');return;}

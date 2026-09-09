@@ -1,5 +1,5 @@
 const { Timestamp } = require('firebase-admin/firestore');
-const { channelReady, subjectId } = require('./config');
+const { channelReady, channelAllowsSubject, subjectId } = require('./config');
 function createWorkPreparer({ db, cipher, identityKey, now = Date.now }) {
   return async (entries, payload) => {
     const config = (await db.doc('whatsappBotConfig/channel').get()).data();
@@ -34,7 +34,7 @@ function createWorkPreparer({ db, cipher, identityKey, now = Date.now }) {
         // Reject stale/synthetic panel samples before any action or send.
         if (!Number.isFinite(at) || at < now() - 24 * 3600000 || at > now() + 300000) { disposition.set(key, 'timestamp-out-of-range'); continue; }
         const subject = subjectId(identityKey(), config.phoneNumberId, m.from);
-        if (!config.allowedSubjects?.includes(subject)) {
+        if (!channelAllowsSubject(config, subject)) {
           disposition.set(key, 'recipient-not-authorized');
           // Compare the observed provider identity with administrator-supplied
           // candidates without disclosing a phone or guessing its spelling.

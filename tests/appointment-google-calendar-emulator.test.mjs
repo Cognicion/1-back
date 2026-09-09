@@ -60,3 +60,36 @@ test('an unauthorized professional is rejected before querying Google', async ()
   await assert.rejects(() => service.getAvailability({ auth, doctorUid: 'professional_b', candidate: { startDate: '2026-09-09', startTime: '10:00', durationMinutes: 60 } }), { code: 'permission-denied' });
   assert.equal(queried, false);
 });
+
+test('a linked Google event can reschedule only through the injected server authorization', async () => {
+  const appointmentId = 'linked_google_appointment';
+  await db.doc(`usuarios/${doctorUid}/agenda/${appointmentId}`).set({
+    type: 'appointment', status: 'programada', startDate: '2026-09-09', endDate: '2026-09-09', startTime: '09:00', endTime: '10:00', durationMinutes: 60,
+    timeZone: 'America/Mexico_City', patientName: 'Synthetic', externalPatient: true
+  });
+  const calls = [];
+  const service = createAppointmentService({
+    db,
+    externalAvailabilityProvider: { isRequired: async () => false, getBusy: async () => [] },
+    authorizeIntegration: async ({ integration, doctorUid: uid, action, appointmentId: id }) => {
+      calls.push({ integration, uid, action, id });
+      assert.equal(integration.kind, 'google-calendar');
+      assert.equal(uid, doctorUid);
+      assert.equal(action, 'reschedule');
+      assert.equal(id, appointmentId);
+      return { profileAuthorized: true };
+    },
+    onIntegrationMutation: ({ tx, integration }) => tx.set(db.doc('googleCalendarAppointmentLinks/link'), { lastSyncOrigin: 'google', googleEventId: integration.googleEventId })
+  });
+  const result = await service.rescheduleAppointment({
+    doctorUid,
+    appointmentId,
+    requestId: 'google-reschedule-qa',
+    integration: { kind: 'google-calendar', linkId: 'link', googleEventId: 'google_event', calendarId: 'primary' },
+    input: { startDate: '2026-09-09', endDate: '2026-09-09', startTime: '10:00', endTime: '11:00', timeZone: 'America/Mexico_City' }
+  });
+  assert.equal(result.result, 'applied');
+  assert.equal(calls.length, 2, 'external availability and mutation each authorize the same integration context');
+  assert.equal((await db.doc(`usuarios/${doctorUid}/agenda/${appointmentId}`).get()).data().startTime, '10:00');
+  assert.equal((await db.doc('googleCalendarAppointmentLinks/link').get()).data().lastSyncOrigin, 'google');
+});

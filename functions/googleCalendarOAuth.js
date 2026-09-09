@@ -66,7 +66,7 @@ function buildAuthorizationUrl({ clientId, state, codeVerifier, promptConsent = 
   return `${GOOGLE_AUTH_ENDPOINT}?${params.toString()}`;
 }
 
-function createGoogleCalendarHandlers({ db, credential, fetchImpl = fetch, now = () => Date.now() }) {
+function createGoogleCalendarHandlers({ db, credential, fetchImpl = fetch, now = () => Date.now(), onConnected = null, onDisconnect = null }) {
   const kmsKeyName = () => GOOGLE_CALENDAR_KMS_KEY_NAME.value();
   const encryptRefreshToken = (token) => kmsRequest({ keyName: kmsKeyName(), operation: "encrypt", value: token, credential, fetchImpl });
   const decryptRefreshToken = (ciphertext) => kmsRequest({ keyName: kmsKeyName(), operation: "decrypt", value: Buffer.from(ciphertext, "base64"), credential, fetchImpl });
@@ -156,6 +156,7 @@ function createGoogleCalendarHandlers({ db, credential, fetchImpl = fetch, now =
         connectedAt: Timestamp.fromMillis(current),
         updatedAt: Timestamp.fromMillis(current)
       }, { merge: true });
+      if (typeof onConnected === "function") await onConnected(uid);
       await audit(uid, "google_calendar_connected", "success");
       return response.redirect(redirectUrl({ googleCalendar: "connected" }));
     } catch (error) {
@@ -172,12 +173,14 @@ function createGoogleCalendarHandlers({ db, credential, fetchImpl = fetch, now =
   const status = onCall({ region: REGION }, async (request) => {
     const { uid } = await assertProfessional(db, request);
     const snapshot = await db.doc(`googleCalendarConnections/${uid}`).get();
-    if (!snapshot.exists) return { connected: false, status: "not_connected", connectedAt: null, selectedCalendar: "primary", integration: { enabled: false, useForAvailability: false, mirrorAppointments: false } };
+    if (!snapshot.exists) return { connected: false, status: "not_connected", connectedAt: null, selectedCalendar: "primary", integration: { enabled: false, useForAvailability: false, mirrorAppointments: false, allowGoogleReschedule: false, allowGoogleCancel: false } };
     const data = snapshot.data() || {};
     const integration = {
       enabled: data.integration?.enabled === true,
       useForAvailability: data.integration?.useForAvailability === true,
-      mirrorAppointments: data.integration?.mirrorAppointments === true
+      mirrorAppointments: data.integration?.mirrorAppointments === true,
+      allowGoogleReschedule: data.integration?.allowGoogleReschedule === true,
+      allowGoogleCancel: data.integration?.allowGoogleCancel === true
     };
     return { connected: data.connectionStatus === "connected", status: data.connectionStatus || "unknown", connectedAt: data.connectedAt || null, selectedCalendar: data.selectedCalendarId || "primary", integration };
   });
@@ -186,13 +189,14 @@ function createGoogleCalendarHandlers({ db, credential, fetchImpl = fetch, now =
     const { uid } = await assertProfessional(db, request);
     const ref = db.doc(`googleCalendarConnections/${uid}`);
     const snapshot = await ref.get();
+    if (typeof onDisconnect === "function") await onDisconnect(uid, snapshot.exists ? snapshot.data() || null : null);
     if (snapshot.exists && snapshot.data()?.encryptedRefreshToken) {
       try {
         const token = await decryptRefreshToken(snapshot.data().encryptedRefreshToken);
         await fetchImpl(GOOGLE_REVOKE_ENDPOINT, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ token }) });
       } catch (error) { logger.warn("[GOOGLE_CALENDAR] No se pudo revocar credencial", { reason: "revoke_failed" }); }
     }
-    await ref.set({ connectionStatus: "disconnected", encryptedRefreshToken: null, integration: { enabled: false, useForAvailability: false, mirrorAppointments: false }, updatedAt: Timestamp.fromMillis(now()) }, { merge: true });
+    await ref.set({ connectionStatus: "disconnected", encryptedRefreshToken: null, integration: { enabled: false, useForAvailability: false, mirrorAppointments: false, allowGoogleReschedule: false, allowGoogleCancel: false }, updatedAt: Timestamp.fromMillis(now()) }, { merge: true });
     await audit(uid, "google_calendar_disconnected", "success");
     return { disconnected: true };
   });

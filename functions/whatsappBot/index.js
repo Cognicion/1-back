@@ -25,7 +25,7 @@ function createBotRuntime({db,credential,externalAvailabilityProvider=null,googl
     prepareWork, ingressSecrets:[IDENTITY],
     exports:{
       configureWhatsAppBot:onCall({region:'us-central1',secrets:[IDENTITY,ACCESS],timeoutSeconds:30},async request=>{
-        try{return await createSettings({db,identityKey:()=>IDENTITY.value(),transport:createTransport({accessToken:()=>ACCESS.value()})})(request);}catch(e){if(e instanceof HttpsError)throw e;throw new HttpsError('internal','Configuración no disponible.');}
+        try{return await createSettings({db,identityKey:()=>IDENTITY.value(),transport:createTransport({accessToken:()=>ACCESS.value()}),cipher})(request);}catch(e){if(e instanceof HttpsError)throw e;throw new HttpsError('internal','Configuración no disponible.');}
       }),
       whatsappBotWorkCreated:onDocumentCreated({...workerOptions,document:'whatsappBotJobs/{jobId}',retry:true},async event=>{await (await worker()).process(event.params.jobId);}),
       whatsappBotDrain:onSchedule({...workerOptions,schedule:'every 1 minutes',timeZone:'UTC'},async()=>{await (await worker()).runDue();}),

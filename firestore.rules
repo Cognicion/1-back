@@ -1710,6 +1710,10 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    match /googleCalendarWatchChannels/{document=**} {
+      allow read, write: if false;
+    }
+
     // Recibos técnicos de WhatsApp: incluso clientes admin tienen acceso denegado.
     match /whatsappWebhookEvents/{document=**} {
       allow read, write: if false;

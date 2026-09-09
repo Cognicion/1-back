@@ -16,20 +16,24 @@ const LEGACY_CIVIL_POLICY = Object.freeze({ availabilityMode: 'legacy-civil', al
 /** Shared server domain. Firebase auth comes exclusively from the callable.
  * Channel authorization is injected by the internal adapter, never input data.
  */
-export function createAppointmentService({ db, timestamp = () => Timestamp.now(), authorizeChannel = null, onChannelMutation = null, externalAvailabilityProvider = null }) {
-  async function context(tx, auth, doctorUid, channel = null, action = null, appointmentId = null) {
+export function createAppointmentService({ db, timestamp = () => Timestamp.now(), authorizeChannel = null, onChannelMutation = null, authorizeIntegration = null, onIntegrationMutation = null, externalAvailabilityProvider = null }) {
+  async function context(tx, auth, doctorUid, channel = null, integration = null, action = null, appointmentId = null) {
     if (!safeId(doctorUid)) fail('permission-denied');
     let channelAuthorization = null;
+    let integrationAuthorization = null;
     if (channel) {
-      if (!authorizeChannel || auth) fail('permission-denied');
+      if (!authorizeChannel || auth || integration) fail('permission-denied');
       channelAuthorization = await authorizeChannel({ tx, channel, doctorUid, action, appointmentId });
+    } else if (integration) {
+      if (!authorizeIntegration || auth) fail('permission-denied');
+      integrationAuthorization = await authorizeIntegration({ tx, integration, doctorUid, action, appointmentId });
     } else {
       if (!auth?.uid) fail('unauthenticated');
       if (!safeId(auth.uid) || auth.uid !== doctorUid) fail('permission-denied');
     }
     const profile = await tx.get(db.doc(`usuarios/${doctorUid}`));
     const deleting = await tx.get(db.doc(accountDeletionTombstonePath(doctorUid)));
-    if (!profile.exists || deleting.exists || (!isProfessional(profile.data()) && !(auth && isAdmin(profile.data(), auth)) && channelAuthorization?.profileAuthorized !== true)) fail('permission-denied');
+    if (!profile.exists || deleting.exists || (!isProfessional(profile.data()) && !(auth && isAdmin(profile.data(), auth)) && channelAuthorization?.profileAuthorized !== true && integrationAuthorization?.profileAuthorized !== true)) fail('permission-denied');
     const controlRef = db.doc(`appointmentControls/${doctorUid}`);
     const control = await tx.get(controlRef);
     if (control.exists && control.data().enabled !== true) fail('transactional-mode-disabled');
@@ -89,10 +93,10 @@ export function createAppointmentService({ db, timestamp = () => Timestamp.now()
     const horizonDays = Number(policy.maximumBookingAdvanceDays || 366);
     return { startAt: interval.startAt, endAt: interval.endAt + horizonDays * 86400000, timeZone: interval.timeZone };
   }
-  async function loadExternalBusy({ auth, channel, doctorUid, action, appointmentId = null, candidate, rangeStart = null, rangeEnd = null, receiptRef = null, fingerprint = null }) {
+  async function loadExternalBusy({ auth, channel = null, integration = null, doctorUid, action, appointmentId = null, candidate, rangeStart = null, rangeEnd = null, receiptRef = null, fingerprint = null }) {
     if (!externalAvailabilityProvider) return { intervals: [], replay: null, verified: false };
     const prepared = await db.runTransaction(async tx => {
-      const { control } = await context(tx, auth, doctorUid, channel, action, appointmentId);
+      const { control } = await context(tx, auth, doctorUid, channel, integration, action, appointmentId);
       if (receiptRef) {
         const receipt = await tx.get(receiptRef);
         if (receipt.exists) {
@@ -113,7 +117,7 @@ export function createAppointmentService({ db, timestamp = () => Timestamp.now()
     try {
       if (typeof externalAvailabilityProvider.isRequired === 'function' && !await externalAvailabilityProvider.isRequired({ doctorUid })) return { intervals: [], replay: null, verified: false };
       normalizeAvailabilitySettings(prepared.policy, { requireBookable: Boolean(channel || rangeStart) });
-      const intervals = await externalAvailabilityProvider.getBusy({ doctorUid, ...externalWindow(prepared.requested, prepared.policy) });
+      const intervals = await externalAvailabilityProvider.getBusy({ doctorUid, ...externalWindow(prepared.requested, prepared.policy), excludeGoogleEventId: integration?.googleEventId || null });
       if (!Array.isArray(intervals)) fail('invalid-external-busy');
       return { intervals, replay: null, verified: true };
     } catch (error) {
@@ -121,7 +125,7 @@ export function createAppointmentService({ db, timestamp = () => Timestamp.now()
       fail('external-availability-unavailable');
     }
   }
-  async function mutate(action, { auth, channel, doctorUid, appointmentId, requestId, input = {} }) {
+  async function mutate(action, { auth, channel = null, integration = null, doctorUid, appointmentId, requestId, input = {} }) {
     if (!safeId(requestId) || !safeId(doctorUid)) fail('invalid-request');
     if (action !== 'create' && !safeId(appointmentId)) fail('invalid-appointment-id');
     validateInput(input, action === 'create' || action === 'reschedule' ? APPOINTMENT_FIELDS : action === 'update' ? new Set([...APPOINTMENT_FIELDS].filter((field) => !TIME_FIELDS.has(field) && field !== 'recurrence')) : new Set());
@@ -132,20 +136,21 @@ export function createAppointmentService({ db, timestamp = () => Timestamp.now()
     }
     const id = action === 'create' ? db.collection(`usuarios/${doctorUid}/agenda`).doc().id : appointmentId;
     const ref = db.doc(`usuarios/${doctorUid}/agenda/${id}`);
-    const receiptRef = db.doc(`appointmentControls/${doctorUid}/requests/${digest(`${channel ? 'whatsapp:' + channel.subject : auth?.uid}:${requestId}`)}`);
+    const actorKey = channel ? `whatsapp:${channel.subject}` : integration ? `google:${integration.linkId}` : auth?.uid;
+    const receiptRef = db.doc(`appointmentControls/${doctorUid}/requests/${digest(`${actorKey}:${requestId}`)}`);
     const fingerprint = digest(`${action}:${appointmentId || ''}:${canonical(input)}`);
     const auditRef = db.collection('auditoria').doc();
     let externalBusyIntervals = [];
     let externalAvailabilityVerified = false;
     if (action === 'create' || action === 'reschedule') {
-      const external = await loadExternalBusy({ auth, channel, doctorUid, action, appointmentId, candidate: input, receiptRef, fingerprint });
+      const external = await loadExternalBusy({ auth, channel, integration, doctorUid, action, appointmentId, candidate: input, receiptRef, fingerprint });
       if (external.replay) return external.replay;
       externalBusyIntervals = external.intervals;
       externalAvailabilityVerified = external.verified;
     }
     return db.runTransaction(async (tx) => {
       console.debug('[AGENDA_TRACE] callable→domain', { action, hasAppointment: Boolean(appointmentId) });
-      const { controlRef, control, controlExists, profile } = await context(tx, auth, doctorUid, channel, action, appointmentId);
+      const { controlRef, control, controlExists, profile } = await context(tx, auth, doctorUid, channel, integration, action, appointmentId);
       const receipt = await tx.get(receiptRef);
       if (receipt.exists) {
         if (receipt.data().fingerprint !== fingerprint) fail('idempotency-key-reused');
@@ -169,7 +174,7 @@ export function createAppointmentService({ db, timestamp = () => Timestamp.now()
         if (!input.patientId && !input.patientName?.trim()) fail('patient-required');
         const defaults = control.policy?.payment || { required: false, type: 'none', amount: null, currency: 'MXN' };
         const payment = { required: defaults.required, type: defaults.type, amount: defaults.amount, currency: defaults.currency, status: defaults.required ? 'pending' : 'not_required', paidAt: null };
-        next = { ...input, type: 'appointment', title: 'Cita médica', endDate: input.endDate || input.startDate, endTime: input.endTime || '', patientId: input.patientId || '', patientName: input.patientName || '', externalPatient: !input.patientId, allDay: false, recurrence: input.recurrence || null, status: 'programada', estado: 'programada', confirmation: { status: 'pending', confirmedAt: null, channel: null }, payment, reminders: { enabled: control.policy?.remindersEnabled === true, lastSentAt: null }, timeZone: control.policy?.timeZone || null, createdAt: now, fechaCreacion: now, creadoPor: channel ? 'whatsapp' : auth.uid };
+        next = { ...input, type: 'appointment', title: 'Cita médica', endDate: input.endDate || input.startDate, endTime: input.endTime || '', patientId: input.patientId || '', patientName: input.patientName || '', externalPatient: !input.patientId, allDay: false, recurrence: input.recurrence || null, status: 'programada', estado: 'programada', confirmation: { status: 'pending', confirmedAt: null, channel: null }, payment, reminders: { enabled: control.policy?.remindersEnabled === true, lastSentAt: null }, timeZone: control.policy?.timeZone || null, createdAt: now, fechaCreacion: now, creadoPor: channel ? 'whatsapp' : integration ? 'google-calendar' : auth.uid };
       } else {
         if (action === 'reschedule' && control.policy?.allowReschedule !== true) fail('reschedule-disabled');
         if (action === 'cancel' && control.policy?.allowCancellation !== true) fail('cancellation-disabled');
@@ -183,7 +188,7 @@ export function createAppointmentService({ db, timestamp = () => Timestamp.now()
       next.pacienteId = next.patientId;
       next.pacienteNombre = next.patientName;
       next.updatedAt = now;
-      next.actualizadoPor = channel ? 'whatsapp' : auth.uid;
+      next.actualizadoPor = channel ? 'whatsapp' : integration ? 'google-calendar' : auth.uid;
       validateState(next);
       if (action === 'create' || action === 'reschedule') {
         validateCandidate(next);
@@ -205,8 +210,9 @@ export function createAppointmentService({ db, timestamp = () => Timestamp.now()
       else tx.create(controlRef, { enabled: true, revision: 1, policy: LEGACY_CIVIL_POLICY, createdAt: now, activatedBy: auth.uid });
       tx.set(ref, next, { merge: true });
       if (channel && onChannelMutation) onChannelMutation({ tx, channel, doctorUid, appointmentId: id, action, next, previous, now });
+      if (integration && onIntegrationMutation) onIntegrationMutation({ tx, integration, doctorUid, appointmentId: id, action, next, previous, now });
       tx.create(receiptRef, { fingerprint, appointmentId: id, action, createdAt: now });
-      tx.create(auditRef, { accion: `agenda_${action}`, modulo: 'Agenda', usuarioUid: channel ? doctorUid : auth.uid, usuarioRol: profile.rol || 'profesional', descripcion: 'Operación administrativa de agenda.', exito: true, fecha: now, detalles: { actor: channel ? 'channel' : isAdmin(profile, auth) ? 'admin' : 'doctor', canal: channel ? 'whatsapp' : 'web', accion: action, appointmentId: id, resultado: 'applied' } });
+      tx.create(auditRef, { accion: `agenda_${action}`, modulo: 'Agenda', usuarioUid: channel || integration ? doctorUid : auth.uid, usuarioRol: profile.rol || 'profesional', descripcion: 'Operación administrativa de agenda.', exito: true, fecha: now, detalles: { actor: channel ? 'channel' : integration ? 'integration' : isAdmin(profile, auth) ? 'admin' : 'doctor', canal: channel ? 'whatsapp' : integration ? 'google-calendar' : 'web', accion: action, appointmentId: id, resultado: 'applied' } });
       console.debug('[AGENDA_TRACE] transaction→firestore', { action, outcome: 'applied' });
       return { appointmentId: id, result: 'applied', replayed: false };
     });
@@ -216,7 +222,7 @@ export function createAppointmentService({ db, timestamp = () => Timestamp.now()
       const candidate = { type: 'appointment', startDate: date, endDate: date, startTime: '00:00', endTime: '23:59', durationMinutes };
       const { intervals: externalBusyIntervals, verified: externalAvailabilityVerified } = await loadExternalBusy({ channel, doctorUid, action: 'availability', appointmentId: excludeId, candidate, rangeStart: date, rangeEnd: date });
       return db.runTransaction(async tx => {
-        const { control } = await context(tx, null, doctorUid, channel, 'availability', excludeId);
+        const { control } = await context(tx, null, doctorUid, channel, null, 'availability', excludeId);
         normalizeAvailabilitySettings(control.policy, { requireBookable: true });
         if (control.policy.payment?.required) fail('payment-not-configured');
         if (control.policy.externalAvailabilityRequired && !externalAvailabilityVerified) fail('external-availability-unavailable');

@@ -19,6 +19,7 @@ function outboundBody(to, content, correlation) {
     : { button: 'Elegir', sections: [{ title: 'Opciones', rows: choices.map(x => ({ id: x.id, title: x.title, ...(x.description ? { description: x.description.slice(0,72) } : {}) })) }] } } };
 }
 function createTransport({ accessToken, fetchImpl = fetch }) {
+  const headers = () => ({ authorization: `Bearer ${accessToken()}` });
   return {
     async send({ channel, to, content, correlation }) {
       if (!/^v\d{2}\.0$/.test(channel.graphVersion || '') || !/^\d{5,30}$/.test(channel.phoneNumberId || '')) return { state: 'blocked_configuration' };
@@ -41,6 +42,35 @@ function createTransport({ accessToken, fetchImpl = fetch }) {
       const data = await r.json();
       const status=data.data?.find(t => t.name === name && t.language === language)?.status;
       return !status?'MISSING':['APPROVED','PENDING','REJECTED','PAUSED','DISABLED','IN_APPEAL','DELETED'].includes(status)?status:'UNKNOWN';
+    },
+    async inspectChannel(channel) {
+      if(!accessToken())return {verified:false,code:'MISSING_CREDENTIAL'};
+      if(!/^v\d{2}\.0$/.test(channel?.graphVersion||'')||!/^\d{5,30}$/.test(channel?.wabaId||'')||!/^\d{5,30}$/.test(channel?.phoneNumberId||''))return {verified:false,code:'INVALID_ASSET_ID'};
+      try {
+        const base=`https://graph.facebook.com/${channel.graphVersion}`;
+        const [accountResponse,numbersResponse,subscriptionsResponse]=await Promise.all([
+          fetchImpl(`${base}/${channel.wabaId}?fields=id,name,account_review_status,business_verification_status,ownership_type`,{headers:headers(),signal:AbortSignal.timeout(10000)}),
+          fetchImpl(`${base}/${channel.wabaId}/phone_numbers?fields=id,display_phone_number,verified_name,quality_rating,code_verification_status,platform_type,name_status,status`,{headers:headers(),signal:AbortSignal.timeout(10000)}),
+          fetchImpl(`${base}/${channel.wabaId}/subscribed_apps?fields=id,name`,{headers:headers(),signal:AbortSignal.timeout(10000)})
+        ]);
+        if(!accountResponse.ok||!numbersResponse.ok)return {verified:false,code:'ASSET_NOT_ACCESSIBLE'};
+        const account=await accountResponse.json(), numbers=await numbersResponse.json();
+        const subscriptions=subscriptionsResponse.ok ? await subscriptionsResponse.json() : {data:[]};
+        const phone=numbers.data?.find(item=>item.id===channel.phoneNumberId);
+        if(!phone)return {verified:false,code:'PHONE_NOT_IN_WABA'};
+        const digits=String(phone.display_phone_number||'').replace(/\D/g,'');
+        const cloudApi=phone.platform_type==='CLOUD_API';
+        const connected=phone.status==='CONNECTED';
+        return {verified:cloudApi&&connected,code:cloudApi&&connected?'VERIFIED':'PHONE_NOT_READY',numberSuffix:digits.slice(-4),verifiedName:String(phone.verified_name||'').slice(0,80),qualityRating:phone.quality_rating||'UNKNOWN',codeVerificationStatus:phone.code_verification_status||'UNKNOWN',platformType:phone.platform_type||'UNKNOWN',phoneStatus:phone.status||'UNKNOWN',nameStatus:phone.name_status||'UNKNOWN',accountName:String(account.name||'').slice(0,80),accountReviewStatus:account.account_review_status||'UNKNOWN',businessVerificationStatus:account.business_verification_status||'UNKNOWN',ownershipType:account.ownership_type||'UNKNOWN',subscribed:Array.isArray(subscriptions.data)&&subscriptions.data.length>0};
+      } catch { return {verified:false,code:'GRAPH_UNAVAILABLE'}; }
+    },
+    async subscribeApp(channel) {
+      if(!accessToken())return {ok:false,code:'MISSING_CREDENTIAL'};
+      try {
+        const response=await fetchImpl(`https://graph.facebook.com/${channel.graphVersion}/${channel.wabaId}/subscribed_apps`,{method:'POST',headers:headers(),signal:AbortSignal.timeout(10000)});
+        const data=await response.json();
+        return {ok:response.ok&&data.success===true,code:response.ok?'OK':Number(data.error?.code)||response.status};
+      } catch { return {ok:false,code:'GRAPH_UNAVAILABLE'}; }
     }
   };
 }
