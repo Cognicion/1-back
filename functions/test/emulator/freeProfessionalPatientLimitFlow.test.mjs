@@ -44,6 +44,7 @@ async function registerFreeProfessional(client, role = "medico") {
   return client.call("registerProfessional", {
     aceptaAviso: true,
     aceptaBeta: true,
+    fechaNacimiento: "1990-05-17",
     modalidadRegistro: "gratuita",
     nombre: "Profesional de prueba",
     rol: role
@@ -142,6 +143,7 @@ test("el registro de paciente por correo conserva su rol y permisos y ocupa un c
   const result = await patient.call("registerPatientProfile", {
     aceptaAviso: true,
     aceptaBeta: true,
+    fechaNacimiento: "1990-05-17",
     correoMedico: doctor.email,
     nombre: "Paciente con cuenta de prueba",
     usaCodigoVinculacion: false
@@ -200,6 +202,7 @@ test("un perfil Firestore que suplanta el correo no recibe el paciente resuelto 
   const result = await patient.call("registerPatientProfile", {
     aceptaAviso: true,
     aceptaBeta: true,
+    fechaNacimiento: "1990-05-17",
     correoMedico: doctor.email,
     medicoUid: impersonatorUid,
     nombre: "Paciente con identidad canónica",
@@ -232,6 +235,7 @@ test("un registro rechazado puede descartar Auth sólo mientras no exista perfil
     patient.call("registerPatientProfile", {
       aceptaAviso: true,
       aceptaBeta: true,
+      fechaNacimiento: "1990-05-17",
       correoMedico: "medico-inexistente@example.test",
       nombre: "Paciente sin médico válido",
       usaCodigoVinculacion: false

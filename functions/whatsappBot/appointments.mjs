@@ -4,7 +4,7 @@ const require = createRequire(import.meta.url);
 const { Timestamp } = require('firebase-admin/firestore');
 const { channelReady, professionalReady, hash, safeId } = require('./config');
 const deny = code => { const e = Error(code); e.code = code; throw e; };
-export function createChannelAppointments({ db, now = Date.now }) {
+export function createChannelAppointments({ db, now = Date.now, externalAvailabilityProvider = null }) {
   const authorizeChannel = async ({ tx, channel, doctorUid, action, appointmentId }) => {
     if (!/^[a-f0-9]{64}$/.test(channel?.subject || '') || !['create','confirm','reschedule','cancel','availability'].includes(action)) deny('permission-denied');
     const c = (await tx.get(db.doc('whatsappBotConfig/channel'))).data();
@@ -28,7 +28,7 @@ export function createChannelAppointments({ db, now = Date.now }) {
     channel.professional = p; channel.recipient = r;
     return { profileAuthorized: true };
   };
-  const service = createAppointmentService({ db, timestamp: () => Timestamp.fromMillis(now()), authorizeChannel,
+  const service = createAppointmentService({ db, timestamp: () => Timestamp.fromMillis(now()), authorizeChannel, externalAvailabilityProvider,
     onChannelMutation({ tx, channel, doctorUid, appointmentId, action, next, previous }) {
       const startAt = next.startAt?.toMillis();
       const expiresAt = Timestamp.fromMillis(Math.max(now(), startAt || now()) + 30 * 86400000);

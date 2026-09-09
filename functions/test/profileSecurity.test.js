@@ -3,6 +3,7 @@
 const assert = require("node:assert/strict");
 const test = require("node:test");
 const firestoreIndexes = require("../../firestore.indexes.json");
+const { buildRegistrationConsents } = require("../accountSecurity/registrationProfile");
 const {
   ProfessionalRegistrationError,
   codeAllowsRole,
@@ -88,6 +89,7 @@ function request(uid, role = "medico") {
     data: {
       aceptaAviso: true,
       aceptaBeta: true,
+      fechaNacimiento: "1990-05-17",
       codigoAutorizacion: " abcd-efgh-ijkl ",
       modalidadRegistro: "codigo_admin",
       nombre: `Profesional ${uid}`,
@@ -102,6 +104,7 @@ function freeRequest(uid, role = "medico", overrides = {}) {
     data: {
       aceptaAviso: true,
       aceptaBeta: true,
+      fechaNacimiento: "1990-05-17",
       modalidadRegistro: "gratuita",
       nombre: `Profesional ${uid}`,
       rol: role,
@@ -117,6 +120,8 @@ test("el backend consume el código y crea el perfil profesional en una sola tra
   assert.deepEqual(result, { alreadyRegistered: false, role: "medico", uid: "uidMedico" });
   assert.deepEqual(db.documents.get("usuarios/uidMedico"), {
     nombre: "Profesional uidMedico",
+    fechaNacimiento: "1990-05-17",
+    ...structuredClone(buildRegistrationConsents(NOW)),
     email: "uidmedico@example.test",
     rol: "medico",
     tieneCuenta: true,
@@ -225,6 +230,8 @@ test("el registro gratuito sin código crea perfiles limitados para todos los ro
     assert.deepEqual(result, { alreadyRegistered: false, role, uid });
     assert.deepEqual(db.documents.get(`usuarios/${uid}`), {
       nombre: `Profesional ${uid}`,
+      fechaNacimiento: "1990-05-17",
+      ...structuredClone(buildRegistrationConsents(NOW)),
       email: `${uid.toLowerCase()}@example.test`,
       rol: role,
       tieneCuenta: true,
@@ -307,4 +314,60 @@ test("la cuota declara el índice de colección-grupo necesario para localizar s
   assert.ok(override.indexes.some((index) => (
     index.queryScope === "COLLECTION_GROUP" && index.order === "ASCENDING"
   )));
+});
+
+for (const role of ["medico", "psicologo", "enfermeria_salud_mental"]) {
+  for (const mode of ["gratuita", "codigo_admin"]) {
+    test(`alta ${role}/${mode}: conserva identidad, nacimiento, consentimientos y membresía; reintento no sobreescribe`, async () => {
+      const { db, service } = fixture();
+      const input = request("uidSignup", role);
+      Object.assign(input.data, {
+        modalidadRegistro: mode, aceptaComunicaciones: true,
+        email: "suplantado@example.test", tipoMembresia: "pro", admin: true
+      });
+      await service.register(input);
+      const stored = structuredClone(db.documents.get("usuarios/uidSignup"));
+      assert.equal(stored.nombre, input.data.nombre);
+      assert.equal(stored.fechaNacimiento, "1990-05-17");
+      assert.equal(stored.email, "uidsignup@example.test");
+      assert.equal(stored.rol, role);
+      assert.equal(stored.tipoMembresia, mode === "gratuita" ? "gratuita" : "pro");
+      assert.equal(stored.admin, undefined);
+      assert.equal(stored.legalConsents.privacyNotice.accepted, true);
+      assert.equal(stored.legalConsents.betaConsent.accepted, true);
+      assert.equal(stored.legalConsents.communications.accepted, true);
+      Object.assign(input.data, { nombre: "Otro nombre", fechaNacimiento: "2000-01-01", aceptaComunicaciones: false });
+      assert.equal((await service.register(input)).alreadyRegistered, true);
+      assert.deepEqual(db.documents.get("usuarios/uidSignup"), stored);
+    });
+  }
+}
+
+test("sin fecha, fecha imposible o futura no hay perfil ni consumo de código", async () => {
+  for (const fechaNacimiento of [undefined, "", "2026-08-23", "1999-02-29", "2024-04-31", "0000-01-01", "17/05/1990", {}, 19900517]) {
+    for (const modalidadRegistro of ["gratuita", "codigo_admin"]) {
+      const { db, service } = fixture();
+      const input = request("uidInvalidDate");
+      Object.assign(input.data, { fechaNacimiento, modalidadRegistro });
+      await assert.rejects(service.register(input), { code: "invalid-argument" });
+      assert.equal(db.documents.has("usuarios/uidInvalidDate"), false);
+      assert.equal(db.documents.get("codigosAutorizacionMedico/ABCD-EFGH-IJKL").usado, false);
+    }
+  }
+});
+
+test("un reintento del alta legada agrega solo los datos de registro faltantes", async () => {
+  const { db, service } = fixture(validCode(), {
+    "usuarios/uidLegacy": {
+      nombre: "Nombre conservado", email: "uidlegacy@example.test", rol: "medico",
+      modalidadRegistroProfesional: "gratuita", tipoMembresia: "pro", pacientesEnCuenta: 3
+    }
+  });
+  assert.equal((await service.register(freeRequest("uidLegacy"))).alreadyRegistered, true);
+  const stored = db.documents.get("usuarios/uidLegacy");
+  assert.equal(stored.fechaNacimiento, "1990-05-17");
+  assert.equal(stored.nombre, "Nombre conservado");
+  assert.equal(stored.tipoMembresia, "pro");
+  assert.equal(stored.pacientesEnCuenta, 3);
+  assert.equal(stored.legalConsents.betaConsent.accepted, true);
 });

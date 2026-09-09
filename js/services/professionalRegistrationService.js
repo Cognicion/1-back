@@ -16,6 +16,8 @@ export async function registrarProfesionalConCodigo(payload = {}) {
   ]);
   const result = await httpsCallable(functions, "registerProfessionalWithCode")({
     nombre: payload.nombre,
+    fechaNacimiento: payload.fechaNacimiento,
+    aceptaComunicaciones: payload.aceptaComunicaciones === true,
     rol: payload.rol,
     codigoAutorizacion: payload.codigoAutorizacion,
     aceptaAviso: payload.aceptaAviso === true,
@@ -31,6 +33,8 @@ export async function registrarProfesional(payload = {}) {
   ]);
   const result = await httpsCallable(functions, "registerProfessional")({
     nombre: payload.nombre,
+    fechaNacimiento: payload.fechaNacimiento,
+    aceptaComunicaciones: payload.aceptaComunicaciones === true,
     rol: payload.rol,
     modalidadRegistro: payload.modalidadRegistro,
     codigoAutorizacion: payload.codigoAutorizacion || "",

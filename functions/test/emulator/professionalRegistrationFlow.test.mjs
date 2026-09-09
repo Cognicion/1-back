@@ -71,6 +71,7 @@ function payload(code, role = "medico", overrides = {}) {
   return {
     aceptaAviso: true,
     aceptaBeta: true,
+    fechaNacimiento: "1990-05-17",
     codigoAutorizacion: code,
     email: "forged-email@example.test",
     nombre: "Profesional Emulator",
@@ -83,6 +84,7 @@ function freePayload(role = "medico", overrides = {}) {
   return {
     aceptaAviso: true,
     aceptaBeta: true,
+    fechaNacimiento: "1990-05-17",
     email: "forged-free-email@example.test",
     modalidadRegistro: "gratuita",
     nombre: "Profesional Gratuito Emulator",
@@ -126,6 +128,9 @@ test("Auth email + callable crean el perfil y consumen el código atómicamente;
 
   const profile = (await getDoc(doc(owner.firestore, "usuarios", owner.uid))).data();
   assert.equal(profile.rol, "medico");
+  assert.equal(profile.fechaNacimiento, "1990-05-17");
+  assert.equal(profile.legalConsents.privacyNotice.accepted, true);
+  assert.equal(profile.legalConsents.betaConsent.accepted, true);
   assert.equal(profile.email, owner.email, "El backend debe usar el email del token Auth.");
   assert.notEqual(profile.email, "forged-email@example.test");
   assert.equal(profile.creadoConCodigoAutorizacion, code);
@@ -176,7 +181,7 @@ test("un código expirado o restringido a otro rol no crea perfil ni cambia su e
 test("registerProfessional crea cuentas gratuitas de médico y psicólogo sin código y de forma idempotente", {
   timeout: 60000
 }, async () => {
-  for (const role of ["medico", "psicologo"]) {
+  for (const role of ["medico", "psicologo", "enfermeria_salud_mental"]) {
     const owner = await emailClient(`free-${role}`);
     const request = freePayload(role);
 
@@ -189,6 +194,8 @@ test("registerProfessional crea cuentas gratuitas de médico y psicólogo sin c�
 
     const profile = (await getDoc(doc(owner.firestore, "usuarios", owner.uid))).data();
     assert.equal(profile.rol, role);
+    assert.equal(profile.fechaNacimiento, "1990-05-17");
+    assert.equal(profile.legalConsents.betaConsent.accepted, true);
     assert.equal(profile.email, owner.email, "El backend debe usar el email del token Auth.");
     assert.notEqual(profile.email, "forged-free-email@example.test");
     assert.equal(profile.tipoMembresia, "gratuita");

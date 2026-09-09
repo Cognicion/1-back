@@ -6,6 +6,7 @@ const logger = require("firebase-functions/logger");
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { AccountLinkingError } = require("../accountLinking/errors");
 const { accountDeletionTombstonePath } = require("./accountDeletion");
+const { LEGAL_VERSION, requireBirthDate, buildRegistrationConsents } = require("./registrationProfile");
 const {
   assertPatientProfile,
   isAdmin,
@@ -26,7 +27,6 @@ const {
 if (!admin.apps.length) admin.initializeApp();
 
 const REGION = "us-central1";
-const LEGAL_VERSION = "2026-08-01";
 const INCOMPLETE_REGISTRATION_ACCOUNT_TYPE = "registro_incompleto";
 const PATIENT_FOLIO_COUNTER_COLLECTION = "systemCounters";
 const PATIENT_FOLIO_COUNTER_PREFIX = "expedienteCognicion";
@@ -603,6 +603,7 @@ function createProfessionalPatientAccessService({ authAdmin = admin.auth(), db, 
     const patientUid = requireAuthenticatedUid(auth);
     const patientEmail = normalizeEmail(auth?.token?.email, "El correo de la cuenta autenticada");
     const name = requiredText(data.nombre, "El nombre", 160);
+    const birthDate = requireBirthDate(data.fechaNacimiento, now(), ProfessionalPatientAccessError);
     if (data.aceptaAviso !== true || data.aceptaBeta !== true) {
       throw new ProfessionalPatientAccessError(
         "failed-precondition",
@@ -719,6 +720,8 @@ function createProfessionalPatientAccessService({ authAdmin = admin.auth(), db, 
 
       const patientProfile = {
         nombre: existing?.nombre || name,
+        fechaNacimiento: existing?.fechaNacimiento || birthDate,
+        ...(!existing?.legalConsents ? buildRegistrationConsents(currentDate, data.aceptaComunicaciones) : {}),
         email: patientEmail,
         rol: "paciente",
         tieneCuenta: true,

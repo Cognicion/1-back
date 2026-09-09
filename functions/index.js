@@ -59,14 +59,16 @@ const {
 } = require("./accountSecurity/accountDeletion");
 const { isPatient } = require("./accountLinking/validation");
 const { createGoogleCalendarHandlers } = require("./googleCalendarOAuth");
+const { createGoogleCalendarRuntime } = require("./googleCalendar/runtime");
 const { createWhatsAppWebhook } = require("./whatsappWebhook");
 
 let appointmentServicePromise = null;
+let googleCalendarRuntime = null;
 
 async function getAppointmentService() {
   if (!appointmentServicePromise) {
     appointmentServicePromise = import("./appointments/service.mjs")
-      .then(({ createAppointmentService }) => createAppointmentService({ db: adminDb }));
+      .then(({ createAppointmentService }) => createAppointmentService({ db: adminDb, externalAvailabilityProvider: googleCalendarRuntime?.availabilityProvider || null }));
   }
   return appointmentServicePromise;
 }
@@ -1198,10 +1200,12 @@ exports.googleCalendarConnect = googleCalendarHandlers.connect;
 exports.googleCalendarOAuthCallback = googleCalendarHandlers.callback;
 exports.getGoogleCalendarConnectionStatus = googleCalendarHandlers.status;
 exports.disconnectGoogleCalendar = googleCalendarHandlers.disconnect;
-const whatsappBot = require('./whatsappBot').createBotRuntime({ db: adminDb, credential: admin.app().options.credential });
+googleCalendarRuntime = createGoogleCalendarRuntime({ db: adminDb, credential: admin.app().options.credential });
+Object.assign(exports, googleCalendarRuntime.exports);
+const whatsappBot = require('./whatsappBot').createBotRuntime({ db: adminDb, credential: admin.app().options.credential, externalAvailabilityProvider: googleCalendarRuntime.availabilityProvider, googleCalendarSecrets: googleCalendarRuntime.secrets });
 Object.assign(exports, whatsappBot.exports);
 exports.whatsappWebhook = createWhatsAppWebhook({ db: adminDb, logger, prepareWork: whatsappBot.prepareWork, ingressSecrets: whatsappBot.ingressSecrets });
-exports.manageAppointment = onCall({ region: "us-central1", timeoutSeconds: 60 }, conCuentaCallableActiva(async (request) => {
+exports.manageAppointment = onCall({ region: "us-central1", secrets: googleCalendarRuntime.secrets, timeoutSeconds: 60 }, conCuentaCallableActiva(async (request) => {
   const data = request.data || {};
   const action = String(data.action || "");
   const handlers = {

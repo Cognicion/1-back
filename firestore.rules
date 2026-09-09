@@ -1701,6 +1701,15 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Proyecciones y trabajos de sincronización se administran sólo por backend.
+    match /googleCalendarAppointmentLinks/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /googleCalendarSyncJobs/{document=**} {
+      allow read, write: if false;
+    }
+
     // Recibos técnicos de WhatsApp: incluso clientes admin tienen acceso denegado.
     match /whatsappWebhookEvents/{document=**} {
       allow read, write: if false;

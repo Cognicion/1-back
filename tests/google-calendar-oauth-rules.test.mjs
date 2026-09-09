@@ -11,9 +11,9 @@ if (!/^127\.0\.0\.1:\d+$/.test(process.env.FIRESTORE_EMULATOR_HOST || "")) throw
 let env;
 test.before(async () => { env = await initializeTestEnvironment({ projectId: "demo-cognicion-agenda", firestore: { rules: await readFile(new URL("../firestore.rules", import.meta.url), "utf8") } }); });
 test.after(async () => env?.cleanup());
-test("OAuth state and connection documents are server-only", async () => {
+test("OAuth, calendar links and sync jobs are server-only", async () => {
   const client = env.authenticatedContext("doctor_test").firestore();
-  for (const path of ["googleCalendarOAuthStates/state", "googleCalendarConnections/doctor_test"]) {
+  for (const path of ["googleCalendarOAuthStates/state", "googleCalendarConnections/doctor_test", "googleCalendarAppointmentLinks/link", "googleCalendarSyncJobs/job"]) {
     await assertFails(getDoc(doc(client, path)));
     await assertFails(setDoc(doc(client, path), { connectionStatus: "connected" }));
   }

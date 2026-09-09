@@ -451,6 +451,7 @@
 @media (max-width: 1050px) {
   .navbar-global-contenido { gap: 14px; }
   .navbar-global-marca { min-width: 205px; }
+  .navbar-global-agenda span,
   .navbar-global-panel-medico span { display: none; }
 }
 
@@ -463,6 +464,7 @@
   .navbar-global-marca > span { display: none; }
   .navbar-global-principal { flex: 0 0 auto; }
   .navbar-global-explorar > summary span,
+  .navbar-global-agenda span,
   .navbar-global-panel-medico span { display: none; }
   .navbar-global-principal > a,
   .navbar-global-explorar > summary { width: 40px; min-height: 40px; justify-content: center; padding: 0; }

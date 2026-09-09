@@ -156,6 +156,11 @@ async function inicializarIntegracionGoogleCalendar() {
   const status = root.querySelector("[data-google-calendar-status]");
   const connect = root.querySelector("[data-google-calendar-connect]");
   const disconnect = root.querySelector("[data-google-calendar-disconnect]");
+  const settingsForm = root.querySelector("[data-google-calendar-settings]");
+  const useAvailability = root.querySelector("[data-google-use-availability]");
+  const mirrorAppointments = root.querySelector("[data-google-mirror-appointments]");
+  const selectedCalendar = root.querySelector("[data-google-calendar-selected]");
+  const saveSettings = root.querySelector("[data-google-calendar-save]");
   let active = true, pending = false;
   const current = () => active && !disposed && generation === authGeneration;
   const render = (data) => {
@@ -163,6 +168,10 @@ async function inicializarIntegracionGoogleCalendar() {
     const connected = data?.connected === true;
     status.textContent = connected ? "Google Calendar conectado." : data?.status === "reauthorization_required" ? "Google Calendar requiere reconexión." : data?.status === "unknown" ? "No se pudo confirmar el estado de Google Calendar." : "Google Calendar no conectado.";
     connect.classList.toggle("oculto", connected); disconnect.classList.toggle("oculto", !connected);
+    useAvailability.checked = data?.integration?.useForAvailability === true;
+    mirrorAppointments.checked = data?.integration?.mirrorAppointments === true;
+    useAvailability.disabled = mirrorAppointments.disabled = saveSettings.disabled = !connected;
+    selectedCalendar.textContent = data?.selectedCalendar === "primary" ? "Principal" : String(data?.selectedCalendar || "Principal");
   };
   const params = new URLSearchParams(window.location.search);
   if (params.get("googleCalendar") === "connected") status.textContent = "Conexión completada. Verificando estado…";
@@ -170,7 +179,7 @@ async function inicializarIntegracionGoogleCalendar() {
   if (params.has("googleCalendar")) window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.hash || "#configuracionAgenda"}`);
   connect.disabled = disconnect.disabled = true;
   try {
-    const { iniciarConexionGoogleCalendar, obtenerEstadoGoogleCalendar, desconectarGoogleCalendar } = await import("./services/googleCalendarService.js");
+    const { iniciarConexionGoogleCalendar, obtenerEstadoGoogleCalendar, desconectarGoogleCalendar, actualizarConfiguracionGoogleCalendar } = await import("./services/googleCalendarService.js");
     if (!current()) return;
     const connectHandler = async () => {
       if (pending || !current()) return;
@@ -186,9 +195,23 @@ async function inicializarIntegracionGoogleCalendar() {
       catch (error) { if (current()) status.textContent = "No se pudo confirmar la desconexión. Vuelve a consultar el estado."; console.warn("[AGENDA][GOOGLE_CALENDAR] Desconexión rechazada.", { code: String(error?.code || "internal") }); }
       finally { pending = false; if (current()) disconnect.disabled = false; }
     };
+    const settingsHandler = async (event) => {
+      event.preventDefault();
+      if (pending || !current()) return;
+      pending = true; saveSettings.disabled = true; status.textContent = "Guardando integración…";
+      try {
+        await actualizarConfiguracionGoogleCalendar({ useForAvailability: useAvailability.checked, mirrorAppointments: mirrorAppointments.checked });
+        render(await obtenerEstadoGoogleCalendar());
+        if (current()) status.textContent = "Google Calendar conectado. Preferencias guardadas.";
+      } catch (error) {
+        if (current()) status.textContent = "No se pudieron guardar las preferencias de Google Calendar.";
+        console.warn("[AGENDA][GOOGLE_CALENDAR] Configuración rechazada.", { code: String(error?.code || "internal") });
+      } finally { pending = false; if (current()) saveSettings.disabled = useAvailability.disabled; }
+    };
     connect.addEventListener("click", connectHandler);
     disconnect.addEventListener("click", disconnectHandler);
-    googleCleanup = () => { active = false; connect.removeEventListener("click", connectHandler); disconnect.removeEventListener("click", disconnectHandler); };
+    settingsForm.addEventListener("submit", settingsHandler);
+    googleCleanup = () => { active = false; connect.removeEventListener("click", connectHandler); disconnect.removeEventListener("click", disconnectHandler); settingsForm.removeEventListener("submit", settingsHandler); };
     try { render(await obtenerEstadoGoogleCalendar()); }
     catch (error) { if (current()) status.textContent = "No se pudo consultar el estado de Google Calendar. Cierra y vuelve a abrir Integraciones para reintentar."; googleInitialization = null; googleCleanup(); console.warn("[AGENDA][GOOGLE_CALENDAR] Estado no disponible.", { code: String(error?.code || "internal") }); }
   } catch (error) {

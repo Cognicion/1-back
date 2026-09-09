@@ -39,6 +39,11 @@ test('external busy intervals compose with Cognición occupancy', () => {
   const result = getAvailability({ candidate: candidate('2026-09-07', '09:00'), events: [], policy, complete: true, externalBusyIntervals: external });
   assert.equal(result.reason, 'external-busy');
 });
+test('external busy intervals also block a later virtual recurrence', () => {
+  const external = [{ start: '2026-09-14T15:00:00.000Z', end: '2026-09-14T16:00:00.000Z', source: 'google' }];
+  const result = getAvailability({ candidate: { ...candidate('2026-09-07', '09:00'), recurrence: 'weekly' }, events: [], policy: { ...policy, maximumBookingAdvanceDays: 14 }, complete: true, externalBusyIntervals: external });
+  assert.equal(result.reason, 'external-busy');
+});
 test('unbounded recurrence expands only the requested distant window and preserves day 31 anchor', () => {
   const series = { id: 'monthly', startDate: '2020-01-31', endDate: '2020-01-31', recurrence: 'monthly' };
   const occurrences = getOccurrences(series, '2050-02-01', '2050-03-31');

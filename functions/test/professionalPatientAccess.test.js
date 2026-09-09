@@ -693,6 +693,7 @@ test("el registro de paciente por correo conserva el perfil paciente y sus permi
   }, {
     aceptaAviso: true,
     aceptaBeta: true,
+    fechaNacimiento: "1990-05-17",
     nombre: "Nombre enviado de nuevo",
     correoMedico: doctorEmail,
     rol: "admin"
@@ -706,6 +707,10 @@ test("el registro de paciente por correo conserva el perfil paciente y sus permi
   });
   const storedPatient = db.data(`usuarios/${IDS.patient}`);
   assert.equal(storedPatient.nombre, "Nombre previo");
+  assert.equal(storedPatient.fechaNacimiento, "1990-05-17");
+  assert.equal(storedPatient.legalConsents.privacyNotice.accepted, true);
+  assert.equal(storedPatient.legalConsents.betaConsent.accepted, true);
+  assert.equal(storedPatient.legalConsents.communications.accepted, false);
   assert.equal(storedPatient.email, patientEmail);
   assert.equal(storedPatient.rol, "paciente");
   assert.equal(storedPatient.tieneCuenta, true);
@@ -750,6 +755,7 @@ test("dos registros de paciente concurrentes reciben folios server-side distinto
     }, {
       aceptaAviso: true,
       aceptaBeta: true,
+      fechaNacimiento: "1990-05-17",
       nombre: "Paciente uno",
       usaCodigoVinculacion: true
     }),
@@ -759,6 +765,7 @@ test("dos registros de paciente concurrentes reciben folios server-side distinto
     }, {
       aceptaAviso: true,
       aceptaBeta: true,
+      fechaNacimiento: "1990-05-17",
       nombre: "Paciente dos",
       usaCodigoVinculacion: true
     })
@@ -773,6 +780,39 @@ test("dos registros de paciente concurrentes reciben folios server-side distinto
     assert.equal(profile.datosInstitucionales.expedienteCognicion, profile.expedienteCognicion);
   }
   assert.equal(db.data(patientFolioCounterPath("26")).ultimoConsecutivo, 1001);
+});
+
+test("paciente con código guarda fecha y consentimientos y los conserva al reintentar", async () => {
+  const db = new FakeFirestore();
+  const service = createProfessionalPatientAccessService({ db, now: fixedClock });
+  const auth = { uid: IDS.patient, token: { email: "paciente@example.test" } };
+  const input = {
+    nombre: "Paciente de prueba", fechaNacimiento: "2000-02-29",
+    usaCodigoVinculacion: true, aceptaAviso: true, aceptaBeta: true, aceptaComunicaciones: true,
+    rol: "admin", tipoMembresia: "pro"
+  };
+  await service.registerPatientProfile(auth, input);
+  const stored = db.data(`usuarios/${IDS.patient}`);
+  assert.equal(stored.fechaNacimiento, "2000-02-29");
+  assert.equal(stored.rol, "paciente");
+  assert.equal(stored.tipoMembresia, "gratuita");
+  assert.equal(stored.legalConsents.communications.accepted, true);
+  await service.registerPatientProfile(auth, { ...input, fechaNacimiento: "1999-01-01", aceptaComunicaciones: false });
+  assert.deepEqual(db.data(`usuarios/${IDS.patient}`), stored);
+});
+
+test("fecha de nacimiento inválida rechaza el alta de paciente antes de reservar folio o cupo", async () => {
+  for (const fechaNacimiento of [undefined, "", "2001-02-29", "2999-01-01", "2020-13-01"]) {
+    const db = new FakeFirestore();
+    const service = createProfessionalPatientAccessService({ db, now: fixedClock });
+    await assert.rejects(service.registerPatientProfile({
+      uid: IDS.patient, token: { email: "paciente@example.test" }
+    }, {
+      nombre: "Paciente de prueba", fechaNacimiento,
+      usaCodigoVinculacion: true, aceptaAviso: true, aceptaBeta: true
+    }), assertErrorCode("invalid-argument"));
+    assert.equal(db.records.size, 0);
+  }
 });
 
 test("el registro por correo usa el UID canónico de Auth e ignora un perfil que suplanta ese email", async () => {
@@ -797,6 +837,7 @@ test("el registro por correo usa el UID canónico de Auth e ignora un perfil que
   }, {
     aceptaAviso: true,
     aceptaBeta: true,
+    fechaNacimiento: "1990-05-17",
     correoMedico: doctorEmail,
     medicoUid: impersonatorUid,
     nombre: "Paciente nuevo"
@@ -835,6 +876,7 @@ test("el registro de paciente no modifica un expediente reservado por una vincul
     }, {
       aceptaAviso: true,
       aceptaBeta: true,
+      fechaNacimiento: "1990-05-17",
       nombre: "Paciente reservado",
       correoMedico: doctorEmail
     }),
@@ -864,6 +906,7 @@ test("una cuenta de paciente marcada para eliminación no puede recrear su perfi
     }, {
       aceptaAviso: true,
       aceptaBeta: true,
+      fechaNacimiento: "1990-05-17",
       nombre: "Paciente en eliminación",
       usaCodigoVinculacion: true
     }),
@@ -1102,6 +1145,7 @@ test("un correo profesional no verificado no puede recibir pacientes ni permisos
     }, {
       aceptaAviso: true,
       aceptaBeta: true,
+      fechaNacimiento: "1990-05-17",
       correoMedico: targetEmail,
       nombre: "Paciente"
     }),

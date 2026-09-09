@@ -12,22 +12,23 @@ const { channelReady, hash } = require('./config');
 const IDENTITY = defineSecret('WHATSAPP_IDENTITY_KEY');
 const ACCESS = defineSecret('WHATSAPP_ACCESS_TOKEN');
 const KMS_KEY = defineString('GOOGLE_CALENDAR_KMS_KEY_NAME', { default:'' });
-function createBotRuntime({db,credential}) {
+function createBotRuntime({db,credential,externalAvailabilityProvider=null,googleCalendarSecrets=[]}) {
   const cipher=createKmsCipher({credential,keyName:()=>KMS_KEY.value()});
   const prepareWork=createWorkPreparer({db,cipher,identityKey:()=>IDENTITY.value()});
   let promise;
-  const worker=()=>promise||=(import('./appointments.mjs').then(({createChannelAppointments})=>createWorker({db,cipher,appointments:createChannelAppointments({db}),transport:createTransport({accessToken:()=>ACCESS.value()})})));
+  const worker=()=>promise||=(import('./appointments.mjs').then(({createChannelAppointments})=>createWorker({db,cipher,appointments:createChannelAppointments({db,externalAvailabilityProvider}),transport:createTransport({accessToken:()=>ACCESS.value()})})));
   // Runtime region differs from the database region. Firebase resolves the
   // Firestore Eventarc trigger location from the database during deployment.
   const options={region:'us-central1',secrets:[ACCESS],timeoutSeconds:120,memory:'256MiB',maxInstances:2};
+  const workerOptions={...options,secrets:[ACCESS,...googleCalendarSecrets]};
   return {
     prepareWork, ingressSecrets:[IDENTITY],
     exports:{
       configureWhatsAppBot:onCall({region:'us-central1',secrets:[IDENTITY,ACCESS],timeoutSeconds:30},async request=>{
         try{return await createSettings({db,identityKey:()=>IDENTITY.value(),transport:createTransport({accessToken:()=>ACCESS.value()})})(request);}catch(e){if(e instanceof HttpsError)throw e;throw new HttpsError('internal','Configuración no disponible.');}
       }),
-      whatsappBotWorkCreated:onDocumentCreated({...options,document:'whatsappBotJobs/{jobId}',retry:true},async event=>{await (await worker()).process(event.params.jobId);}),
-      whatsappBotDrain:onSchedule({...options,schedule:'every 1 minutes',timeZone:'UTC'},async()=>{await (await worker()).runDue();}),
+      whatsappBotWorkCreated:onDocumentCreated({...workerOptions,document:'whatsappBotJobs/{jobId}',retry:true},async event=>{await (await worker()).process(event.params.jobId);}),
+      whatsappBotDrain:onSchedule({...workerOptions,schedule:'every 1 minutes',timeZone:'UTC'},async()=>{await (await worker()).runDue();}),
       whatsappBotAppointmentChanged:onDocumentWritten({...options,document:'usuarios/{doctorUid}/agenda/{appointmentId}',retry:true},async event=>{
         const c=(await db.doc('whatsappBotConfig/channel').get()).data();if(!channelReady(c))return;
         const {doctorUid,appointmentId}=event.params;

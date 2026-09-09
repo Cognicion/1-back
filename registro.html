@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="biocelular">
 <head>
-<script src="js/theme-preload.js?v=2.115-navbar-unica-v2"></script>
+<script src="js/theme-preload.js?v=2.206-navbar-agenda-v1"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Crear cuenta | Cognicion</title>
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
   <link rel="stylesheet" href="css/theme.css">
-  <link rel="stylesheet" href="css/registro.css?v=20260908-membresias-usuarios-v1">
+  <link rel="stylesheet" href="css/registro.css?v=20260909-registro-datos-v1">
   <link rel="stylesheet" href="css/legal.css">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
 <link rel="stylesheet" href="css/theme/public-pages-light.css">
@@ -40,6 +40,9 @@
     </div>
 
     <input id="nombre" type="text" placeholder="Nombre completo">
+    <label class="campo-fecha-nacimiento" for="fechaNacimiento">Fecha de nacimiento (obligatoria)</label>
+    <input id="fechaNacimiento" type="date" autocomplete="bday" required aria-describedby="ayudaFechaNacimiento">
+    <small id="ayudaFechaNacimiento" class="nota-registro">Ingresa tu fecha de nacimiento, sin importar el tipo de cuenta.</small>
     <input id="email" type="email" placeholder="Correo electronico">
 
     <div id="camposPacienteRegistro">
@@ -85,11 +88,11 @@
       Ya tengo cuenta
     </button>
 
-    <p id="mensaje"></p>
+    <p id="mensaje" role="status" aria-live="polite"></p>
   </section>
 </main>
 
-<script type="module" src="js/registro.js?v=20260908-finalizar-registro-verificado-v1"></script>
+<script type="module" src="js/registro.js?v=20260909-registro-datos-v1"></script>
   <script type="module" src="js/services/visitasBootstrap.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>

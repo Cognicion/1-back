@@ -15,7 +15,7 @@ function loadStyles() {
     if (document.querySelector('link[data-global-app-header-styles]')) return resolve();
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "css/global-app-header.css?v=2.115-navbar-unica-v2";
+    link.href = "css/global-app-header.css?v=2.206-navbar-agenda-v1";
     link.dataset.globalAppHeaderStyles = "true";
     link.addEventListener("load", resolve, { once: true });
     link.addEventListener("error", resolve, { once: true });
@@ -55,6 +55,7 @@ function svgNavegacion(tipo) {
   const rutas = {
     explorar: '<path d="m12 3 1.7 5.3L19 10l-5.3 1.7L12 17l-1.7-5.3L5 10l5.3-1.7L12 3Z"></path>',
     panel: '<path d="M4 4h16v16H4z"></path><path d="M4 9h16M9 9v11"></path>',
+    agenda: '<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M8 3v4M16 3v4M3 10h18M8 14h3M8 17h5"></path>',
     inicio: '<path d="m3 11 9-8 9 8"></path><path d="M5 10v10h14V10M9 20v-6h6v6"></path>',
     campana: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path>',
     mensajes: '<path d="M4 5h16v11H8l-4 3V5Z"></path><path d="M8 9h8M8 12h5"></path>',
@@ -215,6 +216,7 @@ async function crearNavbarUnificada(pageId, encabezadoContextual) {
       </a>
       <nav class="navbar-global-principal" aria-label="Funciones globales">
         ${plantillaExplorarFunciones()}
+        <a class="navbar-global-agenda" href="agenda.html" aria-label="Abrir Agenda" title="Agenda">${svgNavegacion("agenda")}<span>Agenda</span></a>
         <a class="navbar-global-panel-medico" href="medico.html">${svgNavegacion("panel")}<span>Panel médico</span></a>
       </nav>
       <div class="navbar-global-acciones">

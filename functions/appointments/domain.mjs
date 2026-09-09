@@ -260,7 +260,8 @@ export function getAvailability({ candidate, events = [], policy = {}, complete 
         events,
         policy,
         complete,
-        excludeId
+        excludeId,
+        externalBusyIntervals
       });
       if (!result.available) return result;
     }

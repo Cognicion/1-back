@@ -16,7 +16,7 @@ const LEGACY_CIVIL_POLICY = Object.freeze({ availabilityMode: 'legacy-civil', al
 /** Shared server domain. Firebase auth comes exclusively from the callable.
  * Channel authorization is injected by the internal adapter, never input data.
  */
-export function createAppointmentService({ db, timestamp = () => Timestamp.now(), authorizeChannel = null, onChannelMutation = null }) {
+export function createAppointmentService({ db, timestamp = () => Timestamp.now(), authorizeChannel = null, onChannelMutation = null, externalAvailabilityProvider = null }) {
   async function context(tx, auth, doctorUid, channel = null, action = null, appointmentId = null) {
     if (!safeId(doctorUid)) fail('permission-denied');
     let channelAuthorization = null;
@@ -79,6 +79,48 @@ export function createAppointmentService({ db, timestamp = () => Timestamp.now()
       else if (typeof value !== 'string' || value.length > 4000) fail('invalid-input');
     }
   }
+  function externalWindow(candidate, policy) {
+    const temporal = { ...candidate, type: 'appointment' };
+    delete temporal.startAt;
+    delete temporal.endAt;
+    const interval = canonicalAppointmentInterval(temporal, policy);
+    if (!interval) fail('external-availability-unavailable');
+    if (!temporal.recurrence) return { startAt: interval.startAt, endAt: interval.endAt, timeZone: interval.timeZone };
+    const horizonDays = Number(policy.maximumBookingAdvanceDays || 366);
+    return { startAt: interval.startAt, endAt: interval.endAt + horizonDays * 86400000, timeZone: interval.timeZone };
+  }
+  async function loadExternalBusy({ auth, channel, doctorUid, action, appointmentId = null, candidate, rangeStart = null, rangeEnd = null, receiptRef = null, fingerprint = null }) {
+    if (!externalAvailabilityProvider) return { intervals: [], replay: null, verified: false };
+    const prepared = await db.runTransaction(async tx => {
+      const { control } = await context(tx, auth, doctorUid, channel, action, appointmentId);
+      if (receiptRef) {
+        const receipt = await tx.get(receiptRef);
+        if (receipt.exists) {
+          if (receipt.data().fingerprint !== fingerprint) fail('idempotency-key-reused');
+          return { replay: { appointmentId: receipt.data().appointmentId, result: 'applied', replayed: true } };
+        }
+      }
+      let requested = candidate;
+      if (action === 'reschedule') {
+        const current = await tx.get(db.doc(`usuarios/${doctorUid}/agenda/${appointmentId}`));
+        if (!current.exists) fail('not-found');
+        requested = { ...normalizarEvento(current.data()), ...candidate };
+      }
+      if (rangeStart && rangeEnd) requested = { type: 'appointment', startDate: rangeStart, endDate: rangeEnd, startTime: '00:00', endTime: '23:59' };
+      return { requested, policy: control.policy, replay: null };
+    });
+    if (prepared.replay) return { intervals: [], replay: prepared.replay, verified: false };
+    try {
+      if (typeof externalAvailabilityProvider.isRequired === 'function' && !await externalAvailabilityProvider.isRequired({ doctorUid })) return { intervals: [], replay: null, verified: false };
+      normalizeAvailabilitySettings(prepared.policy, { requireBookable: Boolean(channel || rangeStart) });
+      const intervals = await externalAvailabilityProvider.getBusy({ doctorUid, ...externalWindow(prepared.requested, prepared.policy) });
+      if (!Array.isArray(intervals)) fail('invalid-external-busy');
+      return { intervals, replay: null, verified: true };
+    } catch (error) {
+      if (error instanceof AppointmentError) throw error;
+      fail('external-availability-unavailable');
+    }
+  }
   async function mutate(action, { auth, channel, doctorUid, appointmentId, requestId, input = {} }) {
     if (!safeId(requestId) || !safeId(doctorUid)) fail('invalid-request');
     if (action !== 'create' && !safeId(appointmentId)) fail('invalid-appointment-id');
@@ -93,6 +135,14 @@ export function createAppointmentService({ db, timestamp = () => Timestamp.now()
     const receiptRef = db.doc(`appointmentControls/${doctorUid}/requests/${digest(`${channel ? 'whatsapp:' + channel.subject : auth?.uid}:${requestId}`)}`);
     const fingerprint = digest(`${action}:${appointmentId || ''}:${canonical(input)}`);
     const auditRef = db.collection('auditoria').doc();
+    let externalBusyIntervals = [];
+    let externalAvailabilityVerified = false;
+    if (action === 'create' || action === 'reschedule') {
+      const external = await loadExternalBusy({ auth, channel, doctorUid, action, appointmentId, candidate: input, receiptRef, fingerprint });
+      if (external.replay) return external.replay;
+      externalBusyIntervals = external.intervals;
+      externalAvailabilityVerified = external.verified;
+    }
     return db.runTransaction(async (tx) => {
       console.debug('[AGENDA_TRACE] callable→domain', { action, hasAppointment: Boolean(appointmentId) });
       const { controlRef, control, controlExists, profile } = await context(tx, auth, doctorUid, channel, action, appointmentId);
@@ -111,7 +161,7 @@ export function createAppointmentService({ db, timestamp = () => Timestamp.now()
         const duration = input.durationMinutes ?? previous?.durationMinutes;
         if (!channel.professional.services.some(s => s.durationMinutes === duration)) fail('configuration-required');
         if (control.policy.payment?.required) fail('payment-not-configured');
-        if (control.policy.externalAvailabilityRequired) fail('external-availability-unavailable');
+        if (control.policy.externalAvailabilityRequired && !externalAvailabilityVerified) fail('external-availability-unavailable');
       }
       const now = timestamp();
       let next;
@@ -145,7 +195,7 @@ export function createAppointmentService({ db, timestamp = () => Timestamp.now()
           next.timeZone = canonical.timeZone;
           next.temporalModel = 'modern-instant';
         }
-        const availability = evaluateAvailability({ candidate: next, events: await readEvents(tx, doctorUid, next, control.policy), policy: control.policy, complete: true, excludeId: action === 'reschedule' ? id : null, now: channel ? now.toMillis() : null });
+        const availability = evaluateAvailability({ candidate: next, events: await readEvents(tx, doctorUid, next, control.policy), policy: control.policy, complete: true, excludeId: action === 'reschedule' ? id : null, externalBusyIntervals, now: channel ? now.toMillis() : null });
         if (!availability.available) fail(availability.reason);
         if (channel && (next.startAt.toMillis() <= now.toMillis() || next.startAt.toMillis() > now.toMillis() + Math.min(control.policy.maximumBookingAdvanceDays || 90, 90) * 86400000)) fail('outside-booking-horizon');
       }
@@ -164,13 +214,14 @@ export function createAppointmentService({ db, timestamp = () => Timestamp.now()
   return Object.freeze({
     async getChannelSlots({ channel, doctorUid, date, durationMinutes, excludeId = null }) {
       const candidate = { type: 'appointment', startDate: date, endDate: date, startTime: '00:00', endTime: '23:59', durationMinutes };
+      const { intervals: externalBusyIntervals, verified: externalAvailabilityVerified } = await loadExternalBusy({ channel, doctorUid, action: 'availability', appointmentId: excludeId, candidate, rangeStart: date, rangeEnd: date });
       return db.runTransaction(async tx => {
         const { control } = await context(tx, null, doctorUid, channel, 'availability', excludeId);
         normalizeAvailabilitySettings(control.policy, { requireBookable: true });
         if (control.policy.payment?.required) fail('payment-not-configured');
-        if (control.policy.externalAvailabilityRequired) fail('external-availability-unavailable');
+        if (control.policy.externalAvailabilityRequired && !externalAvailabilityVerified) fail('external-availability-unavailable');
         const events = await readEvents(tx, doctorUid, candidate, control.policy);
-        const result = evaluateAvailability({ events, policy: control.policy, complete: true, rangeStart: date, rangeEnd: date, requestedDurationMinutes: durationMinutes, excludeId, now: timestamp().toMillis() });
+        const result = evaluateAvailability({ events, policy: control.policy, complete: true, rangeStart: date, rangeEnd: date, requestedDurationMinutes: durationMinutes, excludeId, externalBusyIntervals, now: timestamp().toMillis() });
         if (result.slots) result.slots = result.slots.filter(slot => {
           const interval = canonicalAppointmentInterval({ ...slot, type: 'appointment', endDate: slot.startDate }, control.policy);
           return interval.startAt > timestamp().toMillis() && interval.startAt <= timestamp().toMillis() + Math.min(control.policy.maximumBookingAdvanceDays || 90, 90) * 86400000;
@@ -213,10 +264,12 @@ export function createAppointmentService({ db, timestamp = () => Timestamp.now()
     },
     async getAvailability({ auth, doctorUid, candidate }) {
       validateInput(candidate, TIME_FIELDS);
+      const { intervals: externalBusyIntervals, verified: externalAvailabilityVerified } = await loadExternalBusy({ auth, doctorUid, action: 'availability', candidate });
       return db.runTransaction(async (tx) => {
         const { control } = await context(tx, auth, doctorUid);
+        if (control.policy.externalAvailabilityRequired && !externalAvailabilityVerified) fail('external-availability-unavailable');
         const requested = { ...candidate, type: 'appointment' };
-        return evaluateAvailability({ candidate: requested, events: await readEvents(tx, doctorUid, requested, control.policy), policy: control.policy, complete: true });
+        return evaluateAvailability({ candidate: requested, events: await readEvents(tx, doctorUid, requested, control.policy), policy: control.policy, complete: true, externalBusyIntervals });
       });
     },
     createAppointment: (request) => mutate('create', request),

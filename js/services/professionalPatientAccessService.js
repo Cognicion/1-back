@@ -43,6 +43,8 @@ export function descartarCuentaSinPerfil() {
 export function registrarPerfilPacienteSeguro(payload = {}) {
   return callProfessionalPatientFunction("registerPatientProfile", {
     nombre: payload.nombre,
+    fechaNacimiento: payload.fechaNacimiento,
+    aceptaComunicaciones: payload.aceptaComunicaciones === true,
     correoMedico: payload.correoMedico || "",
     usaCodigoVinculacion: payload.usaCodigoVinculacion === true,
     aceptaAviso: payload.aceptaAviso === true,

@@ -31,14 +31,14 @@ test("registro ofrece una modalidad profesional gratuita con límite visible de 
 test("registro delega las altas profesionales y de pacientes en callables backend", () => {
   assert.match(
     registrationSource,
-    /import\s*\{\s*registrarProfesional\s*\}\s*from\s*"\.\/services\/professionalRegistrationService\.js\?v=20260826-cuenta-profesional-gratuita-v1"/u
+    /import\s*\{\s*registrarProfesional\s*\}\s*from\s*"\.\/services\/professionalRegistrationService\.js\?v=20260909-registro-datos-v1"/u
   );
   assert.match(registrationSource, /await\s+registrarProfesional\(\{/u);
   assert.match(professionalRegistrationService, /httpsCallable\(functions,\s*"registerProfessional"\)/u);
 
   assert.match(
     registrationSource,
-    /import\s*\{\s*descartarCuentaSinPerfil,\s*registrarPerfilPacienteSeguro\s*\}\s*from\s*"\.\/services\/professionalPatientAccessService\.js\?v=20260826-cuenta-profesional-gratuita-v1"/u
+    /import\s*\{\s*descartarCuentaSinPerfil,\s*registrarPerfilPacienteSeguro\s*\}\s*from\s*"\.\/services\/professionalPatientAccessService\.js\?v=20260909-registro-datos-v1"/u
   );
   assert.match(registrationSource, /await\s+registrarPerfilPacienteSeguro\(\{/u);
   assert.match(professionalPatientAccessService, /callProfessionalPatientFunction\("registerPatientProfile"/u);
@@ -76,7 +76,7 @@ test("el alta profesional exige verificar el correo antes de crear el perfil", (
   assert.match(registrationSource, /rol:\s*rolProfesional,\s*modalidadRegistro,\s*codigoAutorizacion/u);
   assert.match(registrationSource, /btnCrearCuenta\.disabled\s*=\s*true/u);
   assert.match(registrationSource, /finally\s*\{[\s\S]*btnCrearCuenta\.disabled\s*=\s*false/u);
-  assert.match(registrationHtml, /js\/registro\.js\?v=20260908-finalizar-registro-verificado-v1/u);
+  assert.match(registrationHtml, /js\/registro\.js\?v=20260909-registro-datos-v1/u);
   assert.match(professionalRegistrationBackend, /auth\?\.token\?\.email_verified\s*!==\s*true/u);
 });
 

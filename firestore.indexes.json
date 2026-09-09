@@ -170,6 +170,20 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "googleCalendarSyncJobs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "state",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nextAttemptAt",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": [
@@ -279,6 +293,12 @@
     },
     {
       "collectionGroup": "whatsappBotAppointmentBindings",
+      "fieldPath": "expiresAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "collectionGroup": "googleCalendarSyncJobs",
       "fieldPath": "expiresAt",
       "ttl": true,
       "indexes": []

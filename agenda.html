@@ -2,12 +2,12 @@
 <html lang="es" data-theme="biocelular">
 <head>
 <meta charset="UTF-8">
-<script src="js/theme-preload.js?v=2.115-navbar-unica-v2"></script>
+<script src="js/theme-preload.js?v=2.206-navbar-agenda-v1"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Agenda | COGNICIÓN</title>
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
-<link rel="stylesheet" href="css/agenda.css?v=2.197">
+<link rel="stylesheet" href="css/agenda.css?v=2.206">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
 <body class="agenda-page bloqueado">
@@ -136,7 +136,13 @@
   </section>
   <section data-settings-content="integrations" data-google-calendar-integration hidden>
     <h3>Integraciones</h3><div class="integration-row"><div><strong>Google Calendar</strong><p data-google-calendar-status role="status">Comprobando conexión…</p></div><div class="integration-actions"><button data-google-calendar-connect type="button">Conectar Google Calendar</button><button data-google-calendar-disconnect type="button" class="oculto">Desconectar Google Calendar</button></div></div>
-    <p class="agenda-hint">La conexión OAuth no sincroniza eventos ni consulta disponibilidad externa.</p>
+    <form data-google-calendar-settings class="availability-settings">
+      <p class="agenda-hint">Calendario seleccionado: <strong data-google-calendar-selected>Principal</strong></p>
+      <label class="checkline"><input data-google-use-availability type="checkbox" disabled>Considerar ocupación de Google al ofrecer horarios</label>
+      <label class="checkline"><input data-google-mirror-appointments type="checkbox" disabled>Añadir citas de COGNICIÓN a Google Calendar</label>
+      <div class="dialog-actions"><button data-google-calendar-save type="submit" class="primary" disabled>Guardar integración</button></div>
+      <p class="agenda-hint">COGNICIÓN conserva la cita original. Google recibe únicamente horario, zona y el título administrativo “Consulta”.</p>
+    </form>
   </section>
   <section data-settings-content="whatsapp" data-whatsapp-settings hidden>
     <h3>WhatsApp administrativo</h3><p data-bot-status role="status">Consultando configuración…</p>
@@ -174,7 +180,7 @@
     </details>
   </section>
 </dialog>
-<script type="module" src="js/agenda.js?v=2.197-workspace"></script>
+<script type="module" src="js/agenda.js?v=2.206"></script>
 <script type="module" src="js/components/accesosRapidos.js"></script>
 <script type="module" src="js/reportes.js"></script>
 </body>

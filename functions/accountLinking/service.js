@@ -797,6 +797,15 @@ function createAccountLinkingService({ db, now = () => new Date(), generateCode 
         transaction.set(destinationRef, {
           ...currentDestination,
           ...withoutSecurityFields(currentOrigin),
+          // Los datos y consentimientos del alta pertenecen a la cuenta, no al
+          // expediente provisional que se incorpora (puede traer campos vacíos).
+          ...Object.fromEntries([
+            "fechaNacimiento", "aceptoAvisoPrivacidad", "fechaAceptacionAviso",
+            "versionAvisoPrivacidad", "legalConsents", "legalConsentVersion", "legalConsentUpdatedAt"
+          ].filter((field) => Object.hasOwn(currentDestination, field)
+            && currentDestination[field] !== undefined
+            && (field !== "fechaNacimiento" || currentDestination[field]))
+            .map((field) => [field, currentDestination[field]])),
           nombre: currentDestination.nombre || currentOrigin.nombre || "",
           email: currentDestination.email || currentOrigin.email || "",
           rol: "paciente",

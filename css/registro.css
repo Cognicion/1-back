@@ -156,6 +156,21 @@ body {
   line-height: 1.45;
 }
 
+.campo-fecha-nacimiento {
+  display: block;
+  margin: 16px 2px 0;
+  font-size: 14px;
+}
+
+#fechaNacimiento {
+  margin-top: 6px;
+}
+
+.auth-card button:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
 .nota-plan-gratuito {
   padding: 10px 12px;
   border: 1px solid rgba(82,152,102,.24);

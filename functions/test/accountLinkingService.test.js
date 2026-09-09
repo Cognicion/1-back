@@ -197,6 +197,34 @@ function assertErrorCode(expectedCode) {
   };
 }
 
+test("vincular expediente conserva nacimiento y consentimientos capturados por la cuenta", async () => {
+  const records = baseRecords();
+  const signupData = {
+    fechaNacimiento: "1990-05-17",
+    aceptoAvisoPrivacidad: true,
+    fechaAceptacionAviso: "2026-08-22T12:00:00.000Z",
+    versionAvisoPrivacidad: "2026-08-01",
+    legalConsents: { privacyNotice: { accepted: true }, betaConsent: { accepted: true }, communications: { accepted: false } },
+    legalConsentVersion: "2026-08-01",
+    legalConsentUpdatedAt: "2026-08-22T12:00:00.000Z"
+  };
+  Object.assign(records[`usuarios/${IDS.patientAccount}`], signupData);
+  Object.assign(records[`usuarios/${IDS.provisional}`], {
+    fechaNacimiento: "", aceptoAvisoPrivacidad: false, fechaAceptacionAviso: "",
+    versionAvisoPrivacidad: "anterior", legalConsents: {}, legalConsentVersion: "anterior", legalConsentUpdatedAt: ""
+  });
+  const db = new FakeFirestore(records);
+  const service = createAccountLinkingService({ db, now: fixedClock, generateCode: codeGenerator("COG-DATE-2222") });
+  const { codigo } = await service.execute({ uid: IDS.doctor }, {
+    accion: ACCOUNT_LINKING_ACTIONS.CREATE_DOCTOR_CODE, pacienteId: IDS.provisional
+  });
+  await service.execute({ uid: IDS.patientAccount }, {
+    accion: ACCOUNT_LINKING_ACTIONS.LINK_FROM_DOCTOR_CODE, codigo
+  });
+  const stored = db.data(`usuarios/${IDS.patientAccount}`);
+  for (const field of Object.keys(signupData)) assert.deepEqual(stored[field], signupData[field], field);
+});
+
 test("la creación médico→paciente usa el UID autenticado e impide expedientes ajenos", async () => {
   const db = new FakeFirestore(baseRecords());
   const service = createAccountLinkingService({

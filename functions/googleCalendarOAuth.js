@@ -10,6 +10,7 @@ const {
   REGION,
   REQUIRED_SCOPES
 } = require("./googleCalendar/config");
+const { kmsRequest } = require("./googleCalendar/credentials");
 const REDIRECT_URI = "https://us-central1-cognicion-57052.cloudfunctions.net/googleCalendarOAuthCallback";
 const AGENDA_REDIRECT = "https://cognicionlabs.com/agenda.html";
 const GOOGLE_AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -65,25 +66,10 @@ function buildAuthorizationUrl({ clientId, state, codeVerifier, promptConsent = 
   return `${GOOGLE_AUTH_ENDPOINT}?${params.toString()}`;
 }
 
-async function kmsRequest({ keyName, operation, value, credential }) {
-  if (!keyName) throw new Error("google-calendar-kms-not-configured");
-  const token = await credential.getAccessToken();
-  const response = await fetch(`https://cloudkms.googleapis.com/v1/${keyName}:${operation}`, {
-    method: "POST",
-    headers: { authorization: `Bearer ${token.access_token || token}`, "content-type": "application/json" },
-    body: JSON.stringify({ [operation === "encrypt" ? "plaintext" : "ciphertext"]: Buffer.from(value).toString("base64") })
-  });
-  if (!response.ok) throw new Error(`google-calendar-kms-${operation}-failed`);
-  const body = await response.json();
-  const encoded = body[operation === "encrypt" ? "ciphertext" : "plaintext"];
-  if (!encoded) throw new Error(`google-calendar-kms-${operation}-empty`);
-  return Buffer.from(encoded, "base64").toString(operation === "encrypt" ? "base64" : "utf8");
-}
-
 function createGoogleCalendarHandlers({ db, credential, fetchImpl = fetch, now = () => Date.now() }) {
   const kmsKeyName = () => GOOGLE_CALENDAR_KMS_KEY_NAME.value();
-  const encryptRefreshToken = (token) => kmsRequest({ keyName: kmsKeyName(), operation: "encrypt", value: token, credential });
-  const decryptRefreshToken = (ciphertext) => kmsRequest({ keyName: kmsKeyName(), operation: "decrypt", value: Buffer.from(ciphertext, "base64"), credential });
+  const encryptRefreshToken = (token) => kmsRequest({ keyName: kmsKeyName(), operation: "encrypt", value: token, credential, fetchImpl });
+  const decryptRefreshToken = (ciphertext) => kmsRequest({ keyName: kmsKeyName(), operation: "decrypt", value: Buffer.from(ciphertext, "base64"), credential, fetchImpl });
 
   async function audit(uid, action, result) {
     await db.collection("auditoria").add({
@@ -186,9 +172,14 @@ function createGoogleCalendarHandlers({ db, credential, fetchImpl = fetch, now =
   const status = onCall({ region: REGION }, async (request) => {
     const { uid } = await assertProfessional(db, request);
     const snapshot = await db.doc(`googleCalendarConnections/${uid}`).get();
-    if (!snapshot.exists) return { connected: false, status: "not_connected", connectedAt: null, selectedCalendar: "primary" };
+    if (!snapshot.exists) return { connected: false, status: "not_connected", connectedAt: null, selectedCalendar: "primary", integration: { enabled: false, useForAvailability: false, mirrorAppointments: false } };
     const data = snapshot.data() || {};
-    return { connected: data.connectionStatus === "connected", status: data.connectionStatus || "unknown", connectedAt: data.connectedAt || null, selectedCalendar: data.selectedCalendarId || "primary" };
+    const integration = {
+      enabled: data.integration?.enabled === true,
+      useForAvailability: data.integration?.useForAvailability === true,
+      mirrorAppointments: data.integration?.mirrorAppointments === true
+    };
+    return { connected: data.connectionStatus === "connected", status: data.connectionStatus || "unknown", connectedAt: data.connectedAt || null, selectedCalendar: data.selectedCalendarId || "primary", integration };
   });
 
   const disconnect = onCall({ region: REGION }, async (request) => {
@@ -201,7 +192,7 @@ function createGoogleCalendarHandlers({ db, credential, fetchImpl = fetch, now =
         await fetchImpl(GOOGLE_REVOKE_ENDPOINT, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ token }) });
       } catch (error) { logger.warn("[GOOGLE_CALENDAR] No se pudo revocar credencial", { reason: "revoke_failed" }); }
     }
-    await ref.set({ connectionStatus: "disconnected", encryptedRefreshToken: null, updatedAt: Timestamp.fromMillis(now()) }, { merge: true });
+    await ref.set({ connectionStatus: "disconnected", encryptedRefreshToken: null, integration: { enabled: false, useForAvailability: false, mirrorAppointments: false }, updatedAt: Timestamp.fromMillis(now()) }, { merge: true });
     await audit(uid, "google_calendar_disconnected", "success");
     return { disconnected: true };
   });

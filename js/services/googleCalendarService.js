@@ -25,3 +25,8 @@ export async function desconectarGoogleCalendar() {
   const call = await callable("disconnectGoogleCalendar");
   return (await call({})).data || {};
 }
+
+export async function actualizarConfiguracionGoogleCalendar({ useForAvailability, mirrorAppointments }) {
+  const call = await callable("updateGoogleCalendarSettings");
+  return (await call({ useForAvailability: useForAvailability === true, mirrorAppointments: mirrorAppointments === true })).data || {};
+}

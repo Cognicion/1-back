@@ -96,7 +96,7 @@
   // El encabezado se carga de forma diferida y solo monta la fase autenticada validada.
   window.addEventListener("DOMContentLoaded", () => {
     if (embeddedAdhdTask) return;
-    void import("./components/globalAppHeader.js?v=2.115-navbar-unica-v2")
+    void import("./components/globalAppHeader.js?v=2.206-navbar-agenda-v1")
       .then(({ scheduleGlobalAppHeader }) => scheduleGlobalAppHeader())
       .catch((error) => console.warn("[GLOBAL HEADER] Error de carga", error));
   }, { once: true });

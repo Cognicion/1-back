@@ -4,11 +4,11 @@ const admin = require("firebase-admin");
 const logger = require("firebase-functions/logger");
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { accountDeletionTombstonePath } = require("./accountDeletion");
+const { LEGAL_VERSION, requireBirthDate, buildRegistrationConsents } = require("./registrationProfile");
 
 if (!admin.apps.length) admin.initializeApp();
 
 const REGION = "us-central1";
-const LEGAL_VERSION = "2026-08-01";
 const PROFESSIONAL_ROLES = new Set([
   "medico",
   "psicologo",
@@ -113,6 +113,8 @@ function buildProfessionalProfile({
   email,
   mode,
   name,
+  birthDate,
+  communications,
   now,
   role
 }) {
@@ -120,6 +122,7 @@ function buildProfessionalProfile({
   const isFree = mode === PROFESSIONAL_REGISTRATION_MODES.FREE;
   const profile = {
     nombre: name,
+    fechaNacimiento: birthDate,
     email,
     rol: role,
     tieneCuenta: true,
@@ -138,6 +141,7 @@ function buildProfessionalProfile({
     limitePacientes: isFree ? FREE_PATIENT_LIMIT : null,
     pacientesEnCuenta: 0
   };
+  Object.assign(profile, buildRegistrationConsents(now, communications));
   if (!isFree) {
     profile.creadoConCodigoAutorizacion = authorizationCode;
     profile.autorizadoPorAdminUid = String(authorizationData?.creadoPorUid || "");
@@ -176,6 +180,7 @@ function createProfessionalRegistrationService({ db, now = () => new Date() }) {
       }
 
       const name = requiredText(data.nombre, "nombre", 160);
+      const birthDate = requireBirthDate(data.fechaNacimiento, now(), ProfessionalRegistrationError);
       const role = normalizeProfessionalRole(data.rol);
       const mode = normalizeRegistrationMode(data.modalidadRegistro || PROFESSIONAL_REGISTRATION_MODES.AUTHORIZATION_CODE);
       const authorizationCode = mode === PROFESSIONAL_REGISTRATION_MODES.AUTHORIZATION_CODE
@@ -209,6 +214,11 @@ function createProfessionalRegistrationService({ db, now = () => new Date() }) {
             ? existing.modalidadRegistroProfesional === PROFESSIONAL_REGISTRATION_MODES.FREE
             : existing.creadoConCodigoAutorizacion === authorizationCode;
           if (sameIdentity && sameMode) {
+            const missingData = {
+              ...(!existing.fechaNacimiento ? { fechaNacimiento: birthDate } : {}),
+              ...(!existing.legalConsents ? buildRegistrationConsents(now(), data.aceptaComunicaciones) : {})
+            };
+            if (Object.keys(missingData).length) transaction.update(profileRef, missingData);
             return { alreadyRegistered: true, role, uid };
           }
           throw new ProfessionalRegistrationError(
@@ -258,6 +268,8 @@ function createProfessionalRegistrationService({ db, now = () => new Date() }) {
           email,
           mode,
           name,
+          birthDate,
+          communications: data.aceptaComunicaciones,
           now: currentDate,
           role
         });

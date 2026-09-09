@@ -181,6 +181,15 @@ test('channel slots reject an unconfigured professional and disabled booking',as
   await db.doc(`appointmentControls/${uid}`).update({'policy.bookingEnabled':false});
   await assert.rejects(()=>appointments.service.getChannelSlots({channel,doctorUid:uid,date:'2030-01-08',durationMinutes:60}),{code:'configuration-required'});
 });
+test('bot availability uses the shared Google provider only when configured',async()=>{
+  await say('hola');
+  let calls=0;
+  const withGoogle=createChannelAppointments({db,now,externalAvailabilityProvider:{isRequired:async()=>true,getBusy:async()=>{calls+=1;return [{start:'2030-01-08T15:00:00.000Z',end:'2030-01-08T16:00:00.000Z',source:'google'}];}}});
+  const result=await withGoogle.service.getChannelSlots({channel,doctorUid:uid,date:'2030-01-08',durationMinutes:60});
+  assert.equal(calls,1);
+  assert.equal(result.slots.some(slot=>slot.startTime==='09:00'),false);
+  assert.equal(result.slots.some(slot=>slot.startTime==='10:00'),true);
+});
 test('another sender cannot list or mutate appointment; no forged auth or internal marker',async()=>{
   const id=await book();await say('hola','',{from:phone2});const stranger={...channel,subject:subject2};
   assert.deepEqual(await appointments.list(stranger,uid),[]);

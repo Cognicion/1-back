@@ -14,21 +14,29 @@ import { vincularCuentaConCodigoMedico } from "./services/vinculacion.js";
 import {
   descartarCuentaSinPerfil,
   registrarPerfilPacienteSeguro
-} from "./services/professionalPatientAccessService.js?v=20260826-cuenta-profesional-gratuita-v1";
+} from "./services/professionalPatientAccessService.js?v=20260909-registro-datos-v1";
 import {
   ETIQUETA_ROL_ENFERMERIA_SALUD_MENTAL,
   ROL_ENFERMERIA_SALUD_MENTAL
 } from "./utils/roles.js";
 import { abrirLegalModal } from "./legal/legalModal.js";
 import { betaConsent, privacyNotice } from "./legal/legalDocuments.js";
-import { guardarConsentimientosLegales } from "./legal/legalConsentService.js";
-import { registrarProfesional } from "./services/professionalRegistrationService.js?v=20260826-cuenta-profesional-gratuita-v1";
+import { registrarProfesional } from "./services/professionalRegistrationService.js?v=20260909-registro-datos-v1";
+import { fechaMaximaNacimiento, fechaNacimientoValida } from "./utils/fechaNacimientoRegistro.js";
 
 const VERSION_AVISO_PRIVACIDAD = "2026-08-01";
 const INTERVALO_VERIFICACION_CORREO_MS = 5000;
 const TIEMPO_MAXIMO_VERIFICACION_CORREO_MS = 10 * 60 * 1000;
 
 const btnCrearCuenta = document.getElementById("btnCrearCuenta");
+const campoFechaNacimiento = document.getElementById("fechaNacimiento");
+campoFechaNacimiento.max = fechaMaximaNacimiento();
+let registroEnProceso = false;
+window.addEventListener("beforeunload", (event) => {
+  if (!registroEnProceso) return;
+  event.preventDefault();
+  event.returnValue = "";
+});
 let tipoCuentaSeleccionada = "paciente";
 let modalidadProfesionalSeleccionada = "gratuita";
 const ERRORES_DEFINITIVOS_REGISTRO = new Set([
@@ -152,7 +160,7 @@ function configurarTipoCuenta() {
   });
 }
 
-async function crearCuentaProfesional({ nombre, email, password, codigoAutorizacion, aceptaAviso, aceptaBeta, aceptaComunicaciones, mensaje, rol }) {
+async function crearCuentaProfesional({ nombre, fechaNacimiento, email, password, codigoAutorizacion, aceptaAviso, aceptaBeta, aceptaComunicaciones, mensaje, rol }) {
   const rolProfesional = rol === "psicologo"
     ? "psicologo"
     : rol === ROL_ENFERMERIA_SALUD_MENTAL
@@ -205,6 +213,8 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
   try {
     registroProfesional = await registrarProfesional({
       nombre,
+      fechaNacimiento,
+      aceptaComunicaciones,
       rol: rolProfesional,
       modalidadRegistro,
       codigoAutorizacion,
@@ -214,16 +224,6 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
   } catch (registrationError) {
     await limpiarAuthDeRegistroFallido(registrationError);
     throw registrationError;
-  }
-
-  console.log("[LEGAL][SIGNUP] Cuenta creada");
-  try {
-    await guardarConsentimientosLegales(uidProfesional, { communications: aceptaComunicaciones });
-    console.log("[LEGAL][SIGNUP] Consentimientos guardados");
-  } catch (errorConsentimientos) {
-    console.error("[LEGAL][SIGNUP] Error de persistencia", { code: errorConsentimientos?.code || "unknown" });
-    mensaje.textContent = "La cuenta se creó, pero no pudimos guardar tus consentimientos. Revisa tu conexión y reintenta antes de continuar.";
-    throw errorConsentimientos;
   }
 
   try {
@@ -252,6 +252,7 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
   mensaje.textContent = usaCodigo
     ? `Cuenta Pro de ${etiquetaRol} creada correctamente.`
     : `Cuenta gratuita de ${etiquetaRol} creada correctamente. Puedes gestionar hasta 5 pacientes.`;
+  registroEnProceso = false;
   window.location.href = "dashboard.html";
 }
 
@@ -260,6 +261,7 @@ configurarModalidadProfesional();
 
 async function procesarCreacionCuenta() {
   const nombre = document.getElementById("nombre").value.trim();
+  const fechaNacimiento = campoFechaNacimiento.value;
   const email = document.getElementById("email").value.trim().toLowerCase();
   const correoMedico = document.getElementById("correoMedico").value.trim().toLowerCase();
   const codigoVinculacion = document.getElementById("codigoVinculacion").value.trim().toUpperCase();
@@ -270,6 +272,12 @@ async function procesarCreacionCuenta() {
   const aceptaComunicaciones = document.getElementById("aceptaComunicaciones").checked;
   const mensaje = document.getElementById("mensaje");
   const mensajeLegal = document.getElementById("mensajeLegal");
+  if (!fechaNacimientoValida(fechaNacimiento)) {
+    mensaje.textContent = "Ingresa una fecha de nacimiento válida; es obligatoria y no puede estar en el futuro.";
+    campoFechaNacimiento.disabled = false;
+    campoFechaNacimiento.focus();
+    return;
+  }
   console.log("[LEGAL][SIGNUP] Estado inicial", { privacyAccepted: aceptaAviso, betaAccepted: aceptaBeta, communicationsAccepted: aceptaComunicaciones });
   if (aceptaAviso) console.log("[LEGAL][SIGNUP] Aviso aceptado");
   if (aceptaBeta) console.log("[LEGAL][SIGNUP] Consentimiento Beta aceptado");
@@ -287,6 +295,7 @@ async function procesarCreacionCuenta() {
     try {
       await crearCuentaProfesional({
         nombre,
+        fechaNacimiento,
         email,
         password,
         codigoAutorizacion,
@@ -331,6 +340,8 @@ async function procesarCreacionCuenta() {
     try {
       registroPaciente = await registrarPerfilPacienteSeguro({
         nombre,
+        fechaNacimiento,
+        aceptaComunicaciones,
         correoMedico,
         usaCodigoVinculacion: Boolean(codigoVinculacion),
         aceptaAviso,
@@ -348,16 +359,6 @@ async function procesarCreacionCuenta() {
       });
     } catch (errorVisita) {
       console.warn("No se pudo asociar la visita con la cuenta creada:", errorVisita);
-    }
-
-    console.log("[LEGAL][SIGNUP] Cuenta creada");
-    try {
-      await guardarConsentimientosLegales(uidPaciente, { communications: aceptaComunicaciones });
-      console.log("[LEGAL][SIGNUP] Consentimientos guardados");
-    } catch (errorConsentimientos) {
-      console.error("[LEGAL][SIGNUP] Error de persistencia", { code: errorConsentimientos?.code || "unknown" });
-      mensaje.textContent = "La cuenta se creó, pero no pudimos guardar tus consentimientos. Revisa tu conexión y reintenta antes de continuar.";
-      throw errorConsentimientos;
     }
 
     let resultadoVinculacion = null;
@@ -396,6 +397,7 @@ async function procesarCreacionCuenta() {
     }
 
     mensaje.textContent = "Cuenta creada correctamente.";
+    registroEnProceso = false;
     window.location.href = "dashboard.html";
   } catch (error) {
     console.error(error);
@@ -416,11 +418,17 @@ btnCrearCuenta.addEventListener("click", async () => {
   if (btnCrearCuenta.disabled) return;
   const textoBotonOriginal = btnCrearCuenta.textContent;
   btnCrearCuenta.disabled = true;
+  registroEnProceso = true;
+  const controles = [...document.querySelectorAll(".auth-card input, [data-tipo-cuenta], [data-modalidad-profesional]")];
+  const estadosPrevios = controles.map((control) => control.disabled);
+  controles.forEach((control) => { control.disabled = true; });
   btnCrearCuenta.textContent = "Procesando...";
 
   try {
     await procesarCreacionCuenta();
   } finally {
+    registroEnProceso = false;
+    controles.forEach((control, index) => { control.disabled = estadosPrevios[index]; });
     btnCrearCuenta.disabled = false;
     btnCrearCuenta.textContent = textoBotonOriginal;
   }

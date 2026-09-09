@@ -69,6 +69,7 @@ async function registerFreeProfessional(client, role = "medico") {
   return client.call("registerProfessional", {
     aceptaAviso: true,
     aceptaBeta: true,
+    fechaNacimiento: "1990-05-17",
     modalidadRegistro: "gratuita",
     nombre: "Profesional para eliminación",
     rol: role
@@ -126,6 +127,7 @@ test("el borrado de paciente elimina Auth, raíces y Storage y libera el cupo pr
   await patient.call("registerPatientProfile", {
     aceptaAviso: true,
     aceptaBeta: true,
+    fechaNacimiento: "1990-05-17",
     correoMedico: professional.email,
     nombre: "Paciente para eliminación"
   });

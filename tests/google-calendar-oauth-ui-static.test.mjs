@@ -9,6 +9,10 @@ const [html, service, agenda] = await Promise.all([
 assert.match(html, /data-google-calendar-connect/);
 assert.match(service, /googleCalendarConnect/);
 assert.match(service, /getGoogleCalendarConnectionStatus/);
+assert.match(service, /updateGoogleCalendarSettings/);
 assert.doesNotMatch(service, /client_secret|refresh_token|access_token/i);
 assert.match(agenda, /history\.replaceState/);
+assert.match(html, /data-google-use-availability/);
+assert.match(html, /data-google-mirror-appointments/);
+assert.match(agenda, /actualizarConfiguracionGoogleCalendar/);
 console.log("google-calendar-oauth-ui-static.test.mjs OK");

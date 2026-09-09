@@ -21,7 +21,7 @@ async function transition({ session = {}, message, jobId, channel, recipient, pr
   const command = s.step === 'menu' && choice ? choice.value : text;
   if (command === 'salir') { s.step='closed'; delete s.pending; reply('Sesión cerrada. Escribe menú cuando quieras continuar.'); return {session:s,content}; }
   if (command === 'dejar de recibir recordatorios') { await api.consent(false); menu('Recordatorios desactivados. Puedes continuar gestionando tus citas.'); return {session:s,content}; }
-  if (['hola','menu','ayuda'].includes(command)) { menu(command === 'ayuda' ? 'Usa agendar, confirmar, reprogramar o cancelar. Sólo puedes gestionar citas vinculadas a este canal. Google Calendar externo no se consulta.' : undefined); return {session:s,content}; }
+  if (['hola','menu','ayuda'].includes(command)) { menu(command === 'ayuda' ? 'Usa agendar, confirmar, reprogramar o cancelar. Sólo puedes gestionar citas vinculadas a este canal.' : undefined); return {session:s,content}; }
   if (command === 'recordatorios') { s.step='consentOnly'; reply('¿Autorizas recordatorios administrativos por WhatsApp? Puedes retirarlo escribiendo dejar de recibir recordatorios.', [{title:'Autorizar',value:true},{title:'No autorizar',value:false}]); return {session:s,content}; }
   if (s.step === 'consentOnly' && choice) { await api.consent(choice.value); menu(choice.value ? 'Consentimiento registrado.' : 'Recordatorios desactivados.'); return {session:s,content}; }
   async function services() {
@@ -57,7 +57,7 @@ async function transition({ session = {}, message, jobId, channel, recipient, pr
     }
     found=found.slice(0,8);
     if (!found.length) { s.step='date'; reply('No hay horarios reservables en ese rango. Escribe otra fecha o próximos.'); return; }
-    s.step='slot'; reply('Horarios de COGNICIÓN. Los compromisos externos de Google no se consideran. El horario se valida nuevamente al guardar.', found.map(x => ({title:`${x.startDate} ${x.startTime}`, description: `${x.durationMinutes} min · ${x.timeZone}`, value:x})));
+    s.step='slot'; reply('Horarios disponibles. El horario se valida nuevamente al guardar.', found.map(x => ({title:`${x.startDate} ${x.startTime}`, description: `${x.durationMinutes} min · ${x.timeZone}`, value:x})));
   }
   const summary = () => { s.step='review'; reply(`${s.action==='reschedule'?'Reprogramar':'Reservar'}: ${s.service.label}. ${fullDate(s.pending.startDate,s.pending.startTime,s.pending.timeZone)}. Duración ${s.pending.durationMinutes} minutos. Sin pago previo. ¿Confirmas esta operación?`, [{title:'Confirmar operación',value:'apply'},{title:'Volver al menú',value:'menu'}]); };
   try {
@@ -97,6 +97,7 @@ async function transition({ session = {}, message, jobId, channel, recipient, pr
     const code=e.code||e.message;
     if(code==='conflict') { s.step='date'; delete s.pending; reply('Ese horario acaba de ocuparse. Tu cita original, si existe, se conserva. Escribe próximos u otra fecha.'); }
     else if(['payment-not-configured','payment-not-verified'].includes(code)) menu('Pago no configurado o pendiente de verificación. No es posible completar esta modalidad; contacta al profesional.');
+    else if(code==='external-availability-unavailable') { s.step='date'; delete s.pending; reply('No fue posible comprobar toda la disponibilidad en este momento. Intenta de nuevo en unos minutos.'); }
     else if(['permission-denied','configuration-required','outside-booking-horizon','unsupported-recurrence','terminal-appointment'].includes(code)) menu('No se puede completar esta operación con la configuración o autorización actual. Contacta al profesional.');
     else throw e; // infrastructure failure keeps durable work pending; no false success
   }
