@@ -56,6 +56,13 @@ function authDirectory(users = []) {
   const deletedUids = [];
   return {
     deletedUids,
+    async getUser(uid) {
+      const user = activeUsers.find((item) => item.uid === uid);
+      if (!user) {
+        throw Object.assign(new Error("Usuario Auth no encontrado"), { code: "auth/user-not-found" });
+      }
+      return structuredClone(user);
+    },
     async deleteUser(uid) {
       const index = activeUsers.findIndex((user) => user.uid === uid);
       if (index < 0) {
@@ -173,6 +180,112 @@ test("la membresía rechaza valores desconocidos y perfiles todavía inexistente
   );
   await assert.rejects(
     service.setUserMembership(adminAuth, { uidUsuario: "provisionalUid", tipoMembresia: "pro" }),
+    (error) => error instanceof MembershipAdministrationError && error.code === "failed-precondition"
+  );
+});
+
+test("Admin completa un perfil pendiente verificado sin permitir rol Admin ni sobrescrituras", async () => {
+  const pendingUid = "pendingVerifiedUid";
+  const { db, service } = fixture({}, [{
+    uid: pendingUid,
+    email: "PENDING@EXAMPLE.TEST",
+    emailVerified: true,
+    disabled: false,
+    metadata: { creationTime: "Mon, 08 Sep 2026 17:30:00 GMT" }
+  }]);
+
+  await assert.rejects(
+    service.completePendingAuthUserProfile({ uid: "userUid", token: {} }, {
+      uidUsuario: pendingUid,
+      nombre: "Profesional Pendiente",
+      rol: "medico",
+      tipoMembresia: "pro"
+    }),
+    (error) => error instanceof MembershipAdministrationError && error.code === "permission-denied"
+  );
+  await assert.rejects(
+    service.completePendingAuthUserProfile(adminAuth, {
+      uidUsuario: pendingUid,
+      nombre: "Profesional Pendiente",
+      rol: "admin",
+      tipoMembresia: "pro"
+    }),
+    (error) => error instanceof MembershipAdministrationError && error.code === "invalid-argument"
+  );
+
+  assert.deepEqual(
+    await service.completePendingAuthUserProfile(adminAuth, {
+      uidUsuario: pendingUid,
+      nombre: "Profesional Pendiente",
+      rol: "medico",
+      tipoMembresia: "pro"
+    }),
+    { rol: "medico", tipoMembresia: "pro", uid: pendingUid }
+  );
+  const profile = db.documents.get(`usuarios/${pendingUid}`);
+  assert.equal(profile.nombre, "Profesional Pendiente");
+  assert.equal(profile.email, "pending@example.test");
+  assert.equal(profile.rol, "medico");
+  assert.equal(profile.tipoMembresia, "pro");
+  assert.equal(profile.planCuentaProfesional, "profesional_codigo");
+  assert.equal(profile.limitePacientes, null);
+  assert.equal(profile.registroCompletadoPorAdminUid, "adminUid");
+  assert.equal(profile.requiereConfirmacionConsentimientosLegales, true);
+  assert.equal(profile.admin, undefined);
+
+  await assert.rejects(
+    service.completePendingAuthUserProfile(adminAuth, {
+      uidUsuario: pendingUid,
+      nombre: "Nombre Distinto",
+      rol: "psicologo",
+      tipoMembresia: "gratuita"
+    }),
+    (error) => error instanceof MembershipAdministrationError && error.code === "already-exists"
+  );
+});
+
+test("Admin no completa cuentas pendientes sin correo verificado o en eliminación", async () => {
+  const unverifiedUid = "pendingUnverifiedUid";
+  const deletingUid = "pendingDeletingUid";
+  const { service } = fixture({
+    [`accountDeletionTombstones/${deletingUid}`]: {
+      accountType: "registro_incompleto",
+      accountUid: deletingUid,
+      deletionState: "in_progress"
+    }
+  }, [
+    {
+      uid: unverifiedUid,
+      email: "unverified@example.test",
+      emailVerified: false,
+      disabled: false,
+      metadata: {}
+    },
+    {
+      uid: deletingUid,
+      email: "deleting@example.test",
+      emailVerified: true,
+      disabled: false,
+      metadata: {}
+    }
+  ]);
+
+  await assert.rejects(
+    service.completePendingAuthUserProfile(adminAuth, {
+      uidUsuario: unverifiedUid,
+      nombre: "Sin verificar",
+      rol: "medico",
+      tipoMembresia: "pro"
+    }),
+    (error) => error instanceof MembershipAdministrationError && error.code === "failed-precondition"
+  );
+  await assert.rejects(
+    service.completePendingAuthUserProfile(adminAuth, {
+      uidUsuario: deletingUid,
+      nombre: "En eliminación",
+      rol: "medico",
+      tipoMembresia: "pro"
+    }),
     (error) => error instanceof MembershipAdministrationError && error.code === "failed-precondition"
   );
 });

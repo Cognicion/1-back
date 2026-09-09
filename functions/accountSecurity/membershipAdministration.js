@@ -16,6 +16,12 @@ const MEMBERSHIP_TYPES = Object.freeze({
   FREE: "gratuita",
   PRO: "pro"
 });
+const PROFILE_ROLES = new Set([
+  "paciente",
+  "medico",
+  "enfermeria_salud_mental",
+  "psicologo"
+]);
 
 class MembershipAdministrationError extends Error {
   constructor(code, message) {
@@ -29,6 +35,32 @@ function normalizeMembershipType(value) {
   const normalized = String(value || "").trim().toLowerCase();
   if (normalized === MEMBERSHIP_TYPES.FREE || normalized === MEMBERSHIP_TYPES.PRO) return normalized;
   throw new MembershipAdministrationError("invalid-argument", "La membresía debe ser gratuita o Pro.");
+}
+
+function normalizeProfileRole(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (PROFILE_ROLES.has(normalized)) return normalized;
+  throw new MembershipAdministrationError(
+    "invalid-argument",
+    "Selecciona un rol de paciente o personal clínico. El rol Admin no puede asignarse al reparar un registro."
+  );
+}
+
+function requiredProfileName(value) {
+  const normalized = String(value || "").trim().replace(/\s+/gu, " ");
+  if (!normalized || normalized.length > 160) {
+    throw new MembershipAdministrationError(
+      "invalid-argument",
+      "El nombre es obligatorio y debe tener como máximo 160 caracteres."
+    );
+  }
+  return normalized;
+}
+
+function professionalSpecialty(role) {
+  if (role === "psicologo") return "Psicologia";
+  if (role === "enfermeria_salud_mental") return "Enfermeria / Salud Mental";
+  return "";
 }
 
 function requireUid(value, label = "Usuario") {
@@ -54,6 +86,7 @@ function publicAuthUser(user = {}) {
 function createMembershipAdministrationService({ authAdmin, db, now = () => new Date() }) {
   if (!authAdmin
       || typeof authAdmin.deleteUser !== "function"
+      || typeof authAdmin.getUser !== "function"
       || typeof authAdmin.listUsers !== "function") {
     throw new TypeError("Se requiere una instancia válida de Firebase Auth Admin.");
   }
@@ -141,6 +174,116 @@ function createMembershipAdministrationService({ authAdmin, db, now = () => new 
     });
   }
 
+  async function completePendingAuthUserProfile(auth, data = {}) {
+    const actorUid = await requireAdministrator(auth);
+    const targetUid = requireUid(data.uidUsuario);
+    if (targetUid === actorUid) {
+      throw new MembershipAdministrationError(
+        "invalid-argument",
+        "La cuenta administrativa actual no puede repararse desde este flujo."
+      );
+    }
+
+    const name = requiredProfileName(data.nombre);
+    const role = normalizeProfileRole(data.rol);
+    const membershipType = normalizeMembershipType(data.tipoMembresia);
+    let authUser;
+    try {
+      authUser = await authAdmin.getUser(targetUid);
+    } catch (error) {
+      if (error?.code === "auth/user-not-found") {
+        throw new MembershipAdministrationError(
+          "not-found",
+          "La cuenta ya no existe en Firebase Authentication. Actualiza la lista de usuarios."
+        );
+      }
+      throw error;
+    }
+
+    const email = String(authUser.email || "").trim().toLowerCase();
+    if (!email) {
+      throw new MembershipAdministrationError(
+        "failed-precondition",
+        "La cuenta de Authentication no tiene un correo válido."
+      );
+    }
+    if (authUser.emailVerified !== true) {
+      throw new MembershipAdministrationError(
+        "failed-precondition",
+        "El usuario debe verificar su correo antes de que administración complete el perfil."
+      );
+    }
+    if (authUser.disabled === true) {
+      throw new MembershipAdministrationError(
+        "failed-precondition",
+        "La cuenta de Authentication está deshabilitada."
+      );
+    }
+
+    const profileRef = db.doc(`usuarios/${targetUid}`);
+    const tombstoneRef = db.doc(accountDeletionTombstonePath(targetUid));
+    const currentDate = now();
+    const timestamp = currentDate.toISOString();
+    const isProfessionalRole = role !== "paciente";
+    const profile = {
+      nombre: name,
+      email,
+      rol: role,
+      tieneCuenta: true,
+      estado: "activo",
+      unidad: "",
+      institucion: "",
+      fechaCreacion: String(authUser.metadata?.creationTime || timestamp),
+      tipoMembresia: membershipType,
+      registroCompletadoPorAdmin: true,
+      registroCompletadoPorAdminUid: actorUid,
+      registroCompletadoEn: timestamp,
+      requiereConfirmacionConsentimientosLegales: true
+    };
+    if (isProfessionalRole) {
+      Object.assign(profile, {
+        especialidad: professionalSpecialty(role),
+        cedula: "",
+        modalidadRegistroProfesional: membershipType === MEMBERSHIP_TYPES.PRO
+          ? "asignacion_admin"
+          : "gratuita",
+        planCuentaProfesional: membershipType === MEMBERSHIP_TYPES.PRO
+          ? AUTHORIZED_PROFESSIONAL_PLAN
+          : FREE_PROFESSIONAL_PLAN,
+        limitePacientes: membershipType === MEMBERSHIP_TYPES.PRO
+          ? null
+          : FREE_PATIENT_LIMIT,
+        pacientesEnCuenta: 0
+      });
+    }
+
+    await db.runTransaction(async (transaction) => {
+      const [profileSnapshot, tombstoneSnapshot] = await Promise.all([
+        transaction.get(profileRef),
+        transaction.get(tombstoneRef)
+      ]);
+      if (profileSnapshot.exists) {
+        throw new MembershipAdministrationError(
+          "already-exists",
+          "La cuenta ya tiene un perfil. Actualiza la lista antes de modificarla."
+        );
+      }
+      if (tombstoneSnapshot.exists) {
+        throw new MembershipAdministrationError(
+          "failed-precondition",
+          "La cuenta participa en un proceso de eliminación y no puede repararse."
+        );
+      }
+      transaction.set(profileRef, profile);
+    });
+
+    return {
+      rol: role,
+      tipoMembresia: membershipType,
+      uid: targetUid
+    };
+  }
+
   async function deletePendingAuthUser(auth, data = {}) {
     const actorUid = await requireAdministrator(auth);
     const targetUid = requireUid(data.uidUsuario);
@@ -217,7 +360,12 @@ function createMembershipAdministrationService({ authAdmin, db, now = () => new 
     };
   }
 
-  return Object.freeze({ deletePendingAuthUser, listAuthUsers, setUserMembership });
+  return Object.freeze({
+    completePendingAuthUserProfile,
+    deletePendingAuthUser,
+    listAuthUsers,
+    setUserMembership
+  });
 }
 
 let serviceInstance = null;
@@ -256,6 +404,10 @@ const setUserMembership = callable(
   "setUserMembership",
   (service, request) => service.setUserMembership(request.auth, request.data || {})
 );
+const completePendingAuthUserProfile = callable(
+  "completePendingAuthUserProfile",
+  (service, request) => service.completePendingAuthUserProfile(request.auth, request.data || {})
+);
 const deletePendingAuthUser = callable(
   "deletePendingAuthUser",
   (service, request) => service.deletePendingAuthUser(request.auth, request.data || {})
@@ -265,11 +417,14 @@ module.exports = {
   AUTH_DIRECTORY_LIMIT,
   INCOMPLETE_REGISTRATION_ACCOUNT_TYPE,
   MEMBERSHIP_TYPES,
+  PROFILE_ROLES,
   MembershipAdministrationError,
+  completePendingAuthUserProfile,
   createMembershipAdministrationService,
   deletePendingAuthUser,
   listAdminAuthUsers,
   normalizeMembershipType,
+  normalizeProfileRole,
   publicAuthUser,
   setUserMembership
 };

@@ -36,6 +36,7 @@ test("el manifiesto separa la restauración del panel del release profesional co
   const full = requiredFunctionIds("full");
   assert.equal(new Set(full).size, full.length);
   assert.ok(full.includes("registerProfessional"));
+  assert.ok(full.includes("completePendingAuthUserProfile"));
   assert.ok(full.includes("listProfessionalDirectory"));
   assert.ok(full.includes("chatSofiaUnified"));
 });

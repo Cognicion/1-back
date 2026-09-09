@@ -28,6 +28,19 @@ test("Admin puede eliminar un perfil pendiente de Authentication sin saltarse la
   assert.match(membershipBackend, /await authAdmin\.deleteUser\(targetUid\)/u);
 });
 
+test("Admin puede completar un perfil pendiente con rol no administrativo y membresía", () => {
+  assert.match(html, /css\/admin\.css\?v=20260908-completar-registro-pendiente-v1/u);
+  assert.match(html, /js\/admin\.js\?v=20260908-completar-registro-pendiente-v1/u);
+  assert.match(adminSource, /"completePendingAuthUserProfile"/u);
+  assert.match(adminSource, /Completar perfil/u);
+  assert.match(adminSource, /nombre-pendiente-/u);
+  assert.match(functionsIndex, /exports\.completePendingAuthUserProfile\s*=/u);
+  assert.match(membershipBackend, /if \(authUser\.emailVerified !== true\)/u);
+  assert.match(membershipBackend, /if \(profileSnapshot\.exists\)/u);
+  assert.match(membershipBackend, /requiereConfirmacionConsentimientosLegales:\s*true/u);
+  assert.match(membershipBackend, /El rol Admin no puede asignarse/u);
+});
+
 test("el Centro de Control administra únicamente membresías gratuita y Pro", () => {
   assert.match(html, /id="filtroUsuariosMembresia"/u);
   assert.match(html, /value="gratuita">Gratuita/u);

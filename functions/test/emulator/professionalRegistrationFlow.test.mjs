@@ -213,6 +213,7 @@ test("Admin detecta y elimina cuentas Auth pendientes, y cambia gratuita a Pro s
   const administrator = await emailClient("membership-admin");
   const owner = await emailClient("membership-owner");
   const pending = await emailClient("membership-pending");
+  const pendingToRepair = await emailClient("membership-repair");
   await environment.withSecurityRulesDisabled(async (context) => {
     await setDoc(doc(context.firestore(), "usuarios", administrator.uid), {
       email: administrator.email,
@@ -228,7 +229,27 @@ test("Admin detecta y elimina cuentas Auth pendientes, y cambia gratuita a Pro s
   const directory = await administrator.call("listAdminAuthUsers");
   assert.ok(directory.users.some((user) => user.uid === owner.uid));
   assert.ok(directory.users.some((user) => user.uid === pending.uid));
+  assert.ok(directory.users.some((user) => user.uid === pendingToRepair.uid));
   assert.equal(await readAsBackend(`usuarios/${pending.uid}`), null, "La cuenta Auth pendiente aún no debe fingir un perfil.");
+
+  const repaired = await administrator.call("completePendingAuthUserProfile", {
+    uidUsuario: pendingToRepair.uid,
+    nombre: "Profesional Reparado",
+    rol: "medico",
+    tipoMembresia: "pro"
+  });
+  assert.deepEqual(repaired, {
+    rol: "medico",
+    tipoMembresia: "pro",
+    uid: pendingToRepair.uid
+  });
+  const repairedProfile = await readAsBackend(`usuarios/${pendingToRepair.uid}`);
+  assert.equal(repairedProfile.email, pendingToRepair.email);
+  assert.equal(repairedProfile.rol, "medico");
+  assert.equal(repairedProfile.tipoMembresia, "pro");
+  assert.equal(repairedProfile.registroCompletadoPorAdminUid, administrator.uid);
+  assert.equal(repairedProfile.requiereConfirmacionConsentimientosLegales, true);
+  assert.notEqual(repairedProfile.rol, "admin");
 
   const changed = await administrator.call("setUserMembership", {
     uidUsuario: owner.uid,
