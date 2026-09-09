@@ -408,6 +408,10 @@ async function inicializarDashboard() {
   medirEtapaDashboard("sincronizarApariencia", inicioApariencia);
   const rolOriginalUsuario = obtenerRolUsuarioDashboard(datos || {});
   const rolUsuario = normalizarRolUsuario(rolOriginalUsuario);
+  if (datos?.perfilDatosPendientes === true && usuarioEsPersonalClinico(rolUsuario)) {
+    window.location.href = "perfil-profesional.html?completar=1";
+    return;
+  }
   usuarioDashboardActual = { uid: user.uid, email: user.email || "", nombre: datos?.nombre || user.email || "", rol: rolOriginalUsuario || rolUsuario };
   rolDashboardActual = rolUsuario;
 

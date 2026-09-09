@@ -184,7 +184,7 @@ test("la membresía rechaza valores desconocidos y perfiles todavía inexistente
   );
 });
 
-test("Admin completa un perfil pendiente verificado sin permitir rol Admin ni sobrescrituras", async () => {
+test("Admin asigna rol y membresía a una cuenta pendiente sin llenar datos del usuario", async () => {
   const pendingUid = "pendingVerifiedUid";
   const { db, service } = fixture({}, [{
     uid: pendingUid,
@@ -197,7 +197,6 @@ test("Admin completa un perfil pendiente verificado sin permitir rol Admin ni so
   await assert.rejects(
     service.completePendingAuthUserProfile({ uid: "userUid", token: {} }, {
       uidUsuario: pendingUid,
-      nombre: "Profesional Pendiente",
       rol: "medico",
       tipoMembresia: "pro"
     }),
@@ -206,7 +205,6 @@ test("Admin completa un perfil pendiente verificado sin permitir rol Admin ni so
   await assert.rejects(
     service.completePendingAuthUserProfile(adminAuth, {
       uidUsuario: pendingUid,
-      nombre: "Profesional Pendiente",
       rol: "admin",
       tipoMembresia: "pro"
     }),
@@ -216,27 +214,27 @@ test("Admin completa un perfil pendiente verificado sin permitir rol Admin ni so
   assert.deepEqual(
     await service.completePendingAuthUserProfile(adminAuth, {
       uidUsuario: pendingUid,
-      nombre: "Profesional Pendiente",
       rol: "medico",
       tipoMembresia: "pro"
     }),
     { rol: "medico", tipoMembresia: "pro", uid: pendingUid }
   );
   const profile = db.documents.get(`usuarios/${pendingUid}`);
-  assert.equal(profile.nombre, "Profesional Pendiente");
+  assert.equal(profile.nombre, "");
   assert.equal(profile.email, "pending@example.test");
   assert.equal(profile.rol, "medico");
   assert.equal(profile.tipoMembresia, "pro");
   assert.equal(profile.planCuentaProfesional, "profesional_codigo");
   assert.equal(profile.limitePacientes, null);
-  assert.equal(profile.registroCompletadoPorAdminUid, "adminUid");
+  assert.equal(profile.rolAsignadoPorAdminUid, "adminUid");
+  assert.equal(profile.perfilDatosPendientes, true);
+  assert.equal(profile.perfilCompletadoPorUsuario, false);
   assert.equal(profile.requiereConfirmacionConsentimientosLegales, true);
   assert.equal(profile.admin, undefined);
 
   await assert.rejects(
     service.completePendingAuthUserProfile(adminAuth, {
       uidUsuario: pendingUid,
-      nombre: "Nombre Distinto",
       rol: "psicologo",
       tipoMembresia: "gratuita"
     }),
@@ -273,7 +271,6 @@ test("Admin no completa cuentas pendientes sin correo verificado o en eliminaci�
   await assert.rejects(
     service.completePendingAuthUserProfile(adminAuth, {
       uidUsuario: unverifiedUid,
-      nombre: "Sin verificar",
       rol: "medico",
       tipoMembresia: "pro"
     }),
@@ -282,7 +279,6 @@ test("Admin no completa cuentas pendientes sin correo verificado o en eliminaci�
   await assert.rejects(
     service.completePendingAuthUserProfile(adminAuth, {
       uidUsuario: deletingUid,
-      nombre: "En eliminación",
       rol: "medico",
       tipoMembresia: "pro"
     }),

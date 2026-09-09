@@ -55,6 +55,8 @@ onAuthStateChanged(auth, async (user) => {
 
   medicoUid = user.uid;
   rolPerfilActual = normalizarRolPerfil(usuario.rol);
+  const avisoDatosPendientes = document.getElementById("avisoPerfilDatosPendientes");
+  if (avisoDatosPendientes) avisoDatosPendientes.hidden = usuario.perfilDatosPendientes !== true;
   llenarFormulario(usuario);
   renderPreview();
   archivoFotoPerfil.disabled = false;
@@ -117,7 +119,9 @@ document.getElementById("formPerfil").addEventListener("submit", async (e) => {
     contactoTelefono: campos.telefono.value.trim(),
     contactoCorreo: campos.correo.value.trim(),
     descripcionProfesional: campos.descripcion.value.trim(),
-    perfilProfesionalActualizado: new Date().toISOString()
+    perfilProfesionalActualizado: new Date().toISOString(),
+    perfilDatosPendientes: false,
+    perfilCompletadoPorUsuario: true
   });
 
   const medico = await obtenerUsuario(medicoUid);

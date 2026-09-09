@@ -2080,10 +2080,11 @@ function renderizarUsuariosAdmin() {
     const esAdminUsuario = datosUsuarioSonAdmin(usuario);
     const membresiaActual = obtenerTipoMembresia(usuario);
     const perfilPendiente = usuario.perfilPendiente === true;
+    const datosPerfilPendientes = usuario.perfilDatosPendientes === true;
     const membresiaEditable = !esAdminUsuario && usuario.tieneCuenta !== false;
 
     return `
-      <article class="usuario-admin-card${perfilPendiente ? " perfil-pendiente" : ""}">
+      <article class="usuario-admin-card${perfilPendiente || datosPerfilPendientes ? " perfil-pendiente" : ""}">
         <div>
           <h3>${escaparHTML(usuario.nombre || usuario.email || "Usuario sin nombre")}</h3>
           <p>${escaparHTML(usuario.email || "Sin correo")}</p>
@@ -2091,6 +2092,7 @@ function renderizarUsuariosAdmin() {
           <div class="usuario-admin-meta">
              <span class="rol-${escaparHTML(rolActual)}">${escaparHTML(etiquetaRolUsuario(rolActual))}</span>
             ${perfilPendiente ? "<span class=\"estado-perfil-pendiente\">Perfil pendiente</span>" : ""}
+            ${datosPerfilPendientes ? "<span class=\"estado-perfil-pendiente\">Datos pendientes del usuario</span>" : ""}
             ${esAdminUsuario ? "<span>Membresía: no aplica (Admin)</span>" : `<span>Membresía: ${escaparHTML(etiquetaMembresia(membresiaActual))}</span>`}
             <span>Registro: ${escaparHTML(fechaUsuarioAdmin(usuario))}</span>
             <span>Unidad: ${escaparHTML(usuario.unidad || usuario.institucion || "Sin unidad")}</span>
@@ -2098,10 +2100,6 @@ function renderizarUsuariosAdmin() {
         </div>
 
         <div class="usuario-admin-rol">
-          ${perfilPendiente ? `
-            <label for="nombre-pendiente-${escaparHTML(usuario.id)}">Nombre completo</label>
-            <input id="nombre-pendiente-${escaparHTML(usuario.id)}" type="text" maxlength="160" value="${escaparHTML(usuario.nombre || "")}" placeholder="Nombre completo del usuario">
-          ` : ""}
           <label for="rol-${escaparHTML(usuario.id)}">Rol</label>
           <select id="rol-${escaparHTML(usuario.id)}" ${esAdminActual ? "disabled" : ""}>
             ${perfilPendiente ? '<option value="" selected>Selecciona un rol</option>' : ""}
@@ -2111,7 +2109,7 @@ function renderizarUsuariosAdmin() {
             ${opcionRol("psicologo", rolActual)}
             ${perfilPendiente ? "" : opcionRol("admin", rolActual)}
           </select>
-          ${esAdminActual ? "<small>Administrador principal protegido.</small>" : perfilPendiente ? "<small>Selecciona el rol que se guardará al completar el perfil.</small>" : ""}
+          ${esAdminActual ? "<small>Administrador principal protegido.</small>" : perfilPendiente ? "<small>Administración solo asigna el rol; el usuario llenará sus datos.</small>" : ""}
         </div>
 
         <div class="usuario-admin-rol usuario-admin-membresia">
@@ -2123,21 +2121,23 @@ function renderizarUsuariosAdmin() {
           ${esAdminUsuario
             ? "<small>El acceso administrativo depende exclusivamente del rol.</small>"
             : perfilPendiente
-              ? "<small>La membresía se guardará al completar el perfil.</small>"
+              ? "<small>La membresía se guardará junto con el rol.</small>"
               : usuario.tieneCuenta === false
                 ? "<small>Expediente sin cuenta de acceso.</small>"
                 : `<button type="button" onclick="cambiarMembresiaUsuarioAdmin('${usuario.id}')">Guardar membresía</button>`}
         </div>
 
-        ${renderizarControlColaboradorAdmin(usuario)}
+        ${perfilPendiente ? "" : renderizarControlColaboradorAdmin(usuario)}
 
         <div class="paciente-admin-acciones">
-          ${adminDatosActual?.rol === "admin" ? `<button type="button" data-admin-cloud-owner="${escaparHTML(usuario.id)}" aria-label="Abrir Mi nube de ${escaparHTML(usuario.nombre || usuario.email || "usuario")} en modo administrativo">Mi nube · solo lectura</button>` : ""}
+          ${adminDatosActual?.rol === "admin" && !perfilPendiente ? `<button type="button" data-admin-cloud-owner="${escaparHTML(usuario.id)}" aria-label="Abrir Mi nube de ${escaparHTML(usuario.nombre || usuario.email || "usuario")} en modo administrativo">Mi nube · solo lectura</button>` : ""}
           ${esCuentaActual
             ? `<button type="button" disabled aria-label="Esta es la cuenta administrativa actual">Cuenta actual</button>`
-            : `<button type="button" aria-label="Ver la página como ${escaparHTML(usuario.nombre || usuario.email || "usuario")} en modo solo lectura" onclick="abrirVistaPreviaUsuarioAdmin('${usuario.id}')">Ver como usuario · solo lectura</button>`}
+            : perfilPendiente
+              ? ""
+              : `<button type="button" aria-label="Ver la página como ${escaparHTML(usuario.nombre || usuario.email || "usuario")} en modo solo lectura" onclick="abrirVistaPreviaUsuarioAdmin('${usuario.id}')">Ver como usuario · solo lectura</button>`}
           ${perfilPendiente
-            ? `<button id="completar-pendiente-${escaparHTML(usuario.id)}" type="button" onclick="completarPerfilPendienteAdmin('${usuario.id}')">Completar perfil</button>`
+            ? `<button id="completar-pendiente-${escaparHTML(usuario.id)}" type="button" onclick="completarPerfilPendienteAdmin('${usuario.id}')">Guardar rol y membresía</button>`
             : `<button type="button" ${esAdminActual ? "disabled" : ""} onclick="cambiarRolUsuarioAdmin('${usuario.id}')">Cambiar rol</button>`}
           <button type="button" class="boton-peligro" ${esAdminActual ? "disabled" : ""} onclick="eliminarUsuarioAdmin('${usuario.id}')">
             ${perfilPendiente ? "Eliminar registro pendiente" : "Eliminar usuario"}
@@ -2826,19 +2826,12 @@ window.completarPerfilPendienteAdmin = async function(uidUsuario) {
   const usuario = usuariosAdmin.find((item) => item.id === uidUsuario);
   if (!usuario || usuario.perfilPendiente !== true || uidUsuario === ADMIN_UID) return;
 
-  const campoNombre = document.getElementById(`nombre-pendiente-${uidUsuario}`);
   const selectorRol = document.getElementById(`rol-${uidUsuario}`);
   const selectorMembresia = document.getElementById(`membresia-${uidUsuario}`);
   const boton = document.getElementById(`completar-pendiente-${uidUsuario}`);
-  const nombre = campoNombre?.value.trim() || "";
   const rol = selectorRol?.value || "";
   const tipoMembresia = selectorMembresia?.value || "";
 
-  if (!nombre) {
-    alert("Escribe el nombre completo del usuario.");
-    campoNombre?.focus();
-    return;
-  }
   if (!["paciente", "medico", ROL_ENFERMERIA_SALUD_MENTAL, "psicologo"].includes(rol)) {
     alert("Selecciona un rol válido. El rol Admin no puede asignarse desde esta reparación.");
     selectorRol?.focus();
@@ -2853,40 +2846,38 @@ window.completarPerfilPendienteAdmin = async function(uidUsuario) {
   const alcance = tipoMembresia === MEMBERSHIP_TYPES.PRO
     ? "tendrá acceso Pro a las funciones no administrativas compatibles con su rol"
     : "quedará con los límites de la membresía gratuita";
-  if (!confirm(`¿Completar el perfil de ${cuenta} como ${etiquetaRolUsuario(rol)}? La cuenta ${alcance}.`)) return;
+  if (!confirm(`¿Asignar a ${cuenta} el rol ${etiquetaRolUsuario(rol)}? La cuenta ${alcance}. El usuario llenará sus datos personales y profesionales.`)) return;
 
   try {
     if (boton) {
       boton.disabled = true;
-      boton.textContent = "Completando...";
+      boton.textContent = "Guardando...";
     }
-    if (campoNombre) campoNombre.disabled = true;
     if (selectorRol) selectorRol.disabled = true;
     if (selectorMembresia) selectorMembresia.disabled = true;
 
     const completar = httpsCallable(await obtenerFunctions(), "completePendingAuthUserProfile");
-    await completar({ uidUsuario, nombre, rol, tipoMembresia });
-    await registrarAuditoriaAdmin("completar_perfil_pendiente_admin", "El administrador completó un perfil pendiente de Authentication.", {
+    await completar({ uidUsuario, rol, tipoMembresia });
+    await registrarAuditoriaAdmin("asignar_rol_perfil_pendiente_admin", "El administrador asignó rol y membresía a una cuenta pendiente de Authentication.", {
       pacienteUid: rol === "paciente" ? uidUsuario : "",
-      pacienteNombre: rol === "paciente" ? nombre : "",
+      pacienteNombre: "",
       detalles: { uidUsuario, rol, tipoMembresia }
     });
     await cargarResumen();
     await cargarUsuariosAdmin();
     await cargarPacientesAdmin();
-    alert(`Perfil completado como ${etiquetaRolUsuario(rol)} con membresía ${etiquetaMembresia(tipoMembresia)}.`);
+    alert(`Rol ${etiquetaRolUsuario(rol)} y membresía ${etiquetaMembresia(tipoMembresia)} guardados. El usuario deberá completar sus propios datos.`);
   } catch (error) {
-    await registrarAuditoriaAdmin("error_completar_perfil_pendiente_admin", "Error al completar un perfil pendiente desde administración.", {
+    await registrarAuditoriaAdmin("error_asignar_rol_perfil_pendiente_admin", "Error al asignar rol a un perfil pendiente desde administración.", {
       exito: false,
       detalles: { uidUsuario, rol, tipoMembresia, error: resumenError(error) }
     });
-    alert("No se pudo completar el perfil: " + error.message);
+    alert("No se pudo guardar el rol: " + error.message);
   } finally {
     if (boton) {
       boton.disabled = false;
-      boton.textContent = "Completar perfil";
+      boton.textContent = "Guardar rol y membresía";
     }
-    if (campoNombre) campoNombre.disabled = false;
     if (selectorRol) selectorRol.disabled = false;
     if (selectorMembresia) selectorMembresia.disabled = false;
   }

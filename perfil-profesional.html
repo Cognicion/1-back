@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Perfil profesional | Cognicion</title>
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
-<link rel="stylesheet" href="css/perfil-profesional.css?v=20260902-office-address-prescription-v1">
+<link rel="stylesheet" href="css/perfil-profesional.css?v=20260908-perfil-datos-usuario-v1">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
 <script type="module" src="js/services/themeBootstrap.js"></script>
 </head>
@@ -28,6 +28,9 @@
 <main class="layout">
   <section class="card">
     <h2>Datos profesionales</h2>
+    <p id="avisoPerfilDatosPendientes" class="aviso-perfil-pendiente" hidden>
+      Administración ya asignó tu rol y membresía. Completa tus datos y pulsa Guardar perfil para finalizar.
+    </p>
     <form id="formPerfil" class="formulario">
       <label>Nombre profesional
         <input id="nombrePerfil" required>
@@ -94,7 +97,7 @@
   </section>
 </main>
 
-<script type="module" src="js/perfil-profesional.js?v=20260902-office-address-prescription-v1"></script>
+<script type="module" src="js/perfil-profesional.js?v=20260908-perfil-datos-usuario-v1"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
   <script type="module" src="js/reportes.js"></script>
 </body>

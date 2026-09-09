@@ -189,5 +189,6 @@
 // deployment marker: 2026-09-08-eliminar-registro-pendiente-v1 (+0.001)
 // deployment marker: 2026-09-08-finalizar-registro-verificado-v1 (+0.001)
 // deployment marker: 2026-09-08-completar-registro-pendiente-v1 (+0.001)
-export const APP_VERSION = "2.202";
+// deployment marker: 2026-09-08-asignar-rol-pendiente-v1 (+0.001)
+export const APP_VERSION = "2.203";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

@@ -234,7 +234,6 @@ test("Admin detecta y elimina cuentas Auth pendientes, y cambia gratuita a Pro s
 
   const repaired = await administrator.call("completePendingAuthUserProfile", {
     uidUsuario: pendingToRepair.uid,
-    nombre: "Profesional Reparado",
     rol: "medico",
     tipoMembresia: "pro"
   });
@@ -247,7 +246,9 @@ test("Admin detecta y elimina cuentas Auth pendientes, y cambia gratuita a Pro s
   assert.equal(repairedProfile.email, pendingToRepair.email);
   assert.equal(repairedProfile.rol, "medico");
   assert.equal(repairedProfile.tipoMembresia, "pro");
-  assert.equal(repairedProfile.registroCompletadoPorAdminUid, administrator.uid);
+  assert.equal(repairedProfile.rolAsignadoPorAdminUid, administrator.uid);
+  assert.equal(repairedProfile.perfilDatosPendientes, true);
+  assert.equal(repairedProfile.perfilCompletadoPorUsuario, false);
   assert.equal(repairedProfile.requiereConfirmacionConsentimientosLegales, true);
   assert.notEqual(repairedProfile.rol, "admin");
 

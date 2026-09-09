@@ -1,23 +1,21 @@
 const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
-const { defineSecret, defineString } = require("firebase-functions/params");
 const logger = require("firebase-functions/logger");
 const { randomBytes, createHash } = require("node:crypto");
 const { Timestamp } = require("firebase-admin/firestore");
 const { isAdmin, isProfessional } = require("./clinicalAnalytics/access");
-
-const GOOGLE_CALENDAR_CLIENT_ID = defineSecret("GOOGLE_CALENDAR_CLIENT_ID");
-const GOOGLE_CALENDAR_CLIENT_SECRET = defineSecret("GOOGLE_CALENDAR_CLIENT_SECRET");
-// This is a non-secret resource name. The KMS key must be created and granted
-// to the Functions runtime service account before the callback is deployed.
-const GOOGLE_CALENDAR_KMS_KEY_NAME = defineString("GOOGLE_CALENDAR_KMS_KEY_NAME", { default: "" });
-
-const REGION = "us-central1";
+const {
+  GOOGLE_CALENDAR_CLIENT_ID,
+  GOOGLE_CALENDAR_CLIENT_SECRET,
+  GOOGLE_CALENDAR_KMS_KEY_NAME,
+  REGION,
+  REQUIRED_SCOPES
+} = require("./googleCalendar/config");
 const REDIRECT_URI = "https://us-central1-cognicion-57052.cloudfunctions.net/googleCalendarOAuthCallback";
 const AGENDA_REDIRECT = "https://cognicionlabs.com/agenda.html";
 const GOOGLE_AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 const GOOGLE_REVOKE_ENDPOINT = "https://oauth2.googleapis.com/revoke";
-const SCOPES = ["https://www.googleapis.com/auth/calendar.freebusy", "https://www.googleapis.com/auth/calendar.events"];
+const SCOPES = REQUIRED_SCOPES;
 const STATE_TTL_MS = 10 * 60 * 1000;
 
 function base64Url(value) {

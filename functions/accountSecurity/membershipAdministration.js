@@ -46,23 +46,6 @@ function normalizeProfileRole(value) {
   );
 }
 
-function requiredProfileName(value) {
-  const normalized = String(value || "").trim().replace(/\s+/gu, " ");
-  if (!normalized || normalized.length > 160) {
-    throw new MembershipAdministrationError(
-      "invalid-argument",
-      "El nombre es obligatorio y debe tener como máximo 160 caracteres."
-    );
-  }
-  return normalized;
-}
-
-function professionalSpecialty(role) {
-  if (role === "psicologo") return "Psicologia";
-  if (role === "enfermeria_salud_mental") return "Enfermeria / Salud Mental";
-  return "";
-}
-
 function requireUid(value, label = "Usuario") {
   const uid = String(value || "").trim();
   if (!uid || uid.length > 160 || uid.includes("/")) {
@@ -184,7 +167,6 @@ function createMembershipAdministrationService({ authAdmin, db, now = () => new 
       );
     }
 
-    const name = requiredProfileName(data.nombre);
     const role = normalizeProfileRole(data.rol);
     const membershipType = normalizeMembershipType(data.tipoMembresia);
     let authUser;
@@ -226,24 +208,22 @@ function createMembershipAdministrationService({ authAdmin, db, now = () => new 
     const timestamp = currentDate.toISOString();
     const isProfessionalRole = role !== "paciente";
     const profile = {
-      nombre: name,
+      nombre: String(authUser.displayName || "").trim().slice(0, 160),
       email,
       rol: role,
       tieneCuenta: true,
       estado: "activo",
-      unidad: "",
-      institucion: "",
       fechaCreacion: String(authUser.metadata?.creationTime || timestamp),
       tipoMembresia: membershipType,
-      registroCompletadoPorAdmin: true,
-      registroCompletadoPorAdminUid: actorUid,
-      registroCompletadoEn: timestamp,
+      rolAsignadoPorAdmin: true,
+      rolAsignadoPorAdminUid: actorUid,
+      rolAsignadoEn: timestamp,
+      perfilDatosPendientes: true,
+      perfilCompletadoPorUsuario: false,
       requiereConfirmacionConsentimientosLegales: true
     };
     if (isProfessionalRole) {
       Object.assign(profile, {
-        especialidad: professionalSpecialty(role),
-        cedula: "",
         modalidadRegistroProfesional: membershipType === MEMBERSHIP_TYPES.PRO
           ? "asignacion_admin"
           : "gratuita",

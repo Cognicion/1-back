@@ -909,7 +909,6 @@ pre {
   font-weight: 700;
 }
 
-.usuario-admin-rol input,
 .usuario-admin-rol select {
   width: 100%;
   padding: 10px 12px;
@@ -917,10 +916,6 @@ pre {
   border: 1px solid var(--gray-700);
   background: var(--black-1000);
   color: #e5e7eb;
-}
-
-.usuario-admin-rol input + label {
-  margin-top: 10px;
 }
 
 .usuario-admin-rol small {
