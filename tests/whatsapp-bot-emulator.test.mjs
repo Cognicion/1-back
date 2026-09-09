@@ -143,6 +143,26 @@ test('two authorized subjects competing for one slot: one winner, adjacency free
   const slots=await appointments.service.getChannelSlots({channel,doctorUid:uid,date:input.startDate,durationMinutes:60});
   assert.equal(slots.slots.some(s=>s.startTime==='09:00'),false);assert.equal(slots.slots.some(s=>s.startTime==='10:00'),true);
 });
+test('explicit QA pilot administrator uses channel authorization without weakening web auth',async()=>{
+  await db.doc(`usuarios/${uid}`).set({rol:'admin'});
+  await db.doc(`whatsappBotProfessionals/${uid}`).update({services:[{id:'consulta_qa',label:'Consulta QA',durationMinutes:60}]});
+  let response=await say('hola');response=await choose(response,'agendar');response=await choose(response,'Consulta QA');response=await say('mañana');
+  assert.equal(response.content.choices.some(s=>s.title==='2030-01-08 09:00'),true);
+  const web=createAppointmentService({db,timestamp:()=>Timestamp.fromMillis(clock)});
+  const availability=await web.getAvailability({auth:{uid,token:{}},doctorUid:uid,candidate:{startDate:'2030-01-08',endDate:'2030-01-08',startTime:'09:00',durationMinutes:60}});
+  assert.equal(availability.available,true);
+  await assert.rejects(()=>web.getAvailability({auth:null,doctorUid:uid,candidate:{startDate:'2030-01-08',endDate:'2030-01-08',startTime:'09:00',durationMinutes:60}}),{code:'unauthenticated'});
+});
+test('channel slots reject an unconfigured professional and disabled booking',async()=>{
+  const other='other_doctor';
+  await db.doc(`usuarios/${other}`).set({rol:'medico'});
+  await db.doc(`appointmentControls/${other}`).set({enabled:true,revision:0,policy});
+  await db.doc(`whatsappBotProfessionals/${other}`).set({enabled:true,label:'Otro profesional',services:[{id:'consulta',label:'Consulta',durationMinutes:60}],reminders:{enabled:false}});
+  await assert.rejects(()=>appointments.service.getChannelSlots({channel,doctorUid:other,date:'2030-01-08',durationMinutes:60}),{code:'permission-denied'});
+  await say('hola');
+  await db.doc(`appointmentControls/${uid}`).update({'policy.bookingEnabled':false});
+  await assert.rejects(()=>appointments.service.getChannelSlots({channel,doctorUid:uid,date:'2030-01-08',durationMinutes:60}),{code:'configuration-required'});
+});
 test('another sender cannot list or mutate appointment; no forged auth or internal marker',async()=>{
   const id=await book();await say('hola','',{from:phone2});const stranger={...channel,subject:subject2};
   assert.deepEqual(await appointments.list(stranger,uid),[]);

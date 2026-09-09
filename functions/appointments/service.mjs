@@ -19,16 +19,17 @@ const LEGACY_CIVIL_POLICY = Object.freeze({ availabilityMode: 'legacy-civil', al
 export function createAppointmentService({ db, timestamp = () => Timestamp.now(), authorizeChannel = null, onChannelMutation = null }) {
   async function context(tx, auth, doctorUid, channel = null, action = null, appointmentId = null) {
     if (!safeId(doctorUid)) fail('permission-denied');
+    let channelAuthorization = null;
     if (channel) {
       if (!authorizeChannel || auth) fail('permission-denied');
-      await authorizeChannel({ tx, channel, doctorUid, action, appointmentId });
+      channelAuthorization = await authorizeChannel({ tx, channel, doctorUid, action, appointmentId });
     } else {
       if (!auth?.uid) fail('unauthenticated');
       if (!safeId(auth.uid) || auth.uid !== doctorUid) fail('permission-denied');
     }
     const profile = await tx.get(db.doc(`usuarios/${doctorUid}`));
     const deleting = await tx.get(db.doc(accountDeletionTombstonePath(doctorUid)));
-    if (!profile.exists || deleting.exists || (!isProfessional(profile.data()) && !(auth && isAdmin(profile.data(), auth)))) fail('permission-denied');
+    if (!profile.exists || deleting.exists || (!isProfessional(profile.data()) && !(auth && isAdmin(profile.data(), auth)) && channelAuthorization?.profileAuthorized !== true)) fail('permission-denied');
     const controlRef = db.doc(`appointmentControls/${doctorUid}`);
     const control = await tx.get(controlRef);
     if (control.exists && control.data().enabled !== true) fail('transactional-mode-disabled');

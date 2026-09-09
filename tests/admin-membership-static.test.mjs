@@ -2,11 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-const [html, adminSource, registrationBackend, patientBackend, functionsIndex, rules] = await Promise.all([
+const [html, adminSource, registrationBackend, patientBackend, membershipBackend, functionsIndex, rules] = await Promise.all([
   readFile(new URL("../admin.html", import.meta.url), "utf8"),
   readFile(new URL("../js/admin.js", import.meta.url), "utf8"),
   readFile(new URL("../functions/accountSecurity/professionalRegistration.js", import.meta.url), "utf8"),
   readFile(new URL("../functions/accountSecurity/professionalPatientAccess.js", import.meta.url), "utf8"),
+  readFile(new URL("../functions/accountSecurity/membershipAdministration.js", import.meta.url), "utf8"),
   readFile(new URL("../functions/index.js", import.meta.url), "utf8"),
   readFile(new URL("../firestore.rules", import.meta.url), "utf8")
 ]);
@@ -17,6 +18,14 @@ test("Usuarios registrados une perfiles con cuentas Auth pendientes", () => {
   assert.match(adminSource, /perfilPendiente:\s*true/u);
   assert.match(adminSource, /Perfil pendiente/u);
   assert.match(functionsIndex, /exports\.listAdminAuthUsers\s*=/u);
+});
+
+test("Admin puede eliminar un perfil pendiente de Authentication sin saltarse la eliminación de perfiles completos", () => {
+  assert.match(adminSource, /"deletePendingAuthUser"/u);
+  assert.match(adminSource, /Eliminar registro pendiente/u);
+  assert.match(functionsIndex, /exports\.deletePendingAuthUser\s*=/u);
+  assert.match(membershipBackend, /if \(profileSnapshot\.exists\)/u);
+  assert.match(membershipBackend, /await authAdmin\.deleteUser\(targetUid\)/u);
 });
 
 test("el Centro de Control administra únicamente membresías gratuita y Pro", () => {

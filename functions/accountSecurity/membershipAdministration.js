@@ -4,12 +4,14 @@ const admin = require("firebase-admin");
 const logger = require("firebase-functions/logger");
 const { HttpsError, onCall } = require("firebase-functions/v2/https");
 const { isAdmin, isProfessional } = require("../clinicalAnalytics/access");
+const { accountDeletionTombstonePath } = require("./accountDeletion");
 const { FREE_PATIENT_LIMIT, FREE_PROFESSIONAL_PLAN, AUTHORIZED_PROFESSIONAL_PLAN } = require("./professionalRegistration");
 
 if (!admin.apps.length) admin.initializeApp();
 
 const REGION = "us-central1";
 const AUTH_DIRECTORY_LIMIT = 5000;
+const INCOMPLETE_REGISTRATION_ACCOUNT_TYPE = "registro_incompleto";
 const MEMBERSHIP_TYPES = Object.freeze({
   FREE: "gratuita",
   PRO: "pro"
@@ -50,7 +52,9 @@ function publicAuthUser(user = {}) {
 }
 
 function createMembershipAdministrationService({ authAdmin, db, now = () => new Date() }) {
-  if (!authAdmin || typeof authAdmin.listUsers !== "function") {
+  if (!authAdmin
+      || typeof authAdmin.deleteUser !== "function"
+      || typeof authAdmin.listUsers !== "function") {
     throw new TypeError("Se requiere una instancia válida de Firebase Auth Admin.");
   }
   if (!db || typeof db.doc !== "function" || typeof db.runTransaction !== "function") {
@@ -137,7 +141,83 @@ function createMembershipAdministrationService({ authAdmin, db, now = () => new 
     });
   }
 
-  return Object.freeze({ listAuthUsers, setUserMembership });
+  async function deletePendingAuthUser(auth, data = {}) {
+    const actorUid = await requireAdministrator(auth);
+    const targetUid = requireUid(data.uidUsuario);
+    if (targetUid === actorUid) {
+      throw new MembershipAdministrationError(
+        "invalid-argument",
+        "La cuenta administrativa actual no puede eliminarse desde este flujo."
+      );
+    }
+
+    const profileRef = db.doc(`usuarios/${targetUid}`);
+    const tombstoneRef = db.doc(accountDeletionTombstonePath(targetUid));
+    const currentDate = now();
+    await db.runTransaction(async (transaction) => {
+      const [profileSnapshot, tombstoneSnapshot] = await Promise.all([
+        transaction.get(profileRef),
+        transaction.get(tombstoneRef)
+      ]);
+      if (profileSnapshot.exists) {
+        throw new MembershipAdministrationError(
+          "failed-precondition",
+          "La cuenta ya tiene un perfil. Debe eliminarse con el flujo correspondiente a su rol."
+        );
+      }
+      if (tombstoneSnapshot.exists) {
+        const tombstone = tombstoneSnapshot.data() || {};
+        if (tombstone.accountUid !== targetUid
+            || tombstone.accountType !== INCOMPLETE_REGISTRATION_ACCOUNT_TYPE) {
+          throw new MembershipAdministrationError(
+            "failed-precondition",
+            "La cuenta participa en otro proceso de eliminación."
+          );
+        }
+      }
+      transaction.set(tombstoneRef, {
+        accountType: INCOMPLETE_REGISTRATION_ACCOUNT_TYPE,
+        accountUid: targetUid,
+        deletedByAdminUid: actorUid,
+        deletionPhase: "destructive",
+        deletionStartedAt: currentDate.toISOString(),
+        deletionState: "in_progress"
+      }, { merge: true });
+    });
+
+    let authAlreadyMissing = false;
+    try {
+      await authAdmin.deleteUser(targetUid);
+    } catch (error) {
+      if (error?.code !== "auth/user-not-found") throw error;
+      authAlreadyMissing = true;
+    }
+
+    await db.runTransaction(async (transaction) => {
+      const tombstoneSnapshot = await transaction.get(tombstoneRef);
+      const tombstone = tombstoneSnapshot.exists ? tombstoneSnapshot.data() || {} : {};
+      if (tombstone.accountUid !== targetUid
+          || tombstone.accountType !== INCOMPLETE_REGISTRATION_ACCOUNT_TYPE) {
+        throw new MembershipAdministrationError(
+          "aborted",
+          "No fue posible confirmar la eliminación del registro pendiente."
+        );
+      }
+      transaction.update(tombstoneRef, {
+        deletionCompletedAt: currentDate.toISOString(),
+        deletionPhase: "completed",
+        deletionState: "completed"
+      });
+    });
+
+    return {
+      auth: authAlreadyMissing ? "no_existia" : "eliminada",
+      deleted: true,
+      uid: targetUid
+    };
+  }
+
+  return Object.freeze({ deletePendingAuthUser, listAuthUsers, setUserMembership });
 }
 
 let serviceInstance = null;
@@ -163,7 +243,7 @@ function callable(name, handler) {
       logger.error(`[MEMBERSHIP_ADMIN] Error en ${name}`, {
         code: error?.code || error?.name || "internal"
       });
-      throw new HttpsError("internal", "No fue posible completar la operación de membresía.");
+      throw new HttpsError("internal", "No fue posible completar la operación administrativa de usuario.");
     }
   });
 }
@@ -176,12 +256,18 @@ const setUserMembership = callable(
   "setUserMembership",
   (service, request) => service.setUserMembership(request.auth, request.data || {})
 );
+const deletePendingAuthUser = callable(
+  "deletePendingAuthUser",
+  (service, request) => service.deletePendingAuthUser(request.auth, request.data || {})
+);
 
 module.exports = {
   AUTH_DIRECTORY_LIMIT,
+  INCOMPLETE_REGISTRATION_ACCOUNT_TYPE,
   MEMBERSHIP_TYPES,
   MembershipAdministrationError,
   createMembershipAdministrationService,
+  deletePendingAuthUser,
   listAdminAuthUsers,
   normalizeMembershipType,
   publicAuthUser,

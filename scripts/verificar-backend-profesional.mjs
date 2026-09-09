@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 export const EXPECTED_PROJECT_ID = "cognicion-57052";
 export const EXPECTED_REGION = "us-central1";
 export const EXPECTED_ORIGIN = "https://cognicionlabs.com";
-export const PROFESSIONAL_RELEASE_MARKER = "2026-09-08-membresias-usuarios-v1";
+export const PROFESSIONAL_RELEASE_MARKER = "2026-09-08-eliminar-registro-pendiente-v1";
 export const MINIMUM_FUNCTION_UPDATE_TIME = "2026-08-26T12:15:21.000Z";
 
 export const PROFESSIONAL_FUNCTION_GROUPS = Object.freeze({
@@ -18,6 +18,7 @@ export const PROFESSIONAL_FUNCTION_GROUPS = Object.freeze({
   core: Object.freeze([
     "registerProfessional",
     "registerProfessionalWithCode",
+    "deletePendingAuthUser",
     "listAdminAuthUsers",
     "setUserMembership",
     "discardUnregisteredAccount",

@@ -207,7 +207,7 @@ test("registerProfessional crea cuentas gratuitas de médico y psicólogo sin c�
   }
 });
 
-test("Usuarios registrados detecta cuentas Auth pendientes y Admin cambia gratuita a Pro sin elevar el rol", {
+test("Admin detecta y elimina cuentas Auth pendientes, y cambia gratuita a Pro sin elevar el rol", {
   timeout: 60000
 }, async () => {
   const administrator = await emailClient("membership-admin");
@@ -241,6 +241,21 @@ test("Usuarios registrados detecta cuentas Auth pendientes y Admin cambia gratui
   assert.equal(profile.limitePacientes, null);
   assert.equal(profile.rol, "medico");
   assert.notEqual(profile.rol, "admin");
+
+  await expectFirebaseError(
+    administrator.call("deletePendingAuthUser", { uidUsuario: owner.uid }),
+    "failed-precondition"
+  );
+  assert.deepEqual(
+    await administrator.call("deletePendingAuthUser", { uidUsuario: pending.uid }),
+    { auth: "eliminada", deleted: true, uid: pending.uid }
+  );
+  await assert.rejects(
+    admin.auth(adminApp).getUser(pending.uid),
+    (error) => error?.code === "auth/user-not-found"
+  );
+  const directoryAfterDeletion = await administrator.call("listAdminAuthUsers");
+  assert.equal(directoryAfterDeletion.users.some((user) => user.uid === pending.uid), false);
 });
 
 test("reuso y dos altas concurrentes con un código conceden exactamente un perfil", {

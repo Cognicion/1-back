@@ -31,22 +31,41 @@ class MemoryFirestore {
   }
 
   async runTransaction(operation) {
-    const updates = [];
+    const writes = [];
     const result = await operation({
       get: async (reference) => new Snapshot(this.documents.get(reference.path)),
-      update: (reference, patch) => updates.push({ path: reference.path, patch })
+      set: (reference, value, options = {}) => writes.push({
+        merge: options.merge === true,
+        path: reference.path,
+        value
+      }),
+      update: (reference, value) => writes.push({ merge: true, path: reference.path, value })
     });
-    updates.forEach(({ path, patch }) => {
-      this.documents.set(path, { ...this.documents.get(path), ...structuredClone(patch) });
+    writes.forEach(({ merge, path, value }) => {
+      const next = merge
+        ? { ...(this.documents.get(path) || {}), ...structuredClone(value) }
+        : structuredClone(value);
+      this.documents.set(path, next);
     });
     return result;
   }
 }
 
 function authDirectory(users = []) {
+  const activeUsers = [...users];
+  const deletedUids = [];
   return {
+    deletedUids,
+    async deleteUser(uid) {
+      const index = activeUsers.findIndex((user) => user.uid === uid);
+      if (index < 0) {
+        throw Object.assign(new Error("Usuario Auth no encontrado"), { code: "auth/user-not-found" });
+      }
+      activeUsers.splice(index, 1);
+      deletedUids.push(uid);
+    },
     async listUsers() {
-      return { users };
+      return { users: activeUsers };
     }
   };
 }
@@ -64,10 +83,12 @@ function fixture(extra = {}, users = []) {
     "usuarios/userUid": { rol: "paciente", tieneCuenta: true, tipoMembresia: "gratuita" },
     ...extra
   });
+  const authAdmin = authDirectory(users);
   return {
+    authAdmin,
     db,
     service: createMembershipAdministrationService({
-      authAdmin: authDirectory(users),
+      authAdmin,
       db,
       now: () => new Date("2026-09-08T18:00:00.000Z")
     })
@@ -153,5 +174,39 @@ test("la membresía rechaza valores desconocidos y perfiles todavía inexistente
   await assert.rejects(
     service.setUserMembership(adminAuth, { uidUsuario: "provisionalUid", tipoMembresia: "pro" }),
     (error) => error instanceof MembershipAdministrationError && error.code === "failed-precondition"
+  );
+});
+
+test("Admin elimina de Authentication solo registros pendientes y deja una barrera de eliminación", async () => {
+  const pendingUid = "pendingAuthUid";
+  const { authAdmin, db, service } = fixture({}, [{
+    uid: pendingUid,
+    email: "pending@example.test",
+    metadata: {}
+  }]);
+
+  await assert.rejects(
+    service.deletePendingAuthUser({ uid: "userUid", token: {} }, { uidUsuario: pendingUid }),
+    (error) => error instanceof MembershipAdministrationError && error.code === "permission-denied"
+  );
+  await assert.rejects(
+    service.deletePendingAuthUser(adminAuth, { uidUsuario: "userUid" }),
+    (error) => error instanceof MembershipAdministrationError && error.code === "failed-precondition"
+  );
+
+  assert.deepEqual(
+    await service.deletePendingAuthUser(adminAuth, { uidUsuario: pendingUid }),
+    { auth: "eliminada", deleted: true, uid: pendingUid }
+  );
+  assert.deepEqual(authAdmin.deletedUids, [pendingUid]);
+  assert.equal((await service.listAuthUsers(adminAuth)).users.some((user) => user.uid === pendingUid), false);
+  const tombstone = db.documents.get(`accountDeletionTombstones/${pendingUid}`);
+  assert.equal(tombstone.accountType, "registro_incompleto");
+  assert.equal(tombstone.deletionState, "completed");
+  assert.equal(tombstone.deletedByAdminUid, "adminUid");
+
+  assert.deepEqual(
+    await service.deletePendingAuthUser(adminAuth, { uidUsuario: pendingUid }),
+    { auth: "no_existia", deleted: true, uid: pendingUid }
   );
 });

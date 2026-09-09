@@ -1186,6 +1186,7 @@ exports.listAuthorizedPatientIds = listAuthorizedPatientIds;
 exports.listProfessionalDirectory = listProfessionalDirectory;
 exports.registerProfessional = registerProfessional;
 exports.registerProfessionalWithCode = registerProfessionalWithCode;
+exports.deletePendingAuthUser = membershipAdministrationFunctions.deletePendingAuthUser;
 exports.listAdminAuthUsers = membershipAdministrationFunctions.listAdminAuthUsers;
 exports.setUserMembership = membershipAdministrationFunctions.setUserMembership;
 const googleCalendarHandlers = createGoogleCalendarHandlers({

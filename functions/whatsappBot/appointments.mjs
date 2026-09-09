@@ -12,8 +12,13 @@ export function createChannelAppointments({ db, now = Date.now }) {
     const r = (await tx.get(db.doc(`whatsappBotRecipients/${channel.subject}`))).data();
     const profile = (await tx.get(db.doc(`usuarios/${doctorUid}`))).data();
     const deleting = (await tx.get(db.doc(`accountDeletionTombstones/${doctorUid}`))).exists;
-    const { isProfessional } = require('../clinicalAnalytics/access');
-    if (!profile || !isProfessional(profile) || deleting) deny('permission-denied');
+    const { isAdmin, isProfessional } = require('../clinicalAnalytics/access');
+    // Production channel professionals must retain a clinical role. The
+    // explicitly configured QA pilot may also use its persisted administrator
+    // identity; channel/professional/recipient bindings below still scope every
+    // operation to this one pilot.
+    const profileAuthorized = isProfessional(profile) || (c?.pilot === true && isAdmin(profile));
+    if (!profile || !profileAuthorized || deleting) deny('permission-denied');
     if (!channelReady(c) || !professionalReady(p) || !c.professionalIds.includes(doctorUid) || !c.allowedSubjects?.includes(channel.subject) || c.phoneNumberId !== channel.phoneNumberId || c.wabaId !== channel.wabaId || !r || r.phoneNumberId !== c.phoneNumberId) deny('permission-denied');
     if (appointmentId) {
       if (!safeId(appointmentId)) deny('permission-denied');
@@ -21,6 +26,7 @@ export function createChannelAppointments({ db, now = Date.now }) {
       if (!binding || binding.doctorUid !== doctorUid || binding.expiresAt.toMillis() <= now()) deny('permission-denied');
     }
     channel.professional = p; channel.recipient = r;
+    return { profileAuthorized: true };
   };
   const service = createAppointmentService({ db, timestamp: () => Timestamp.fromMillis(now()), authorizeChannel,
     onChannelMutation({ tx, channel, doctorUid, appointmentId, action, next, previous }) {

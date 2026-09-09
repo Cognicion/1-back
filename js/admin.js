@@ -2134,8 +2134,8 @@ function renderizarUsuariosAdmin() {
           <button type="button" ${esAdminActual || perfilPendiente ? "disabled" : ""} onclick="cambiarRolUsuarioAdmin('${usuario.id}')">
             Cambiar rol
           </button>
-          <button type="button" class="boton-peligro" ${esAdminActual || perfilPendiente ? "disabled" : ""} onclick="eliminarUsuarioAdmin('${usuario.id}')">
-            Eliminar usuario
+          <button type="button" class="boton-peligro" ${esAdminActual ? "disabled" : ""} onclick="eliminarUsuarioAdmin('${usuario.id}')">
+            ${perfilPendiente ? "Eliminar registro pendiente" : "Eliminar usuario"}
           </button>
         </div>
       </article>
@@ -2902,7 +2902,10 @@ window.eliminarUsuarioAdmin = async function(uidUsuario) {
   if (!usuario || uidUsuario === ADMIN_UID) return;
 
   const nombre = usuario.nombre || usuario.email || uidUsuario;
-  const confirmar = confirm(`Eliminar usuario ${nombre}? Si es paciente, tambien se eliminaran sus datos clinicos conocidos.`);
+  const mensajeConfirmacion = usuario.perfilPendiente === true
+    ? `¿Eliminar definitivamente el registro pendiente de ${nombre}? Se eliminará también su cuenta de Firebase Authentication.`
+    : `¿Eliminar usuario ${nombre}? Si es paciente, también se eliminarán sus datos clínicos conocidos.`;
+  const confirmar = confirm(mensajeConfirmacion);
   if (!confirmar) return;
 
   const confirmarTexto = prompt("Escribe ELIMINAR para confirmar la eliminacion del usuario:");
@@ -2936,6 +2939,12 @@ window.eliminarUsuarioAdmin = async function(uidUsuario) {
 };
 
 async function eliminarUsuarioConDatos(uidUsuario, usuario = {}) {
+  if (usuario.perfilPendiente === true) {
+    const eliminarPendiente = httpsCallable(await obtenerFunctions(), "deletePendingAuthUser");
+    const respuesta = await eliminarPendiente({ uidUsuario });
+    return respuesta?.data || { auth: "eliminada", deleted: true, uid: uidUsuario };
+  }
+
   if (usuario.rol === "paciente") {
     return await eliminarPacienteMedianteBackend(uidUsuario, usuario);
   }
