@@ -84,9 +84,50 @@ test('webhook repetition and historical receipts cannot duplicate jobs',async()=
   await worker.process(r.key);await worker.process(r.key);assert.equal((await db.collection('whatsappBotOutbox').get()).size,1);
   const id='wamid.historical',key=eventIdHash({messageId:id,eventType:'message'});await db.doc(`whatsappWebhookEvents/${key}`).set({schemaVersion:1});await receive({id,text:'agendar'});assert.equal((await db.doc(`whatsappBotJobs/${key}`).get()).exists,false);
 });
-test('invalid HMAC, unauthorized sender and stale Meta samples cannot enqueue',async()=>{
-  assert.equal((await receive({text:'hola',signature:false})).code,403);
-  await receive({text:'hola',from:'5215550000099'});await receive({text:'hola',at:clock-25*3600000});assert.equal((await db.collection('whatsappBotJobs').get()).size,0);
+test('invalid HMAC and stale samples cannot enqueue; unauthorized identity remains terminal with short TTL',async()=>{
+  const invalid=await receive({text:'hola',signature:false});assert.equal(invalid.code,403);
+  assert.equal((await db.doc(`whatsappWebhookEvents/${invalid.key}`).get()).exists,false);
+  assert.equal((await db.doc(`whatsappBotJobs/${invalid.key}`).get()).exists,false);
+  const unauthorized=await receive({text:'hola',from:'5215550000099'});
+  const stale=await receive({text:'hola',at:clock-25*3600000});
+  assert.equal(unauthorized.code,200);assert.equal(stale.code,200);
+  assert.equal((await db.collection('whatsappBotJobs').get()).size,1);
+  assert.equal((await db.doc(`whatsappBotJobs/${stale.key}`).get()).exists,false);
+  const rejectedRef=db.doc(`whatsappBotJobs/${unauthorized.key}`),rejected=(await rejectedRef.get()).data();
+  assert.deepEqual(Object.keys(rejected).sort(),['kind','state','code','subject','phoneNumberId','wabaId','attempts','dueAt','expiresAt'].sort());
+  assert.equal(rejected.kind,'inbound');assert.equal(rejected.state,'blocked');assert.equal(rejected.code,'recipient-not-authorized');
+  assert.equal(rejected.subject,subjectId(identity,ids.phoneNumberId,'5215550000099'));
+  assert.equal(rejected.attempts,0);assert.equal(rejected.dueAt,clock);assert.equal(rejected.expiresAt.toMillis(),clock+15*60000);
+  assert.doesNotMatch(JSON.stringify(rejected),/5215550000099|hola|encrypted|ciphertext/);
+  await worker.process(unauthorized.key);await worker.process(unauthorized.key);
+  assert.deepEqual((await rejectedRef.get()).data(),rejected);
+  assert.equal((await db.collection('whatsappBotSessions').get()).size,0);
+  assert.equal((await db.collection('whatsappBotRecipients').get()).size,0);
+  assert.equal((await db.collection('whatsappBotOutbox').get()).size,0);assert.equal(sent.length,0);
+  assert.equal((await db.doc(`whatsappWebhookEvents/${unauthorized.key}`).get()).data().workDisposition,'recipient-not-authorized');
+  assert.equal((await db.doc(`whatsappWebhookEvents/${stale.key}`).get()).data().workDisposition,'timestamp-out-of-range');
+  const receipts=await db.collection('whatsappWebhookEvents').get();
+  assert.doesNotMatch(JSON.stringify(receipts.docs.map(x=>x.data())),/5215550000099|hola/);
+  assert.doesNotMatch(JSON.stringify(logs),/5215550000099|hola|synthetic-key/);
+});
+test('synthetic sender variants remain distinct and never gain authorization through inferred normalization',async()=>{
+  const authorizedPhone='525550000099',otherPhone='5215550000099';
+  const authorizedSubject=subjectId(identity,ids.phoneNumberId,authorizedPhone),otherSubject=subjectId(identity,ids.phoneNumberId,otherPhone);
+  assert.notEqual(authorizedSubject,otherSubject);
+  const channelRef=db.doc('whatsappBotConfig/channel');
+  await channelRef.update({allowedSubjects:[authorizedSubject]});
+  const rejected=await receive({text:'hola',from:otherPhone});
+  const rejectedWork=(await db.doc(`whatsappBotJobs/${rejected.key}`).get()).data();
+  assert.equal(rejectedWork.subject,otherSubject);assert.equal(rejectedWork.state,'blocked');
+  assert.equal(rejectedWork.code,'recipient-not-authorized');
+  await worker.process(rejected.key);
+  assert.equal((await db.collection('whatsappBotSessions').get()).size,0);
+  assert.equal((await db.collection('whatsappBotOutbox').get()).size,0);assert.equal(sent.length,0);
+  const authorized=await receive({text:'hola',from:authorizedPhone});
+  const authorizedWork=(await db.doc(`whatsappBotJobs/${authorized.key}`).get()).data();
+  assert.equal(authorizedWork.subject,authorizedSubject);assert.equal(authorizedWork.state,'pending');
+  assert.equal((await db.doc(`whatsappWebhookEvents/${authorized.key}`).get()).data().workDisposition,'prepared');
+  assert.deepEqual((await channelRef.get()).data().allowedSubjects,[authorizedSubject]);
 });
 test('ambiguous yes, old buttons, expired buttons and out of order messages do not write',async()=>{
   const first=await say('hola');await say('sí');let r=await say('',first.content.choices[0].id);assert.match(r.content.text,/venció/);

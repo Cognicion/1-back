@@ -34,13 +34,15 @@ function createEventStore({ db, prepareWork = null }) {
           return;
         }
         // This is a technical receipt, not a conversation or a bot work queue.
+        const workDisposition = work?.disposition?.get(key);
         tx.create(refs[index], {
           schemaVersion: 1,
           provider: "whatsapp",
           eventIdHash: key,
           eventType: event.eventType,
           messageType: event.messageType,
-          receivedAt: Timestamp.fromMillis(event.receivedAt)
+          receivedAt: Timestamp.fromMillis(event.receivedAt),
+          ...(workDisposition ? { workDisposition } : {})
         });
         // Receipt and encrypted work become durable in the SAME transaction.
         // Historical receipts never acquire jobs on replay.

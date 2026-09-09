@@ -4,7 +4,16 @@ function createWorkPreparer({ db, cipher, identityKey, now = Date.now }) {
   return async (entries, payload) => {
     const config = (await db.doc('whatsappBotConfig/channel').get()).data();
     const work = new Map();
-    if (!channelReady(config)) return work;
+    // A signed event that cannot become work must remain diagnosable without
+    // retaining its sender, message id, text or payload. The technical receipt
+    // contains only a bounded reason code. A rejected identity is retained as
+    // a short-lived keyed fingerprint in a terminal job, never actionable work.
+    const disposition = new Map();
+    work.disposition = disposition;
+    if (!channelReady(config)) {
+      entries.forEach(([key]) => disposition.set(key, 'channel-not-ready'));
+      return work;
+    }
     const messages = new Map(), statuses = new Map();
     for (const entry of payload?.entry || []) {
       if (String(entry.id) !== config.wabaId) continue;
@@ -18,22 +27,36 @@ function createWorkPreparer({ db, cipher, identityKey, now = Date.now }) {
     for (const [key, event] of entries) {
       if (event.eventType === 'message') {
         const m = messages.get(event.messageId);
-        if (!m || !/^\d{8,15}$/.test(m.from || '') || !/^wamid\./.test(m.id || '')) continue;
+        if (!m) { disposition.set(key, 'message-not-found'); continue; }
+        if (!/^\d{8,15}$/.test(m.from || '')) { disposition.set(key, 'sender-format-invalid'); continue; }
+        if (!/^wamid\./.test(m.id || '')) { disposition.set(key, 'message-id-invalid'); continue; }
         const at = Number(m.timestamp) * 1000;
         // Reject stale/synthetic panel samples before any action or send.
-        if (!Number.isFinite(at) || at < now() - 24 * 3600000 || at > now() + 300000) continue;
+        if (!Number.isFinite(at) || at < now() - 24 * 3600000 || at > now() + 300000) { disposition.set(key, 'timestamp-out-of-range'); continue; }
         const subject = subjectId(identityKey(), config.phoneNumberId, m.from);
-        if (!config.allowedSubjects?.includes(subject)) continue;
+        if (!config.allowedSubjects?.includes(subject)) {
+          disposition.set(key, 'recipient-not-authorized');
+          // Compare the observed provider identity with administrator-supplied
+          // candidates without disclosing a phone or guessing its spelling.
+          // Existing job TTL applies; blocked is terminal in both the trigger
+          // and drain worker. No message content or replayable work is stored.
+          work.set(key, { kind: 'inbound', state: 'blocked', code: 'recipient-not-authorized', subject, phoneNumberId: config.phoneNumberId, wabaId: config.wabaId, dueAt: now(), attempts: 0, expiresAt: Timestamp.fromMillis(now() + 15 * 60000) });
+          continue;
+        }
         const text = m.type === 'text' ? m.text?.body : '';
         const choice = m.type === 'interactive' ? m.interactive?.button_reply?.id || m.interactive?.list_reply?.id : m.type === 'button' ? m.button?.payload : '';
-        if (text && (typeof text !== 'string' || text.length > 200) || choice && (typeof choice !== 'string' || choice.length > 200)) continue;
+        if (text && (typeof text !== 'string' || text.length > 200) || choice && (typeof choice !== 'string' || choice.length > 200)) { disposition.set(key, 'content-invalid'); continue; }
         const encrypted = await cipher.seal({ phone: m.from, text: text || '', choice: choice || '', at }, key);
         work.set(key, { kind: 'inbound', state: 'pending', subject, phoneNumberId: config.phoneNumberId, wabaId: config.wabaId, dueAt: now(), attempts: 0, encrypted, expiresAt: Timestamp.fromMillis(now() + 86400000) });
+        disposition.set(key, 'prepared');
       } else if (event.eventType.startsWith('status.')) {
         const s = statuses.get(event.messageId + ':' + event.eventType.slice(7));
-        if (!s) continue;
+        if (!s) { disposition.set(key, 'status-not-found'); continue; }
         const encrypted = await cipher.seal({ messageId: s.id, status: s.status, correlation: /^[a-f0-9]{64}$/.test(s.biz_opaque_callback_data || '') ? s.biz_opaque_callback_data : null }, key);
         work.set(key, { kind: 'status', state: 'pending', dueAt: now(), attempts: 0, encrypted, phoneNumberId: config.phoneNumberId, wabaId: config.wabaId, expiresAt: Timestamp.fromMillis(now() + 86400000) });
+        disposition.set(key, 'prepared');
+      } else {
+        disposition.set(key, 'event-not-actionable');
       }
     }
     return work;
