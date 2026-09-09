@@ -70,8 +70,13 @@ async function transition({ session = {}, message, jobId, channel, recipient, pr
       if (s.action === 'reschedule') { s.service={id:null,label:'Cita',durationMinutes:a.durationMinutes}; s.step='date'; reply('Indica nueva fecha AAAA-MM-DD, hoy, mañana o próximos. Tu cita original se conserva hasta guardar.'); }
       else if (s.action==='confirm' && a.confirmation==='confirmed') menu('Esa cita ya está confirmada.');
       else { s.step='manageReview'; reply(`${s.action==='cancel'?'Cancelar':'Confirmar'} la cita del ${fullDate(a.startDate,a.startTime,a.timeZone)}. ¿Autorizas esta operación?`, [{title:'Confirmar operación',value:'apply'},{title:'Volver al menú',value:'menu'}]); }
-    } else if (s.step==='service' && choice) {
-      s.service=professionals[s.doctorUid].services.find(x=>x.id===choice.value); s.step='date'; reply('Indica fecha AAAA-MM-DD, hoy, mañana o próximos.');
+    } else if (s.step==='service') {
+      const configured=professionals[s.doctorUid].services;
+      const matches=choice
+        ? configured.filter(x=>x.id===choice.value)
+        : configured.filter(x=>normalize(x.label)===text||normalize(x.id)===text);
+      if(matches.length!==1) await services();
+      else {s.service=matches[0];s.step='date';reply('Indica una fecha: hoy, mañana, próximos o AAAA-MM-DD.');}
     } else if (s.step==='date') await slots(text);
     else if (s.step==='slot' && choice) {
       s.pending=choice.value;

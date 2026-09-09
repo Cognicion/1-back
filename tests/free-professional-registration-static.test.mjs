@@ -7,13 +7,17 @@ const [
   registrationSource,
   professionalRegistrationService,
   professionalPatientAccessService,
-  professionalRegistrationBackend
+  professionalRegistrationBackend,
+  statisticsSource,
+  statisticsHtml
 ] = await Promise.all([
   readFile(new URL("../registro.html", import.meta.url), "utf8"),
   readFile(new URL("../js/registro.js", import.meta.url), "utf8"),
   readFile(new URL("../js/services/professionalRegistrationService.js", import.meta.url), "utf8"),
   readFile(new URL("../js/services/professionalPatientAccessService.js", import.meta.url), "utf8"),
-  readFile(new URL("../functions/accountSecurity/professionalRegistration.js", import.meta.url), "utf8")
+  readFile(new URL("../functions/accountSecurity/professionalRegistration.js", import.meta.url), "utf8"),
+  readFile(new URL("../js/estadistica.js", import.meta.url), "utf8"),
+  readFile(new URL("../estadistica.html", import.meta.url), "utf8")
 ]);
 
 test("registro ofrece una modalidad profesional gratuita con límite visible de cinco pacientes", () => {
@@ -66,6 +70,13 @@ test("el alta profesional exige verificar el correo antes de crear el perfil", (
   assert.match(registrationSource, /\bsendEmailVerification\b/u);
   assert.match(registrationSource, /if \(!credencial\.user\.emailVerified\)/u);
   assert.match(registrationSource, /Te enviamos un correo de verificación/u);
+  assert.match(registrationSource, /await\s+esperarVerificacionCorreo\(credencial\.user,\s*mensaje\)/u);
+  assert.match(registrationSource, /if\s*\(usuario\.emailVerified\)/u);
+  assert.match(registrationSource, /Finalizando tu perfil profesional/u);
+  assert.match(registrationSource, /rol:\s*rolProfesional,\s*modalidadRegistro,\s*codigoAutorizacion/u);
+  assert.match(registrationSource, /btnCrearCuenta\.disabled\s*=\s*true/u);
+  assert.match(registrationSource, /finally\s*\{[\s\S]*btnCrearCuenta\.disabled\s*=\s*false/u);
+  assert.match(registrationHtml, /js\/registro\.js\?v=20260908-finalizar-registro-verificado-v1/u);
   assert.match(professionalRegistrationBackend, /auth\?\.token\?\.email_verified\s*!==\s*true/u);
 });
 
@@ -74,4 +85,15 @@ test("la cuenta de paciente conserva su selección y rol existentes", () => {
   assert.match(registrationSource, /tipoCuentaSeleccionada\s*=\s*"paciente"/u);
   assert.match(registrationSource, /perfil:\s*\{\s*nombre,\s*email,\s*rol:\s*"paciente"\s*\}/u);
   assert.match(registrationSource, /usuarioRol:\s*"paciente"/u);
+});
+
+test("estadística distingue un perfil pendiente de un rol sin acceso", () => {
+  assert.match(statisticsSource, /if\s*\(!usuario\)\s*\{/u);
+  assert.match(statisticsSource, /el perfil no terminó de guardarse/u);
+  assert.match(statisticsSource, /window\.location\.href\s*=\s*"registro\.html"/u);
+  assert.match(
+    statisticsSource,
+    /if\s*\(!rolEsAdminEstadistica\(rolUsuario\)\s*&&\s*!usuarioEsPersonalClinico\(rolUsuario\)\)/u
+  );
+  assert.match(statisticsHtml, /js\/estadistica\.js\?v=20260908-finalizar-registro-verificado-v1/u);
 });

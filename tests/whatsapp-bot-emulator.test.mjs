@@ -153,6 +153,24 @@ test('explicit QA pilot administrator uses channel authorization without weakeni
   assert.equal(availability.available,true);
   await assert.rejects(()=>web.getAvailability({auth:null,doctorUid:uid,candidate:{startDate:'2030-01-08',endDate:'2030-01-08',startTime:'09:00',durationMinutes:60}}),{code:'unauthenticated'});
 });
+test('service selection by text persists the service and asks for a date',async()=>{
+  let response=await say('agendar');response=await say('Consulta');
+  assert.match(response.content.text,/Indica una fecha/);
+  const stored=(await db.doc(`whatsappBotSessions/${subject}`).get()).data();
+  const state=await cipher.open(stored.encrypted,subject);
+  assert.equal(state.step,'date');assert.equal(state.service.id,'consulta');assert.equal(state.service.durationMinutes,60);
+});
+test('rate-limited interactive reply is sent once by its creation trigger without Scheduler',async()=>{
+  hooks.sleep=async milliseconds=>{clock+=milliseconds;};
+  let response=await say('hola');await worker.process(response.out);
+  response=await choose(response,'agendar');await worker.process(response.out);
+  response=await choose(response,'Consulta');await worker.process(response.out);
+  assert.match(response.content.text,/Indica una fecha/);
+  assert.equal((await db.doc(`whatsappBotJobs/${response.out}`).get()).data().state,'done');
+  assert.equal((await db.doc(`whatsappBotOutbox/${response.out}`).get()).data().state,'accepted');
+  assert.equal(sent.length,3);
+  await worker.process(response.out);assert.equal(sent.length,3);
+});
 test('channel slots reject an unconfigured professional and disabled booking',async()=>{
   const other='other_doctor';
   await db.doc(`usuarios/${other}`).set({rol:'medico'});

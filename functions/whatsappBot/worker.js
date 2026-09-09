@@ -3,6 +3,7 @@ const { randomUUID } = require('node:crypto');
 const { channelReady, professionalReady, hash } = require('./config');
 const { transition, fullDate } = require('./machine');
 const HOUR = 3600000;
+const SEND_PACING_MS = 1000;
 const ts = n => Timestamp.fromMillis(n);
 const terminal = new Set(['done','expired','blocked','failed','uncertain','cancelled']);
 function createWorker({ db, cipher, appointments, transport, now = Date.now, hooks = {} }) {
@@ -118,15 +119,24 @@ function createWorker({ db, cipher, appointments, transport, now = Date.now, hoo
     const data=await cipher.open(out.encrypted,j.outboxId);
     if(!data.content.template && now()-data.lastInboundAt>=24*HOUR){await finish(id,'blocked','window-expired');return;}
     if(data.content.template && await transport.templateStatus(c,data.content.template.name,data.content.template.language.code)!=='APPROVED'){await finish(id,'blocked','template-not-approved');return;}
-    // Channel and recipient pacing are transactional; no promises survive ACK.
-    const allowed=await db.runTransaction(async tx=>{
-      const rate=db.doc('whatsappBotRate/channel'), recipientRate=db.doc(`whatsappBotRate/${j.subject}`);
-      const a=(await tx.get(rate)).data(), b=(await tx.get(recipientRate)).data();
-      if(a?.nextAt>now()||b?.nextAt>now())return false;
-      tx.set(rate,{nextAt:now()+1000});tx.set(recipientRate,{nextAt:now()+6000});
-      tx.update(jobRef(id),{state:'sending',dueAt:now()+300000});tx.update(ref,{state:'sending'});return true;
-    });
-    if(!allowed){await jobRef(id).update({state:'pending',dueAt:now()+6000,attempts:Math.max(0,j.attempts-1)});return;}
+    // Keep conversational pacing transactional, but wait inside this durable
+    // trigger invocation. An onCreate trigger cannot rediscover a job merely
+    // changed back to pending, and the operational kill switch keeps Scheduler
+    // paused during the pilot.
+    const sleep=hooks.sleep||((milliseconds)=>new Promise(resolve=>setTimeout(resolve,milliseconds)));
+    let allowed=false;
+    while(!allowed) {
+      const gate=await db.runTransaction(async tx=>{
+        const rate=db.doc('whatsappBotRate/channel'), recipientRate=db.doc(`whatsappBotRate/${j.subject}`);
+        const a=(await tx.get(rate)).data(), b=(await tx.get(recipientRate)).data();
+        const nextAt=Math.max(Number(a?.nextAt||0),Number(b?.nextAt||0));
+        if(nextAt>now())return {allowed:false,nextAt};
+        tx.set(rate,{nextAt:now()+SEND_PACING_MS});tx.set(recipientRate,{nextAt:now()+SEND_PACING_MS});
+        tx.update(jobRef(id),{state:'sending',dueAt:now()+300000});tx.update(ref,{state:'sending'});return {allowed:true,nextAt:0};
+      });
+      allowed=gate.allowed;
+      if(!allowed)await sleep(Math.max(25,gate.nextAt-now()+25));
+    }
     await hooks.beforeSend?.();
     const result=await transport.send({channel:c,to:data.phone,content:data.content,correlation:j.outboxId});
     await hooks.afterSend?.();

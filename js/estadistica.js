@@ -61,7 +61,13 @@ onAuthStateChanged(auth, async (user) => {
   usuarioActual = usuario;
   const rolUsuario = normalizarRolEstadistica(usuario?.rol);
 
-  if (!usuario || (!rolEsAdminEstadistica(rolUsuario) && !usuarioEsPersonalClinico(rolUsuario))) {
+  if (!usuario) {
+    alert("Tu correo está verificado, pero el perfil no terminó de guardarse. Vuelve a Crear cuenta e ingresa los mismos datos y código para finalizar el registro; no se creará otra cuenta.");
+    window.location.href = "registro.html";
+    return;
+  }
+
+  if (!rolEsAdminEstadistica(rolUsuario) && !usuarioEsPersonalClinico(rolUsuario)) {
     alert("Acceso restringido al personal clinico.");
     window.location.href = "dashboard.html";
     return;

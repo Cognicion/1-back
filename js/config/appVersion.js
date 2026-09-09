@@ -187,5 +187,6 @@
 // deployment marker: 2026-09-08-sofia-admin-analysis-v1 (+0.001)
 // deployment marker: 2026-09-08-membresias-usuarios-v1 (+0.001)
 // deployment marker: 2026-09-08-eliminar-registro-pendiente-v1 (+0.001)
-export const APP_VERSION = "2.200";
+// deployment marker: 2026-09-08-finalizar-registro-verificado-v1 (+0.001)
+export const APP_VERSION = "2.201";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

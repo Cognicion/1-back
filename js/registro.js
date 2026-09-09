@@ -25,6 +25,8 @@ import { guardarConsentimientosLegales } from "./legal/legalConsentService.js";
 import { registrarProfesional } from "./services/professionalRegistrationService.js?v=20260826-cuenta-profesional-gratuita-v1";
 
 const VERSION_AVISO_PRIVACIDAD = "2026-08-01";
+const INTERVALO_VERIFICACION_CORREO_MS = 5000;
+const TIEMPO_MAXIMO_VERIFICACION_CORREO_MS = 10 * 60 * 1000;
 
 const btnCrearCuenta = document.getElementById("btnCrearCuenta");
 let tipoCuentaSeleccionada = "paciente";
@@ -63,6 +65,33 @@ async function crearOReanudarCuentaAuth(email, password) {
     if (error?.code !== "auth/email-already-in-use") throw error;
     return signInWithEmailAndPassword(auth, email, password);
   }
+}
+
+function esperar(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+async function esperarVerificacionCorreo(usuario, mensaje) {
+  const inicio = Date.now();
+
+  while (Date.now() - inicio < TIEMPO_MAXIMO_VERIFICACION_CORREO_MS) {
+    await esperar(INTERVALO_VERIFICACION_CORREO_MS);
+    try {
+      await reload(usuario);
+    } catch (error) {
+      if (error?.code !== "auth/network-request-failed" && error?.code !== "auth/too-many-requests") {
+        throw error;
+      }
+      continue;
+    }
+
+    if (usuario.emailVerified) {
+      mensaje.textContent = "Correo verificado. Finalizando tu perfil profesional...";
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function configurarModalidadProfesional() {
@@ -135,7 +164,8 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
       ? ETIQUETA_ROL_ENFERMERIA_SALUD_MENTAL
       : "medico";
 
-  const usaCodigo = modalidadProfesionalSeleccionada === "codigo_admin";
+  const modalidadRegistro = modalidadProfesionalSeleccionada;
+  const usaCodigo = modalidadRegistro === "codigo_admin";
   if (!nombre || !email || !password || (usaCodigo && !codigoAutorizacion)) {
     mensaje.textContent = usaCodigo
       ? "Completa nombre, correo, contraseña y código de autorización."
@@ -163,8 +193,12 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
     } catch (verificationError) {
       if (verificationError?.code !== "auth/too-many-requests") throw verificationError;
     }
-    mensaje.textContent = "Te enviamos un correo de verificación. Tu perfil aún está pendiente y aparecerá así en el Centro de Control. Ábrelo y después vuelve a pulsar Crear cuenta para terminar el registro.";
-    return;
+    mensaje.textContent = "Te enviamos un correo de verificación. Mantén esta pestaña abierta: al verificarlo terminaremos automáticamente tu perfil profesional.";
+    const correoVerificado = await esperarVerificacionCorreo(credencial.user, mensaje);
+    if (!correoVerificado) {
+      mensaje.textContent = "La verificación sigue pendiente. Cuando hayas verificado el correo, vuelve a esta pantalla e ingresa los mismos datos para terminar el registro; no se creará una cuenta duplicada.";
+      return;
+    }
   }
   await credencial.user.getIdToken(true);
   let registroProfesional;
@@ -172,7 +206,7 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
     registroProfesional = await registrarProfesional({
       nombre,
       rol: rolProfesional,
-      modalidadRegistro: modalidadProfesionalSeleccionada,
+      modalidadRegistro,
       codigoAutorizacion,
       aceptaAviso,
       aceptaBeta
@@ -205,7 +239,7 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
       exito: true,
       detalles: {
         registroReintentado: registroProfesional.alreadyRegistered === true,
-        modalidadRegistroProfesional: modalidadProfesionalSeleccionada,
+        modalidadRegistroProfesional: modalidadRegistro,
         tipoMembresia: usaCodigo ? "pro" : "gratuita",
         limitePacientes: usaCodigo ? null : 5,
         versionAvisoPrivacidad: VERSION_AVISO_PRIVACIDAD
@@ -224,7 +258,7 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
 configurarTipoCuenta();
 configurarModalidadProfesional();
 
-btnCrearCuenta.addEventListener("click", async () => {
+async function procesarCreacionCuenta() {
   const nombre = document.getElementById("nombre").value.trim();
   const email = document.getElementById("email").value.trim().toLowerCase();
   const correoMedico = document.getElementById("correoMedico").value.trim().toLowerCase();
@@ -375,6 +409,20 @@ btnCrearCuenta.addEventListener("click", async () => {
     } else {
       mensaje.textContent = error.message;
     }
+  }
+}
+
+btnCrearCuenta.addEventListener("click", async () => {
+  if (btnCrearCuenta.disabled) return;
+  const textoBotonOriginal = btnCrearCuenta.textContent;
+  btnCrearCuenta.disabled = true;
+  btnCrearCuenta.textContent = "Procesando...";
+
+  try {
+    await procesarCreacionCuenta();
+  } finally {
+    btnCrearCuenta.disabled = false;
+    btnCrearCuenta.textContent = textoBotonOriginal;
   }
 });
 
