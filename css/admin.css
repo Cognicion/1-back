@@ -308,6 +308,16 @@ body.admin-startup-error .admin-startup-state span { color: #fca5a5; }
   color: var(--celtic-300);
 }
 
+.estado-directorio-usuarios {
+  display: block;
+  margin-top: 8px;
+  color: var(--green-200);
+}
+
+.estado-directorio-usuarios.estado-directorio-error {
+  color: #fbbf24;
+}
+
 .filtros-auditoria input,
 .filtros-auditoria select {
   width: 100%;
@@ -834,13 +844,21 @@ pre {
 
 .usuario-admin-card {
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) minmax(180px, 260px) auto;
+  grid-template-columns: minmax(240px, 1fr) repeat(2, minmax(170px, 230px));
   gap: 16px;
   align-items: start;
   padding: 16px;
   border: 1px solid var(--black-800);
   border-radius: 16px;
   background: var(--black-900);
+}
+
+.usuario-admin-card.perfil-pendiente {
+  border-color: rgba(251, 191, 36, 0.48);
+}
+
+.usuario-admin-meta .estado-perfil-pendiente {
+  color: #fbbf24;
 }
 
 .usuario-admin-card h3 {
@@ -902,6 +920,16 @@ pre {
 
 .usuario-admin-rol small {
   margin-top: 6px;
+}
+
+.usuario-admin-membresia button {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.usuario-admin-card > .reconocimiento-admin-control,
+.usuario-admin-card > .paciente-admin-acciones {
+  grid-column: 1 / -1;
 }
 
 .paciente-admin-resumen {

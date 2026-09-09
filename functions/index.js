@@ -44,6 +44,7 @@ const {
   registerProfessionalWithCode
 } = require("./accountSecurity/professionalRegistration");
 const professionalPatientAccessFunctions = require("./accountSecurity/professionalPatientAccess");
+const membershipAdministrationFunctions = require("./accountSecurity/membershipAdministration");
 const {
   listAuthorizedPatientIds,
   listProfessionalDirectory
@@ -1185,6 +1186,8 @@ exports.listAuthorizedPatientIds = listAuthorizedPatientIds;
 exports.listProfessionalDirectory = listProfessionalDirectory;
 exports.registerProfessional = registerProfessional;
 exports.registerProfessionalWithCode = registerProfessionalWithCode;
+exports.listAdminAuthUsers = membershipAdministrationFunctions.listAdminAuthUsers;
+exports.setUserMembership = membershipAdministrationFunctions.setUserMembership;
 const googleCalendarHandlers = createGoogleCalendarHandlers({
   db: adminDb,
   credential: admin.app().options.credential

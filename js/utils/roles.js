@@ -1,3 +1,5 @@
+import { usuarioTieneMembresiaPro } from "../services/subscriptionEntitlementService.js";
+
 export const ROL_ENFERMERIA_SALUD_MENTAL = "enfermeria_salud_mental";
 
 export const ETIQUETA_ROL_ENFERMERIA_SALUD_MENTAL = "Lic. en Enfermeria / Asesor(a) en Salud Mental";
@@ -184,6 +186,11 @@ export function canAccessService(perfil = {}, serviceId = "") {
   if (isAdministrator(perfil)) return true;
 
   const service = normalizarRol(serviceId);
+  if (!service) return false;
+  if (service === "administracion" || service === "admin") {
+    return false;
+  }
+
   const serviciosClinicos = new Set([
     "panel_medico",
     "medico",
@@ -210,11 +217,7 @@ export function canAccessService(perfil = {}, serviceId = "") {
     return isClinicalStaff(perfil);
   }
 
-  if (service === "administracion" || service === "admin") {
-    return canManagePlatform(perfil);
-  }
-
-  return false;
+  return usuarioTieneMembresiaPro(perfil);
 }
 
 export function canPrescribe(perfil = {}) {

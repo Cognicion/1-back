@@ -42,6 +42,10 @@ import {
   listarReportesUsuarios,
   responderReporteUsuario
 } from "./services/reportes.js";
+import {
+  MEMBERSHIP_TYPES,
+  obtenerTipoMembresia
+} from "./services/subscriptionEntitlementService.js?v=20260908-membresias-usuarios-v1";
 
 import {
   onAuthStateChanged
@@ -290,7 +294,7 @@ function configurarFiltros() {
     await cargarAuditoria();
   });
 
-  ["filtroUsuariosAdmin", "filtroUsuariosRol"].forEach((id) => {
+  ["filtroUsuariosAdmin", "filtroUsuariosRol", "filtroUsuariosMembresia"].forEach((id) => {
     document.getElementById(id)?.addEventListener("input", renderizarUsuariosAdmin);
     document.getElementById(id)?.addEventListener("change", renderizarUsuariosAdmin);
   });
@@ -1455,12 +1459,32 @@ async function cargarUsuariosAdmin() {
   const contenedor = document.getElementById("listaUsuariosAdmin");
   if (contenedor) contenedor.innerHTML = "<p>Cargando usuarios...</p>";
 
-  const snap = await getDocs(collection(db, "usuarios"));
-  usuariosAdmin = snap.docs
-    .map((docUsuario) => ({
+  const [snap, directorioAuth] = await Promise.all([
+    getDocs(collection(db, "usuarios")),
+    cargarDirectorioAuthAdmin()
+  ]);
+  const perfiles = snap.docs.map((docUsuario) => ({
       id: docUsuario.id,
       ...docUsuario.data()
-    }))
+    }));
+  const perfilesPorUid = new Map(perfiles.map((usuario) => [usuario.id, usuario]));
+  (directorioAuth.users || []).forEach((cuentaAuth) => {
+    const existente = perfilesPorUid.get(cuentaAuth.uid);
+    if (existente) {
+      perfilesPorUid.set(cuentaAuth.uid, { ...cuentaAuth, ...existente, cuentaAuth: true });
+      return;
+    }
+    perfilesPorUid.set(cuentaAuth.uid, {
+      id: cuentaAuth.uid,
+      ...cuentaAuth,
+      cuentaAuth: true,
+      perfilPendiente: true,
+      rol: "sin_rol",
+      tieneCuenta: true,
+      tipoMembresia: MEMBERSHIP_TYPES.FREE
+    });
+  });
+  usuariosAdmin = [...perfilesPorUid.values()]
     .sort((a, b) => (a.nombre || a.email || "").localeCompare(b.nombre || b.email || ""));
 
   renderizarUsuariosAdmin();
@@ -1473,8 +1497,31 @@ async function cargarUsuariosAdmin() {
   actualizarCampoUsuarioAviso();
 }
 
+async function cargarDirectorioAuthAdmin() {
+  const estado = document.getElementById("estadoDirectorioUsuariosAdmin");
+  try {
+    const listar = httpsCallable(await obtenerFunctions(), "listAdminAuthUsers");
+    const resultado = await listar({});
+    const datos = resultado.data || {};
+    if (estado) {
+      estado.textContent = datos.truncated
+        ? `Directorio de Authentication limitado a ${datos.totalReturned || 0} cuentas.`
+        : "Cuentas de Authentication y perfiles de usuario sincronizados.";
+      estado.classList.remove("estado-directorio-error");
+    }
+    return datos;
+  } catch (error) {
+    console.warn("No se pudo complementar Usuarios con Firebase Authentication:", error?.code || error?.message || error);
+    if (estado) {
+      estado.textContent = "Se muestran perfiles guardados. Falta publicar el directorio administrativo para detectar registros incompletos de Authentication.";
+      estado.classList.add("estado-directorio-error");
+    }
+    return { users: [], truncated: false, unavailable: true };
+  }
+}
+
 function fechaUsuarioRegistro(usuario = {}) {
-  const valor = usuario.creadoEn || usuario.createdAt || usuario.fechaRegistro || usuario.registradoEn || usuario.fechaCreacion || "";
+  const valor = usuario.creadoEn || usuario.createdAt || usuario.fechaRegistro || usuario.registradoEn || usuario.fechaCreacion || usuario.creadoEnAuth || "";
   if (valor?.toDate) return valor.toDate();
   if (typeof valor === "object" && typeof valor.seconds === "number") return new Date(valor.seconds * 1000);
   const fecha = valor ? new Date(valor) : null;
@@ -2000,17 +2047,23 @@ function renderizarUsuariosAdmin() {
 
   const texto = normalizar(document.getElementById("filtroUsuariosAdmin")?.value || "");
   const rol = document.getElementById("filtroUsuariosRol")?.value || "";
+  const membresia = document.getElementById("filtroUsuariosMembresia")?.value || "";
 
   const usuarios = usuariosAdmin.filter((usuario) => {
+    const tipoMembresia = obtenerTipoMembresia(usuario);
     const coincideTexto = !texto || normalizar([
       usuario.nombre,
       usuario.email,
       usuario.id,
-      usuario.rol
+      usuario.rol,
+      tipoMembresia,
+      usuario.perfilPendiente ? "perfil pendiente" : ""
     ].join(" ")).includes(texto);
 
     const coincideRol = !rol || usuario.rol === rol;
-    return coincideTexto && coincideRol;
+    const coincideMembresia = !membresia
+      || (!datosUsuarioSonAdmin(usuario) && tipoMembresia === membresia);
+    return coincideTexto && coincideRol && coincideMembresia;
   });
 
   actualizarResumenUsuariosVista(usuarios);
@@ -2024,15 +2077,21 @@ function renderizarUsuariosAdmin() {
     const esAdminActual = usuario.id === ADMIN_UID;
     const esCuentaActual = usuario.id === adminActual?.uid;
     const rolActual = usuario.rol || "sin_rol";
+    const esAdminUsuario = datosUsuarioSonAdmin(usuario);
+    const membresiaActual = obtenerTipoMembresia(usuario);
+    const perfilPendiente = usuario.perfilPendiente === true;
+    const membresiaEditable = !esAdminUsuario && !perfilPendiente && usuario.tieneCuenta !== false;
 
     return `
-      <article class="usuario-admin-card">
+      <article class="usuario-admin-card${perfilPendiente ? " perfil-pendiente" : ""}">
         <div>
           <h3>${escaparHTML(usuario.nombre || usuario.email || "Usuario sin nombre")}</h3>
           <p>${escaparHTML(usuario.email || "Sin correo")}</p>
           <small>UID: ${escaparHTML(usuario.id)}</small>
           <div class="usuario-admin-meta">
-            <span class="rol-${escaparHTML(rolActual)}">${escaparHTML(etiquetaRolUsuario(rolActual))}</span>
+             <span class="rol-${escaparHTML(rolActual)}">${escaparHTML(etiquetaRolUsuario(rolActual))}</span>
+            ${perfilPendiente ? "<span class=\"estado-perfil-pendiente\">Perfil pendiente</span>" : ""}
+            ${esAdminUsuario ? "<span>Membresía: no aplica (Admin)</span>" : `<span>Membresía: ${escaparHTML(etiquetaMembresia(membresiaActual))}</span>`}
             <span>Registro: ${escaparHTML(fechaUsuarioAdmin(usuario))}</span>
             <span>Unidad: ${escaparHTML(usuario.unidad || usuario.institucion || "Sin unidad")}</span>
           </div>
@@ -2040,14 +2099,29 @@ function renderizarUsuariosAdmin() {
 
         <div class="usuario-admin-rol">
           <label for="rol-${escaparHTML(usuario.id)}">Rol</label>
-          <select id="rol-${escaparHTML(usuario.id)}" ${esAdminActual ? "disabled" : ""}>
+          <select id="rol-${escaparHTML(usuario.id)}" ${esAdminActual || perfilPendiente ? "disabled" : ""}>
             ${opcionRol("paciente", rolActual)}
             ${opcionRol("medico", rolActual)}
             ${opcionRol(ROL_ENFERMERIA_SALUD_MENTAL, rolActual)}
             ${opcionRol("psicologo", rolActual)}
             ${opcionRol("admin", rolActual)}
           </select>
-          ${esAdminActual ? "<small>Administrador principal protegido.</small>" : ""}
+          ${esAdminActual ? "<small>Administrador principal protegido.</small>" : perfilPendiente ? "<small>El rol se asigna al completar el registro.</small>" : ""}
+        </div>
+
+        <div class="usuario-admin-rol usuario-admin-membresia">
+          <label for="membresia-${escaparHTML(usuario.id)}">Tipo de membresía</label>
+          <select id="membresia-${escaparHTML(usuario.id)}" ${membresiaEditable ? "" : "disabled"}>
+            <option value="gratuita" ${membresiaActual === MEMBERSHIP_TYPES.FREE ? "selected" : ""}>Gratuita</option>
+            <option value="pro" ${membresiaActual === MEMBERSHIP_TYPES.PRO ? "selected" : ""}>Pro</option>
+          </select>
+          ${esAdminUsuario
+            ? "<small>El acceso administrativo depende exclusivamente del rol.</small>"
+            : perfilPendiente
+              ? "<small>Completa el perfil antes de asignar Pro.</small>"
+              : usuario.tieneCuenta === false
+                ? "<small>Expediente sin cuenta de acceso.</small>"
+                : `<button type="button" onclick="cambiarMembresiaUsuarioAdmin('${usuario.id}')">Guardar membresía</button>`}
         </div>
 
         ${renderizarControlColaboradorAdmin(usuario)}
@@ -2057,10 +2131,10 @@ function renderizarUsuariosAdmin() {
           ${esCuentaActual
             ? `<button type="button" disabled aria-label="Esta es la cuenta administrativa actual">Cuenta actual</button>`
             : `<button type="button" aria-label="Ver la página como ${escaparHTML(usuario.nombre || usuario.email || "usuario")} en modo solo lectura" onclick="abrirVistaPreviaUsuarioAdmin('${usuario.id}')">Ver como usuario · solo lectura</button>`}
-          <button type="button" ${esAdminActual ? "disabled" : ""} onclick="cambiarRolUsuarioAdmin('${usuario.id}')">
+          <button type="button" ${esAdminActual || perfilPendiente ? "disabled" : ""} onclick="cambiarRolUsuarioAdmin('${usuario.id}')">
             Cambiar rol
           </button>
-          <button type="button" class="boton-peligro" ${esAdminActual ? "disabled" : ""} onclick="eliminarUsuarioAdmin('${usuario.id}')">
+          <button type="button" class="boton-peligro" ${esAdminActual || perfilPendiente ? "disabled" : ""} onclick="eliminarUsuarioAdmin('${usuario.id}')">
             Eliminar usuario
           </button>
         </div>
@@ -2704,6 +2778,13 @@ function actualizarResumenUsuariosVista(usuarios = []) {
   ponerTexto("usuariosVistaEnfermeriaSaludMental", usuarios.filter((usuario) => usuario.rol === ROL_ENFERMERIA_SALUD_MENTAL).length);
   ponerTexto("usuariosVistaPsicologos", usuarios.filter((usuario) => usuario.rol === "psicologo").length);
   ponerTexto("usuariosVistaAdmin", usuarios.filter((usuario) => usuario.rol === "admin").length);
+  const cuentasNoAdmin = usuarios.filter((usuario) => !datosUsuarioSonAdmin(usuario) && usuario.tieneCuenta !== false);
+  ponerTexto("usuariosVistaGratuitos", cuentasNoAdmin.filter((usuario) => obtenerTipoMembresia(usuario) === MEMBERSHIP_TYPES.FREE).length);
+  ponerTexto("usuariosVistaPro", cuentasNoAdmin.filter((usuario) => obtenerTipoMembresia(usuario) === MEMBERSHIP_TYPES.PRO).length);
+}
+
+function etiquetaMembresia(tipo = "") {
+  return tipo === MEMBERSHIP_TYPES.PRO ? "Pro" : "Gratuita";
 }
 
 function etiquetaRolUsuario(rol = "") {
@@ -2717,6 +2798,7 @@ function fechaUsuarioAdmin(usuario = {}) {
     usuario.fechaCreacion ||
     usuario.fechaAlta ||
     usuario.registradoEn ||
+    usuario.creadoEnAuth ||
     "";
   if (!valor) return "Sin fecha";
   const fecha = typeof valor?.toDate === "function" ? valor.toDate() : new Date(valor);
@@ -2737,7 +2819,7 @@ function opcionRol(rol, rolActual) {
 
 window.cambiarRolUsuarioAdmin = async function(uidUsuario) {
   const usuario = usuariosAdmin.find((item) => item.id === uidUsuario);
-  if (!usuario || uidUsuario === ADMIN_UID) return;
+  if (!usuario || uidUsuario === ADMIN_UID || usuario.perfilPendiente === true) return;
 
   const selector = document.getElementById(`rol-${uidUsuario}`);
   const nuevoRol = selector?.value || "";
@@ -2773,6 +2855,45 @@ window.cambiarRolUsuarioAdmin = async function(uidUsuario) {
       detalles: { uidUsuario, rolAnterior, nuevoRol, error: resumenError(error) }
     });
     alert("No se pudo cambiar el rol: " + error.message);
+  }
+};
+
+window.cambiarMembresiaUsuarioAdmin = async function(uidUsuario) {
+  const usuario = usuariosAdmin.find((item) => item.id === uidUsuario);
+  if (!usuario || datosUsuarioSonAdmin(usuario) || usuario.perfilPendiente === true || usuario.tieneCuenta === false) return;
+
+  const selector = document.getElementById(`membresia-${uidUsuario}`);
+  const tipoAnterior = obtenerTipoMembresia(usuario);
+  const tipoMembresia = selector?.value || "";
+  if (![MEMBERSHIP_TYPES.FREE, MEMBERSHIP_TYPES.PRO].includes(tipoMembresia) || tipoMembresia === tipoAnterior) return;
+
+  const nombre = usuario.nombre || usuario.email || uidUsuario;
+  const alcance = tipoMembresia === MEMBERSHIP_TYPES.PRO
+    ? "habilitará todas las funciones no administrativas compatibles con su rol"
+    : "aplicará los límites de la cuenta gratuita";
+  if (!confirm(`Cambiar a ${etiquetaMembresia(tipoMembresia)} la membresía de ${nombre}? Esto ${alcance}.`)) {
+    if (selector) selector.value = tipoAnterior;
+    return;
+  }
+
+  try {
+    if (selector) selector.disabled = true;
+    const actualizarMembresia = httpsCallable(await obtenerFunctions(), "setUserMembership");
+    await actualizarMembresia({ uidUsuario, tipoMembresia });
+    await registrarAuditoriaAdmin("cambiar_membresia_usuario_admin", "El administrador cambió la membresía de un usuario.", {
+      detalles: { uidUsuario, tipoAnterior, tipoMembresia }
+    });
+    await cargarUsuariosAdmin();
+  } catch (error) {
+    if (selector) {
+      selector.disabled = false;
+      selector.value = tipoAnterior;
+    }
+    await registrarAuditoriaAdmin("error_cambiar_membresia_usuario_admin", "Error al cambiar la membresía desde admin.", {
+      exito: false,
+      detalles: { uidUsuario, tipoAnterior, tipoMembresia, error: resumenError(error) }
+    });
+    alert("No se pudo cambiar la membresía: " + error.message);
   }
 };
 

@@ -119,6 +119,8 @@ function crearResultadoPacientesDesdeDocs(docs) {
 }
 
 function esCuentaProfesionalGratuita(perfil = {}) {
+    if (perfil.tipoMembresia === "pro") return false;
+    if (perfil.tipoMembresia === "gratuita") return true;
     return perfil.planCuentaProfesional === "profesional_gratuito"
         || perfil.modalidadRegistroProfesional === "gratuita";
 }

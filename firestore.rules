@@ -59,8 +59,14 @@ service cloud.firestore {
     }
 
     function isFreeProfessional() {
-      return currentUserProfile().get("planCuentaProfesional", "") == "profesional_gratuito"
-        || currentUserProfile().get("modalidadRegistroProfesional", "") == "gratuita";
+      return currentUserProfile().get("tipoMembresia", "") == "gratuita"
+        || (
+          currentUserProfile().get("tipoMembresia", "") == ""
+          && (
+            currentUserProfile().get("planCuentaProfesional", "") == "profesional_gratuito"
+            || currentUserProfile().get("modalidadRegistroProfesional", "") == "gratuita"
+          )
+        );
     }
 
     function validPatientQuotaAssignment(patientUid) {
@@ -941,6 +947,17 @@ service cloud.firestore {
       ]);
     }
 
+    function hasNoMembershipClaims(data) {
+      return !data.keys().hasAny([
+        "membershipTier",
+        "membresia",
+        "plan",
+        "subscriptionTier",
+        "suscripcion",
+        "tipoMembresia"
+      ]);
+    }
+
     function hasNoAccountLinkingInternalFields(data) {
       return !data.keys().hasAny([
         "codigoVinculacionActivo",
@@ -1016,6 +1033,17 @@ service cloud.firestore {
       ]);
     }
 
+    function membershipFieldsChanged() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        "membershipTier",
+        "membresia",
+        "plan",
+        "subscriptionTier",
+        "suscripcion",
+        "tipoMembresia"
+      ]);
+    }
+
     function hasNoProfessionalAssignments(data) {
       return data.get("creadoPor", "") == ""
         && data.get("ownerUid", "") == ""
@@ -1078,6 +1106,7 @@ service cloud.firestore {
       return isSelf(uid)
         && isPaciente(request.resource.data)
         && hasNoAlternateRoleClaims(request.resource.data)
+        && hasNoMembershipClaims(request.resource.data)
         && hasNoAccountLinkingInternalFields(request.resource.data)
         && hasNoProfessionalAssignments(request.resource.data);
     }
@@ -1092,12 +1121,14 @@ service cloud.firestore {
         && request.resource.data.medicoUid == request.auth.uid
         && request.resource.data.creadoPor == request.auth.uid
         && hasNoAlternateRoleClaims(request.resource.data)
+        && hasNoMembershipClaims(request.resource.data)
         && hasNoAccountLinkingInternalFields(request.resource.data);
     }
 
     function validSelfProfileUpdate(uid) {
       return isSelf(uid)
         && !protectedRoleFieldsChanged()
+        && !membershipFieldsChanged()
         && !accountLinkingInternalFieldsChanged()
         && !patientAccessFieldsChanged()
         && !patientClinicalIdentityFieldsChanged();
@@ -1109,6 +1140,7 @@ service cloud.firestore {
         && isPaciente(request.resource.data)
         && professionalCanEditPatient(uid, resource.data)
         && !protectedRoleFieldsChanged()
+        && !membershipFieldsChanged()
         && !accountLinkingInternalFieldsChanged()
         && !patientAccessFieldsChanged();
     }

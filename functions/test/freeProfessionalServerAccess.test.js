@@ -7,6 +7,7 @@ const {
   listAuthorizedPatientSnapshots
 } = require("../clinicalAnalytics/access");
 const { listAuthorizedSofiaPatients } = require("../clinicalAnalytics/handlers");
+const { isFreeProfessionalProfile } = require("../accountSecurity/professionalPatientQuota");
 
 class FakeSnapshot {
   constructor(path, value) {
@@ -66,6 +67,11 @@ const freeProfile = {
   limitePacientes: 5,
   pacientesEnCuenta: 2
 };
+
+test("la membresía canónica Pro prevalece sobre la modalidad histórica gratuita", () => {
+  assert.equal(isFreeProfessionalProfile({ ...freeProfile, tipoMembresia: "gratuita" }), true);
+  assert.equal(isFreeProfessionalProfile({ ...freeProfile, tipoMembresia: "pro" }), false);
+});
 
 function assignment(patientUid) {
   return {

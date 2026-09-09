@@ -21,6 +21,10 @@ const PROFESSIONAL_REGISTRATION_MODES = Object.freeze({
 const FREE_PROFESSIONAL_PLAN = "profesional_gratuito";
 const AUTHORIZED_PROFESSIONAL_PLAN = "profesional_codigo";
 const FREE_PATIENT_LIMIT = 5;
+const MEMBERSHIP_TYPES = Object.freeze({
+  FREE: "gratuita",
+  PRO: "pro"
+});
 
 class ProfessionalRegistrationError extends Error {
   constructor(code, message) {
@@ -128,6 +132,7 @@ function buildProfessionalProfile({
     fechaAceptacionAviso: timestamp,
     versionAvisoPrivacidad: LEGAL_VERSION,
     fechaCreacion: timestamp,
+    tipoMembresia: isFree ? MEMBERSHIP_TYPES.FREE : MEMBERSHIP_TYPES.PRO,
     modalidadRegistroProfesional: mode,
     planCuentaProfesional: isFree ? FREE_PROFESSIONAL_PLAN : AUTHORIZED_PROFESSIONAL_PLAN,
     limitePacientes: isFree ? FREE_PATIENT_LIMIT : null,
@@ -315,6 +320,7 @@ module.exports = {
   FREE_PATIENT_LIMIT,
   FREE_PROFESSIONAL_PLAN,
   LEGAL_VERSION,
+  MEMBERSHIP_TYPES,
   PROFESSIONAL_REGISTRATION_MODES,
   PROFESSIONAL_ROLES,
   ProfessionalRegistrationError,

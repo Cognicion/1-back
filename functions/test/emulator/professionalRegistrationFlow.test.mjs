@@ -98,7 +98,6 @@ before(async () => {
 
 beforeEach(async () => {
   await environment.clearFirestore();
-  await environment.clearStorage();
 });
 
 after(async () => {
@@ -130,6 +129,7 @@ test("Auth email + callable crean el perfil y consumen el código atómicamente;
   assert.equal(profile.email, owner.email, "El backend debe usar el email del token Auth.");
   assert.notEqual(profile.email, "forged-email@example.test");
   assert.equal(profile.creadoConCodigoAutorizacion, code);
+  assert.equal(profile.tipoMembresia, "pro");
   assert.equal(profile.modalidadRegistroProfesional, "codigo_admin");
   assert.equal(profile.planCuentaProfesional, "profesional_codigo");
   assert.equal(profile.limitePacientes, null);
@@ -191,6 +191,7 @@ test("registerProfessional crea cuentas gratuitas de médico y psicólogo sin c�
     assert.equal(profile.rol, role);
     assert.equal(profile.email, owner.email, "El backend debe usar el email del token Auth.");
     assert.notEqual(profile.email, "forged-free-email@example.test");
+    assert.equal(profile.tipoMembresia, "gratuita");
     assert.equal(profile.modalidadRegistroProfesional, "gratuita");
     assert.equal(profile.planCuentaProfesional, "profesional_gratuito");
     assert.equal(profile.limitePacientes, 5);
@@ -204,6 +205,42 @@ test("registerProfessional crea cuentas gratuitas de médico y psicólogo sin c�
       uid: owner.uid
     });
   }
+});
+
+test("Usuarios registrados detecta cuentas Auth pendientes y Admin cambia gratuita a Pro sin elevar el rol", {
+  timeout: 60000
+}, async () => {
+  const administrator = await emailClient("membership-admin");
+  const owner = await emailClient("membership-owner");
+  const pending = await emailClient("membership-pending");
+  await environment.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), "usuarios", administrator.uid), {
+      email: administrator.email,
+      rol: "admin"
+    });
+  });
+  await owner.call("registerProfessional", freePayload("medico"));
+
+  await expectFirebaseError(
+    owner.call("setUserMembership", { uidUsuario: owner.uid, tipoMembresia: "pro" }),
+    "permission-denied"
+  );
+  const directory = await administrator.call("listAdminAuthUsers");
+  assert.ok(directory.users.some((user) => user.uid === owner.uid));
+  assert.ok(directory.users.some((user) => user.uid === pending.uid));
+  assert.equal(await readAsBackend(`usuarios/${pending.uid}`), null, "La cuenta Auth pendiente aún no debe fingir un perfil.");
+
+  const changed = await administrator.call("setUserMembership", {
+    uidUsuario: owner.uid,
+    tipoMembresia: "pro"
+  });
+  assert.deepEqual(changed, { tipoMembresia: "pro", uid: owner.uid });
+  const profile = await readAsBackend(`usuarios/${owner.uid}`);
+  assert.equal(profile.tipoMembresia, "pro");
+  assert.equal(profile.planCuentaProfesional, "profesional_codigo");
+  assert.equal(profile.limitePacientes, null);
+  assert.equal(profile.rol, "medico");
+  assert.notEqual(profile.rol, "admin");
 });
 
 test("reuso y dos altas concurrentes con un código conceden exactamente un perfil", {

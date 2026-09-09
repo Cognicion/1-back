@@ -53,7 +53,6 @@ before(async () => {
 
 beforeEach(async () => {
   await environment.clearFirestore();
-  await environment.clearStorage();
   await seedProfiles();
 });
 
@@ -83,7 +82,8 @@ test("un usuario autenticado solo puede autocrear un perfil paciente sin claims 
     { rol: "paciente", permisos: { admin: true } },
     { rol: "paciente", claims: { admin: true } },
     { rol: "paciente", admin: true },
-    { rol: "paciente", perfilMedicoVerificado: true }
+    { rol: "paciente", perfilMedicoVerificado: true },
+    { rol: "paciente", tipoMembresia: "pro" }
   ];
 
   for (let index = 0; index < attacks.length; index += 1) {
@@ -155,6 +155,9 @@ test("la autoedición conserva datos normales pero bloquea toda elevación de ro
     { especialidad: "medico" },
     { cedulaProfesional: "FORGED" },
     { perfilMedicoVerificado: true },
+    { tipoMembresia: "pro" },
+    { membershipTier: "pro" },
+    { membresia: "pro" },
     { planCuentaProfesional: "profesional_codigo" },
     { limitePacientes: 999 },
     { pacientesEnCuenta: 0 },
@@ -256,7 +259,8 @@ test("personal clínico no cambia roles de pacientes; admin conserva asignación
   const adminDb = authenticatedDb(UID_ADMIN);
   await assertSucceeds(updateDoc(doc(adminDb, "usuarios", UID_OTHER), {
     cambiadoPorAdminUid: UID_ADMIN,
-    rol: "psicologo"
+    rol: "psicologo",
+    tipoMembresia: "pro"
   }));
   await assertFails(updateDoc(doc(adminDb, "usuarios", UID_ADMIN), { rol: "superadmin" }));
 });

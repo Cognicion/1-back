@@ -17,6 +17,8 @@ class ProfessionalPatientQuotaError extends Error {
 }
 
 function isFreeProfessionalProfile(profile = {}) {
+  if (profile.tipoMembresia === "pro") return false;
+  if (profile.tipoMembresia === "gratuita") return true;
   return profile.planCuentaProfesional === FREE_PROFESSIONAL_PLAN
     || profile.modalidadRegistroProfesional === "gratuita";
 }

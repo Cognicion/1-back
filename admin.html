@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <title>Administracion | Cognicion</title>
   <link rel="stylesheet" href="css/theme.css">
-  <link rel="stylesheet" href="css/admin.css?v=20260831-sofia-admin-density-v2">
+  <link rel="stylesheet" href="css/admin.css?v=20260908-membresias-usuarios-v1">
   <link rel="stylesheet" href="css/clinical-analysis.css">
   <link rel="stylesheet" href="css/reconocimiento-colaborador.css">
   <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
@@ -173,6 +173,7 @@
       <div>
         <h2>Usuarios registrados</h2>
         <p>Vista global de pacientes, medicos, psicologos y administradores registrados en Cognicion.</p>
+        <small id="estadoDirectorioUsuariosAdmin" class="estado-directorio-usuarios" role="status">Comprobando cuentas y perfiles...</small>
       </div>
       <button id="btnActualizarUsuariosAdmin">Actualizar usuarios</button>
     </div>
@@ -184,6 +185,8 @@
       <span>Enfermeria / Asesoria: <strong id="usuariosVistaEnfermeriaSaludMental">-</strong></span>
       <span>Psicologos: <strong id="usuariosVistaPsicologos">-</strong></span>
       <span>Admin: <strong id="usuariosVistaAdmin">-</strong></span>
+      <span>Gratuita: <strong id="usuariosVistaGratuitos">-</strong></span>
+      <span>Pro: <strong id="usuariosVistaPro">-</strong></span>
     </div>
 
     <div class="filtros-auditoria">
@@ -195,6 +198,11 @@
         <option value="enfermeria_salud_mental">Enfermeria / Asesoria</option>
         <option value="psicologo">Psicologos</option>
         <option value="admin">Admin</option>
+      </select>
+      <select id="filtroUsuariosMembresia">
+        <option value="">Todas las membresías</option>
+        <option value="gratuita">Gratuita</option>
+        <option value="pro">Pro</option>
       </select>
     </div>
 
@@ -571,7 +579,7 @@
   </section>
 </div>
 
-<script type="module" src="js/admin.js?v=20260831-sofia-admin-density-v1"></script>
+<script type="module" src="js/admin.js?v=20260908-membresias-usuarios-v1"></script>
 <script type="module" src="js/reportes.js"></script>
   <script type="module" src="js/components/accesosRapidos.js"></script>
 </body>

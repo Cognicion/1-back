@@ -79,7 +79,7 @@ function configurarModalidadProfesional() {
       campoCodigo?.classList.toggle("oculto", !usaCodigo);
       if (nota) {
         nota.textContent = usaCodigo
-          ? "Usa el código de autorización de un solo uso generado por administración."
+          ? "Usa el código Pro de un solo uso generado por administración. Pro no concede acceso al Centro de Control."
           : "Sin código. Incluye hasta 5 pacientes distintos en tu cuenta profesional.";
         nota.classList.toggle("nota-plan-gratuito", !usaCodigo);
       }
@@ -116,7 +116,7 @@ function configurarTipoCuenta() {
       }
       if (descripcion) {
         descripcion.textContent = esProfesional
-          ? "Crea una cuenta gratuita para hasta 5 pacientes o usa un código de autorización."
+          ? "Crea una cuenta gratuita para hasta 5 pacientes o usa un código para activar Pro."
           : "Tu medico debe estar registrado para vincular tu expediente.";
       }
     });
@@ -163,7 +163,7 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
     } catch (verificationError) {
       if (verificationError?.code !== "auth/too-many-requests") throw verificationError;
     }
-    mensaje.textContent = "Te enviamos un correo de verificación. Ábrelo y después vuelve a pulsar Crear cuenta para terminar el registro.";
+    mensaje.textContent = "Te enviamos un correo de verificación. Tu perfil aún está pendiente y aparecerá así en el Centro de Control. Ábrelo y después vuelve a pulsar Crear cuenta para terminar el registro.";
     return;
   }
   await credencial.user.getIdToken(true);
@@ -206,6 +206,7 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
       detalles: {
         registroReintentado: registroProfesional.alreadyRegistered === true,
         modalidadRegistroProfesional: modalidadProfesionalSeleccionada,
+        tipoMembresia: usaCodigo ? "pro" : "gratuita",
         limitePacientes: usaCodigo ? null : 5,
         versionAvisoPrivacidad: VERSION_AVISO_PRIVACIDAD
       }
@@ -215,7 +216,7 @@ async function crearCuentaProfesional({ nombre, email, password, codigoAutorizac
   }
 
   mensaje.textContent = usaCodigo
-    ? `Cuenta de ${etiquetaRol} creada correctamente.`
+    ? `Cuenta Pro de ${etiquetaRol} creada correctamente.`
     : `Cuenta gratuita de ${etiquetaRol} creada correctamente. Puedes gestionar hasta 5 pacientes.`;
   window.location.href = "dashboard.html";
 }

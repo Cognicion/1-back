@@ -1,6 +1,13 @@
+function deliveryAddress(phone) {
+  // Meta can report Mexican mobile senders using the retired international
+  // mobile marker (521 + 10 national digits), while Cloud API delivery uses
+  // the current E.164 address (52 + the same 10 digits). Keep the inbound
+  // identity untouched and normalize only the address sent to Graph API.
+  return /^521\d{10}$/.test(phone || '') ? `52${phone.slice(3)}` : phone;
+}
 function outboundBody(to, content, correlation) {
   if (!/^\d{8,15}$/.test(to || '')) throw Error('invalid-recipient');
-  const base = { messaging_product: 'whatsapp', recipient_type: 'individual', to, biz_opaque_callback_data: correlation };
+  const base = { messaging_product: 'whatsapp', recipient_type: 'individual', to: deliveryAddress(to), biz_opaque_callback_data: correlation };
   if (content.template) return { ...base, type: 'template', template: content.template };
   if (typeof content.text !== 'string' || !content.text || content.text.length > 1024) throw Error('invalid-message');
   const choices = content.choices || [];
@@ -37,4 +44,4 @@ function createTransport({ accessToken, fetchImpl = fetch }) {
     }
   };
 }
-module.exports = { createTransport, outboundBody };
+module.exports = { createTransport, outboundBody, deliveryAddress };
