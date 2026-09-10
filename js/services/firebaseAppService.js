@@ -64,6 +64,7 @@ function crearFirestoreCompartido() {
 
 export const firestoreCacheMode = dispositivoPersonalConfirmado() ? "persistentLocalCache" : "memoryLocalCache";
 export const db = crearFirestoreCompartido();
+globalThis.cognicionAvailability?.mark?.("FIREBASE_READY");
 
 let functionsPromise = null;
 let storagePromise = null;

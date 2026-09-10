@@ -455,10 +455,12 @@ async function inicializarDashboard() {
   programarDatosSecundariosDashboard(rolUsuario, user.uid);
 }
 
-inicializarDashboard().catch((error) => {
-  console.error("No se pudo inicializar el dashboard:", error);
-  window.location.href = "login.html";
-});
+inicializarDashboard()
+  .then(() => window.cognicionAvailability?.ready?.())
+  .catch((error) => {
+    console.error("No se pudo inicializar el dashboard:", error);
+    window.cognicionAvailability?.showRecovery?.();
+  });
 
 window.cerrarSesion = async function() {
   const user = auth.currentUser;

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#081018">
+  <title>COGNICIÓN no disponible</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; background: #081018; color: #f8fafc; font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { width: min(100%, 38rem); padding: clamp(24px, 6vw, 42px); border: 1px solid #334155; border-radius: 18px; background: #0f172a; box-shadow: 0 24px 70px rgba(0, 0, 0, .45); }
+    .eyebrow { margin: 0 0 8px; color: #7dd3fc; font-size: .82rem; font-weight: 800; letter-spacing: .08em; }
+    h1 { margin: 0 0 12px; font-size: clamp(1.6rem, 5vw, 2.35rem); line-height: 1.15; }
+    p { margin: 0 0 18px; color: #cbd5e1; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    button, a { border-radius: 10px; padding: 11px 15px; font: inherit; font-weight: 800; cursor: pointer; }
+    button { border: 0; background: #38bdf8; color: #082f49; }
+    a { border: 1px solid #64748b; color: #f8fafc; text-decoration: none; }
+    small { display: block; margin-top: 20px; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">RECUPERACIÓN DE COGNICIÓN</p>
+    <h1>COGNICIÓN no puede conectarse en este momento.</h1>
+    <p id="connectionStatus">Comprobando el estado de la conexión…</p>
+    <div class="actions">
+      <button id="retryButton" type="button">Reintentar</button>
+      <a href="diagnostico-red.html">Diagnóstico de conexión</a>
+    </div>
+    <small>Esta pantalla no consulta, almacena ni muestra información clínica.</small>
+  </main>
+  <script>
+    (function () {
+      "use strict";
+      const status = document.getElementById("connectionStatus");
+      const setInitialStatus = () => {
+        status.textContent = navigator.onLine === false
+          ? "El dispositivo informa que no tiene conexión a Internet."
+          : "Hay conexión de red, pero la ruta o el servidor de COGNICIÓN no está disponible.";
+      };
+      async function probeHealth() {
+        setInitialStatus();
+        if (navigator.onLine === false) return;
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 4000);
+        try {
+          const url = new URL("health.json", location.href);
+          url.searchParams.set("__cognicion_network_probe", "1");
+          url.searchParams.set("t", Date.now().toString());
+          const response = await fetch(url, { cache: "no-store", credentials: "omit", signal: controller.signal });
+          status.textContent = response.ok
+            ? "La conexión volvió y el frontend responde. Puedes reintentar."
+            : `COGNICIÓN respondió con un error HTTP ${response.status}.`;
+        } catch (_) {
+          setInitialStatus();
+        } finally {
+          clearTimeout(timer);
+        }
+      }
+      document.getElementById("retryButton").addEventListener("click", () => location.reload(), { once: true });
+      window.addEventListener("online", probeHealth);
+      window.addEventListener("offline", setInitialStatus);
+      probeHealth();
+    }());
+  </script>
+</body>
+</html>

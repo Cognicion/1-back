@@ -64,7 +64,7 @@ test("Admin asigna rol y membresía sin llenar los datos del usuario", () => {
   assert.match(professionalProfileHtml, /Administración ya asignó tu rol y membresía/u);
   assert.match(dashboardSource, /datos\?\.perfilDatosPendientes\s*===\s*true/u);
   assert.match(dashboardSource, /perfil-profesional\.html\?completar=1/u);
-  assert.match(dashboardHtml, /js\/dashboard\.js\?v=20260908-perfil-datos-usuario-v1/u);
+  assert.match(dashboardHtml, /js\/dashboard\.js\?v=20260909-availability-hardening-v2/u);
 });
 
 test("el Centro de Control administra únicamente membresías gratuita y Pro", () => {

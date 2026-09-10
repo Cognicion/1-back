@@ -1,9 +1,13 @@
-export const APP_VERSION = "20260827-panel-pacientes-fallback-v1";
+import { APP_VERSION } from "../config/appVersion.js";
+
+export { APP_VERSION };
+export const CACHE_CONTROL_VERSION = "20260909-availability-hardening-v2";
 export const FIRESTORE_DEVICE_PREF_KEY = "cognicion.dispositivoPersonal";
 
-const STATIC_CACHE = `cognicion-static-${APP_VERSION}`;
+const STATIC_CACHE_PREFIX = "cognicion-static-";
 const UPDATE_BANNER_ID = "cognicionUpdateBanner";
 let registroPromise = null;
+let recargaSolicitada = false;
 
 function puedeUsarServiceWorker() {
   return typeof navigator !== "undefined" && "serviceWorker" in navigator && typeof window !== "undefined";
@@ -27,7 +31,7 @@ function insertarManifestSiFalta() {
   if (document.querySelector('link[rel="manifest"]')) return;
   const link = document.createElement("link");
   link.rel = "manifest";
-  link.href = "./manifest.json?v=20260726-notas-historial-tema-v1";
+  link.href = `./manifest.json?v=${encodeURIComponent(APP_VERSION)}`;
   document.head?.appendChild(link);
 }
 
@@ -67,14 +71,29 @@ function mostrarAvisoActualizacion(registro) {
     <span>Hay una actualizaci&oacute;n disponible.</span>
     <button type="button" style="border:0;border-radius:8px;padding:8px 12px;background:#e7f0ff;color:#102033;font-weight:700;cursor:pointer">Actualizar</button>
   `;
-  banner.querySelector("button")?.addEventListener("click", () => {
+  const button = banner.querySelector("button");
+  button?.addEventListener("click", () => {
     if (trabajoClinicoActivo() && !confirm("Hay texto clínico en edición. Antes de actualizar verifica que tu borrador esté guardado. ¿Actualizar ahora?")) return;
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (sessionStorage.getItem("cognicion.swReloaded") === APP_VERSION) return;
-      sessionStorage.setItem("cognicion.swReloaded", APP_VERSION);
+    const waitingWorker = registro.waiting;
+    if (!waitingWorker || recargaSolicitada) return;
+    recargaSolicitada = true;
+    button.disabled = true;
+    let activationTimeout = null;
+    const reloadOnce = () => {
+      if (!recargaSolicitada) return;
+      recargaSolicitada = false;
+      if (activationTimeout !== null) window.clearTimeout(activationTimeout);
       window.location.reload();
-    }, { once: true });
-    registro.waiting?.postMessage({ type: "SKIP_WAITING" });
+    };
+    navigator.serviceWorker.addEventListener("controllerchange", reloadOnce, { once: true });
+    waitingWorker.postMessage({ type: "SKIP_WAITING" });
+    activationTimeout = window.setTimeout(() => {
+      if (!recargaSolicitada) return;
+      recargaSolicitada = false;
+      navigator.serviceWorker.removeEventListener("controllerchange", reloadOnce);
+      button.disabled = false;
+      banner.querySelector("span").textContent = "La actualización no pudo activarse. Puedes seguir usando esta versión.";
+    }, 15000);
   });
   document.body?.appendChild(banner);
 }
@@ -86,7 +105,10 @@ export function iniciarCacheCognicionDiferido() {
   registroPromise = new Promise((resolve) => {
     ejecutarCuandoEsteLibre(async () => {
       try {
-        const registro = await navigator.serviceWorker.register("./service-worker.js", { scope: "./" });
+        const registro = await navigator.serviceWorker.register("./service-worker.js", {
+          scope: "./",
+          updateViaCache: "none"
+        });
         if (registro.waiting) mostrarAvisoActualizacion(registro);
         registro.addEventListener("updatefound", () => {
           const worker = registro.installing;
@@ -150,7 +172,8 @@ export async function diagnosticoCacheCognicion() {
   const registro = puedeUsarServiceWorker() ? await navigator.serviceWorker.getRegistration("./") : null;
   return {
     appVersion: APP_VERSION,
-    staticCache: STATIC_CACHE,
+    cacheControlVersion: CACHE_CONTROL_VERSION,
+    staticCachePrefix: STATIC_CACHE_PREFIX,
     serviceWorker: Boolean(registro),
     serviceWorkerState: registro?.active?.state || registro?.waiting?.state || registro?.installing?.state || "no_registrado",
     caches: cachesDisponibles.filter((key) => key.startsWith("cognicion-")),
@@ -162,6 +185,7 @@ export function exponerHerramientasCacheCognicion() {
   if (typeof window === "undefined") return;
   window.cognicionCache = {
     version: APP_VERSION,
+    cacheControlVersion: CACHE_CONTROL_VERSION,
     diagnostico: diagnosticoCacheCognicion,
     limpiarEstaticos: limpiarCachesEstaticosCognicion,
     limpiarDatosClinicosLocales: limpiarDatosClinicosLocalesCognicion,
