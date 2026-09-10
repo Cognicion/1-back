@@ -124,9 +124,9 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (esDocumento(request, url)) {
-    event.respondWith(networkOnly(request));
-    return;
-  }
+  event.respondWith(networkFirst(request));
+  return;
+}
 
   const destino = request.destination;
   const mismoOrigen = url.origin === self.location.origin;
