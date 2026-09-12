@@ -1199,6 +1199,11 @@ exports.listAdminAuthUsers = membershipAdministrationFunctions.listAdminAuthUser
 exports.setUserMembership = membershipAdministrationFunctions.setUserMembership;
 googleCalendarRuntime = createGoogleCalendarRuntime({ db: adminDb, credential: admin.app().options.credential, appointmentService: getAppointmentService });
 Object.assign(exports, googleCalendarRuntime.exports);
+Object.assign(exports, require("./publicDirectory").createPublicDirectoryRuntime({
+  db: adminDb,
+  externalAvailabilityProvider: googleCalendarRuntime.availabilityProvider,
+  secrets: googleCalendarRuntime.secrets
+}));
 const googleCalendarHandlers = createGoogleCalendarHandlers({
   db: adminDb,
   credential: admin.app().options.credential,

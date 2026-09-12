@@ -5,6 +5,8 @@
 <script src="js/theme-preload.js?v=2.206-navbar-agenda-v1"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Agenda | COGNICIÓN</title>
+<script>if (new URLSearchParams(location.search).has("professional")) document.documentElement.dataset.publicAgenda = "true";</script>
+<link rel="stylesheet" href="css/professionals.css">
 <link rel="icon" type="image/png" href="assets/favicon-cognicion.png">
 <link rel="stylesheet" href="css/theme/cognicion-theme.css">
 <link rel="stylesheet" href="css/agenda.css?v=2.206">
@@ -188,8 +190,6 @@
     </details>
   </section>
 </dialog>
-<script type="module" src="js/agenda.js?v=2.208"></script>
-<script type="module" src="js/components/accesosRapidos.js"></script>
-<script type="module" src="js/reportes.js"></script>
+<script type="module" src="js/agenda/entry.js"></script>
 </body>
 </html>

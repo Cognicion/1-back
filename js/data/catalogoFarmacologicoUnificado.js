@@ -9,12 +9,12 @@
  * Corte de datos: 2026-08-18.
  */
 
-import { REGLAS_INTERACCIONES_CLINICAS } from "./reglasClinicasMedicamentosExtendidas.js?v=20260904-parametros-colera-v2";
+import { REGLAS_INTERACCIONES_CLINICAS } from "./reglasClinicasMedicamentosExtendidas.js?v=20260911-modafinil-substances-lab-v1";
 import { integrarAntibioticosRegulatorios } from "./antibioticosRegulatorios.js?v=20260822-fda-cofepris-v1";
 
 export const CATALOGO_FARMACOLOGICO_METADATA = Object.freeze({
   esquema: "cognicion.catalogo-farmacologico.v2",
-  fechaCorte: "2026-08-18",
+  fechaCorte: "2026-09-11",
   rxNormVersion: "03-Aug-2026",
   rxNormApiVersion: "3.1.354",
   fuentePresentaciones: "https://lhncbc.nlm.nih.gov/RxNav/APIs/RxNormAPIs.html"
@@ -90928,8 +90928,435 @@ const CATALOGO_FARMACOLOGICO_PREEXISTENTE = [
   }
 ];
 
+const FUENTES_SUSTANCIAS_PSICOACTIVAS = Object.freeze([
+  "National Institute on Drug Abuse (NIDA), Commonly Used Drugs Charts, https://nida.nih.gov/research-topics/commonly-used-drugs-charts",
+  "National Institute on Drug Abuse (NIDA), Commonly Abused Drugs, https://nida.nih.gov/sites/default/files/commonly_abused_drugs.pdf",
+  "NIAAA, Alcohol-Medication Interactions: Potentially Dangerous Mixes, https://www.niaaa.nih.gov/health-professionals-communities/core-resource-on-alcohol/alcohol-medication-interactions-potentially-dangerous-mixes"
+]);
+
+const FUENTES_MODAFINILO = Object.freeze([
+  "Stahl, Prescriber's Guide, 6th ed. (2017), modafinil, PDF 509-512 (impresas 491-494), fuente local fuentes_farmacologicas/stahl_prescribers_guide.pdf.",
+  "DailyMed, PROVIGIL (modafinil) tablets, revisión 02/2025, https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=3b8d1c32-dac9-50e6-e063-6394a90aa5a5",
+  "RxNorm: modafinil 100 mg oral tablet (RxCUI 260218) y 200 mg oral tablet (RxCUI 205324), https://rxnav.nlm.nih.gov/REST/drugs.json?name=modafinil"
+]);
+
+const PRESENTACION_EXPOSICION_SIN_DOSIS = Object.freeze({
+  texto: "registro de exposición o consumo (sin dosis terapéutica)",
+  via: "según exposición reportada",
+  forma: "sustancia psicoactiva",
+  concentracion: "no aplica",
+  fuente: "historia_clinica_consumo_sustancias",
+  rxCui: null,
+  principioActivoPresentado: null,
+  activo: true,
+  origen: "catalogo_farmacologico_maestro"
+});
+
+const DATOS_FAMILIA_SUSTANCIA = Object.freeze({
+  cannabinoide: {
+    clasePrincipal: "Cannabinoides",
+    clases: ["sustancia_psicoactiva", "cannabinoide"],
+    categoriasInteraccion: ["depresora_snc", "cardiovascular", "psiquiatrica"],
+    mecanismoAccion: "Modulación del sistema endocannabinoide; el mecanismo y la potencia dependen del cannabinoide y de la composición real del producto.",
+    precauciones: ["Puede alterar atención, memoria, coordinación y juicio.", "Vigilar ansiedad, pánico, síntomas psicóticos y riesgo cardiovascular en personas susceptibles.", "La composición de productos no regulados puede ser incierta."],
+    efectosAdversos: ["Alteración cognitiva y psicomotora", "Ansiedad o pánico", "Taquicardia", "Síntomas psicóticos en personas susceptibles"],
+    vigilancia: ["Estado mental", "Frecuencia cardiaca y presión arterial", "Coordinación y riesgo de accidentes", "Patrón de consumo y abstinencia"],
+    riesgos: { sedacion: 1, cardiovascular: 1, psiquiatrico: 2 }
+  },
+  estimulante: {
+    clasePrincipal: "Estimulantes del SNC",
+    clases: ["sustancia_psicoactiva", "estimulante", "estimulante_convulsivo", "riesgo_cardiovascular"],
+    categoriasInteraccion: ["cardiovascular", "convulsiva", "psiquiatrica"],
+    mecanismoAccion: "Aumento de señal monoaminérgica y simpática; el mecanismo específico varía por sustancia.",
+    precauciones: ["Mayor riesgo con hipertensión, arritmias, cardiopatía, epilepsia, agitación, psicosis o privación de sueño.", "La potencia y los adulterantes de productos ilícitos son impredecibles."],
+    efectosAdversos: ["Taquicardia e hipertensión", "Agitación, ansiedad e insomnio", "Arritmias o isquemia", "Hipertermia y convulsiones"],
+    vigilancia: ["Presión arterial y frecuencia cardiaca", "Temperatura", "Estado mental", "Dolor torácico", "Convulsiones"],
+    riesgos: { presion: 2, cardiovascular: 2, convulsivo: 2, psiquiatrico: 2 }
+  },
+  opioide: {
+    clasePrincipal: "Opioides",
+    clases: ["sustancia_psicoactiva", "opioide", "depresor_snc"],
+    categoriasInteraccion: ["depresora_snc", "respiratoria"],
+    mecanismoAccion: "Agonismo de receptores opioides, principalmente mu; la potencia y actividad intrínseca dependen de la sustancia.",
+    precauciones: ["Riesgo de sedación, depresión respiratoria, sobredosis, dependencia y abstinencia.", "El riesgo aumenta con alcohol, benzodiacepinas, gabapentinoides u otros depresores del SNC."],
+    efectosAdversos: ["Sedación", "Depresión respiratoria", "Miosis", "Náusea y estreñimiento", "Dependencia y abstinencia"],
+    vigilancia: ["Frecuencia respiratoria y nivel de conciencia", "Saturación de oxígeno si procede", "Datos de sobredosis o abstinencia", "Uso concomitante de depresores del SNC"],
+    riesgos: { sedacion: 2, respiratorio: 3, caidas: 1 }
+  },
+  sedante: {
+    clasePrincipal: "Sedantes, hipnóticos y ansiolíticos",
+    clases: ["sustancia_psicoactiva", "sedante", "depresor_snc"],
+    categoriasInteraccion: ["depresora_snc", "respiratoria"],
+    mecanismoAccion: "Depresión del sistema nervioso central; el blanco molecular depende de la sustancia y puede incluir modulación GABAérgica.",
+    precauciones: ["Evitar combinación con opioides, alcohol u otros depresores del SNC.", "Vigilar deterioro psicomotor, caídas, tolerancia, dependencia y abstinencia."],
+    efectosAdversos: ["Somnolencia", "Ataxia y caídas", "Deterioro cognitivo", "Depresión respiratoria en combinaciones", "Dependencia y abstinencia"],
+    vigilancia: ["Nivel de conciencia", "Frecuencia respiratoria", "Marcha y caídas", "Patrón de uso y abstinencia"],
+    riesgos: { sedacion: 2, respiratorio: 2, caidas: 2 }
+  },
+  psicodelico: {
+    clasePrincipal: "Alucinógenos y psicodélicos",
+    clases: ["sustancia_psicoactiva", "psicodelico", "serotoninergico"],
+    categoriasInteraccion: ["serotoninergica", "psiquiatrica"],
+    mecanismoAccion: "Modulación serotoninérgica central; en los psicodélicos clásicos predomina la actividad sobre receptores 5-HT2A.",
+    precauciones: ["Puede precipitar ansiedad intensa, alteraciones perceptivas o desorganización; mayor cautela con psicosis, bipolaridad o riesgo suicida.", "Evitar combinación no supervisada con otros serotoninérgicos o inhibidores de monoaminooxidasa."],
+    efectosAdversos: ["Alteraciones perceptivas", "Ansiedad o pánico", "Taquicardia e hipertensión", "Desorganización o psicosis persistente infrecuente"],
+    vigilancia: ["Estado mental", "Conducta y seguridad", "Presión arterial y frecuencia cardiaca", "Temperatura si hay agitación"],
+    riesgos: { serotoninergico: 1, presion: 1, psiquiatrico: 2 }
+  },
+  disociativo: {
+    clasePrincipal: "Disociativos",
+    clases: ["sustancia_psicoactiva", "disociativo", "depresor_snc"],
+    categoriasInteraccion: ["depresora_snc", "cardiovascular", "psiquiatrica"],
+    mecanismoAccion: "Antagonismo funcional de receptores NMDA u otros mecanismos disociativos; varía según la sustancia.",
+    precauciones: ["Puede alterar conciencia, percepción, coordinación y juicio.", "Mayor riesgo de sedación o depresión respiratoria con alcohol, opioides u otros depresores."],
+    efectosAdversos: ["Disociación y alteración perceptiva", "Agitación o sedación", "Hipertensión y taquicardia", "Deterioro motor"],
+    vigilancia: ["Estado mental y conciencia", "Vía aérea y respiración", "Presión arterial y frecuencia cardiaca", "Riesgo de lesión"],
+    riesgos: { sedacion: 1, respiratorio: 1, cardiovascular: 1, psiquiatrico: 2 }
+  },
+  inhalante: {
+    clasePrincipal: "Inhalantes",
+    clases: ["sustancia_psicoactiva", "inhalante", "depresor_snc", "riesgo_cardiovascular"],
+    categoriasInteraccion: ["depresora_snc", "cardiovascular", "respiratoria"],
+    mecanismoAccion: "Depresión o disrupción inespecífica del SNC por compuestos volátiles; la toxicidad depende de la sustancia y los propelentes.",
+    precauciones: ["Riesgo de hipoxia, aspiración, arritmia, trauma y muerte súbita.", "La composición del producto puede ser desconocida o contener múltiples tóxicos."],
+    efectosAdversos: ["Mareo, ataxia y alteración de conciencia", "Hipoxia", "Arritmias", "Daño neurológico, hepático o renal según compuesto"],
+    vigilancia: ["Vía aérea, respiración y oxigenación", "ECG y ritmo cardiaco", "Estado neurológico", "Función hepática y renal según exposición"],
+    riesgos: { sedacion: 2, respiratorio: 2, cardiovascular: 2, renal: 1 }
+  },
+  rendimiento: {
+    clasePrincipal: "Sustancias para rendimiento o imagen corporal",
+    clases: ["sustancia_psicoactiva", "sustancia_rendimiento"],
+    categoriasInteraccion: ["cardiovascular", "metabolica", "hepatica", "psiquiatrica"],
+    mecanismoAccion: "Efectos hormonales o metabólicos variables según la sustancia; no se infiere una molécula concreta cuando el registro es de clase.",
+    precauciones: ["Revisar composición, vía, duración y coadministración.", "Vigilar efectos cardiovasculares, metabólicos, hepáticos, endocrinos y psiquiátricos."],
+    efectosAdversos: ["Alteraciones cardiovasculares y metabólicas", "Alteraciones endocrinas", "Daño hepático según producto", "Cambios del estado de ánimo"],
+    vigilancia: ["Presión arterial", "Perfil metabólico y lipídico", "Función hepática", "Eje endocrino según sustancia", "Estado mental"],
+    riesgos: { cardiovascular: 2, metabolico: 2, hepatotoxico: 1, psiquiatrico: 1 }
+  },
+  desconocida: {
+    clasePrincipal: "Sustancia no identificada",
+    clases: ["sustancia_psicoactiva", "composicion_desconocida"],
+    categoriasInteraccion: ["datos_insuficientes"],
+    mecanismoAccion: "Dato no encontrado: la composición no está identificada.",
+    precauciones: ["No inferir seguridad ni ausencia de interacciones sin identificar la sustancia.", "En exposición aguda, priorizar evaluación clínica y toxicológica según síntomas."],
+    efectosAdversos: ["Dato no predecible sin conocer composición, potencia, adulterantes y vía"],
+    vigilancia: ["Signos vitales", "Estado mental", "Vía aérea y respiración", "ECG y laboratorios dirigidos por presentación clínica"],
+    riesgos: { datos_insuficientes: 3 }
+  }
+});
+
+function crearPerfilSustancia({
+  id,
+  nombre,
+  familia,
+  sinonimos = [],
+  legacyIds = [],
+  clases = [],
+  categoriasInteraccion = [],
+  mecanismoAccion = "",
+  metabolismo = "",
+  eliminacion = "",
+  cyp = [],
+  metabolitosActivos = [],
+  precauciones = [],
+  efectosAdversos = [],
+  vigilancia = [],
+  riesgos = {},
+  interacciones = [],
+  relacionDiagnosticos = [],
+  notas = ""
+}) {
+  const base = DATOS_FAMILIA_SUSTANCIA[familia] || DATOS_FAMILIA_SUSTANCIA.desconocida;
+  const dosisNoAplica = "No aplica: registro de exposición o consumo, no pauta terapéutica.";
+  const fuentePendiente = "Dato no encontrado en las fuentes locales estructuradas; requiere monografía específica.";
+  const presentacion = { ...PRESENTACION_EXPOSICION_SIN_DOSIS, id: `${id}-registro-exposicion` };
+  const clasesFinales = [...new Set([...base.clases, ...clases])];
+  const categoriasFinales = [...new Set([...base.categoriasInteraccion, ...categoriasInteraccion])];
+  const precaucionesFinales = [...new Set([...base.precauciones, ...precauciones])];
+  const efectosFinales = [...new Set([...base.efectosAdversos, ...efectosAdversos])];
+  const vigilanciaFinal = [...new Set([...base.vigilancia, ...vigilancia])];
+  const interaccionesFinales = [...new Set([
+    ...interacciones,
+    "Las interacciones se evalúan por principio activo, clase farmacodinámica y exposición concomitante en el motor clínico."
+  ])];
+  const dxFinales = [...new Set([
+    ...relacionDiagnosticos,
+    "Revisar trastorno por consumo, intoxicación, abstinencia, riesgo cardiovascular, neurológico, respiratorio y psiquiátrico según la sustancia."
+  ])];
+  return {
+    id,
+    legacyIds,
+    nombre,
+    genericName: nombre,
+    principioActivo: id,
+    principiosActivos: [nombre, id],
+    clasePrincipal: base.clasePrincipal,
+    clases: clasesFinales,
+    categoriasInteraccion: categoriasFinales,
+    sinonimos,
+    marcas: [],
+    especialidades: ["Medicina de adicciones", "Psiquiatría", "Medicina interna", "Urgencias"],
+    presentaciones: [presentacion],
+    dosisHabitual: dosisNoAplica,
+    rangoDosis: dosisNoAplica,
+    dosisHabituales: [],
+    frecuenciasSugeridas: [],
+    esSustanciaPsicoactiva: true,
+    datosClinicos: {
+      indicaciones: [],
+      contraindicaciones: [],
+      contraindicacionesRelativas: precaucionesFinales,
+      precauciones: precaucionesFinales,
+      advertencias: ["No existe una pauta terapéutica asociada a este registro de consumo."],
+      monitorizacion: vigilanciaFinal,
+      dosisAdulto: [],
+      dosisPediatrica: [],
+      embarazo: "Evitar exposición; la valoración depende de la sustancia, etapa gestacional y contexto clínico.",
+      lactancia: "Evitar exposición y valorar riesgo por sustancia; no se infiere seguridad por ausencia de datos."
+    },
+    farmacocinetica: {
+      mecanismoAccion: mecanismoAccion || base.mecanismoAccion,
+      vidaMedia: fuentePendiente,
+      tiempoConcentracionMaxima: fuentePendiente,
+      duracionAccion: fuentePendiente,
+      metabolismo: metabolismo || fuentePendiente,
+      eliminacion: eliminacion || fuentePendiente,
+      cyp,
+      metabolitosActivos
+    },
+    efectosAdversos: efectosFinales,
+    riesgos: { ...base.riesgos, ...riesgos },
+    interacciones: interaccionesFinales,
+    interaccionesRelacionadas: [],
+    relacionDiagnosticos: dxFinales,
+    notas: notas || "Registro farmacológico de exposición o consumo. No contiene dosis terapéutica.",
+    referencias: [...FUENTES_SUSTANCIAS_PSICOACTIVAS],
+    fuenteClinica: {
+      estado: "fuente_regulatoria_parcial",
+      fuente: "NIDA/NIAAA; perfil de clase con monografía específica pendiente donde se indica",
+      fuentes: [...FUENTES_SUSTANCIAS_PSICOACTIVAS],
+      paginaSeccion: "NIDA Commonly Used Drugs Charts y Commonly Abused Drugs; NIAAA Alcohol-Medication Interactions",
+      confianza: "moderada para riesgos de clase; farmacocinética específica pendiente donde se indica"
+    },
+    farmacologia: {
+      esquema: "cognicion.farmacologia.v1",
+      id,
+      nombreGenerico: nombre,
+      subclase: base.clasePrincipal,
+      dosisHabitual: dosisNoAplica,
+      rangoDosis: dosisNoAplica,
+      mecanismoAccion: mecanismoAccion || base.mecanismoAccion,
+      cyp,
+      metabolitosActivos,
+      viaEliminacion: eliminacion || fuentePendiente,
+      contraindicacionesAbsolutas: [],
+      contraindicacionesRelativas: precaucionesFinales,
+      precauciones: precaucionesFinales,
+      efectosAdversos: efectosFinales,
+      vigilancia: vigilanciaFinal,
+      laboratorios: vigilanciaFinal,
+      interaccionesMedicamento: interaccionesFinales,
+      interaccionesDiagnostico: dxFinales,
+      estadoFuente: "fuente_regulatoria_parcial",
+      fuente: "NIDA/NIAAA"
+    },
+    pediatria: null,
+    origenesCatalogo: ["catalogo_maestro", "historia_consumo_sustancias"],
+    activo: true,
+    estadoContenido: "perfil_de_clase_documentado",
+    actualizadoEn: "2026-09-11"
+  };
+}
+
+const MODAFINILO = {
+  id: "modafinilo",
+  legacyIds: [],
+  nombre: "Modafinilo",
+  genericName: "Modafinilo",
+  principioActivo: "modafinilo",
+  principiosActivos: ["Modafinilo", "modafinilo"],
+  clasePrincipal: "Promotor de la vigilia",
+  clases: ["Promotor de la vigilia", "Inhibidor de la recaptura de dopamina", "estimulante", "inductor_cyp3a4", "inhibidor_cyp2c19", "riesgo_cardiovascular"],
+  categoriasInteraccion: ["metabolica_cyp", "cardiovascular", "psiquiatrica"],
+  sinonimos: ["modafinil", "modafinilo 100 mg", "modafinilo 200 mg"],
+  marcas: ["Provigil", "Alertec", "Modiodal"],
+  especialidades: ["Neurología", "Medicina del sueño", "Psiquiatría", "Medicina interna"],
+  presentaciones: [
+    { id: "modafinilo-tableta-100-mg", texto: "tableta de 100 mg", via: "oral", forma: "tableta", concentracion: "100 mg", fuente: "RxNorm", rxCui: "260218", principioActivoPresentado: "modafinilo", activo: true, origen: "RxNorm" },
+    { id: "modafinilo-tableta-200-mg", texto: "tableta de 200 mg", via: "oral", forma: "tableta", concentracion: "200 mg", fuente: "RxNorm", rxCui: "205324", principioActivoPresentado: "modafinilo", activo: true, origen: "RxNorm" }
+  ],
+  dosisHabitual: "200 mg una vez al día; individualizar por indicación, respuesta y ficha técnica.",
+  rangoDosis: "100-400 mg/día en adultos según indicación y tolerancia; dosis superiores a 200 mg/día no siempre aportan beneficio adicional.",
+  dosisHabituales: ["100 mg", "200 mg"],
+  frecuenciasSugeridas: ["cada 24 horas"],
+  datosClinicos: {
+    indicaciones: ["Somnolencia excesiva asociada a narcolepsia", "Somnolencia excesiva asociada a apnea obstructiva del sueño como coadyuvante", "Trastorno del sueño por trabajo en turnos"],
+    contraindicaciones: ["Hipersensibilidad conocida a modafinilo, armodafinilo o sus excipientes"],
+    contraindicacionesRelativas: ["Enfermedad cardiovascular significativa", "Antecedente de psicosis, depresión o manía", "Insuficiencia hepática grave"],
+    precauciones: ["Suspender ante erupción cutánea salvo que se descarte relación farmacológica.", "Vigilar reacciones de hipersensibilidad, síntomas psiquiátricos y somnolencia persistente.", "Puede reducir la eficacia de anticonceptivos esteroideos durante el tratamiento y un mes después.", "Usar la mitad de la dosis habitual en insuficiencia hepática grave."],
+    advertencias: ["Erupción cutánea grave, incluida SJS/TEN/DRESS", "Angioedema, anafilaxia e hipersensibilidad multiorgánica", "Síntomas psiquiátricos y somnolencia persistente", "Riesgo cardiovascular en pacientes susceptibles"],
+    monitorizacion: ["Somnolencia y capacidad para conducir", "Erupción, fiebre o datos de hipersensibilidad", "Presión arterial y frecuencia cardiaca", "Cambios de ánimo, psicosis, manía o ideación suicida", "Eficacia anticonceptiva si aplica", "INR si usa warfarina"],
+    dosisAdulto: [{ indicationId: "narcolepsia_osa", population: "adult", usualDose: { text: "200 mg por la mañana" }, administrationNotes: ["En trabajo por turnos, aproximadamente una hora antes del turno."] }],
+    dosisPediatrica: [],
+    embarazo: "Datos humanos insuficientes; el etiquetado describe posible daño fetal basado en datos animales y recomienda valorar riesgo-beneficio.",
+    lactancia: "No se conoce con certeza la presencia en leche humana; valorar riesgo-beneficio y vigilancia del lactante."
+  },
+  farmacocinetica: {
+    mecanismoAccion: "El mecanismo promotor de vigilia no está completamente definido; se une al transportador de dopamina e inhibe la recaptura de dopamina.",
+    vidaMedia: "Aproximadamente 15 horas",
+    tiempoConcentracionMaxima: "2-4 horas",
+    duracionAccion: "Efecto promotor de vigilia compatible con dosificación diaria; estado estable en 2-4 días.",
+    metabolismo: "Metabolismo hepático extenso, principalmente por hidrólisis/desamidación, S-oxidación, hidroxilación aromática y glucuronidación; participa parcialmente CYP3A4/5.",
+    eliminacion: "Principalmente renal como metabolitos; menos de 10% se recupera sin cambios.",
+    cyp: ["Inhibidor reversible de CYP2C19", "Inductor débil de CYP3A4/5", "Sustrato parcial de CYP3A4/5", "Hallazgos in vitro débiles en CYP1A2/CYP2B6/CYP2C9 que no se usan solos para generar alertas"],
+    metabolitosActivos: ["Ácido de modafinilo y sulfona de modafinilo sin contribución significativa al efecto promotor de vigilia"]
+  },
+  efectosAdversos: ["Cefalea", "Náusea", "Nerviosismo o ansiedad", "Insomnio", "Mareo", "Dispepsia o diarrea", "Palpitaciones o hipertensión", "Erupción cutánea e hipersensibilidad grave infrecuentes"],
+  riesgos: { presion: 1, cardiovascular: 1, ansiedad: 1, insomnio: 1 },
+  interacciones: ["Inducción CYP3A4/5: puede disminuir exposición de anticonceptivos esteroideos, ciclosporina, midazolam y triazolam.", "Inhibición CYP2C19: puede aumentar exposición de diazepam, fenitoína, propranolol, omeprazol y clomipramina.", "Vigilar INR con warfarina y usar cautela con inhibidores de MAO."],
+  interaccionesRelacionadas: [],
+  relacionDiagnosticos: ["Hipertensión o cardiopatía: vigilar presión arterial y frecuencia cardiaca.", "Trastorno bipolar, psicosis o depresión: vigilar activación, manía, psicosis o ideación suicida.", "Insuficiencia hepática grave: reducir dosis."],
+  notas: "Sustancia controlada de Schedule IV en Estados Unidos; valorar potencial de uso indebido y dependencia.",
+  referencias: [...FUENTES_MODAFINILO],
+  fuenteClinica: { estado: "verificada_local", fuente: "Stahl Prescriber's Guide y DailyMed PROVIGIL", fuentes: [...FUENTES_MODAFINILO], paginaSeccion: "Stahl PDF 509-512; DailyMed secciones 1, 2, 4, 5, 6, 7 y 12", confianza: "alta" },
+  farmacologia: {
+    esquema: "cognicion.farmacologia.v1", id: "modafinilo", nombreGenerico: "Modafinilo", subclase: "Promotor de la vigilia / inhibidor de la recaptura de dopamina",
+    dosisHabitual: "200 mg una vez al día", rangoDosis: "100-400 mg/día según indicación y tolerancia", mecanismoAccion: "Inhibición del transportador de dopamina; mecanismo promotor de vigilia no completamente definido.",
+    cyp: ["CYP2C19 inhibidor", "CYP3A4/5 inductor débil y sustrato parcial"], metabolitosActivos: ["Sin metabolitos con contribución significativa al efecto promotor de vigilia"], viaEliminacion: "Renal, principalmente como metabolitos",
+    contraindicacionesAbsolutas: ["Hipersensibilidad a modafinilo o armodafinilo"], contraindicacionesRelativas: ["Cardiopatía significativa", "Psicosis, depresión o manía", "Insuficiencia hepática grave"],
+    precauciones: ["Reacciones cutáneas e hipersensibilidad graves", "Somnolencia persistente", "Síntomas psiquiátricos", "Interacciones CYP"], efectosAdversos: ["Cefalea", "Náusea", "Ansiedad", "Insomnio", "Mareo"],
+    vigilancia: ["Piel e hipersensibilidad", "Somnolencia", "Presión arterial y pulso", "Estado mental"], laboratorios: ["INR con warfarina", "Función hepática si existe enfermedad hepática"],
+    interaccionesMedicamento: ["CYP3A4/5", "CYP2C19", "Warfarina", "Anticonceptivos esteroideos", "IMAO"], interaccionesDiagnostico: ["Hipertensión/cardiopatía", "Trastorno bipolar/psicosis", "Insuficiencia hepática"],
+    estadoFuente: "verificada_local", fuente: "Stahl/DailyMed"
+  },
+  pediatria: null,
+  origenesCatalogo: ["catalogo_maestro", "Stahl", "DailyMed", "RxNorm"],
+  activo: true,
+  estadoContenido: "verificado",
+  actualizadoEn: "2026-09-11"
+};
+
+const PERFILES_SUSTANCIAS_PSICOACTIVAS = [
+  crearPerfilSustancia({ id: "cannabis", nombre: "Cannabis (THC/marihuana)", familia: "cannabinoide", sinonimos: ["marihuana", "hachís", "hashish", "THC", "concentrados de cannabis", "THC en comestibles"], notas: "La potencia de THC y la proporción THC/CBD varían entre productos." }),
+  crearPerfilSustancia({ id: "cannabinoides_sinteticos", nombre: "Cannabinoides sintéticos", familia: "cannabinoide", sinonimos: ["cannabis sintético", "spice", "K2"], riesgos: { cardiovascular: 2, convulsivo: 2, psiquiatrico: 3 }, precauciones: ["Los agonistas sintéticos pueden ser más potentes e impredecibles que el cannabis y causar toxicidad grave."], efectosAdversos: ["Agitación o psicosis", "Convulsiones", "Taquicardia o arritmia", "Lesión renal aguda descrita con algunos productos"] }),
+  crearPerfilSustancia({ id: "cannabidiol_composicion_desconocida", nombre: "CBD no médico o de composición desconocida", familia: "cannabinoide", sinonimos: ["CBD no médico", "cannabidiol no regulado"], clases: ["composicion_desconocida"], precauciones: ["No asumir pureza, concentración ni ausencia de THC o contaminantes en productos no regulados."] }),
+  crearPerfilSustancia({ id: "cocaina", nombre: "Cocaína", familia: "estimulante", sinonimos: ["cocaína", "crack", "pasta base"], mecanismoAccion: "Bloqueo de la recaptura de dopamina, noradrenalina y serotonina; además bloquea canales de sodio.", categoriasInteraccion: ["serotoninergica"], clases: ["serotoninergico"], efectosAdversos: ["Isquemia miocárdica o cerebral", "Arritmias", "Hipertermia", "Convulsiones"], relacionDiagnosticos: ["Alto riesgo en hipertensión, cardiopatía, arritmias, epilepsia, psicosis o embarazo."] }),
+  crearPerfilSustancia({ id: "metanfetamina", nombre: "Metanfetamina", familia: "estimulante", sinonimos: ["methamphetamine", "crystal meth", "cristal"], clases: ["serotoninergico"], categoriasInteraccion: ["serotoninergica"], mecanismoAccion: "Incrementa liberación y reduce recaptura de monoaminas, con efecto dopaminérgico, noradrenérgico y serotoninérgico." }),
+  crearPerfilSustancia({ id: "mdma", nombre: "MDMA (éxtasis)", familia: "estimulante", sinonimos: ["éxtasis", "ecstasy", "Molly"], clases: ["serotoninergico"], categoriasInteraccion: ["serotoninergica", "electrolitica"], mecanismoAccion: "Aumenta liberación y reduce recaptura de serotonina, noradrenalina y dopamina.", precauciones: ["Riesgo de hipertermia, hiponatremia y síndrome serotoninérgico, especialmente con otros serotoninérgicos."], riesgos: { serotoninergico: 3, sodio: 2 } }),
+  crearPerfilSustancia({ id: "mefedrona", nombre: "Mefedrona", familia: "estimulante", sinonimos: ["mephedrone", "4-MMC"], clases: ["serotoninergico"], categoriasInteraccion: ["serotoninergica"], mecanismoAccion: "Catinona sintética con efecto liberador/inhibidor de recaptura de monoaminas; la potencia clínica puede variar." }),
+  crearPerfilSustancia({ id: "catinonas_sinteticas", nombre: "Catinonas sintéticas", familia: "estimulante", sinonimos: ["sales de baño", "bath salts"], clases: ["serotoninergico", "composicion_desconocida"], categoriasInteraccion: ["serotoninergica"], notas: "Clase heterogénea; no se infiere una molécula concreta." }),
+  crearPerfilSustancia({ id: "estimulantes_no_especificados", nombre: "Otros estimulantes no especificados", familia: "estimulante", sinonimos: ["otros estimulantes de prescripción", "estimulantes prescritos"], clases: ["composicion_desconocida"] }),
+  crearPerfilSustancia({ id: "heroina", nombre: "Heroína", familia: "opioide", sinonimos: ["diacetilmorfina", "diamorfina"], mecanismoAccion: "Profármaco opioide convertido rápidamente a 6-monoacetilmorfina y morfina, con agonismo mu.", metabolitosActivos: ["6-monoacetilmorfina", "Morfina"] }),
+  crearPerfilSustancia({ id: "opio", nombre: "Opio", familia: "opioide", sinonimos: ["opium"], mecanismoAccion: "Mezcla de alcaloides del opio, entre ellos morfina y codeína; el efecto predominante es agonismo opioide.", notas: "La composición y potencia no son uniformes." }),
+  crearPerfilSustancia({ id: "hidrocodona", nombre: "Hidrocodona", familia: "opioide", sinonimos: ["hydrocodone"], metabolismo: "Metabolismo hepático; participan CYP3A4 y CYP2D6.", eliminacion: "Renal, principalmente como metabolitos.", cyp: ["Sustrato CYP3A4", "Sustrato CYP2D6"], metabolitosActivos: ["Hidromorfona (contribución variable)"] }),
+  crearPerfilSustancia({ id: "buprenorfina", nombre: "Buprenorfina", familia: "opioide", sinonimos: ["buprenorphine"], mecanismoAccion: "Agonista parcial mu y antagonista kappa; puede causar depresión respiratoria, especialmente con otros depresores.", metabolismo: "Metabolismo hepático, principalmente CYP3A4 y glucuronidación.", eliminacion: "Fecal y renal como fármaco y metabolitos.", cyp: ["Sustrato CYP3A4"], metabolitosActivos: ["Norbuprenorfina"] }),
+  crearPerfilSustancia({ id: "opioides_no_especificados", nombre: "Otros opioides no especificados", familia: "opioide", sinonimos: ["otros opioides", "analgésicos opioides prescritos"], clases: ["composicion_desconocida"] }),
+  crearPerfilSustancia({ id: "benzodiacepinas_clase", nombre: "Benzodiacepinas (clase no especificada)", familia: "sedante", sinonimos: ["benzodiacepinas", "benzodiazepines"], clases: ["benzodiacepina"], mecanismoAccion: "Moduladores alostéricos positivos del receptor GABA-A; la farmacocinética depende de la molécula." }),
+  crearPerfilSustancia({ id: "barbituricos_clase", nombre: "Barbitúricos (clase no especificada)", familia: "sedante", sinonimos: ["barbitúricos", "barbiturates"], clases: ["barbiturico", "inductor_enzimatico"], mecanismoAccion: "Modulación GABA-A con depresión del SNC; varios barbitúricos inducen enzimas hepáticas.", riesgos: { respiratorio: 3 } }),
+  crearPerfilSustancia({ id: "sedantes_no_especificados", nombre: "Otros sedantes no especificados", familia: "sedante", sinonimos: ["otros sedantes", "sedantes prescritos"], clases: ["composicion_desconocida"] }),
+  crearPerfilSustancia({ id: "lsd", nombre: "LSD", familia: "psicodelico", sinonimos: ["ácido lisérgico", "lysergic acid diethylamide"], mecanismoAccion: "Agonismo parcial de receptores serotoninérgicos, especialmente 5-HT2A." }),
+  crearPerfilSustancia({ id: "psilocibina", nombre: "Psilocibina", familia: "psicodelico", sinonimos: ["hongos psilocibios", "hongos alucinógenos"], mecanismoAccion: "Profármaco convertido a psilocina, agonista principalmente 5-HT2A.", metabolitosActivos: ["Psilocina"] }),
+  crearPerfilSustancia({ id: "mescalina", nombre: "Mescalina", familia: "psicodelico", sinonimos: ["peyote"], mecanismoAccion: "Psicodélico serotoninérgico con actividad predominante sobre 5-HT2A." }),
+  crearPerfilSustancia({ id: "dmt", nombre: "DMT", familia: "psicodelico", sinonimos: ["N,N-dimetiltriptamina"], mecanismoAccion: "Psicodélico serotoninérgico; es metabolizado rápidamente por monoaminooxidasa cuando se administra sin inhibidores de MAO." }),
+  crearPerfilSustancia({ id: "ayahuasca", nombre: "Ayahuasca", familia: "psicodelico", sinonimos: ["yagé", "yage"], clases: ["imao", "imao_reversible"], mecanismoAccion: "Preparación variable que puede combinar DMT con beta-carbolinas inhibidoras de MAO-A.", precauciones: ["Alto riesgo de interacción con ISRS, IRSN, tricíclicos, tramadol, linezolid y otros serotoninérgicos o simpaticomiméticos."], riesgos: { serotoninergico: 3 } }),
+  crearPerfilSustancia({ id: "salvia_divinorum", nombre: "Salvia divinorum", familia: "psicodelico", sinonimos: ["salvia"], clases: ["agonista_kappa"], mecanismoAccion: "Salvinorina A es agonista potente de receptores kappa-opioides; no es un psicodélico serotoninérgico clásico.", categoriasInteraccion: ["psiquiatrica"] }),
+  crearPerfilSustancia({ id: "alucinogenos_no_especificados", nombre: "Otros alucinógenos no especificados", familia: "psicodelico", sinonimos: ["otros alucinógenos"], clases: ["composicion_desconocida"] }),
+  crearPerfilSustancia({ id: "pcp", nombre: "Fenciclidina (PCP)", familia: "disociativo", sinonimos: ["fenciclidina", "phencyclidine"], clases: ["antagonista_nmda"], mecanismoAccion: "Antagonista no competitivo de receptores NMDA con efectos disociativos y simpaticomiméticos.", riesgos: { cardiovascular: 2, psiquiatrico: 3 } }),
+  crearPerfilSustancia({ id: "oxido_nitroso", nombre: "Óxido nitroso", familia: "disociativo", sinonimos: ["gas de la risa", "nitrous oxide"], clases: ["antagonista_nmda"], precauciones: ["La exposición repetida puede inactivar vitamina B12 y causar toxicidad neurológica o hematológica."], vigilancia: ["Vitamina B12, biometría hemática y evaluación neurológica si hay exposición repetida"], riesgos: { neurologico: 2, hematologico: 1 } }),
+  crearPerfilSustancia({ id: "disociativos_no_especificados", nombre: "Otros disociativos no especificados", familia: "disociativo", sinonimos: ["otros disociativos"], clases: ["composicion_desconocida"] }),
+  crearPerfilSustancia({ id: "inhalantes_volatiles", nombre: "Inhalantes volátiles", familia: "inhalante", sinonimos: ["thinner", "pegamentos", "gasolina", "aerosoles", "solventes", "otros inhalables"], clases: ["composicion_desconocida"], notas: "Clase heterogénea; registrar el producto y compuesto cuando se conozcan." }),
+  crearPerfilSustancia({ id: "tolueno", nombre: "Tolueno", familia: "inhalante", sinonimos: ["toluene"], precauciones: ["La exposición intensa o crónica puede causar neurotoxicidad, alteraciones ácido-base/electrolíticas y daño renal o hepático."], vigilancia: ["Electrolitos y bicarbonato", "Función renal y hepática", "ECG", "Evaluación neurológica"], riesgos: { renal: 2, potasio_bajo: 2 } }),
+  crearPerfilSustancia({ id: "butano", nombre: "Gas butano", familia: "inhalante", sinonimos: ["butane", "gas para encendedor"], precauciones: ["Riesgo de hipoxia y arritmia grave o muerte súbita."] }),
+  crearPerfilSustancia({ id: "nitritos_alquilo", nombre: "Nitritos de alquilo (poppers)", familia: "inhalante", sinonimos: ["poppers", "nitrito de amilo", "nitrito de butilo"], clases: ["vasodilatador_nitrato"], categoriasInteraccion: ["cardiovascular"], mecanismoAccion: "Vasodilatación mediada por óxido nítrico con descenso de presión arterial.", precauciones: ["No combinar con inhibidores PDE5 por riesgo de hipotensión profunda.", "Puede causar metahemoglobinemia."], efectosAdversos: ["Hipotensión y síncope", "Cefalea", "Metahemoglobinemia"], riesgos: { hipotension: 3, cardiovascular: 3 } }),
+  crearPerfilSustancia({ id: "fenetilaminas_sinteticas", nombre: "Fenetilaminas sintéticas", familia: "estimulante", sinonimos: ["fenetilaminas de diseño"], clases: ["serotoninergico", "composicion_desconocida"], categoriasInteraccion: ["serotoninergica"] }),
+  crearPerfilSustancia({ id: "nbome", nombre: "NBOMe", familia: "psicodelico", sinonimos: ["25I-NBOMe", "25C-NBOMe"], clases: ["estimulante_convulsivo"], riesgos: { convulsivo: 3, cardiovascular: 3 }, precauciones: ["Puede producir hipertermia, vasoconstricción, convulsiones y toxicidad grave; la identidad del producto puede ser incierta."] }),
+  crearPerfilSustancia({ id: "benzofuranos", nombre: "Benzofuranos psicoactivos", familia: "estimulante", sinonimos: ["6-APB", "5-APB"], clases: ["serotoninergico", "composicion_desconocida"], categoriasInteraccion: ["serotoninergica"] }),
+  crearPerfilSustancia({ id: "opioides_sinteticos_no_farmaceuticos", nombre: "Opioides sintéticos no farmacéuticos", familia: "opioide", sinonimos: ["nitazenos", "fentanilos ilícitos"], clases: ["composicion_desconocida"], riesgos: { respiratorio: 3 }, precauciones: ["Potencia y composición impredecibles; riesgo elevado de sobredosis y exposición inadvertida."] }),
+  crearPerfilSustancia({ id: "benzodiacepinas_diseno", nombre: "Benzodiacepinas de diseño", familia: "sedante", sinonimos: ["designer benzodiazepines"], clases: ["benzodiacepina", "composicion_desconocida"], riesgos: { respiratorio: 3 }, precauciones: ["Potencia, duración y composición pueden ser desconocidas; alto riesgo con opioides o alcohol."] }),
+  crearPerfilSustancia({ id: "nuevas_sustancias_psicoactivas", nombre: "Otras nuevas sustancias psicoactivas", familia: "desconocida", sinonimos: ["NPS", "nuevas sustancias psicoactivas"], notas: "No se asigna un mecanismo ni una interacción específica sin identificar la molécula." }),
+  crearPerfilSustancia({ id: "anticolinergicos_recreativos", nombre: "Anticolinérgicos con uso recreativo", familia: "desconocida", sinonimos: ["anticolinérgicos"], clases: ["anticolinergico"], categoriasInteraccion: ["anticolinergica"], mecanismoAccion: "Antagonismo muscarínico; la sustancia concreta debe identificarse.", precauciones: ["Riesgo de delirium, hipertermia, taquicardia, retención urinaria e íleo, con carga aditiva junto a otros anticolinérgicos."], riesgos: { anticolinergico: 3, cardiovascular: 1 } }),
+  crearPerfilSustancia({ id: "antihistaminicos_recreativos", nombre: "Antihistamínicos con uso recreativo", familia: "sedante", sinonimos: ["antihistamínicos recreativos"], clases: ["antihistaminico_h1", "anticolinergico"], categoriasInteraccion: ["anticolinergica", "qt"], precauciones: ["La toxicidad depende del antihistamínico y puede incluir delirium, convulsiones, arritmia y prolongación QT."], riesgos: { anticolinergico: 2, qt: 2, convulsivo: 1 } }),
+  crearPerfilSustancia({ id: "medicamentos_no_indicados", nombre: "Otros medicamentos utilizados sin indicación", familia: "desconocida", sinonimos: ["otros medicamentos no indicados"], notas: "Debe sustituirse por el principio activo cuando se conozca; no se infiere seguridad de una clase desconocida." }),
+  crearPerfilSustancia({ id: "anestesicos_no_especificados", nombre: "Anestésicos no especificados", familia: "sedante", sinonimos: ["anestésicos"], clases: ["composicion_desconocida"], notas: "Clase heterogénea; registrar agente, vía y contexto cuando se conozcan." }),
+  crearPerfilSustancia({ id: "esteroides_anabolicos", nombre: "Esteroides anabólico-androgénicos", familia: "rendimiento", sinonimos: ["esteroides anabólicos", "anabolizantes"], clases: ["androgenico"], mecanismoAccion: "Agonismo del receptor androgénico con efectos anabólicos y androgénicos.", precauciones: ["Riesgo de dislipidemia, hipertensión, trombosis, hepatotoxicidad según compuesto, supresión gonadal y síntomas psiquiátricos."], vigilancia: ["Presión arterial", "Perfil lipídico", "Función hepática", "Biometría hemática/hematocrito", "Eje gonadal", "Estado mental"] }),
+  crearPerfilSustancia({ id: "somatropina", nombre: "Hormona de crecimiento (somatropina)", familia: "rendimiento", sinonimos: ["hormona de crecimiento", "growth hormone", "GH"], clases: ["hormona_crecimiento"], mecanismoAccion: "Agonismo del receptor de hormona de crecimiento con aumento de señal IGF-1.", precauciones: ["Puede producir edema, artralgias, resistencia a insulina e hipertensión intracraneal; requiere indicación endocrinológica cuando se usa terapéuticamente."], vigilancia: ["IGF-1", "Glucosa/HbA1c", "Edema", "Presión arterial", "Síntomas de hipertensión intracraneal"] }),
+  crearPerfilSustancia({ id: "sustancias_rendimiento_no_especificadas", nombre: "Otras sustancias para rendimiento o imagen corporal", familia: "rendimiento", sinonimos: ["otras sustancias para rendimiento"], clases: ["composicion_desconocida"] }),
+  crearPerfilSustancia({ id: "sustancia_no_identificada", nombre: "Sustancia no identificada", familia: "desconocida", sinonimos: ["sustancia desconocida", "otra sustancia"], legacyIds: ["otra-sustancia"], notas: "Conservar el nombre personalizado y sustituir este perfil por el principio activo cuando sea posible." })
+];
+
+const ALIAS_HISTORIA_SUSTANCIAS = [
+  ["alcohol", ["alcohol"], ["Alcohol"], ["sustancia_psicoactiva", "depresor_snc"], { sedacion: 2, respiratorio: 2 }],
+  ["nicotina", ["cigarrillos", "tabaco-puro-pipa", "tabaco-mascado", "vapeadores-nicotina", "pouches-nicotina"], ["Cigarrillos", "Tabaco puro o pipa", "Tabaco mascado", "Vapeadores con nicotina", "Pouches o bolsas de nicotina"], ["sustancia_psicoactiva", "estimulante", "riesgo_cardiovascular"], { cardiovascular: 1 }],
+  ["cannabis", ["cannabis", "hachis", "concentrados-cannabis", "thc-comestibles"], ["Cannabis o marihuana", "Hachís", "Concentrados de cannabis", "THC en comestibles"], [], {}],
+  ["cannabinoides_sinteticos", ["cannabis-sintetico"], ["Cannabis sintético"], [], {}],
+  ["cannabidiol_composicion_desconocida", ["cbd-no-medico"], ["CBD con uso no médico o composición desconocida"], [], {}],
+  ["cocaina", ["cocaina", "crack", "pasta-base"], ["Cocaína", "Crack", "Pasta base"], [], {}],
+  ["anfetamina", ["anfetaminas"], ["Anfetaminas"], ["sustancia_psicoactiva", "estimulante", "estimulante_convulsivo"], { presion: 2, cardiovascular: 2, convulsivo: 2 }],
+  ["metanfetamina", ["metanfetamina"], ["Metanfetamina"], [], {}],
+  ["mdma", ["mdma"], ["MDMA o éxtasis"], [], {}],
+  ["mefedrona", ["mefedrona"], ["Mefedrona"], [], {}],
+  ["catinonas_sinteticas", ["catinonas-sinteticas"], ["Catinonas sintéticas"], [], {}],
+  ["metilfenidato", ["metilfenidato-no-medico"], ["Metilfenidato sin indicación médica"], ["sustancia_psicoactiva", "estimulante_convulsivo"], { convulsivo: 2 }],
+  ["lisdexanfetamina", ["lisdexanfetamina-no-medica"], ["Lisdexanfetamina sin indicación médica"], ["sustancia_psicoactiva", "estimulante_convulsivo"], { convulsivo: 2 }],
+  ["estimulantes_no_especificados", ["otros-estimulantes-prescripcion", "estimulantes-prescritos"], ["Otros estimulantes de prescripción usados sin indicación", "Estimulantes prescritos"], [], {}],
+  ["heroina", ["heroina"], ["Heroína"], [], {}], ["opio", ["opio"], ["Opio"], [], {}],
+  ["morfina", ["morfina-no-medica"], ["Morfina sin indicación médica"], ["sustancia_psicoactiva", "opioide", "depresor_snc"], { sedacion: 2, respiratorio: 3 }],
+  ["codeina", ["codeina-no-medica"], ["Codeína sin indicación médica"], ["sustancia_psicoactiva", "opioide", "depresor_snc"], { sedacion: 2, respiratorio: 2 }],
+  ["tramadol", ["tramadol-no-medico"], ["Tramadol sin indicación médica"], ["sustancia_psicoactiva", "opioide", "depresor_snc", "serotoninergico", "estimulante_convulsivo"], { sedacion: 1, respiratorio: 1, convulsivo: 2, serotoninergico: 2 }],
+  ["oxicodona", ["oxicodona-no-medica"], ["Oxicodona sin indicación médica"], ["sustancia_psicoactiva", "opioide", "depresor_snc"], { sedacion: 2, respiratorio: 3 }],
+  ["hidrocodona", ["hidrocodona-no-medica"], ["Hidrocodona sin indicación médica"], [], {}],
+  ["fentanilo", ["fentanilo-no-medico"], ["Fentanilo ilícito o sin indicación médica"], ["sustancia_psicoactiva", "opioide", "depresor_snc"], { sedacion: 2, respiratorio: 3 }],
+  ["buprenorfina", ["buprenorfina-no-medica"], ["Buprenorfina sin indicación médica"], [], {}],
+  ["metadona", ["metadona-no-medica"], ["Metadona sin indicación médica"], ["sustancia_psicoactiva", "opioide", "depresor_snc", "qt"], { sedacion: 2, respiratorio: 3, qt: 2 }],
+  ["opioides_no_especificados", ["otros-opioides", "opioides-prescritos"], ["Otros opioides", "Analgésicos opioides prescritos"], [], {}],
+  ["benzodiacepinas_clase", ["benzodiacepinas"], ["Benzodiacepinas"], [], {}],
+  ["alprazolam", ["alprazolam-no-medico"], ["Alprazolam sin indicación médica"], ["sustancia_psicoactiva", "benzodiacepina", "depresor_snc"], { sedacion: 2, respiratorio: 2 }],
+  ["clonazepam", ["clonazepam-no-medico"], ["Clonazepam sin indicación médica"], ["sustancia_psicoactiva", "benzodiacepina", "depresor_snc"], { sedacion: 2, respiratorio: 2 }],
+  ["diazepam", ["diazepam-no-medico"], ["Diazepam sin indicación médica"], ["sustancia_psicoactiva", "benzodiacepina", "depresor_snc"], { sedacion: 2, respiratorio: 2 }],
+  ["lorazepam", ["lorazepam-no-medico"], ["Lorazepam sin indicación médica"], ["sustancia_psicoactiva", "benzodiacepina", "depresor_snc"], { sedacion: 2, respiratorio: 2 }],
+  ["midazolam", ["midazolam-no-medico"], ["Midazolam sin indicación médica"], ["sustancia_psicoactiva", "benzodiacepina", "depresor_snc"], { sedacion: 3, respiratorio: 3 }],
+  ["barbituricos_clase", ["barbituricos"], ["Barbitúricos"], [], {}],
+  ["zolpidem", ["zolpidem-no-medico"], ["Zolpidem y otros hipnóticos Z sin indicación médica"], ["sustancia_psicoactiva", "sedante", "depresor_snc"], { sedacion: 2, respiratorio: 1 }],
+  ["gabapentina", ["gabapentina-no-medica"], ["Gabapentina sin indicación médica"], ["sustancia_psicoactiva", "gabapentinoide", "depresor_snc"], { sedacion: 2, respiratorio: 1 }],
+  ["pregabalina", ["pregabalina-no-medica"], ["Pregabalina sin indicación médica"], ["sustancia_psicoactiva", "gabapentinoide", "depresor_snc"], { sedacion: 2, respiratorio: 1 }],
+  ["sedantes_no_especificados", ["otros-sedantes", "sedantes-prescritos"], ["Otros sedantes", "Sedantes prescritos"], [], {}],
+  ["lsd", ["lsd"], ["LSD"], [], {}], ["psilocibina", ["psilocibina"], ["Psilocibina u hongos"], [], {}], ["mescalina", ["mescalina-peyote"], ["Mescalina o peyote"], [], {}], ["dmt", ["dmt"], ["DMT"], [], {}], ["ayahuasca", ["ayahuasca"], ["Ayahuasca"], [], {}], ["salvia_divinorum", ["salvia-divinorum"], ["Salvia divinorum"], [], {}], ["alucinogenos_no_especificados", ["otros-alucinogenos"], ["Otros alucinógenos"], [], {}],
+  ["ketamina", ["ketamina"], ["Ketamina"], ["sustancia_psicoactiva", "disociativo", "depresor_snc"], { sedacion: 1, cardiovascular: 1 }], ["pcp", ["pcp"], ["Fenciclidina o PCP"], [], {}],
+  ["dextrometorfano", ["dextrometorfano-recreativo", "jarabes-dextrometorfano"], ["Dextrometorfano con uso recreativo", "Jarabes con dextrometorfano"], ["sustancia_psicoactiva", "disociativo", "serotoninergico"], { serotoninergico: 2, convulsivo: 1 }],
+  ["oxido_nitroso", ["oxido-nitroso"], ["Óxido nitroso"], [], {}], ["disociativos_no_especificados", ["otros-disociativos"], ["Otros disociativos"], [], {}],
+  ["inhalantes_volatiles", ["thinner", "pegamentos", "gasolina", "aerosoles", "solventes", "otros-inhalables"], ["Thinner", "Pegamentos", "Gasolina", "Aerosoles", "Solventes", "Otros inhalables"], [], {}],
+  ["tolueno", ["tolueno"], ["Tolueno"], [], {}], ["butano", ["gas-butano"], ["Gas butano"], [], {}], ["nitritos_alquilo", ["nitritos-poppers"], ["Nitritos inhalados o poppers"], [], {}],
+  ["fenetilaminas_sinteticas", ["fenetilaminas-sinteticas"], ["Fenetilaminas sintéticas"], [], {}], ["nbome", ["nbome"], ["NBOMe"], [], {}], ["benzofuranos", ["benzofuranos"], ["Benzofuranos"], [], {}],
+  ["opioides_sinteticos_no_farmaceuticos", ["opioides-sinteticos-no-farmaceuticos"], ["Opioides sintéticos no farmacéuticos"], [], {}], ["benzodiacepinas_diseno", ["benzodiacepinas-diseno"], ["Benzodiacepinas de diseño"], [], {}], ["nuevas_sustancias_psicoactivas", ["otras-nuevas-psicoactivas"], ["Otras nuevas sustancias psicoactivas"], [], {}],
+  ["anticolinergicos_recreativos", ["anticolinergicos"], ["Anticolinérgicos"], [], {}], ["antihistaminicos_recreativos", ["antihistaminicos-recreativos"], ["Antihistamínicos con fines recreativos"], [], {}],
+  ["anestesicos_no_especificados", ["anestesicos"], ["Anestésicos"], [], {}], ["medicamentos_no_indicados", ["otros-medicamentos-no-indicados"], ["Otros medicamentos utilizados sin indicación"], [], {}],
+  ["esteroides_anabolicos", ["esteroides-anabolicos"], ["Esteroides anabólico-androgénicos"], [], {}], ["somatropina", ["hormona-crecimiento"], ["Hormona de crecimiento"], [], {}], ["sustancias_rendimiento_no_especificadas", ["otras-sustancias-rendimiento"], ["Otras sustancias para mejorar rendimiento o imagen corporal"], [], {}],
+  ["cafeina", ["cafeina-problematica", "bebidas-energeticas-problematicas"], ["Cafeína en consumo problemático", "Bebidas energéticas en consumo problemático"], ["sustancia_psicoactiva", "estimulante", "riesgo_cardiovascular"], { presion: 1, cardiovascular: 1 }],
+  ["sustancia_no_identificada", ["sustancia-desconocida", "otra-sustancia"], ["Sustancia desconocida", "Otra sustancia"], [], {}]
+];
+
+function integrarCatalogoComplementario(catalogoBase = []) {
+  const mapa = new Map(catalogoBase.map((medicamento) => [medicamento.id, medicamento]));
+  [MODAFINILO, ...PERFILES_SUSTANCIAS_PSICOACTIVAS].forEach((medicamento) => {
+    if (!mapa.has(medicamento.id)) mapa.set(medicamento.id, medicamento);
+  });
+  ALIAS_HISTORIA_SUSTANCIAS.forEach(([id, legacyIds, sinonimos, clases, riesgos]) => {
+    const previo = mapa.get(id);
+    if (!previo) return;
+    mapa.set(id, {
+      ...previo,
+      legacyIds: [...new Set([...(previo.legacyIds || []), ...legacyIds])],
+      sinonimos: [...new Set([...(previo.sinonimos || []), ...sinonimos])],
+      clases: [...new Set([...(previo.clases || []), ...clases])],
+      riesgos: Object.fromEntries([...new Set([...Object.keys(previo.riesgos || {}), ...Object.keys(riesgos || {})])].map((riesgo) => [riesgo, Math.max(Number(previo.riesgos?.[riesgo] || 0), Number(riesgos?.[riesgo] || 0))])),
+      origenesCatalogo: [...new Set([...(previo.origenesCatalogo || []), "historia_consumo_sustancias"])]
+    });
+  });
+  return [...mapa.values()];
+}
+
 export const CATALOGO_FARMACOLOGICO_MAESTRO = Object.freeze(
-  integrarAntibioticosRegulatorios(CATALOGO_FARMACOLOGICO_PREEXISTENTE)
+  integrarCatalogoComplementario(integrarAntibioticosRegulatorios(CATALOGO_FARMACOLOGICO_PREEXISTENTE))
 );
 
 function listaUnica(...listas) {
@@ -91010,10 +91437,12 @@ function adaptarRegistroMaestro(medicamento) {
     pediatricDosing: datos.dosisPediatrica || [],
     indications: datos.indicaciones || [],
     contraindications: datos.contraindicaciones || [],
+    contraindicacionesRelativas: datos.contraindicacionesRelativas || [],
     precautions: datos.precauciones || [],
     warnings: listaUnica(datos.advertencias || [], (datos.advertenciasEstructuradas || []).map((advertencia) => advertencia.texto)),
     warningDetails: datos.advertenciasEstructuradas || [],
     monitoring: datos.monitorizacion || [],
+    parametrosLaboratorio: medicamento.parametrosLaboratorio || medicamento.farmacologia?.laboratorios || [],
     mecanismoAccion: cinetica.mecanismoAccion || "",
     vidaMedia: cinetica.vidaMedia || "",
     halfLife: cinetica.vidaMedia || "",
@@ -91180,12 +91609,12 @@ export const CATALOGO_FARMACOLOGICO_NORMALIZADO = Object.freeze({
 function textoEntrada(entrada) {
   if (typeof entrada === "string") return entrada;
   if (!entrada || typeof entrada !== "object") return "";
-  return [entrada.originalText, entrada.medicamento, entrada.medicationName, entrada.genericName, entrada.nombre, entrada.principioActivo, entrada.selectedPresentationText, entrada.presentacion, entrada.presentation].filter(Boolean).join(" ");
+  return [entrada.originalText, entrada.medicamento, entrada.medicationName, entrada.genericName, entrada.nombre, entrada.nombrePersonalizado, entrada.principioActivo, entrada.selectedPresentationText, entrada.presentacion, entrada.presentation].filter(Boolean).join(" ");
 }
 
 function idDeclarado(entrada) {
   if (!entrada || typeof entrada !== "object") return "";
-  return entrada.clinicalMedicationId || entrada.medicationId || entrada.catalogMedicationId || entrada.id || "";
+  return entrada.clinicalMedicationId || entrada.medicationId || entrada.catalogMedicationId || entrada.sustanciaId || entrada.id || "";
 }
 
 export function obtenerMedicamentoPorId(id = "") {
@@ -91241,6 +91670,7 @@ export function buscarMedicamentos(query = "", opciones = {}) {
     if (nombre.startsWith(filtro) || nombreFlexible.startsWith(filtroFlexible)) ranking = 1;
     else if (generico.startsWith(filtro) || genericoFlexible.startsWith(filtroFlexible)) ranking = 2;
     else if (alias.some((valor) => valor.startsWith(filtro)) || aliasFlexible.some((valor) => valor.startsWith(filtroFlexible))) ranking = 3;
+    else if (aliasFlexible.some((valor) => filtroFlexible.startsWith(`${valor} `)) && filtroFlexible.split(" ").every((token) => textoFlexible.includes(token))) ranking = 3;
     else if (filtroFlexible.startsWith(`${nombreFlexible} `) && filtroFlexible.split(" ").every((token) => textoFlexible.includes(token))) ranking = 3;
     else if (nombre.includes(filtro) || nombreFlexible.includes(filtroFlexible)) ranking = 4;
     else if (generico.includes(filtro) || genericoFlexible.includes(filtroFlexible)) ranking = 5;

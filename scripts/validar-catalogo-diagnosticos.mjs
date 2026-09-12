@@ -87,10 +87,10 @@ const archivosDatos = await readdir(dataDir);
 assert.deepEqual(archivosDatos.filter((archivo) => /(?:diagnostic|cie10|cie11)/i.test(archivo)).sort(), ["catalogoDiagnosticos.js"]);
 
 for (const [archivo, modulo] of [
-  ["paciente.html", "js/paciente.js?v=20260908-treatment-card-safety-v1"],
+  ["paciente.html", "js/paciente.js?v=20260911-modafinil-substances-lab-v1"],
   ["nota.html", "js/nota.js?v=20260904-parametros-colera-v2"],
-  ["biblioteca.html", "js/biblioteca.js?v=20260904-biblioteca-cie10-h-v1"],
-  ["laboratorio-farmacologia.html", "js/laboratorio-farmacologia.js?v=20260908-treatment-card-safety-v1"]
+  ["biblioteca.html", "js/biblioteca.js?v=20260911-modafinil-substances-lab-v1"],
+  ["laboratorio-farmacologia.html", "js/laboratorio-farmacologia.js?v=20260911-modafinil-substances-lab-v1"]
 ]) {
   assert.match(await readFile(resolve(root, archivo), "utf8"), new RegExp(modulo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 }

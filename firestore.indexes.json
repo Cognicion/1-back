@@ -1,6 +1,23 @@
 {
   "indexes": [
     {
+      "collectionGroup": "usuarios",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "publicDirectory.publicProfile", "order": "ASCENDING" },
+        { "fieldPath": "publicDirectory.profileSlug", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "usuarios",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "publicDirectory.publicProfile", "order": "ASCENDING" },
+        { "fieldPath": "publicDirectory.featured", "order": "ASCENDING" },
+        { "fieldPath": "publicDirectory.profileSlug", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "agenda",
       "queryScope": "COLLECTION",
       "fields": [
@@ -201,6 +218,7 @@
     }
   ],
   "fieldOverrides": [
+    { "collectionGroup": "publicDirectoryRate", "fieldPath": "expiresAt", "ttl": true, "indexes": [] },
     {
       "collectionGroup": "patientQuotaAssignments",
       "fieldPath": "patientUid",

@@ -1,4 +1,4 @@
-import { MEDICAMENTOS_MAESTROS, normalizarNombreMedicamento } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260904-parametros-colera-v2";
+import { MEDICAMENTOS_MAESTROS, normalizarNombreMedicamento } from "../../../data/catalogoFarmacologicoUnificado.js?v=20260911-modafinil-substances-lab-v1";
 import { clinicalImportLogger } from "../utils/logger.js";
 
 const MATCH_STATUS = Object.freeze({

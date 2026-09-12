@@ -267,12 +267,12 @@ test("las presentaciones IM de olanzapina y ziprasidona conservan su vía", () =
 });
 
 test("la cobertura distingue fuente verificada, parcial, pendiente y completitud real", () => {
-  assert.equal(COBERTURA_FARMACOLOGICA.totalNormalizados, 374);
-  assert.equal(COBERTURA_FARMACOLOGICA.conFuenteVerificada, 72);
-  assert.equal(COBERTURA_FARMACOLOGICA.fuenteRegulatoriaParcial, 84);
+  assert.equal(COBERTURA_FARMACOLOGICA.totalNormalizados, 420);
+  assert.equal(COBERTURA_FARMACOLOGICA.conFuenteVerificada, 73);
+  assert.equal(COBERTURA_FARMACOLOGICA.fuenteRegulatoriaParcial, 129);
   assert.equal(COBERTURA_FARMACOLOGICA.fuentePendienteEstricta, 218);
-  assert.equal(COBERTURA_FARMACOLOGICA.fuentePendiente, 302);
-  assert.deepEqual(COBERTURA_FARMACOLOGICA.idsCompletos, ["losartan"]);
+  assert.equal(COBERTURA_FARMACOLOGICA.fuentePendiente, 347);
+  assert.deepEqual(COBERTURA_FARMACOLOGICA.idsCompletos, ["losartan", "modafinilo"]);
 });
 
 test("las combinaciones conservan identidad y componentes para alergias y reglas", () => {

@@ -24,7 +24,7 @@ import {
   generarRazonamientoClinico,
   generarRecomendacionesLaboratorio,
   obtenerBaseFarmacologicaInicial
-} from "./services/sofiaClinica.js?v=20260908-treatment-card-safety-v1";
+} from "./services/sofiaClinica.js?v=20260911-modafinil-substances-lab-v1";
 
 aplicarAparienciaGuardada();
 

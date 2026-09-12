@@ -134,8 +134,11 @@ export const CITOCROMOS_FARMACOLOGICOS = Object.freeze([
     descripcion: "Via polimorfica relevante para clopidogrel, inhibidores de bomba de protones y varios psicofarmacos.",
     relaciones: [
       relacion("lansoprazol", "sustrato", "moderadamente_sensible"), relacion("omeprazol", "sustrato", "sensible"),
+      relacion("diazepam", "sustrato"), relacion("fenitoina", "sustrato", "margen_estrecho"),
+      relacion("propranolol", "sustrato"), relacion("clomipramina", "sustrato"),
       relacion("clopidogrel", "profarmaco", "principal", "La inhibicion puede reducir la formacion del metabolito activo."),
       relacion("citalopram", "sustrato"), relacion("escitalopram", "sustrato"), relacion("sertralina", "sustrato"),
+      relacion("modafinilo", "inhibidor", "no_clasificada", "Inhibición reversible documentada en etiquetado; revisar sustrato específico."),
       relacion("fluvoxamina", "inhibidor", "fuerte"), relacion("fluoxetina", "inhibidor", "fuerte"),
       relacion("fluconazol", "inhibidor", "fuerte"), relacion("omeprazol", "inhibidor", "moderado"),
       relacion("cimetidina", "inhibidor", "moderado"), relacion("ticlopidina", "inhibidor", "in_vitro"),
@@ -193,7 +196,9 @@ export const CITOCROMOS_FARMACOLOGICOS = Object.freeze([
     relaciones: [
       relacion("midazolam", "sustrato", "sensible"), relacion("triazolam", "sustrato", "sensible"),
       relacion("alprazolam", "sustrato"), relacion("quetiapina", "sustrato"), relacion("aripiprazol", "sustrato"),
+      relacion("modafinilo", "sustrato", "secundario"), relacion("modafinilo", "inductor", "debil", "Inducción débil de CYP3A4/5 documentada en etiquetado."),
       relacion("iloperidona", "sustrato"), relacion("haloperidol", "sustrato"), relacion("pimozida", "sustrato", "margen_estrecho"),
+      relacion("hidrocodona", "sustrato"), relacion("buprenorfina", "sustrato"),
       relacion("fentanilo", "sustrato"), relacion("oxicodona", "sustrato"),
       relacion("atorvastatina", "sustrato"), relacion("tacrolimus", "sustrato", "margen_estrecho"),
       relacion("apixaban", "sustrato"), relacion("rivaroxaban", "sustrato"), relacion("amiodarona", "sustrato"),

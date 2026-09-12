@@ -3,7 +3,7 @@
 
   if (window.cognicionAvailability) return;
 
-  const APP_VERSION = "2.209";
+  const APP_VERSION = "2.210";
   const SCRIPT_URL = document.currentScript?.src || new URL("js/availability-bootstrap.js", window.location.href).href;
   const STORAGE_KEY = "cognicion.availability.events.v1";
   const WATCHDOG_MS = 12000;

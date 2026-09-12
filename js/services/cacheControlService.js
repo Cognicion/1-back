@@ -1,7 +1,7 @@
 import { APP_VERSION } from "../config/appVersion.js";
 
 export { APP_VERSION };
-export const CACHE_CONTROL_VERSION = "20260909-availability-hardening-v2";
+export const CACHE_CONTROL_VERSION = "20260911-modafinil-substances-lab-v1";
 export const FIRESTORE_DEVICE_PREF_KEY = "cognicion.dispositivoPersonal";
 
 const STATIC_CACHE_PREFIX = "cognicion-static-";

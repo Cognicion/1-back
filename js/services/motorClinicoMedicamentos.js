@@ -4,12 +4,12 @@ import {
   REGLAS_INTERACCIONES_CLINICAS,
   REGLAS_MEDICAMENTO_DIAGNOSTICO,
   UMBRALES_RIESGO_ACUMULATIVO
-} from "../data/reglasClinicasMedicamentosExtendidas.js?v=20260904-parametros-colera-v2";
+} from "../data/reglasClinicasMedicamentosExtendidas.js?v=20260911-modafinil-substances-lab-v1";
 import {
   obtenerMedicamentoPorId,
   resolverMedicamentoCanonico
-} from "../data/catalogoFarmacologicoUnificado.js?v=20260904-parametros-colera-v2";
-import { detectarInteraccionesPorCitocromos } from "../data/citocromosFarmacologicos.js?v=20260811-pharmacology-files-consolidated-v1";
+} from "../data/catalogoFarmacologicoUnificado.js?v=20260911-modafinil-substances-lab-v1";
+import { detectarInteraccionesPorCitocromos } from "../data/citocromosFarmacologicos.js?v=20260911-modafinil-substances-lab-v1";
 import { CATALOGO_DIAGNOSTICOS } from "../data/catalogoDiagnosticos.js?v=20260904-parametros-colera-v2";
 import { resolverParametrosClinicosPaciente } from "./parametrosClinicosPaciente.js?v=20260904-parametros-colera-v2";
 import { calcularIMC } from "../utils/imc.js?v=20260904-laboratorio-minimalista-somatometria-v1";
@@ -1542,8 +1542,55 @@ export function obtenerIndicadorSeguridadMedicamentoIndividual({ medicamento = {
   };
 }
 
+function coleccionesSustanciasPaciente(paciente = {}) {
+  return [
+    paciente.sustancias,
+    paciente.consumoSustancias,
+    paciente.historiaClinica?.sustancias,
+    paciente.datosHistoriaClinica?.sustancias,
+    paciente.historia?.sustancias
+  ].filter((valor) => valor && typeof valor === "object" && !Array.isArray(valor));
+}
+
+/**
+ * Traduce únicamente exposiciones marcadas como actuales a entradas del motor.
+ * La taxonomía y la persistencia de Historia Clínica permanecen intactas; esta
+ * función crea una vista de lectura sin compartir estado mutable con el editor.
+ */
+export function extraerSustanciasActivasPaciente(paciente = {}) {
+  const porClave = new Map();
+  coleccionesSustanciasPaciente(paciente).forEach((contenedor) => {
+    const registros = Array.isArray(contenedor.seleccionadas) ? contenedor.seleccionadas : [];
+    registros.forEach((registro) => {
+      if (!registro || registro.ultimoConsumo?.consumoActual !== true) return;
+      const sustanciaId = String(registro.sustanciaId || "").trim();
+      if (!sustanciaId) return;
+      const esPersonalizada = sustanciaId === "otra-sustancia";
+      const resolucion = resolverMedicamentoCanonico(esPersonalizada
+        ? { clinicalMedicationId: "sustancia_no_identificada", originalText: registro.nombrePersonalizado || "Otra sustancia" }
+        : { sustanciaId, originalText: registro.nombrePersonalizado || sustanciaId });
+      if (!resolucion) return;
+      const clave = `${sustanciaId}:${resolucion.clinicalMedicationId}`;
+      if (porClave.has(clave)) return;
+      porClave.set(clave, {
+        clinicalMedicationId: resolucion.clinicalMedicationId,
+        medicationId: resolucion.clinicalMedicationId,
+        sustanciaId,
+        medicamento: resolucion.medicationName,
+        originalText: registro.nombrePersonalizado || resolucion.medicationName,
+        origenFarmacologico: "historia_consumo_sustancias",
+        esExposicionActiva: true
+      });
+    });
+  });
+  return [...porClave.values()];
+}
+
 export function evaluarMedicamentosPaciente({ paciente = {}, medicamentos = [], medicamentoNuevo = null } = {}) {
-  const listaMedicamentos = medicamentoNuevo ? [...medicamentos, medicamentoNuevo] : [...medicamentos];
+  const sustanciasActivas = extraerSustanciasActivasPaciente(paciente);
+  const listaMedicamentos = medicamentoNuevo
+    ? [...medicamentos, ...sustanciasActivas, medicamentoNuevo]
+    : [...medicamentos, ...sustanciasActivas];
   const parametrosClinicos = resolverParametrosClinicosPaciente(paciente);
   const bloqueosTecnicos = validarBloqueosTecnicos(listaMedicamentos);
   if (bloqueosTecnicos.length) {
@@ -1611,6 +1658,7 @@ export function evaluarMedicamentosPaciente({ paciente = {}, medicamentos = [], 
     medicamentosNormalizados,
     principiosActivosNormalizados: medicamentosParaAnalisis,
     medicamentosOriginalesNormalizados: medicamentosNormalizadosOriginales,
+    sustanciasActivasNormalizadas: sustanciasActivas,
     diagnosticosDetectados: contextoDiagnostico.diagnosticos,
     diagnosticosEvaluados: contextoDiagnostico.diagnosticosEvaluados || diagnosticosEstructurados,
     diagnosticosActivos: contextoDiagnostico.diagnosticosActivos || [],

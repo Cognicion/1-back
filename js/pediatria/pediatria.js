@@ -42,7 +42,7 @@ import {
   savePediatricPrescription,
   searchPediatricMedication,
   synchronizeFrequencyAndInterval
-} from "./prescripcionPediatrica.js?v=20260811-pharmacology-files-consolidated-v1";
+} from "./prescripcionPediatrica.js?v=20260911-modafinil-substances-lab-v1";
 import { FUENTES_PEDIATRIA } from "./fuentes.js";
 
 aplicarAparienciaGuardada();

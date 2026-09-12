@@ -5,7 +5,7 @@ import {
   normalizarMedicamento,
   normalizarNombreMedicamento,
   textoMedicamentoParaBusqueda
-} from "../data/catalogoFarmacologicoUnificado.js?v=20260904-parametros-colera-v2";
+} from "../data/catalogoFarmacologicoUnificado.js?v=20260911-modafinil-substances-lab-v1";
 import {
   normalizarConcentracionMgMl,
   normalizarPesoKg,

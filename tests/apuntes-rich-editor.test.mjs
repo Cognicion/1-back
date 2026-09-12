@@ -641,7 +641,7 @@ test("el editor flotante invalida formato solo cuando cambia el contenido", () =
   assert.match(persistencia, /validarRevisionApunte/);
   assert.match(persistencia, /transaccion\.delete\(referencia\)/);
   assert.match(nota, /nota\.js\?v=20260904-parametros-colera-v2/);
-  assert.match(paciente, /paciente\.js\?v=20260908-treatment-card-safety-v1/);
+  assert.match(paciente, /paciente\.js\?v=20260911-modafinil-substances-lab-v1/);
 });
 
 test("vinculación y eliminación administrativa conservan sus contratos vigentes", () => {

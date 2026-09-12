@@ -21,7 +21,7 @@ test("cada ficha oficial se reconoce por su identidad canónica sin depender del
     return normalizado.clinicalMedicationId !== medicamento.id || !normalizado.coberturaIngredienteCompleta;
   });
 
-  assert.equal(CATALOGO_FARMACOLOGICO_OFICIAL.length, 374);
+  assert.equal(CATALOGO_FARMACOLOGICO_OFICIAL.length, 420);
   assert.deepEqual(noResueltos.map((medicamento) => medicamento.id), []);
 });
 

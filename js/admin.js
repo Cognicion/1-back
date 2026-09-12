@@ -113,6 +113,8 @@ let solicitudVistaUsuarioAdmin = 0;
 let patternModulePromise = null;
 let patternModuleInstance = null;
 let patternModuleRequestId = 0;
+let organizationModulePromise = null;
+let organizationModuleInstance = null;
 const CLAVE_ALTURAS_RESPUESTAS_REPORTE = "cognicion_admin_alturas_respuestas_reportes";
 const ESTADOS_REPORTE_ADMIN = [
   "nuevo",
@@ -1518,6 +1520,39 @@ async function cargarDirectorioAuthAdmin() {
     }
     return { users: [], truncated: false, unavailable: true };
   }
+  if (idSeccion === "seccionOrganizacionAdmin") {
+    void cargarOrganizacionBajoDemanda().catch((error) => {
+      console.error("[ADMIN] Error al cargar Organización y estrategia", error);
+      const host = document.getElementById("organizacionAdminApp");
+      if (host) {
+        host.setAttribute("aria-busy", "false");
+        host.innerHTML = `<div class="organizacion-estado organizacion-estado-error"><strong>No se pudo cargar el módulo.</strong><span>${escaparHTML(error?.message || "Error desconocido")}</span><button type="button" data-organizacion-reintentar>Reintentar</button></div>`;
+        host.querySelector("[data-organizacion-reintentar]")?.addEventListener("click", () => {
+          organizationModulePromise = null;
+          organizationModuleInstance = null;
+          mostrarSeccionAdmin("seccionOrganizacionAdmin");
+        });
+      }
+    });
+  }
+}
+
+async function cargarOrganizacionBajoDemanda() {
+  if (!adminActual || !datosUsuarioSonAdmin(adminDatosActual || {})) {
+    throw new Error("ORGANIZATION_FORBIDDEN");
+  }
+  if (organizationModuleInstance) return organizationModuleInstance;
+  if (!organizationModulePromise) {
+    console.log("[ADMIN] Importando Organización tras acceso explícito");
+    organizationModulePromise = import("./admin/organization/organization.js?v=20260912-organizacion-v1");
+  }
+  const modulo = await organizationModulePromise;
+  organizationModuleInstance = await modulo.inicializarOrganizacion({
+    authUser: adminActual,
+    adminProfile: adminDatosActual,
+    organizationId: "cognicion-labs"
+  });
+  return organizationModuleInstance;
 }
 
 function fechaUsuarioRegistro(usuario = {}) {

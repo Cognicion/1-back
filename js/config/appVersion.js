@@ -195,5 +195,8 @@
 // deployment marker: 2026-09-08-navbar-global-agenda-v1 (+0.001)
 // deployment marker: 2026-09-09-whatsapp-oficial-multiprofesional-v1 (+0.001)
 // deployment marker: 2026-09-09-availability-hardening-v2 (+0.001)
-export const APP_VERSION = "2.209";
+// deployment marker: 2026-09-11-modafinil-substances-lab-v1 (+0.001)
+// deployment marker: 2026-09-12-public-professional-directory-v1 (+0.001)
+// deployment marker: 2026-09-12-organizacion-estrategia-admin-v1 (+0.001)
+export const APP_VERSION = "2.212";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;

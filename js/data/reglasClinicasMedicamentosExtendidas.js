@@ -34,6 +34,7 @@ function unirPorId(base = [], extra = []) {
 }
 
 const INGREDIENTES_EXTRA = [
+  { id: "modafinilo", nombre: "Modafinilo", sinonimos: ["modafinilo", "modafinil", "provigil", "alertec", "modiodal"], clases: ["estimulante", "promotor_vigilia", "inhibidor_cyp2c19", "inductor_cyp3a4", "riesgo_cardiovascular"], riesgos: { presion: 1, cardiovascular: 1, ansiedad: 1, insomnio: 1 } },
   { id: "captopril", nombre: "Captopril", sinonimos: ["captopril", "capoten", "captopril tabletas", "captopril 25 mg", "captopril 50 mg"], clases: ["ieca"], riesgos: { potasio: 1, renal: 1, hipotension: 1 } },
   { id: "lisinopril", nombre: "Lisinopril", sinonimos: ["lisinopril", "prinivil", "zestril"], clases: ["ieca"], riesgos: { potasio: 1, renal: 1, hipotension: 1 } },
   { id: "valsartan", nombre: "Valsartan", sinonimos: ["valsartan", "valsartán", "diovan"], clases: ["ara2"], riesgos: { potasio: 1, renal: 1, hipotension: 1 } },
@@ -146,6 +147,34 @@ const DX_EXTRA = [
 ];
 
 const MED_DX_EXTRA = [
+  {
+    id: "depresor_snc_insuficiencia_respiratoria",
+    clase: "depresor_snc",
+    diagnosticoCategoria: "respiratorio",
+    severidad: "alta",
+    titulo: "Depresor del SNC en insuficiencia respiratoria o hipoventilación",
+    mecanismo: "La depresión del nivel de conciencia, el tono de vía aérea o el impulso respiratorio puede agravar hipoventilación preexistente.",
+    efecto: "Mayor riesgo de sedación profunda, apnea, hipoxemia o depresión respiratoria, especialmente con múltiples depresores.",
+    recomendacion: "Evitar combinaciones no supervisadas, identificar todas las exposiciones activas y vigilar conciencia, frecuencia respiratoria y oxigenación.",
+    parametrosVigilancia: ["Nivel de conciencia", "Frecuencia respiratoria", "Saturación de oxígeno", "Uso concomitante de depresores"],
+    evidencia: "regla_de_clase_con_fuente_institucional",
+    confianza: "moderada-alta",
+    fuentes: ["NIDA, Commonly Used Drugs Charts: depresión respiratoria y riesgo de sobredosis con opioides y depresores, https://nida.nih.gov/research-topics/commonly-used-drugs-charts"]
+  },
+  {
+    id: "estimulante_convulsivo_epilepsia",
+    clase: "estimulante_convulsivo",
+    diagnosticoCategoria: "riesgo_convulsivo",
+    severidad: "alta",
+    titulo: "Estimulante en epilepsia o antecedente convulsivo",
+    mecanismo: "La activación intensa del SNC, hipertermia, privación de sueño o toxicidad por estimulantes puede favorecer convulsiones en personas susceptibles.",
+    efecto: "Puede aumentar el riesgo de crisis, especialmente con policonsumo, dosis altas o productos de composición incierta.",
+    recomendacion: "Identificar sustancia, patrón y última exposición; evitar combinaciones de riesgo y vigilar sueño, temperatura, estado mental y convulsiones.",
+    parametrosVigilancia: ["Convulsiones", "Temperatura", "Sueño", "Estado mental", "Policonsumo"],
+    evidencia: "regla_de_clase_con_fuente_institucional",
+    confianza: "moderada",
+    fuentes: ["NIDA, Commonly Used Drugs Charts: convulsiones y toxicidad neurológica descritas con varios estimulantes, https://nida.nih.gov/research-topics/commonly-used-drugs-charts"]
+  },
   {
     id: "bupropion_anorexia_bulimia",
     ingrediente: "bupropion",
@@ -494,6 +523,144 @@ const INTERACCIONES_EXTRA = [
 ];
 
 INTERACCIONES_EXTRA.push(
+  {
+    id: "bupropion_estimulante_convulsivo",
+    ingredientesA: ["bupropion"],
+    clasesB: ["estimulante_convulsivo"],
+    severidad: "alta",
+    titulo: "Bupropión + estimulante: mayor riesgo convulsivo",
+    mecanismo: "Bupropión reduce el umbral convulsivo y la exposición a estimulantes puede añadir activación simpática, privación de sueño o toxicidad que favorezca convulsiones.",
+    efecto: "Puede aumentar el riesgo de convulsiones, hipertensión, taquicardia, ansiedad e insomnio; el riesgo depende de dosis, antecedentes y patrón de exposición.",
+    recomendacion: "Revisar antecedentes convulsivos, trastornos de la conducta alimentaria, dosis, presión arterial, sueño y uso médico o no médico del estimulante; evitar combinaciones de alto riesgo cuando existan alternativas.",
+    parametrosVigilancia: ["Antecedentes de convulsión", "Presión arterial", "Frecuencia cardiaca", "Sueño", "Uso de estimulantes o cocaína"],
+    categoria: "convulsiva",
+    tipoInteraccion: "farmacodinamica",
+    evidencia: "documentada_en_etiquetado",
+    confianza: "alta",
+    fuentes: [
+      "DailyMed, bupropion hydrochloride: riesgo convulsivo con abuso o uso indebido de estimulantes del SNC y cocaína; secciones Warnings and Precautions, https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=538a0be1-8eab-4f8b-b967-30b9afdd7655"
+    ]
+  },
+  {
+    id: "isrs_diuretico_hiponatremia",
+    clasesA: ["isrs"],
+    clasesB: ["diuretico"],
+    severidad: "moderada",
+    titulo: "ISRS + diurético: mayor riesgo de hiponatremia",
+    mecanismo: "Los ISRS pueden asociarse a SIADH/hiponatremia y el riesgo es mayor en pacientes con depleción de volumen o tratamiento diurético.",
+    efecto: "Puede aparecer hiponatremia con cefalea, confusión, debilidad, inestabilidad, caídas o convulsiones en casos graves.",
+    recomendacion: "Valorar sodio basal y seguimiento según edad, síntomas, función renal, volumen y cambios de dosis; educar sobre síntomas neurológicos.",
+    parametrosVigilancia: ["Sodio", "Estado de volumen", "Confusión o inestabilidad", "Convulsiones"],
+    categoria: "electrolitica",
+    tipoInteraccion: "farmacodinamica",
+    evidencia: "documentada_en_etiquetado",
+    confianza: "alta",
+    fuentes: [
+      "DailyMed, escitalopram: hyponatremia/SIADH y mayor riesgo en pacientes que toman diuréticos o con depleción de volumen, https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=5d28721d-097f-400e-8690-d133c76e07be"
+    ]
+  },
+  {
+    id: "estimulante_estimulante_cardiovascular",
+    clasesA: ["estimulante"],
+    clasesB: ["estimulante"],
+    severidad: "moderada",
+    titulo: "Combinación de estimulantes: carga cardiovascular y neuropsiquiátrica",
+    mecanismo: "La suma de actividad monoaminérgica y simpática puede aumentar presión arterial, frecuencia cardiaca, temperatura y activación del SNC.",
+    efecto: "Puede aumentar hipertensión, taquicardia, arritmia, ansiedad, insomnio, agitación o convulsiones, según sustancias y dosis.",
+    recomendacion: "Confirmar la indicación o exposición de cada sustancia, evitar uso no supervisado y vigilar presión arterial, pulso, sueño, temperatura y estado mental.",
+    parametrosVigilancia: ["Presión arterial", "Frecuencia cardiaca", "Temperatura", "Sueño", "Estado mental"],
+    categoria: "cardiovascular",
+    tipoInteraccion: "farmacodinamica",
+    evidencia: "regla_de_clase_con_fuente_institucional",
+    confianza: "moderada",
+    fuentes: [
+      "NIDA, Commonly Used Drugs Charts: efectos cardiovasculares, neurológicos y psiquiátricos de estimulantes, https://nida.nih.gov/research-topics/commonly-used-drugs-charts"
+    ]
+  },
+  {
+    id: "cannabinoide_depresor_snc",
+    clasesA: ["cannabinoide"],
+    clasesB: ["depresor_snc"],
+    severidad: "moderada",
+    titulo: "Cannabinoide + depresor del SNC: deterioro psicomotor aditivo",
+    mecanismo: "Los cannabinoides pueden alterar atención, coordinación y juicio; otros depresores del SNC pueden sumar sedación y deterioro psicomotor.",
+    efecto: "Puede aumentar somnolencia, confusión, caídas, accidentes y deterioro para conducir; el riesgo respiratorio depende del depresor concomitante.",
+    recomendacion: "Evitar conducción y combinaciones no supervisadas; valorar nivel de conciencia, marcha, respiración y riesgo de caídas.",
+    parametrosVigilancia: ["Nivel de conciencia", "Coordinación", "Frecuencia respiratoria", "Riesgo de caídas"],
+    categoria: "depresora_snc",
+    tipoInteraccion: "farmacodinamica",
+    evidencia: "regla_de_clase_con_fuente_institucional",
+    confianza: "moderada",
+    fuentes: [
+      "NIDA, Commonly Used Drugs Charts: alteración de memoria, coordinación y juicio por cannabis, https://nida.nih.gov/research-topics/commonly-used-drugs-charts"
+    ]
+  },
+  {
+    id: "nitrito_alquilo_inhibidor_pde5",
+    ingredientesA: ["nitritos_alquilo"],
+    clasesB: ["inhibidor_pde5"],
+    severidad: "critica",
+    titulo: "Nitritos de alquilo + inhibidor PDE5: hipotensión grave",
+    mecanismo: "La vasodilatación mediada por nitratos/nitritos se potencia con la inhibición de PDE5.",
+    efecto: "Puede causar hipotensión profunda, síncope, isquemia o eventos cardiovasculares graves.",
+    recomendacion: "No combinar. En exposición aguda con síntomas, valorar atención urgente y soporte hemodinámico.",
+    parametrosVigilancia: ["Presión arterial", "Síncope", "Dolor torácico", "Perfusión"],
+    categoria: "cardiovascular",
+    tipoInteraccion: "farmacodinamica",
+    evidencia: "contraindicacion_de_clase",
+    confianza: "alta",
+    fuentes: [
+      "FDA, Drug Interactions: What You Should Know; contraindicaciones e interacciones deben confirmarse en el etiquetado del inhibidor PDE5 concreto, https://www.fda.gov/drugs/resources-drugs/drug-interactions-what-you-should-know"
+    ]
+  },
+  {
+    id: "modafinilo_anticonceptivo_hormonal",
+    ingredientesA: ["modafinilo"],
+    clasesB: ["anticonceptivo_hormonal"],
+    severidad: "alta",
+    titulo: "Modafinilo puede reducir la eficacia de anticonceptivos esteroideos",
+    mecanismo: "La inducción de CYP3A4/5 puede reducir la exposición de anticonceptivos esteroideos.",
+    efecto: "Puede disminuir la eficacia anticonceptiva durante el tratamiento y hasta un mes después de suspender modafinilo.",
+    recomendacion: "Usar un método anticonceptivo alternativo o adicional durante el tratamiento y durante un mes después; revisar el producto concreto.",
+    parametrosVigilancia: ["Método anticonceptivo", "Adherencia", "Embarazo si existe sospecha"],
+    categoria: "metabolica_cyp",
+    tipoInteraccion: "farmacocinetica",
+    evidencia: "documentada_en_etiquetado",
+    confianza: "alta",
+    fuentes: ["DailyMed, PROVIGIL (modafinil), Drug Interactions 7.1, revisión 02/2025, https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=3b8d1c32-dac9-50e6-e063-6394a90aa5a5"]
+  },
+  {
+    id: "modafinilo_warfarina",
+    ingredientesA: ["modafinilo"],
+    ingredientesB: ["warfarina"],
+    severidad: "moderada",
+    titulo: "Modafinilo + warfarina: vigilar anticoagulación",
+    mecanismo: "El efecto sobre la exposición o respuesta a warfarina puede variar; el etiquetado recomienda vigilancia más frecuente.",
+    efecto: "Puede cambiar la respuesta anticoagulante y el INR en pacientes susceptibles.",
+    recomendacion: "Aumentar la frecuencia de control de INR al iniciar, ajustar o suspender modafinilo.",
+    parametrosVigilancia: ["INR", "Sangrado", "Trombosis"],
+    categoria: "hemorragica",
+    tipoInteraccion: "farmacocinetica",
+    evidencia: "documentada_en_etiquetado",
+    confianza: "alta",
+    fuentes: ["DailyMed, PROVIGIL (modafinil), Drug Interactions 7.3, revisión 02/2025, https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=3b8d1c32-dac9-50e6-e063-6394a90aa5a5"]
+  },
+  {
+    id: "modafinilo_imao",
+    ingredientesA: ["modafinilo"],
+    clasesB: ["imao"],
+    severidad: "moderada",
+    titulo: "Modafinilo + IMAO: combinación que requiere cautela",
+    mecanismo: "Existe potencial de interacción farmacodinámica con activación autonómica; el etiquetado recomienda cautela.",
+    efecto: "Puede aumentar activación, presión arterial u otros eventos adversos; la magnitud clínica no está bien definida.",
+    recomendacion: "Evitar uso no supervisado; si se considera imprescindible, documentar justificación y vigilar presión arterial, pulso, temperatura y estado mental.",
+    parametrosVigilancia: ["Presión arterial", "Frecuencia cardiaca", "Temperatura", "Estado mental"],
+    categoria: "cardiovascular",
+    tipoInteraccion: "farmacodinamica",
+    evidencia: "precaucion_en_etiquetado",
+    confianza: "moderada",
+    fuentes: ["DailyMed, PROVIGIL (modafinil), Drug Interactions 7.4, revisión 02/2025, https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=3b8d1c32-dac9-50e6-e063-6394a90aa5a5"]
+  },
   {
     id: "ieca_ieca_duplicidad",
     clasesA: ["ieca"],

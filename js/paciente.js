@@ -4,7 +4,7 @@ import {
   MEDICAMENTOS_MAESTROS,
   buscarMedicamentos,
   medicamentoPorTexto
-} from "./data/catalogoFarmacologicoUnificado.js?v=20260904-parametros-colera-v2";
+} from "./data/catalogoFarmacologicoUnificado.js?v=20260911-modafinil-substances-lab-v1";
 import { CIE10, CIE11 } from "./data/catalogoDiagnosticos.js?v=20260904-parametros-colera-v2";
 import { registrarEventoAuditoria } from "./services/auditoria.js";
 import { iniciarMonitoreoSesion } from "./services/sesion.js";
@@ -17,7 +17,7 @@ import {
 import {
   detectarAlertasClinicasMedicamentos,
   obtenerIndicadorSeguridadMedicamentoIndividual
-} from "./data/interaccionesFarmacologicas.js?v=20260908-treatment-card-safety-v1";
+} from "./data/interaccionesFarmacologicas.js?v=20260911-modafinil-substances-lab-v1";
 import {
   DEFINICIONES_PARAMETROS_CLINICOS,
   GRUPOS_PARAMETROS_CLINICOS,

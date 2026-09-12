@@ -2,7 +2,7 @@
 <html lang="es" data-theme="biocelular">
 <head>
   <script src="js/theme-preload.js?v=2.206-navbar-agenda-v1"></script>
-  <script src="js/availability-bootstrap.js?v=2.209"></script>
+  <script src="js/availability-bootstrap.js?v=2.210"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>COGNICIÓN | Plataforma clínica digital</title>
@@ -23,6 +23,8 @@
   <link rel="stylesheet" href="CONTROL%20MAESTRO.css?v=1.886">
   <link rel="stylesheet" href="css/public-laboratory-home.css?v=2.169-contacto-publico-v1">
   <link rel="stylesheet" href="css/public-interactions.css?v=2.027-index-movil">
+  <link rel="stylesheet" href="css/professionals.css">
+  <script type="module" src="js/medical-directory-preview.js"></script>
 </head>
 
 <body class="public-lab-page">
@@ -191,6 +193,14 @@
       </div>
     </section>
 
+    <section id="profesionales" class="public-section" aria-labelledby="professionalsTitle" aria-busy="true">
+      <div class="public-section-heading"><h2 id="professionalsTitle">Encuentra al profesional adecuado para ti</h2></div>
+      <p>Conoce a los profesionales que forman parte de COGNICIÓN y encuentra atención acorde con tus necesidades.</p>
+      <p data-directory-status role="status">Cargando profesionales…</p>
+      <div class="professional-grid" data-professional-grid></div>
+      <a class="professional-button" href="directorio.html">Ver todos los profesionales</a>
+    </section>
+
     <section id="modulos" class="public-section public-modules" aria-labelledby="modulesTitle">
       <div class="public-section-heading">
         <p>ECOSISTEMA CLÍNICO</p>
@@ -308,6 +318,6 @@
   <script type="module" src="js/public/publicAppVersion.js"></script>
   <script type="module" src="js/reportes.js"></script>
   <script type="module" src="js/services/visitasBootstrap.js"></script>
-<script type="module" src="js/public/interaccionesFarmacologicasPublicas.js?v=20260908-treatment-card-safety-v1"></script>
+<script type="module" src="js/public/interaccionesFarmacologicasPublicas.js?v=20260911-modafinil-substances-lab-v1"></script>
 </body>
 </html>

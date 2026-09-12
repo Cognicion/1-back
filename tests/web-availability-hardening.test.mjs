@@ -99,7 +99,7 @@ test("el SW conserva network-first con timeout y una Response terminal", async (
 });
 
 test("una navegación clínica sin red recibe recovery y nunca una promesa rechazada", async () => {
-  const cacheName = "cognicion-static-20260909-availability-hardening-v2";
+  const cacheName = "cognicion-static-20260911-modafinil-substances-lab-v1";
   const offlineUrl = "https://cognicion.test/offline.html";
   const { listeners } = await loadWorker({
     initialCaches: {
@@ -114,7 +114,7 @@ test("una navegación clínica sin red recibe recovery y nunca una promesa recha
 });
 
 test("un timeout de transporte simulado termina en recovery", async () => {
-  const cacheName = "cognicion-static-20260909-availability-hardening-v2";
+  const cacheName = "cognicion-static-20260911-modafinil-substances-lab-v1";
   const offlineUrl = "https://cognicion.test/offline.html";
   const fetchImpl = (_request, options = {}) => new Promise((resolve, reject) => {
     options.signal?.addEventListener("abort", () => {
@@ -170,7 +170,7 @@ test("un documento público se cachea con clave canónica sin query string", asy
     new Request("https://cognicion.test/index.html?campaign=mobile&patient=must-not-be-cached")
   );
   assert.equal(await response.text(), "PUBLIC HOME");
-  const runtime = cacheStores.get("cognicion-runtime-20260909-availability-hardening-v2");
+  const runtime = cacheStores.get("cognicion-runtime-20260911-modafinil-substances-lab-v1");
   assert.ok(runtime.has("https://cognicion.test/index.html"));
   assert.ok([...runtime.keys()].every((key) => !key.includes("patient=") && !key.includes("campaign=")));
 });
@@ -208,7 +208,7 @@ test("recovery, health y diagnóstico son mínimos y no contienen credenciales n
   ]);
   const health = JSON.parse(healthText);
   assert.ok(healthStat.size < 1024, "health.json debe medir menos de 1 KB");
-  assert.equal(health.appVersion, "2.209");
+  assert.equal(health.appVersion, "2.210");
   assert.match(offline, /no consulta, almacena ni muestra información clínica/u);
   assert.doesNotMatch(offline, /<link[^>]+stylesheet|<script[^>]+src=/u);
   assert.match(diagnostic, /sin API key/u);
@@ -223,7 +223,7 @@ test("watchdog cubre las tres entradas críticas y no recarga automáticamente",
     read("dashboard.html")
   ]);
   for (const html of [index, login, dashboard]) {
-    assert.match(html, /availability-bootstrap\.js\?v=2\.209/u);
+    assert.match(html, /availability-bootstrap\.js\?v=2\.210/u);
     assert.match(html, /data-cognicion-critical=/u);
   }
   assert.match(dashboard, /data-cognicion-ready="event"/u);
@@ -244,10 +244,10 @@ test("APP_VERSION, health y bootstrap permanecen separados de CACHE_VERSION", as
     read("service-worker.js"),
     read("js/services/cacheControlService.js")
   ]);
-  assert.match(appVersion, /APP_VERSION = "2\.209"/u);
-  assert.equal(JSON.parse(healthText).appVersion, "2.209");
-  assert.match(bootstrap, /APP_VERSION = "2\.209"/u);
-  assert.match(worker, /CACHE_VERSION = "20260909-availability-hardening-v2"/u);
+  assert.match(appVersion, /APP_VERSION = "2\.210"/u);
+  assert.equal(JSON.parse(healthText).appVersion, "2.210");
+  assert.match(bootstrap, /APP_VERSION = "2\.210"/u);
+  assert.match(worker, /CACHE_VERSION = "20260911-modafinil-substances-lab-v1"/u);
   assert.match(cacheControl, /import \{ APP_VERSION \} from "\.\.\/config\/appVersion\.js"/u);
   assert.doesNotMatch(cacheControl, /cognicion\.swReloaded/u);
   assert.match(cacheControl, /controllerchange", reloadOnce, \{ once: true \}/u);

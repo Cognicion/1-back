@@ -12,6 +12,8 @@ const canonical = (value) => JSON.stringify(value, Object.keys(value).sort());
 const APPOINTMENT_FIELDS = new Set(['startDate', 'startTime', 'endDate', 'endTime', 'durationMinutes', 'patientId', 'patientName', 'patientPhone', 'patientEmail', 'description', 'notas', 'ubicacion', 'recordatorio', 'seguimiento', 'recurrence', 'googleCalendarEventId']);
 const TIME_FIELDS = new Set(['startDate', 'startTime', 'endDate', 'endTime', 'durationMinutes']);
 const LEGACY_CIVIL_POLICY = Object.freeze({ availabilityMode: 'legacy-civil', allowReschedule: true, allowCancellation: true, payment: { required: false, type: 'none', amount: null, currency: 'MXN' }, remindersEnabled: false });
+// Channel identity is supplied by the internal adapter, never callable input.
+const channelName = channel => channel?.kind === 'directory' ? 'public-directory' : 'whatsapp';
 
 /** Shared server domain. Firebase auth comes exclusively from the callable.
  * Channel authorization is injected by the internal adapter, never input data.
@@ -136,7 +138,7 @@ export function createAppointmentService({ db, timestamp = () => Timestamp.now()
     }
     const id = action === 'create' ? db.collection(`usuarios/${doctorUid}/agenda`).doc().id : appointmentId;
     const ref = db.doc(`usuarios/${doctorUid}/agenda/${id}`);
-    const actorKey = channel ? `whatsapp:${channel.subject}` : integration ? `google:${integration.linkId}` : auth?.uid;
+    const actorKey = channel ? `${channelName(channel)}:${channel.subject}` : integration ? `google:${integration.linkId}` : auth?.uid;
     const receiptRef = db.doc(`appointmentControls/${doctorUid}/requests/${digest(`${actorKey}:${requestId}`)}`);
     const fingerprint = digest(`${action}:${appointmentId || ''}:${canonical(input)}`);
     const auditRef = db.collection('auditoria').doc();
@@ -182,13 +184,14 @@ export function createAppointmentService({ db, timestamp = () => Timestamp.now()
           ? { ...previous, ...input, externalPatient: !Object.prototype.hasOwnProperty.call(input, 'patientId') ? previous.externalPatient : !input.patientId }
           : { ...previous, ...input, ...transitionAppointment(previous, action, now) };
       }
-      if (channel && next.confirmation?.channel) next.confirmation.channel = 'whatsapp';
+      if (channel && action === 'create') next.creadoPor = channelName(channel);
+      if (channel && next.confirmation?.channel) next.confirmation.channel = channelName(channel);
       next.fecha = next.startDate;
       next.hora = next.startTime;
       next.pacienteId = next.patientId;
       next.pacienteNombre = next.patientName;
       next.updatedAt = now;
-      next.actualizadoPor = channel ? 'whatsapp' : integration ? 'google-calendar' : auth.uid;
+      next.actualizadoPor = channel ? channelName(channel) : integration ? 'google-calendar' : auth.uid;
       validateState(next);
       if (action === 'create' || action === 'reschedule') {
         validateCandidate(next);
@@ -212,7 +215,7 @@ export function createAppointmentService({ db, timestamp = () => Timestamp.now()
       if (channel && onChannelMutation) onChannelMutation({ tx, channel, doctorUid, appointmentId: id, action, next, previous, now });
       if (integration && onIntegrationMutation) onIntegrationMutation({ tx, integration, doctorUid, appointmentId: id, action, next, previous, now });
       tx.create(receiptRef, { fingerprint, appointmentId: id, action, createdAt: now });
-      tx.create(auditRef, { accion: `agenda_${action}`, modulo: 'Agenda', usuarioUid: channel || integration ? doctorUid : auth.uid, usuarioRol: profile.rol || 'profesional', descripcion: 'Operación administrativa de agenda.', exito: true, fecha: now, detalles: { actor: channel ? 'channel' : integration ? 'integration' : isAdmin(profile, auth) ? 'admin' : 'doctor', canal: channel ? 'whatsapp' : integration ? 'google-calendar' : 'web', accion: action, appointmentId: id, resultado: 'applied' } });
+      tx.create(auditRef, { accion: `agenda_${action}`, modulo: 'Agenda', usuarioUid: channel || integration ? doctorUid : auth.uid, usuarioRol: profile.rol || 'profesional', descripcion: 'Operación administrativa de agenda.', exito: true, fecha: now, detalles: { actor: channel ? 'channel' : integration ? 'integration' : isAdmin(profile, auth) ? 'admin' : 'doctor', canal: channel ? channelName(channel) : integration ? 'google-calendar' : 'web', accion: action, appointmentId: id, resultado: 'applied' } });
       console.debug('[AGENDA_TRACE] transaction→firestore', { action, outcome: 'applied' });
       return { appointmentId: id, result: 'applied', replayed: false };
     });

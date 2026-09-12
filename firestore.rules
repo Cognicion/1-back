@@ -24,6 +24,11 @@ service cloud.firestore {
         currentUserProfile().get("rol", "") == "admin";
     }
 
+    function canReadSensitiveOrganizationData() {
+      return isAdmin()
+        && currentUserProfile().get("permisosOrganizacion", {}).get("sensitive", false) == true;
+    }
+
     function isMedico() {
       return signedIn() &&
         currentUserProfile().get("rol", "") == "medico";
@@ -1774,6 +1779,33 @@ service cloud.firestore {
         allow read, create, update, delete: if signedIn();
       }
 
+    }
+
+    /*
+     * ORGANIZACIÓN Y ESTRATEGIA
+     * La información empresarial ordinaria requiere rol admin también en servidor.
+     * Participación, aportaciones, vesting y compensaciones viven en una colección
+     * separada que exige un permiso granular adicional.
+     */
+    match /organizations/{organizationId} {
+      allow read, create, update: if isAdmin();
+      allow delete: if false;
+
+      match /privateRecords/{recordId} {
+        allow read, create, update: if canReadSensitiveOrganizationData();
+        allow delete: if false;
+      }
+
+      match /{collectionName}/{entityId} {
+        allow read, create, update: if isAdmin()
+          && [
+            "members", "areas", "roles", "assignments", "projects",
+            "opportunities", "talentNeeds", "risks", "objectives",
+            "decisions", "alliances", "capabilities", "businessLines",
+            "products", "hypotheses", "organizationEvents"
+          ].hasAny([collectionName]);
+        allow delete: if false;
+      }
     }
 
     /*

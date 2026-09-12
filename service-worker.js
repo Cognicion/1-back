@@ -1,4 +1,4 @@
-const CACHE_VERSION = "20260909-availability-hardening-v2";
+const CACHE_VERSION = "20260911-modafinil-substances-lab-v1";
 const STATIC_CACHE = `cognicion-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `cognicion-runtime-${CACHE_VERSION}`;
 const NAVIGATION_TIMEOUT_MS = 8000;
@@ -16,7 +16,7 @@ const REQUIRED_PRECACHE_ASSETS = [
 
 const OPTIONAL_PRECACHE_ASSETS = [
   INDEX_URL,
-  new URL("./js/availability-bootstrap.js?v=2.209", SCOPE_URL).href,
+  new URL("./js/availability-bootstrap.js?v=2.210", SCOPE_URL).href,
   new URL("./css/theme.css?v=20260811-pharmacology-files-consolidated-v1", SCOPE_URL).href,
   new URL("./css/apariencia.css?v=20260811-pharmacology-files-consolidated-v1", SCOPE_URL).href,
   new URL("./assets/favicon-cognicion.png", SCOPE_URL).href,

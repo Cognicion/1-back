@@ -1,0 +1,33 @@
+.professional-shell { width: min(1240px, calc(100% - 2rem)); margin: 2rem auto; color: var(--text-primary); }
+.professional-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.2rem; margin: 1.5rem 0; }
+.professional-card, .professional-section, .professional-profile-header { background: var(--surface-primary); color: var(--text-primary); border: 1px solid var(--border-subtle); border-radius: 12px; overflow: hidden; }
+.professional-card { display: flex; flex-direction: column; min-width: 0; }
+.professional-card-content { padding: 1.2rem; display: flex; flex-direction: column; flex: 1; gap: .75rem; }
+.professional-card h3, .professional-card p { margin: 0; color: inherit; }
+.professional-photo { position: relative; aspect-ratio: 1; width: 100%; background: var(--surface-secondary); }
+.professional-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.professional-avatar { height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); }
+.professional-avatar[hidden] { display: none; }
+.professional-chips { display: flex; flex-wrap: wrap; gap: .45rem; padding: 0; margin: .5rem 0; list-style: none; }
+.professional-chips li { padding: .3rem .65rem; border-radius: 20px; background: var(--accent-soft); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: .9rem; overflow-wrap: anywhere; }
+.professional-actions { margin-top: auto; display: flex; flex-wrap: wrap; gap: .5rem; }
+.professional-button { display: inline-flex; align-items: center; justify-content: center; padding: .7rem 1rem; min-height: 44px; background: var(--surface-secondary); color: var(--text-primary); border: 1px solid var(--border-normal); border-radius: 7px; text-decoration: none; }
+.professional-shell :where(a, button, input, select):focus-visible, #profesionales a:focus-visible { outline: 3px solid var(--accent-primary); outline-offset: 3px; }
+.professional-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.professional-filters label, .professional-booking label { display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
+.professional-filters input, .professional-filters select, .professional-booking input, .professional-booking select { width: 100%; min-width: 0; min-height: 44px; box-sizing: border-box; background: var(--input-bg); color: var(--input-text); border: 1px solid var(--input-border); border-radius: 6px; padding: .7rem; }
+.professional-shell button { min-height: 44px; padding: .7rem 1rem; }
+.professional-shell [hidden] { display: none !important; }
+.professional-profile-header { display: grid; grid-template-columns: minmax(150px, 280px) minmax(0, 1fr); gap: 2rem; padding: 1.5rem; align-items: center; }
+.professional-section { padding: 1.5rem; margin: 1rem 0; }
+.professional-section p { white-space: pre-line; }
+.professional-shell :where(h1, h2, h3, p, a) { overflow-wrap: anywhere; }
+.professional-booking { display: grid; gap: 1rem; max-width: 600px; }
+.professional-booking input[type="checkbox"] { width: 22px; min-height: 22px; }
+html[data-public-agenda] .agenda-brand, html[data-public-agenda] #agendaWorkspace, html[data-public-agenda] body > dialog { display: none !important; }
+html[data-public-agenda] body.agenda-page { height: auto; min-height: 100dvh; overflow: auto; }
+html[data-public-agenda] #publicAgenda { display: grid; gap: 1rem; }
+html[data-theme="light"] .professional-card, html[data-theme="light"] .professional-section, html[data-theme="light"] .professional-profile-header { background: var(--surface-primary); background-image: none; }
+@media (max-width: 1100px) { .professional-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 850px) { .professional-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .professional-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 540px) { .professional-grid, .professional-filters, .professional-profile-header { grid-template-columns: minmax(0, 1fr); } .professional-profile-header .professional-photo { max-width: 280px; } .professional-actions a { flex: 1; } }

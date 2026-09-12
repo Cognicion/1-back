@@ -1,8 +1,8 @@
-import { buscarMedicamentos, normalizarNombreMedicamento } from "../data/catalogoFarmacologicoUnificado.js?v=20260904-parametros-colera-v2";
+import { buscarMedicamentos, normalizarNombreMedicamento } from "../data/catalogoFarmacologicoUnificado.js?v=20260911-modafinil-substances-lab-v1";
 import {
   evaluarInteraccionesClinicas,
   normalizarMedicamentoClinico
-} from "./motorClinicoMedicamentos.js?v=20260908-treatment-card-safety-v1";
+} from "./motorClinicoMedicamentos.js?v=20260911-modafinil-substances-lab-v1";
 
 const SEVERIDAD_PUBLICA = {
   critica: "contraindicada",
@@ -19,6 +19,7 @@ function tokens(valor = "") {
 
 function presentacionesCoincidentes(medicamento, query = "") {
   const queryTokens = tokens(query).filter((token) => !["de", "mg", "ml", "g", "tableta", "tabletas", "capsula", "capsulas"].includes(token));
+  const concentracionesConsultadas = normalizarNombreMedicamento(query).match(/\d+(?:[.,]\d+)?\s*(?:mg|mcg|g|ml|%)/g) || [];
   return (medicamento.presentaciones || []).filter((presentacion) => {
     if (!query.trim()) return false;
     const texto = normalizarNombreMedicamento(presentacion.texto || "");
@@ -26,7 +27,9 @@ function presentacionesCoincidentes(medicamento, query = "") {
     const nombreNormalizado = normalizarNombreMedicamento(medicamento.nombre);
     const incluyeNombre = consultaNormalizada.includes(nombreNormalizado);
     const tieneConcentracion = /\d/.test(consultaNormalizada) && /\d/.test(texto);
-    return queryTokens.every((token) => texto.includes(token)) || texto.includes(consultaNormalizada) || (incluyeNombre && tieneConcentracion);
+    const coincideConcentracion = concentracionesConsultadas.length > 0
+      && concentracionesConsultadas.every((concentracion) => texto.includes(concentracion.replace(",", ".")));
+    return coincideConcentracion || queryTokens.every((token) => texto.includes(token)) || texto.includes(consultaNormalizada) || (incluyeNombre && tieneConcentracion);
   });
 }
 

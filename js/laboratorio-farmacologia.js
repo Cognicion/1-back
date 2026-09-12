@@ -1,10 +1,10 @@
-import { COBERTURA_FARMACOLOGICA, MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES, medicamentoPorTexto } from "./data/catalogoFarmacologicoUnificado.js?v=20260904-parametros-colera-v2";
+import { COBERTURA_FARMACOLOGICA, MEDICAMENTOS_MAESTROS, MEDICAMENTOS_PRESENTACIONES, medicamentoPorTexto } from "./data/catalogoFarmacologicoUnificado.js?v=20260911-modafinil-substances-lab-v1";
 import { CIE10, CIE11 } from "./data/catalogoDiagnosticos.js?v=20260904-parametros-colera-v2";
 import {
   evaluarMedicamentosPaciente,
   normalizarMedicamentoClinico,
   obtenerIndicadorSeguridadMedicamento
-} from "./services/motorClinicoMedicamentos.js?v=20260908-treatment-card-safety-v1";
+} from "./services/motorClinicoMedicamentos.js?v=20260911-modafinil-substances-lab-v1";
 import {
   construirRegistroParametrosClinicos,
   DEFINICIONES_PARAMETROS_CLINICOS,
@@ -1233,19 +1233,8 @@ function renderFichaMedicamento(medEvaluado) {
     ficha.farmacologia?.presentaciones?.map((item) => [item.formaFarmaceutica, item.concentracion, item.unidad, item.via].filter(Boolean).join(" ")) || [],
     ficha.presentaciones?.map((item) => item.texto || item) || []
   );
-  if (ficha.estadoFuente !== "verificada_local") {
-    return `
-      <li>
-        <strong>${valor(ficha.nombre)}</strong>
-        <small>${valor(ficha.clase || "Medicamento")}</small>
-        ${lista("Presentaciones detectadas", presentacionesDetectadas)}
-        ${advertenciasConFuente}
-        ${fuentesRegulatorias ? `<p class="farmaco-ficha-linea"><span class="farmaco-ficha-categoria">Fuentes regulatorias:</span></p><ul>${fuentesRegulatorias}</ul>` : ""}
-        ${campo("Estado de evidencia", ficha.confianza || "fuente pendiente")}
-        ${campo("Propiedades clínicas restantes", "fuente pendiente de extracción y revisión por molécula")}
-      </li>
-    `;
-  }
+  const esRegistroExposicion = ficha.esSustanciaPsicoactiva === true || medEvaluado.datosOriginales?.esExposicionActiva === true;
+  const fuenteParcial = ficha.estadoFuente !== "verificada_local";
   return `
     <li>
       <strong>${valor(ficha.nombre)}</strong>
@@ -1253,8 +1242,8 @@ function renderFichaMedicamento(medEvaluado) {
       ${lista("Presentaciones detectadas", presentacionesDetectadas)}
       ${lista("Presentaciones de referencia", presentacionesFicha)}
       ${ficha.brandNames?.length ? campo("Marcas", ficha.brandNames.slice(0, 6).join(", ")) : ""}
-      ${campo("Dosis habitual", ficha.dosisHabitual)}
-      ${campo("Rango de dosis", ficha.rangoDosis)}
+      ${esRegistroExposicion ? campo("Dosis", "No se registra dosis terapéutica; se analiza como exposición o consumo activo.") : campo("Dosis habitual", ficha.dosisHabitual)}
+      ${esRegistroExposicion ? "" : campo("Rango de dosis", ficha.rangoDosis)}
       ${campo("Mecanismo", ficha.mecanismoAccion)}
       ${farmacocinetica.length ? lista("Farmacocinética", farmacocinetica) : campo("Vida media", ficha.vidaMedia)}
       ${lista("Indicaciones", ficha.indicaciones || ficha.indications)}
@@ -1265,8 +1254,10 @@ function renderFichaMedicamento(medEvaluado) {
       ${lista("Efectos adversos", ficha.efectosAdversos)}
       ${lista("Vigilancia sugerida", vigilancia)}
       ${lista("Laboratorios sugeridos", ficha.parametrosLaboratorio)}
+      ${fuentesRegulatorias ? `<p class="farmaco-ficha-linea"><span class="farmaco-ficha-categoria">Fuentes regulatorias:</span></p><ul>${fuentesRegulatorias}</ul>` : ""}
       ${campo("Fuente", `${ficha.fuente}; ${ficha.paginaSeccion}`)}
       ${campo("Confianza", ficha.confianza)}
+      ${fuenteParcial ? campo("Estado de evidencia", "Ficha parcial: los datos no documentados permanecen marcados como pendientes; no se infiere ausencia de riesgo.") : ""}
     </li>
   `;
 }

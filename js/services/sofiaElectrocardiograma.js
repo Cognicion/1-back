@@ -1,7 +1,7 @@
 import {
   evaluarMedicamentosPaciente,
   extraerDiagnosticosEstructuradosPaciente
-} from "./motorClinicoMedicamentos.js?v=20260908-treatment-card-safety-v1";
+} from "./motorClinicoMedicamentos.js?v=20260911-modafinil-substances-lab-v1";
 import { buildPatientEcgInterpretation } from "../clinical/ecg/ecgInterpretationCore.js";
 
 function normalizedText(value = "") {
