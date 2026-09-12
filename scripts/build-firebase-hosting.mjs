@@ -1,5 +1,5 @@
 import { cp, mkdir, readdir, rm, stat } from "node:fs/promises";
-import { dirname, join, relative, resolve } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -91,7 +91,7 @@ for (const rule of PUBLIC_DIRECTORIES) await copyPublicDirectory(rule);
 
 for (const requiredPath of REQUIRED_PATHS) {
   const resolved = resolve(outputRoot, requiredPath);
-  if (!resolved.startsWith(`${outputRoot}\\`) && resolved !== outputRoot) {
+  if (!resolved.startsWith(`${outputRoot}${sep}`) && resolved !== outputRoot) {
     throw new Error(`Ruta requerida fuera del artefacto: ${requiredPath}`);
   }
   await stat(resolved);

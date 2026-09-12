@@ -1,0 +1,57 @@
+name: Publicar web en Firebase
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: firebase-hosting-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.repository == 'Cognicion/1-back' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      CI: "true"
+      FIREBASE_CLI_DISABLE_TELEMETRY: "true"
+    steps:
+      - name: Obtener el codigo
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24"
+
+      - name: Comprobar el artefacto publico
+        run: node --test tests/firebase-hosting-mirror.test.mjs
+
+      - name: Instalar Firebase CLI
+        run: npm install --global firebase-tools@15.22.4
+
+      - name: Autenticar con Google sin claves privadas
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          project_id: cognicion-57052
+          workload_identity_provider: projects/1037684177162/locations/global/workloadIdentityPools/github-cognicion/providers/github-main
+          service_account: github-hosting-deploy@cognicion-57052.iam.gserviceaccount.com
+          create_credentials_file: true
+          export_environment_variables: true
+
+      - name: Publicar la pagina
+        run: firebase deploy --only hosting --project cognicion-57052 --non-interactive
+
+      - name: Comprobar la version publicada
+        run: node scripts/verify-hosting-release.mjs
+
