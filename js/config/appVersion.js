@@ -200,5 +200,6 @@
 // deployment marker: 2026-09-12-organizacion-estrategia-admin-v1 (+0.001)
 // deployment marker: 2026-09-12-index-public-care-callout-v1 (+0.001)
 // deployment marker: 2026-09-12-index-editorial-open-layout-v1 (+0.001)
-export const APP_VERSION = "2.214";
+// deployment marker: 2026-09-12-index-editorial-orbits-v1 (+0.001)
+export const APP_VERSION = "2.215";
 export const HISTORIA_CLINICA_EXPORT_VERSION = APP_VERSION;
